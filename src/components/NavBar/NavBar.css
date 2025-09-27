@@ -30,13 +30,15 @@
 
 /* Estados scroll */
 .navbar-transition {
-  transition: all 0.3s ease-in-out;
+  opacity: 1;
+  transition: all 0.3s ease-in-out, opacity 0.3s ease-in-out;
 }
 
 .navbar-scrolled {
   background-color: rgba(47, 13, 104, 0.8);
   height: 5rem;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  opacity: 0.95;
 }
 
 .navbar-default {

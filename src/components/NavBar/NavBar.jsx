@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { ROUTES } from "../../utils/routes";
 import Game from "../Game/Game";
 import "./NavBar.css";
 
@@ -21,12 +22,12 @@ const NavBar = () => {
         isScrolled ? "navbar-scrolled" : "navbar-default"
       }`}
     >
-      <nav className="navbar-inner">
+      <nav className="navbar-inner" aria-label="Menú de navegación principal">
         <div className="navbar-left">
-          <Link to="/" className="logo-link">
+          <Link to={ROUTES.HOME} className="logo-link">
             <img
               src="/logo.webp"
-              alt="Logo"
+              alt="Logo de Mentira FC"
               className={`logo-transition ${
                 isScrolled ? "logo-scrolled" : "logo-default"
               }`}
@@ -35,7 +36,7 @@ const NavBar = () => {
           <ul className="nav-list">
             <li>
               <Link
-                to="/noticias"
+                to={ROUTES.NEWS}
                 className={`text-transition ${
                   isScrolled ? "text-scrolled" : "text-default"
                 }`}
@@ -45,7 +46,7 @@ const NavBar = () => {
             </li>
             <li>
               <Link
-                to="/plantel"
+                to={ROUTES.TEAM}
                 className={`text-transition ${
                   isScrolled ? "text-scrolled" : "text-default"
                 }`}
@@ -55,7 +56,7 @@ const NavBar = () => {
             </li>
             <li>
               <Link
-                to="/tabla"
+                to={ROUTES.TABLE}
                 className={`text-transition ${
                   isScrolled ? "text-scrolled" : "text-default"
                 }`}
@@ -65,7 +66,7 @@ const NavBar = () => {
             </li>
             <li>
               <Link
-                to="/historial"
+                to={ROUTES.RECORD}
                 className={`text-transition ${
                   isScrolled ? "text-scrolled" : "text-default"
                 }`}
