@@ -1,0 +1,119 @@
+/* === Navbar base === */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 50;
+  color: #fff;
+}
+
+/* Línea superior con degradado */
+.navbar::before {
+  content: "";
+  position: absolute;
+  top: 0; 
+  left: 0;
+  width: 100%;
+  height: 10px;
+  background: linear-gradient(
+    to bottom,
+    rgb(77, 23, 154) 0px,
+    rgb(77, 23, 154) 4px,
+    rgba(0, 0, 0, 0.6) 4px,
+    rgba(0, 0, 0, 0.2) 6px,
+    rgba(0, 0, 0, 0) 10px
+  );
+  pointer-events: none;
+  z-index: 60;
+}
+
+/* Estados scroll */
+.navbar-transition {
+  transition: all 0.3s ease-in-out;
+}
+
+.navbar-scrolled {
+  background-color: rgba(47, 13, 104, 0.8);
+  height: 5rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.navbar-default {
+  background-color: rgba(47, 13, 104, 1);
+  height: 6rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Contenedor interno */
+.navbar-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2rem;
+  height: 100%;
+}
+
+/* IZQUIERDA */
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.logo-link {
+  display: flex;
+  align-items: center;
+}
+
+.logo-transition {
+  transition: height 0.3s ease-in-out;
+}
+
+.logo-scrolled {
+  height: 3rem;
+}
+
+.logo-default {
+  height: 5rem;
+}
+
+/* Lista de links */
+.nav-list {
+  display: flex;
+  gap: 1.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-list li {
+  font-family: "Archivo", sans-serif;
+  font-weight: bold;
+}
+
+.text-transition {
+  transition: font-size 0.3s ease-in-out, color 0.2s ease;
+}
+
+.text-scrolled {
+  font-size: 0.875rem;
+}
+
+.text-default {
+  font-size: 1rem;
+}
+
+.nav-list a {
+  color: #fff;
+}
+
+.nav-list a:hover {
+  color: rgb(196, 180, 255);
+}
+
+/* DERECHA */
+.navbar-right {
+  display: flex;
+  align-items: center;
+}
