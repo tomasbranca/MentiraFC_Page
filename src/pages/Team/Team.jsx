@@ -1,6 +1,6 @@
-import "./Squad.css";
+import "./Team.css";
 
-const Squad = () => {
+const Team = () => {
   return (
     <div className="squad">
       <h1>Plantel</h1>
@@ -9,4 +9,4 @@ const Squad = () => {
   );
 }
 
-export default Squad;
+export default Team;

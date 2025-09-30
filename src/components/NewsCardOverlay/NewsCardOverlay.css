@@ -1,0 +1,36 @@
+.news-card-wrapper {
+  display: block;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  height: 260px;
+  position: relative;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.news-card-wrapper:hover {
+  transform: scale(1.02);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.news-card-image {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.news-card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(20, 16, 30, 0.2), rgba(10, 0, 40, 0.85));
+  display: flex;
+  align-items: flex-end;
+  padding: 1.5rem;
+}
+
+.news-card-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+}

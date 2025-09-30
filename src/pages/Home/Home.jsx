@@ -1,12 +1,15 @@
-import "./Home.css"
+import "./Home.css";
+import LatestNews from "../../components/LatestNews/LatestNews";
+import { news } from "../../utils/newsMock";
 
 const Home = () => {
-  return(
+  return (
     <div>
-      <h1>Mentira FC</h1>
-      <p>Bienvenido a la página oficial más falsa que existe.</p>
+      <div className="news bg-violet-900 text-violet-50">
+        <LatestNews news={news}/>
+      </div>
     </div>
   );
-}
+};
 
 export default Home;
