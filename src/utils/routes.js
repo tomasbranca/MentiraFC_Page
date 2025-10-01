@@ -4,4 +4,5 @@ export const ROUTES = {
   TEAM: "/plantel",
   TABLE: "/tabla",
   RECORD: "/historial",
+  ADMIN: "/admin",
 };

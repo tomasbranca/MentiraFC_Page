@@ -4,6 +4,7 @@ import News from "./pages/News/News";
 import Team from "./pages/Team/Team";
 import Table from "./pages/Table/Table";
 import Record from "./pages/Record/Record";
+import Admin from "./pages/Admin/Admin";
 import NavBar from "./components/NavBar/NavBar";
 import { ROUTES } from "./utils/routes";
 import "./App.css";
@@ -19,6 +20,7 @@ function App() {
           <Route path={ROUTES.TEAM} element={<Team />} />
           <Route path={ROUTES.TABLE} element={<Table />} />
           <Route path={ROUTES.RECORD} element={<Record />} />
+          <Route path={ROUTES.ADMIN} element={<Admin />} />
         </Routes>
       </div>
     </>
