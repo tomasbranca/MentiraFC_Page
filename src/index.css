@@ -1,2 +1,25 @@
 @import "tailwindcss";
 
+
+
+body {
+  height: 200vh;
+  margin: 0;
+};
+
+h1, h2, h3, h4, h5, h6{
+  font-family: 'Archivo', sans-serif;
+  text-transform: uppercase;
+};
+
+p, span, div, li, a{
+  font-family: 'Roboto', sans-serif;
+}
+
+li {
+  list-style: none;
+  text-decoration: none;
+};
+a {
+  text-decoration: none;
+};

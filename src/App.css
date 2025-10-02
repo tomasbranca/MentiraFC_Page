@@ -1,23 +1,2 @@
 @import url('https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,100..900;1,100..900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
-
-body {
-  height: 200vh;
-  margin: 0;
-};
-
-h1, h2, h3, h4, h5, h6{
-  font-family: 'Archivo', sans-serif;
-};
-
-p, span, div, li, a{
-  font-family: 'Roboto', sans-serif;
-}
-
-li {
-  list-style: none;
-  text-decoration: none;
-};
-a {
-  text-decoration: none;
-};
