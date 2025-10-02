@@ -1,4 +1,3 @@
-import "./TopScorers.css";
 import PlayerCard from "../PlayerCard/PlayerCard";
 
 const TopScorers = ({ players }) => {
