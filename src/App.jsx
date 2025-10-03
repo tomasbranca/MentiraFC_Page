@@ -13,7 +13,7 @@ function App() {
   return (
     <>
       <NavBar />
-      <div className="pt-24 bg-violet-50 min-h-screen">
+      <div className="border-t-90 border-violet-900 min-h-screen">
         <Routes>
           <Route path={ROUTES.HOME} element={<Home />} />
           <Route path={ROUTES.NEWS} element={<News />} />

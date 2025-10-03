@@ -5,7 +5,7 @@ const TopScorers = ({ players }) => {
   return (
     <section className="top-scorers bg-violet-50 p-4 m-6 col-span-2 ">
       <div className="bloque flex items-center">
-        <div className="text-4xl text-violet-900 font-bold py-4 uppercase leading-tight">
+        <div className="text-4xl text-violet-900 font-extrabold py-4 uppercase leading-tight">
           Máximos goleadores
         </div>
         <div className="bg-violet-900 h-8 flex-grow ml-4"></div>
