@@ -25,10 +25,10 @@ const Carrousel = ({ items }) => {
             className="w-full h-[90vh] object-cover"
           />
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-violet-900 to-transparent p-6">
-            <h2 className="text-4xl font-extrabold mb-2">
+            <h1 className="text-6xl font-extrabold mb-2">
               {item.title}
-            </h2>
-            <p className="text-base mb-4">{item.description}</p>
+            </h1>
+            <p className="text-xl mb-4">{item.description}</p>
             <Link
               to={`/noticias/${item.id}`}
               className="underline text-sm hover:opacity-80"
