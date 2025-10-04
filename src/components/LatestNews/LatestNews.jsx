@@ -15,7 +15,7 @@ const LatestNews = ({ news }) => {
     <section className="latest-news bg-violet-900 text-violet-50">
       <Carrousel items={carouselNews} />
 
-      <div className="flex justify-between items-center mb-6 mt-10 px-6 py-6 border-t-4 border-violet-700">
+      <div className="flex justify-between items-center mb-6 mt-10 px-6 py-6 border-t-2 border-violet-700">
         <h2 className="text-4xl font-bold uppercase">Más noticias</h2>
         <Link to="/noticias" className="underline text-sm hover:opacity-80">
           Ver todas

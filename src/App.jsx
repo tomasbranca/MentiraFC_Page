@@ -6,6 +6,7 @@ import Table from "./pages/Table/Table";
 import Record from "./pages/Record/Record";
 import Admin from "./pages/Admin/Admin";
 import NavBar from "./components/NavBar/NavBar";
+import Footer from "./components/Footer/Footer";
 import { ROUTES } from "./utils/routes";
 import "./App.css";
 
@@ -13,7 +14,7 @@ function App() {
   return (
     <>
       <NavBar />
-      <div className="border-t-90 border-violet-900 min-h-screen">
+      <div className="pt-24 min-h-screen">
         <Routes>
           <Route path={ROUTES.HOME} element={<Home />} />
           <Route path={ROUTES.NEWS} element={<News />} />
@@ -23,6 +24,7 @@ function App() {
           <Route path={ROUTES.ADMIN} element={<Admin />} />
         </Routes>
       </div>
+      <Footer />
     </>
   );
 }
