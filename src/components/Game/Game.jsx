@@ -1,11 +1,9 @@
-import "./Game.css";
-
 const Game = () => {
   return (
-    <div className="game-container bg-stone-900 h-16 w-64 flex items-center justify-center rounded-md border-2 border-stone-800">
-      <h1>Simulando Juego</h1>
+    <div className="game-component bg-neutral-800 text-white p-4 shadow-black/30 shadow-lg h-64 flex items-center justify-center mb-4">
+      <h2 className="text-4xl">Próximo juego</h2>
     </div>
   );
-};
+}
 
 export default Game;

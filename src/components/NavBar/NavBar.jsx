@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ROUTES } from "../../utils/routes";
-import Game from "../Game/Game";
+import Game from "../GameWidget/GameWidget";
 import "./NavBar.css";
 
 const NavBar = () => {
