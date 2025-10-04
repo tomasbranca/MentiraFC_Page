@@ -6,9 +6,9 @@ const TableWidget = ({ table }) => {
     const start = Math.max(0, idx - range);
     const end = Math.min(arr.length, idx + range + 1);
     if (start === 0) {
-      return arr.slice(0, 7);
+      return arr.slice(0, 5);
     } else if (end === arr.length) {
-      return arr.slice(-7);
+      return arr.slice(-5);
     }
     return arr.slice(start, end);
   }
