@@ -16,7 +16,7 @@ const TableWidget = ({ table }) => {
   const surroundingTeams = getSurroundingTeams(tableSorted, index, 2);
 
   return (
-    <section className="table-widget bg-stone-900 p-4 m-6 col-span-1 rounded-4xl">
+    <section className="table-widget bg-stone-900 p-4 m-6 col-span-1 rounded-2xl outline-4 outline-stone-900 outline-offset-2">
       <div className="text-center align-middle h-[15%]">
         <h4 className="text-4xl text-white font-extrabold uppercase leading-tight">
           Clasificación
