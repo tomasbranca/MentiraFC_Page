@@ -23,7 +23,7 @@ export async function getNews() {
       content,
       date,
       slug,
-      "imageUrl": imageUrl.asset->url
+      "imageUrl": image.asset->url
     }
   `);
 }

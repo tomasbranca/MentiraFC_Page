@@ -28,7 +28,7 @@ export default {
       validation: (Rule) => Rule.required(),
     },
     {
-      name: 'imageUrl',
+      name: 'image',
       title: 'Imagen principal',
       type: 'image',
       options: {hotspot: true},
