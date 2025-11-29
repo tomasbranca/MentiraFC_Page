@@ -59,10 +59,10 @@ export default function GameWidget() {
       </div>
 
       {/* Centro */}
-      <div className="text-center text-white z-10">
+      <div className="text-center text-white font-semibold z-10">
         {game.state === "por_jugar" && (
           <>
-            <p className="text-m font-semibold">Próximo partido</p>
+            <p className="text-m ">Próximo partido</p>
             <p className="text-s mt-1">
               {timeLeft.hours}h : {timeLeft.minutes}m
             </p>
@@ -70,13 +70,16 @@ export default function GameWidget() {
         )}
 
         {game.state === "en_curso" && (
-          <p className="text-green-400 font-semibold text-xl">🟢 En curso</p>
+          <p className="text-green-400 text-m">En curso</p>
         )}
 
         {game.state === "finalizado" && (
-          <p className="text-red-400 font-semibold text-xl">
-            🔴 Finalizado — {game.result.goalsFor} - {game.result.goalsAgainst}
-          </p>
+          <>
+            <p className="text-white text-2xl">
+              {game.result.goalsFor} - {game.result.goalsAgainst}
+            </p>
+            <p className="text-sm mt-1">Finalizado</p>
+          </>
         )}
       </div>
     </div>
