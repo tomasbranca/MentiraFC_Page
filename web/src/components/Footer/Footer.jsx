@@ -51,12 +51,12 @@ const Footer = () => {
           <p>
             Hecho por{" "}
             <a
-              href="https://instagram.com/tbcore.sys"
+              href="https://instagram.com/bicore.erp"
               className="underline hover:text-violet-300"
               target="_blank"
               rel="noopener noreferrer"
             >
-              @tbcore.sys
+              @bicore.erp
             </a>
           </p>
         </div>
