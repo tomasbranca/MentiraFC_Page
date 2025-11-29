@@ -28,3 +28,40 @@ export async function getNews() {
   `);
 }
 
+export async function getGame() {
+  const data = await client.fetch(`
+  {
+    "live": *[_type == "games" && state == "en_curso"][0]{
+      date,
+      state,
+      result,
+      rival->{
+        name,
+        "logoUrl": logo.asset->url
+      }
+    },
+    "next": *[_type == "games" && state == "por_jugar" && date > now()]
+      | order(date asc)[0]{
+        date,
+        state,
+        rival->{
+          name,
+          "logoUrl": logo.asset->url
+        }
+      },
+    "last": *[_type == "games" && state == "finalizado"]
+      | order(date desc)[0]{
+        date,
+        state,
+        result,
+        rival->{
+          name,
+          "logoUrl": logo.asset->url
+        }
+      }
+  }
+  `);
+
+  return data.live ?? data.next ?? data.last ?? null;
+}
+
