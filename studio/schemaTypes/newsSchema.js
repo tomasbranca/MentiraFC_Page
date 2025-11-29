@@ -1,6 +1,6 @@
 export default {
   name: 'news',
-  title: 'Noticia',
+  title: 'Noticias',
   type: 'document',
 
   initialValue: () => ({
