@@ -1,1 +1,5 @@
-export const schemaTypes = []
+import newsSchema from "./newsSchema"
+
+export const schemaTypes = [
+  newsSchema,
+]

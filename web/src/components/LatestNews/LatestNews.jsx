@@ -1,10 +1,20 @@
 import Carrousel from "../Carrousel/Carrousel";
 import NewsCardOverlay from "../NewsCardOverlay/NewsCardOverlay";
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { getNews } from "../../lib/sanity";
 import "./LatestNews.css";
 
-const LatestNews = ({ news }) => {
-  const sortedNews = [...news].sort(
+const LatestNews = () => {
+  const [newsData, setNewsData] = useState([]);
+
+  useEffect(() => {
+    getNews().then((data) => setNewsData(data));
+  }, []);
+
+  console.log(newsData);
+
+  const sortedNews = [...newsData].sort(
     (a, b) => new Date(b.date) - new Date(a.date)
   );
 
@@ -25,8 +35,8 @@ const LatestNews = ({ news }) => {
       <div className="grid grid-cols-3 gap-6 px-6 pb-12">
         {otherNews.map((item) => (
           <NewsCardOverlay
-            key={item.id}
-            id={item.id}
+            key={item._id}
+            id={item._id}
             title={item.title}
             imageUrl={item.imageUrl}
           />

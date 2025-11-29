@@ -16,7 +16,7 @@ const Carrousel = ({ items }) => {
     <section className="relative w-full h-[90vh] overflow-hidden">
       {items.map((item, index) => (
         <div
-          key={item.id}
+          key={item._id}
           className={`carousel-slide ${index === activeIndex ? "active" : ""}`}
         >
           <img
@@ -28,9 +28,11 @@ const Carrousel = ({ items }) => {
             <h1 className="text-6xl font-extrabold mb-2">
               {item.title}
             </h1>
+
             <p className="text-xl mb-4">{item.description}</p>
+
             <Link
-              to={`/noticias/${item.id}`}
+              to={`/noticias/${item._id}`}
               className="underline text-sm hover:opacity-80"
             >
               Leer más
