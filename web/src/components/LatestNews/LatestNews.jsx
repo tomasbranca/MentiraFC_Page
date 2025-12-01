@@ -12,8 +12,6 @@ const LatestNews = () => {
     getNews().then((data) => setNewsData(data));
   }, []);
 
-  console.log(newsData);
-
   const sortedNews = [...newsData].sort(
     (a, b) => new Date(b.date) - new Date(a.date)
   );

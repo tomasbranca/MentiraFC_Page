@@ -35,6 +35,8 @@ export async function getGame() {
       date,
       state,
       result,
+      location,
+      competition,
       rival->{
         name,
         "logoUrl": logo.asset->url
@@ -44,6 +46,8 @@ export async function getGame() {
       | order(date asc)[0]{
         date,
         state,
+        location,
+        competition,
         rival->{
           name,
           "logoUrl": logo.asset->url
@@ -54,6 +58,8 @@ export async function getGame() {
         date,
         state,
         result,
+        location,
+        competition,
         rival->{
           name,
           "logoUrl": logo.asset->url

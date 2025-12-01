@@ -1,7 +1,7 @@
 import { getGame } from "../../lib/sanity";
 import { useEffect, useState } from "react";
 
-export default function GameWidget() {
+const GameWidget = () => {
   const [game, setGame] = useState(null);
   const [loading, setLoading] = useState(true);
   const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0 });
@@ -37,8 +37,8 @@ export default function GameWidget() {
     return () => clearInterval(interval);
   }, [game]);
 
-  if (loading) return <p>Cargando...</p>;
-  if (!game) return <p>No hay partidos cargados.</p>;
+  if (loading) return;
+  if (!game) return;
 
   return (
     <div className="relative w-64 max-w-xl h-16 bg-black border-2 border-gray-400 rounded-xl overflow-hidden flex items-center justify-center">
@@ -85,3 +85,5 @@ export default function GameWidget() {
     </div>
   );
 }
+
+export default GameWidget;
