@@ -8,16 +8,16 @@ import { table } from "../../utils/tableMock";
 
 const Home = () => {
   return (
-    <div>
+    <>
       <div className="news bg-violet-900 text-violet-50 shadow-black/30 shadow-lg">
         <LatestNews />
       </div>
       <Game />
-      <div className="scorers-table grid grid-cols-3">
+      <div className="scorers-table relative grid grid-cols-3">
         <TopScorers players={players} />
         <TableWidget table={table} />
       </div>
-    </div>
+    </>
   );
 };
 

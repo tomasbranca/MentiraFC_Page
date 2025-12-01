@@ -15,6 +15,7 @@ function App() {
     <>
       <NavBar />
       <div className="pt-24 min-h-screen">
+      <div className="absolute inset-0 bg-pattern-only pointer-events-none"></div>
         <Routes>
           <Route path={ROUTES.HOME} element={<Home />} />
           <Route path={ROUTES.NEWS} element={<News />} />
