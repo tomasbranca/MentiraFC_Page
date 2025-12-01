@@ -1,8 +1,8 @@
 import Carrousel from "../Carrousel/Carrousel";
-import NewsCardOverlay from "../NewsCardOverlay/NewsCardOverlay";
+import NewsCardOverlay from "../../../components/NewsCardOverlay/NewsCardOverlay";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { getNews } from "../../lib/sanity";
+import { getNews } from "../../../lib/sanity";
 import "./LatestNews.css";
 
 const LatestNews = () => {
@@ -32,12 +32,7 @@ const LatestNews = () => {
 
       <div className="grid grid-cols-3 gap-6 px-6 pb-12">
         {otherNews.map((item) => (
-          <NewsCardOverlay
-            key={item._id}
-            id={item._id}
-            title={item.title}
-            imageUrl={item.imageUrl}
-          />
+          <NewsCardOverlay key={item._id} item={item} />
         ))}
       </div>
     </section>

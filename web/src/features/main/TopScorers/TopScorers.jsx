@@ -1,4 +1,4 @@
-import PlayerCard from "../PlayerCard/PlayerCard";
+import PlayerCard from "../../../components/PlayerCard/PlayerCard";
 
 const TopScorers = ({ players }) => {
   const topScorers = [...players].sort((a, b) => b.goals - a.goals).slice(0, 4);

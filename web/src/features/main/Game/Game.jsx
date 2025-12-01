@@ -1,4 +1,4 @@
-import { getGame } from "../../lib/sanity";
+import { getGame } from "../../../lib/sanity";
 import { useEffect, useState } from "react";
 
 const Game = () => {

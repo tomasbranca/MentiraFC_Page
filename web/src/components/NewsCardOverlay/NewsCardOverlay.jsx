@@ -1,15 +1,15 @@
 import { Link } from "react-router-dom";
 import "./NewsCardOverlay.css"
 
-const NewsCardOverlay = ({ id, title, imageUrl }) => {
+const NewsCardOverlay = ({item}) => {
   return (
-    <Link to={`/noticias/${id}`} className="news-card-wrapper">
+    <Link to={`/noticias/${item._id}`} className="news-card-wrapper">
       <div
         className="news-card-image"
-        style={{ backgroundImage: `url(${imageUrl})` }}
+        style={{ backgroundImage: `url(${item.imageUrl})` }}
       >
         <div className="news-card-overlay">
-          <h3 className="news-card-title text-violet-50">{title}</h3>
+          <h3 className="news-card-title text-violet-50">{item.title}</h3>
         </div>
       </div>
     </Link>

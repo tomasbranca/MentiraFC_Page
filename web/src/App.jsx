@@ -5,8 +5,8 @@ import Team from "./pages/Team/Team";
 import Table from "./pages/Table/Table";
 import Record from "./pages/Record/Record";
 import Admin from "./pages/Admin/Admin";
-import NavBar from "./components/NavBar/NavBar";
-import Footer from "./components/Footer/Footer";
+import NavBar from "./layout/NavBar/NavBar";
+import Footer from "./layout/Footer/Footer";
 import { ROUTES } from "./utils/routes";
 import "./App.css";
 
