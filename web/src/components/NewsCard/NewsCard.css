@@ -1,0 +1,31 @@
+.news-card-featured-wide .news-card-featured-overlay{
+  background: linear-gradient(
+    to top,
+    rgba(10, 0, 40, 0.85),
+    rgba(10, 0, 40, 0.2),
+    transparent
+  );
+  display: flex;
+  flex-direction: column;
+}
+
+.news-card-featured-wide .news-card-featured-overlay .news-card-content {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transform: translateY(2.5rem); /* 👈 clave */
+  transition: transform 0.3s ease;
+}
+
+.news-card-featured-wide:hover .news-card-content {
+  transform: translateY(0);
+}
+
+.animation-shadow{
+  transition: box-shadow 0.3s ease;
+}
+
+.animation-shadow:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}

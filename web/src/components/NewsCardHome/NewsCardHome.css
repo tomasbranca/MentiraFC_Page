@@ -1,14 +1,12 @@
 .news-card-wrapper {
   display: block;
-  border-radius: 0.5rem;
   overflow: hidden;
-  height: 260px;
+  height: 100%;
   position: relative;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: box-shadow 0.3s ease;
 }
 
 .news-card-wrapper:hover {
-  transform: scale(1.02);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 }
 

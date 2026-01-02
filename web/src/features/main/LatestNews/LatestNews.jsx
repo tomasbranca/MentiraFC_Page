@@ -1,5 +1,5 @@
 import Carrousel from "../Carrousel/Carrousel";
-import NewsCardOverlay from "../../../components/NewsCardOverlay/NewsCardOverlay";
+import NewsCardHome from "../../../components/NewsCardHome/NewsCardHome";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { getNews } from "../../../lib/sanity";
@@ -24,15 +24,15 @@ const LatestNews = () => {
       <Carrousel items={carouselNews} />
 
       <div className="flex justify-between items-center mb-6 mt-10 px-6 py-6 border-t-2 border-violet-700">
-        <h2 className="text-4xl font-bold uppercase">Más noticias</h2>
+        <h3 className="font-bold uppercase">Más noticias</h3>
         <Link to="/noticias" className="underline text-sm hover:opacity-80">
           Ver todas
         </Link>
       </div>
 
-      <div className="grid grid-cols-3 gap-6 px-6 pb-12">
+      <div className="grid grid-cols-3 gap-6 px-6 pb-12 h-[320px]">
         {otherNews.map((item) => (
-          <NewsCardOverlay key={item._id} item={item} />
+          <NewsCardHome key={item._id} item={item} />
         ))}
       </div>
     </section>

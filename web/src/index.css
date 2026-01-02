@@ -28,6 +28,8 @@ body::before {
 h1, h2, h3, h4, h5, h6{
   font-family: 'Archivo', sans-serif;
   text-transform: uppercase;
+  font-weight: bolder;
+  line-height: 1;
 };
 
 p, span, div, li, a, td{
@@ -48,6 +50,18 @@ td{
   font-weight: bolder;
 }
 
-.bg-pattern1 {
+h1{
+  font-size: 4rem;
+}
 
+h2{
+  font-size: 3rem;
+}
+
+h3{
+  font-size: 2rem;
+}
+
+h4{
+  font-size: 1.5rem;
 }

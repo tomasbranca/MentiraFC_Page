@@ -25,9 +25,9 @@ const Carrousel = ({ items }) => {
             className="w-full h-[90vh] object-cover"
           />
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-violet-900 to-transparent p-6">
-            <h1 className="text-6xl font-extrabold mb-2">
+            <h2 className="font-extrabold mb-2">
               {item.title}
-            </h1>
+            </h2>
 
             <p className="text-xl mb-4">{item.description}</p>
 
