@@ -3,7 +3,7 @@ import "./NewsCardHome.css"
 
 const NewsCardOverlay = ({item}) => {
   return (
-    <Link to={`/noticias/${item._id}`} className="news-card-wrapper">
+    <Link to={`/noticias/${item._id}`} className="news-card-wrapper animation-shadow">
       <article
         className="news-card-image"
         style={{ backgroundImage: `url(${item.imageUrl})` }}

@@ -1,0 +1,49 @@
+import { Link } from "react-router-dom";
+import { useState } from "react";
+
+const NewsList = ({ items }) => {
+  if (!items || items.length === 0) return null;
+
+  const [visibleCount, setVisibleCount] = useState(3);
+
+  const visibleNews = items.slice(0, visibleCount);
+
+  return (
+    <div className="flex flex-col gap-8 my-8 mx-16">
+      {visibleNews.map((item) => (
+        <Link
+          key={item.id}
+          to={`/news/${item.slug}`}
+          className="h-36 w-full flex bg-violet-50 border-2 border-violet-200 animation-shadow"
+        >
+          <div
+            style={{ backgroundImage: `url(${item.imageUrl})` }}
+            className="h-full w-1/5 bg-cover bg-center"
+          />
+          <div className="p-4 flex flex-col justify-between w-4/5">
+            <div>
+              <h3 className="text-2xl font-bold text-violet-900">
+                {item.title}
+              </h3>
+              <p className="mt-2">{item.description}</p>
+            </div>
+            <div className="text-sm">
+              {new Date(item.date).toLocaleDateString()}
+            </div>
+          </div>
+        </Link>
+      ))}
+
+      {visibleCount < items.length && (
+        <button
+          onClick={() => setVisibleCount(visibleCount + 3)}
+          className="self-center px-4 py-2 bg-violet-600 text-white rounded hover:bg-violet-700"
+        >
+          Cargar más
+        </button>
+      )}
+    </div>
+  );
+};
+
+export default NewsList;

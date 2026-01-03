@@ -14,8 +14,8 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  transform: translateY(2.5rem); /* 👈 clave */
-  transition: transform 0.3s ease;
+  transform: translateY(2.5rem);
+  transition: transform 0.3s ease-out;
 }
 
 .news-card-featured-wide:hover .news-card-content {
