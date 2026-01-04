@@ -2,9 +2,9 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 
 const NewsList = ({ items }) => {
-  if (!items || items.length === 0) return null;
-
   const [visibleCount, setVisibleCount] = useState(3);
+
+  if (!items || items.length === 0) return null;
 
   const visibleNews = items.slice(0, visibleCount);
 
@@ -12,8 +12,8 @@ const NewsList = ({ items }) => {
     <div className="flex flex-col gap-8 my-8 mx-16">
       {visibleNews.map((item) => (
         <Link
-          key={item.id}
-          to={`/news/${item.slug}`}
+          key={item._id}
+          to={`/noticias/${item.slug.current}`}
           className="h-36 w-full flex bg-violet-50 border-2 border-violet-200 animation-shadow"
         >
           <div

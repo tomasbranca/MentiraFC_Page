@@ -8,7 +8,8 @@ const NewsCard = ({ item, variant }) => {
     case "hero":
       return (
         <Link
-          to={`/news/${item.slug}`}
+          key={item._id}
+          to={`/noticias/${item.slug.current}`}
           className="news-card-hero grid grid-cols-12 size-full"
         >
           <div
@@ -32,7 +33,8 @@ const NewsCard = ({ item, variant }) => {
     case "featuredBox":
       return (
         <Link
-          to={`/news/${item.slug}`}
+          key={item._id}
+          to={`/noticias/${item.slug.current}`}
           className="animation-shadow news-card-featured-box grid grid-rows-5 size-full"
         >
           <div
@@ -53,7 +55,8 @@ const NewsCard = ({ item, variant }) => {
     case "featuredWide":
       return (
         <Link
-          to={`/news/${item.slug}`}
+          key={item._id}
+          to={`/noticias/${item.slug.current}`}
           className="animation-shadow news-card-featured-wide size-full block relative overflow-hidden"
         >
           <div
@@ -77,7 +80,7 @@ const NewsCard = ({ item, variant }) => {
 
     case "compact":
       return (
-        <Link to={`/news/${item.slug}`} className="news-card-compact">
+        <Link to={`/noticias/${item.slug.current}`} className="news-card-compact" key={item._id}>
           <article
             className="news-card-image animation-shadow"
             style={{ backgroundImage: `url(${item.imageUrl})` }}

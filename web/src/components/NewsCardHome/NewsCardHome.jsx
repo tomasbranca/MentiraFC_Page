@@ -1,9 +1,9 @@
 import { Link } from "react-router-dom";
 import "./NewsCardHome.css"
 
-const NewsCardOverlay = ({item}) => {
+const NewsCardHome = ({item}) => {
   return (
-    <Link to={`/noticias/${item._id}`} className="news-card-wrapper animation-shadow">
+    <Link to={`/noticias/${item.slug.current}`} className="news-card-wrapper animation-shadow">
       <article
         className="news-card-image"
         style={{ backgroundImage: `url(${item.imageUrl})` }}
@@ -16,4 +16,4 @@ const NewsCardOverlay = ({item}) => {
   );
 };
 
-export default NewsCardOverlay;
+export default NewsCardHome;

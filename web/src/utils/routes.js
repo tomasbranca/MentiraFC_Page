@@ -5,4 +5,5 @@ export const ROUTES = {
   TABLE: "/tabla",
   RECORD: "/historial",
   ADMIN: "/admin",
+  NEWS_DETAIL: "/noticias/:slug",
 };

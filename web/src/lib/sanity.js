@@ -71,3 +71,21 @@ export async function getGame() {
   return data.live ?? data.next ?? data.last ?? null;
 }
 
+export async function getNewsBySlug(slug) {
+  const data = await client.fetch(
+    `
+    *[_type == "news" && slug.current == $slug][0] {
+      _id,
+      title,
+      description,
+      content,
+      date,
+      slug,
+      "imageUrl": image.asset->url
+    }
+  `,
+    { slug }
+  );
+
+  return data;
+}
