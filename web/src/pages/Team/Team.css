@@ -1,0 +1,11 @@
+.team-section {
+  margin-bottom: 4rem;
+}
+
+.team-section-title {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}

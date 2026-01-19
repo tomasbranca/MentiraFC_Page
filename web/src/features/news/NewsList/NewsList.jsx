@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import Button from "../../../components/Button/Button";
 
 const NewsList = ({ items }) => {
   const [visibleCount, setVisibleCount] = useState(3);
@@ -35,12 +36,9 @@ const NewsList = ({ items }) => {
       ))}
 
       {visibleCount < items.length && (
-        <button
-          onClick={() => setVisibleCount(visibleCount + 3)}
-          className="self-center px-4 py-2 bg-violet-600 text-white rounded hover:bg-violet-700"
-        >
+        <Button onClick={() => setVisibleCount(visibleCount + 3)}>
           Cargar más
-        </button>
+        </Button>
       )}
     </div>
   );

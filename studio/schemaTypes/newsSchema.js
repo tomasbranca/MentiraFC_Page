@@ -44,8 +44,8 @@ export default {
       title: 'Slug',
       type: 'slug',
       options: {
-        source: (doc) => doc._id || 'temp', // si no existe _id, pone algo temporal
-        slugify: (input) => input.replace('drafts.', ''), // limpia el ID de drafts
+        source: 'title',
+        maxLength: 96,
       },
       validation: (Rule) => Rule.required(),
     },

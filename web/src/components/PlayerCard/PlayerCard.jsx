@@ -2,46 +2,98 @@ import { Link } from "react-router-dom";
 import FootballIcon from "../../assets/football.svg";
 
 const PlayerCard = ({ player, mode }) => {
-  const { id, firstName, lastName, number, goals } = player;
-  const imageUrl = `/Players/${id}.png`;
-
   return (
-    <Link to={`/jugadores/${id}`} className="no-underline transition duration-300 ease-in-out hover:shadow-lg dark:hover:shadow-black/30">
-      <div className="relative h-[300px] w-[200px] max-w-full overflow-hidden shadow-xl transform bg-neutral-900">
-        <div className="absolute top-2 left-2 text-violet-50 font-semibold px-3 py-1 z-20">
-          <h3 className="flex items-center gap-1 text-4xl">
-            {mode === "goals" ? (
-              <>
-                {goals}
-                <img
-                  src={FootballIcon}
-                  alt="goles"
-                  className="size-8 filter brightness-0 invert"
-                />
-              </>
-            ) : (
-              `#${number}`
-            )}
-          </h3>
+    <Link to={`/plantel/${player.slug.current}`} className="group no-underline">
+      <div
+        className="
+        relative h-[300px] w-[200px]
+        overflow-hidden
+        bg-neutral-950
+        shadow-xl
+        transition-all duration-300
+        group-hover:-translate-y-1
+        group-hover:shadow-2xl
+      "
+      >
+        {/* Badge número / goles */}
+        <div className="absolute top-4 left-4 z-30 select-none flex items-center gap-2">
+          <span
+            className="text-4xl font-black tracking-tight text-white"
+            style={{
+              textShadow: `
+                0 3px 8px rgba(0,0,0,.9),
+                0 0 16px rgba(0,0,0,.6)
+              `,
+            }}
+          >
+            {mode === "goals" ? player.goals : `#${player.number}`}
+          </span>
+
+          {mode === "goals" && (
+            <img
+              src={FootballIcon}
+              alt="goles"
+              className="size-7"
+              style={{
+                filter: `
+                  brightness(0) invert(1)
+                  drop-shadow(0 3px 8px rgba(0,0,0,.9))
+                `,
+              }}
+            />
+          )}
         </div>
 
+        {/* Imagen */}
         <div
-          className="relative left-10 h-full w-full bg-cover z-10"
-          style={{ backgroundImage: `url(${imageUrl})` }}
-        ></div>
-        <div className="absolute bottom-0 left-0 w-full z-20 px-3 pb-3 bg-gradient-to-t from-neutral-950 to-transparent">
+          className="
+            absolute inset-0 z-10
+            bg-cover bg-center
+            transition-transform duration-500
+            group-hover:scale-105
+          "
+          style={{ backgroundImage: `url(${player.imageUrl})` }}
+        />
+
+        {/* Overlay identidad club */}
+        <div
+          className="
+          absolute inset-0 z-20
+          bg-gradient-to-t
+          from-neutral-950 via-neutral-950/40 to-violet-900/20
+          pointer-events-none
+        "
+        />
+
+        {/* Nombre */}
+        <div
+          className="
+          absolute bottom-0 left-0 z-30
+          w-full px-3 pb-4
+        "
+        >
           <div className="flex flex-col leading-none">
-            <span className="text-sm tracking-widest font-semibold text-violet-200">
-              {firstName}
-            </span>
             <span
-              className="text-2xl font-black text-violet-50 uppercase"
-              style={{
-                textShadow: "1px 2px 0 #0a0a0a",
-              }}
+              className="
+              text-xs font-semibold tracking-[0.25em]
+              text-violet-300 uppercase
+            "
             >
-              {lastName}
+              {player.name}
             </span>
+
+            <span
+              className="
+                mt-1 text-2xl font-black uppercase
+                text-violet-50
+              "
+              style={{ textShadow: "1px 2px 0 #000" }}
+            >
+              {player.lastName}
+            </span>
+
+            {/* Línea decorativa */}
+            <div className="mt-1 h-[2px] w-10 bg-violet-500 rounded-full" />
           </div>
         </div>
       </div>

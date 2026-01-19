@@ -89,3 +89,19 @@ export async function getNewsBySlug(slug) {
 
   return data;
 }
+
+export async function getPlayers() {
+  return client.fetch(`
+    *[_type == "players"] | order(number asc) {
+      _id,
+      name,
+      lastName,
+      number,
+      position,
+      birthDate,
+      goals,
+      slug,
+      "imageUrl": photo.asset->url
+    }
+  `);
+}

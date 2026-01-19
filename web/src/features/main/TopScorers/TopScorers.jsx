@@ -1,7 +1,20 @@
 import PlayerCard from "../../../components/PlayerCard/PlayerCard";
+import { useState, useEffect } from "react";
+import { getPlayers } from "../../../lib/sanity";
 
-const TopScorers = ({ players }) => {
-  const topScorers = [...players].sort((a, b) => b.goals - a.goals).slice(0, 4);
+const TopScorers = () => {
+  const [topScorers, setTopScorers] = useState([]);
+  useEffect(() => {
+    getPlayers().then((data) => {
+      const sortedPlayers = data
+        .filter((player) => player.goals && player.goals > 0)
+        .sort((a, b) => b.goals - a.goals)
+        .slice(0, 4);
+      setTopScorers(sortedPlayers);
+    });
+  }, []);
+  
+
   return (
     <section className="top-scorersp-4 m-6 col-span-2 ">
       <div className="bloque flex items-center">
