@@ -6,4 +6,5 @@ export const ROUTES = {
   RECORD: "/historial",
   ADMIN: "/admin",
   NEWS_DETAIL: "/noticias/:slug",
+  PLAYER_DETAIL: "/plantel/:slug",
 };

@@ -6,6 +6,7 @@ import Table from "./pages/Table/Table";
 import Record from "./pages/Record/Record";
 import Admin from "./pages/Admin/Admin";
 import NewsDetail from "./pages/NewsDetail/NewsDetail";
+import PlayerDetail from "./pages/PlayerDetail/PlayerDetail";
 import NavBar from "./layout/NavBar/NavBar";
 import Footer from "./layout/Footer/Footer";
 import { ROUTES } from "./utils/routes";
@@ -25,6 +26,7 @@ function App() {
           <Route path={ROUTES.RECORD} element={<Record />} />
           <Route path={ROUTES.ADMIN} element={<Admin />} />
           <Route path={ROUTES.NEWS_DETAIL} element={<NewsDetail />} />
+          <Route path={ROUTES.PLAYER_DETAIL} element={<PlayerDetail />} />
         </Routes>
       </div>
       <Footer />

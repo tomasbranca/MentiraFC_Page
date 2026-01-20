@@ -105,3 +105,24 @@ export async function getPlayers() {
     }
   `);
 }
+
+export async function getPlayerBySlug(slug) {
+  const data = await client.fetch(
+    `
+    *[_type == "players" && slug.current == $slug][0] {
+      _id,
+      name,
+      lastName,
+      number,
+      position,
+      birthDate,
+      goals,
+      slug,
+      "imageUrl": photo.asset->url
+    }
+  `,
+    { slug }
+  );
+
+  return data;
+}
