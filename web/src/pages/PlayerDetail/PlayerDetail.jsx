@@ -1,14 +1,39 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getPlayerBySlug } from "../../lib/sanity";
-import { FaArrowLeft } from "react-icons/fa";
+import { FaArrowLeft, FaShieldAlt } from "react-icons/fa";
+import { FaGears } from "react-icons/fa6";
+import { GiGloves, GiCannon } from "react-icons/gi";
 
 const POSITION_MAP = {
-  arq: "Arquero",
-  def: "Defensa",
-  med: "Mediocampista",
-  del: "Delantero",
+  arq: (
+    <span className="flex items-center gap-2">
+      <GiGloves className="text-sm" />
+      <span>ARQUERO</span>
+    </span>
+  ),
+  def: (
+    <span className="flex items-center gap-2">
+      <FaShieldAlt className="text-sm" />
+      <span>DEFENSOR</span>
+    </span>
+  ),
+  med: (
+    <span className="flex items-center gap-2">
+      <FaGears className="text-sm" />
+      <span>MEDIOCAMPISTA</span>
+    </span>
+  ),
+  del: (
+    <span className="flex items-center gap-2">
+      <GiCannon className="text-sm" />
+      <span>DELANTERO</span>
+    </span>
+  ),
 };
+
+
+
 
 const PlayerDetail = () => {
   const { slug } = useParams();
@@ -83,8 +108,8 @@ const PlayerDetail = () => {
               </span>
             </h1>
 
-            <p className="mt-3 text-sm tracking-widest">
-              {POSITION_MAP[player.position].toUpperCase()}
+            <p className="mt-3 text-sm tracking-widest flex ">
+              {POSITION_MAP[player.position]}
             </p>
           </div>
 
