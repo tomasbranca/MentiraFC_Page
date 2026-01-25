@@ -14,6 +14,12 @@ export default {
       title: 'Escudo',
       type: 'image',
       validation: Rule => Rule.required()
+    },
+    {
+      name: 'isMain',
+      title: 'Es equipo principal',
+      type: 'boolean',
+      validation: Rule => Rule.required()
     }
   ]
 };

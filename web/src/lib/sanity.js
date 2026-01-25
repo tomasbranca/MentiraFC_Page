@@ -126,3 +126,31 @@ export async function getPlayerBySlug(slug) {
 
   return data;
 }
+
+export async function getTable() {
+  const data = await client.fetch(`
+    *[_type == "table" && active == true][0]{
+      title,
+      logo,
+      primaryColor,
+      standings[]{
+        position,
+        played,
+        wins,
+        draws,
+        losses,
+        goalsFor,
+        goalsAgainst,
+        points,
+        team->{
+          _id,
+          name,
+          logo,
+          isMain
+        }
+      },
+      _updatedAt
+    }
+  `);
+  return data;
+}
