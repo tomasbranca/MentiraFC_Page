@@ -29,47 +29,31 @@ export async function getNews() {
 }
 
 export async function getGame() {
-  const data = await client.fetch(`
-  {
-    "live": *[_type == "games" && state == "en_curso"][0]{
+  return client.fetch(`
+    *[_type == "games"] | order(date desc)[0] {
       date,
       state,
-      result,
       location,
       competition,
       rival->{
         name,
         "logoUrl": logo.asset->url
-      }
-    },
-    "next": *[_type == "games" && state == "por_jugar" && date > now()]
-      | order(date asc)[0]{
-        date,
-        state,
-        location,
-        competition,
-        rival->{
-          name,
-          "logoUrl": logo.asset->url
-        }
       },
-    "last": *[_type == "games" && state == "finalizado"]
-      | order(date desc)[0]{
-        date,
-        state,
-        result,
-        location,
-        competition,
-        rival->{
-          name,
-          "logoUrl": logo.asset->url
+      result{
+        goalsFor,
+        goalsAgainst,
+        scorers[]{
+          goals,
+          player->{
+            name,
+            lastName
+          }
         }
       }
-  }
+    }
   `);
-
-  return data.live ?? data.next ?? data.last ?? null;
 }
+
 
 export async function getNewsBySlug(slug) {
   const data = await client.fetch(
@@ -153,4 +137,20 @@ export async function getTable() {
     }
   `);
   return data;
+}
+
+export async function getFinishedGames() {
+  return client.fetch(`
+    *[_type == "games" && state == "finalizado"] | order(date desc) {
+      date,
+      state,
+      result,
+      location,
+      competition,
+      rival->{
+        name,
+        "logoUrl": logo.asset->url
+      }
+    }
+  `);
 }

@@ -40,6 +40,11 @@ const GameWidget = () => {
   if (loading) return;
   if (!game) return;
 
+  const now = new Date();
+  const gameDate = new Date(game.date);
+
+  const isInProgress = game.state === "por_jugar" && gameDate <= now;
+
   return (
     <div className="relative w-64 max-w-xl h-16 bg-black border-2 border-gray-400 rounded-xl overflow-hidden flex items-center justify-center">
       {/* Círculo Equipo 1 */}
@@ -60,7 +65,7 @@ const GameWidget = () => {
 
       {/* Centro */}
       <div className="text-center text-white font-semibold z-10">
-        {game.state === "por_jugar" && (
+        {game.state === "por_jugar" && !isInProgress && (
           <>
             <p className="text-m ">Próximo partido</p>
             <p className="text-s mt-1">
@@ -69,8 +74,12 @@ const GameWidget = () => {
           </>
         )}
 
-        {game.state === "en_curso" && (
-          <p className="text-green-400 text-m">En curso</p>
+        {isInProgress && (
+          <>
+            <span className="uppercase tracking-widest text-yellow-400 text-sm mb-2">
+              En curso
+            </span>
+          </>
         )}
 
         {game.state === "finalizado" && (
@@ -84,6 +93,6 @@ const GameWidget = () => {
       </div>
     </div>
   );
-}
+};
 
 export default GameWidget;
