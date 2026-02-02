@@ -2,7 +2,6 @@ import LatestNews from "../../features/main/LatestNews/LatestNews";
 import TopScorers from "../../features/main/TopScorers/TopScorers";
 import TableWidget from "../../features/main/TableWidget/TableWidget";
 import Game from "../../features/main/Game/Game";
-import { table } from "../../utils/tableMock";
 
 const Home = () => {
   return (
@@ -13,7 +12,7 @@ const Home = () => {
       <Game />
       <div className="relative grid grid-cols-3">
         <TopScorers />
-        <TableWidget table={table} />
+        <TableWidget />
       </div>
     </>
   );
