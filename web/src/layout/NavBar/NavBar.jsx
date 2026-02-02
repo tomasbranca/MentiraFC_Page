@@ -8,14 +8,26 @@ const NavBar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
+    let lastScrollY = window.scrollY;
+  
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 2);
+      const currentScrollY = window.scrollY;
+  
+      if (currentScrollY < lastScrollY) {
+        // scrolleando para ARRIBA
+        setIsScrolled(false);
+      } else if (currentScrollY > lastScrollY) {
+        // scrolleando para ABAJO
+        setIsScrolled(true);
+      }
+  
+      lastScrollY = currentScrollY;
     };
-
+  
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
+  
   return (
     <header
       className={`navbar navbar-transition ${
