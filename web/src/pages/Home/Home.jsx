@@ -6,7 +6,7 @@ import Game from "../../features/main/Game/Game";
 const Home = () => {
   return (
     <>
-      <div className="bg-violet-900 text-violet-50 shadow-black/30 shadow-lg">
+      <div className="bg-violet-900 text-violet-50">
         <LatestNews />
       </div>
       <Game />
