@@ -32,7 +32,7 @@ const Carrousel = ({ items }) => {
             <p className="text-xl mb-4">{item.description}</p>
 
             <Link
-              to={`/noticias/${item._id}`}
+              to={`/noticias/${item.slug.current}`}
               className="underline text-sm hover:opacity-80"
             >
               Leer más
