@@ -9,27 +9,30 @@ import NewsDetail from "./pages/NewsDetail/NewsDetail";
 import PlayerDetail from "./pages/PlayerDetail/PlayerDetail";
 import NavBar from "./layout/NavBar/NavBar";
 import Footer from "./layout/Footer/Footer";
+import { GameProvider } from "./context/GameProvider";
 import { ROUTES } from "./utils/routes";
 import "./App.css";
 
 function App() {
   return (
     <>
-      <NavBar />
-      <div className="border-t-96 border-t-violet-900 min-h-screen ">
-      <div className="absolute inset-0 bg-pattern-only pointer-events-none"></div>
-        <Routes>
-          <Route path={ROUTES.HOME} element={<Home />} />
-          <Route path={ROUTES.NEWS} element={<News />} />
-          <Route path={ROUTES.TEAM} element={<Team />} />
-          <Route path={ROUTES.TABLE} element={<Table />} />
-          <Route path={ROUTES.RECORD} element={<Record />} />
-          <Route path={ROUTES.ADMIN} element={<Admin />} />
-          <Route path={ROUTES.NEWS_DETAIL} element={<NewsDetail />} />
-          <Route path={ROUTES.PLAYER_DETAIL} element={<PlayerDetail />} />
-        </Routes>
-      </div>
-      <Footer />
+      <GameProvider>
+        <NavBar />
+        <div className="border-t-96 border-t-violet-900 min-h-screen ">
+          <div className="absolute inset-0 bg-pattern-only pointer-events-none"></div>
+          <Routes>
+            <Route path={ROUTES.HOME} element={<Home />} />
+            <Route path={ROUTES.NEWS} element={<News />} />
+            <Route path={ROUTES.TEAM} element={<Team />} />
+            <Route path={ROUTES.TABLE} element={<Table />} />
+            <Route path={ROUTES.RECORD} element={<Record />} />
+            <Route path={ROUTES.ADMIN} element={<Admin />} />
+            <Route path={ROUTES.NEWS_DETAIL} element={<NewsDetail />} />
+            <Route path={ROUTES.PLAYER_DETAIL} element={<PlayerDetail />} />
+          </Routes>
+        </div>
+        <Footer />
+      </GameProvider>
     </>
   );
 }

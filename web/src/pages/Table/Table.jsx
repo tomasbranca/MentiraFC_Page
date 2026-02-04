@@ -1,29 +1,56 @@
-import "./Table.css";
 import { useEffect, useState } from "react";
 import { getTable, urlFor } from "../../lib/sanity";
 import { FaCrown } from "react-icons/fa";
+import Loader from "../../components/Loader/Loader";
 
 const Table = () => {
   const [table, setTable] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
-    getTable().then((data) => {
-      setTable(data);
-      setLoading(false);
-    });
+    getTable()
+      .then((data) => {
+        setTable(data);
+        setError(false);
+      })
+      .catch(() => {
+        setError(true);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
-  if (loading) {
+  if (loading) return <Loader />;
+
+  if (error) {
     return (
-      <div className="flex justify-center items-center h-64 text-neutral-400">
-        Cargando tabla...
-      </div>
+      <main className="min-h-screen flex items-center justify-center px-4">
+        <div className="text-center max-w-md">
+          <div className="text-6xl mb-6">⚠️</div>
+          <h2 className="text-2xl font-bold mb-4">Error al cargar la tabla</h2>
+          <p className="text-neutral-500">
+            No pudimos obtener la tabla de posiciones. Intentá recargar la
+            página más tarde.
+          </p>
+        </div>
+      </main>
     );
   }
 
   if (!table) {
-    return <div className="text-center text-red-400">No hay tabla activa</div>;
+    return (
+      <main className="min-h-screen flex items-center justify-center px-4">
+        <div className="text-center max-w-md">
+          <div className="text-6xl mb-6">📊</div>
+          <h2 className="text-2xl font-bold mb-4">No hay tabla activa</h2>
+          <p className="text-neutral-500">
+            Todavía no se publicó una tabla de posiciones para este torneo.
+          </p>
+        </div>
+      </main>
+    );
   }
 
   const standings = [...table.standings].sort(
@@ -43,7 +70,6 @@ const Table = () => {
       <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-xl ring-1 ring-black/5 overflow-hidden">
         {/* TÍTULO */}
         <div className="py-10 mb-6 relative">
-          {/* línea superior */}
           <div
             className="absolute inset-x-0 top-0 h-px"
             style={{
@@ -52,7 +78,6 @@ const Table = () => {
           />
 
           <div className="flex flex-col items-center gap-3">
-            {/* LOGO DEL TORNEO */}
             {table.logo && (
               <img
                 src={urlFor(table.logo).width(56).height(56).fit("max").url()}
@@ -61,12 +86,10 @@ const Table = () => {
               />
             )}
 
-            {/* OVERLINE */}
             <span className="text-xs uppercase tracking-widest text-neutral-500">
               Tabla de posiciones
             </span>
 
-            {/* TÍTULO */}
             <h1 className="text-4xl font-black text-neutral-900 tracking-tight relative text-center">
               {table.title}
               <span
@@ -75,7 +98,6 @@ const Table = () => {
               />
             </h1>
 
-            {/* ÚLTIMA ACTUALIZACIÓN */}
             {lastUpdate && (
               <span className="text-xs text-neutral-500 mt-4">
                 Última actualización:{" "}
@@ -86,7 +108,6 @@ const Table = () => {
             )}
           </div>
 
-          {/* línea inferior */}
           <div
             className="absolute inset-x-0 bottom-0 h-px"
             style={{
@@ -131,7 +152,6 @@ const Table = () => {
                       }
                     `}
                   >
-                    {/* POSICIÓN */}
                     <td className="py-3 px-4 font-bold flex items-center gap-2">
                       {row.position}
                       {row.position === 1 && (
@@ -139,7 +159,6 @@ const Table = () => {
                       )}
                     </td>
 
-                    {/* EQUIPO */}
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-3">
                         <img
@@ -163,7 +182,6 @@ const Table = () => {
                       </div>
                     </td>
 
-                    {/* STATS */}
                     <td className="py-3 px-3 text-center">{row.played}</td>
                     <td className="py-3 px-3 text-center">{row.wins}</td>
                     <td className="py-3 px-3 text-center">{row.draws}</td>
@@ -173,7 +191,6 @@ const Table = () => {
                       {row.goalsAgainst}
                     </td>
 
-                    {/* DIFERENCIA DE GOL */}
                     <td
                       className={`py-3 px-3 text-center font-bold ${
                         dg > 0
@@ -186,7 +203,6 @@ const Table = () => {
                       {dg > 0 ? `+${dg}` : dg}
                     </td>
 
-                    {/* PUNTOS */}
                     <td className="py-3 px-4 text-center text-lg font-extrabold text-neutral-900">
                       {points}
                     </td>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getFinishedGames } from "../../lib/sanity";
+import Loader from "../../components/Loader/Loader";
 
 const RESULT_GRADIENT = {
   win: "from-green-700/60 to-green-700/0",
@@ -13,14 +14,18 @@ const Record = () => {
 
   useEffect(() => {
     getFinishedGames()
-      .then((data) => setGames(data))
+      .then((data) => setGames(data || []))
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) {
+  /* LOADER */
+  if (loading) return <Loader />;
+
+  /* EMPTY STATE */
+  if (!games.length) {
     return (
-      <div className="text-center py-20 text-neutral-500">
-        Cargando historial...
+      <div className="flex justify-center items-center h-64 text-neutral-400">
+        No hay partidos registrados todavía
       </div>
     );
   }
@@ -52,7 +57,7 @@ const Record = () => {
               key={`${game.date}-${index}`}
               className="relative flex items-center justify-between gap-6 rounded-xl bg-neutral-50 px-6 py-4 shadow-sm overflow-hidden"
             >
-              {/* Indicador de resultado: borde degradado limpio */}
+              {/* Indicador resultado */}
               <div
                 className={`absolute inset-y-0 left-0 w-4 bg-gradient-to-r ${RESULT_GRADIENT[matchResult]} rounded-l-xl`}
                 aria-hidden="true"
@@ -72,7 +77,7 @@ const Record = () => {
                     {game.rival.name}
                   </p>
                   <p className="text-sm text-neutral-500">
-                    {new Date(game.date).toLocaleDateString()}
+                    {new Date(game.date).toLocaleDateString("es-AR")}
                   </p>
                 </div>
               </div>

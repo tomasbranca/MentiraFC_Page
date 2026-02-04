@@ -4,6 +4,7 @@ import { getPlayerBySlug } from "../../lib/sanity";
 import { FaArrowLeft, FaShieldAlt } from "react-icons/fa";
 import { FaGears } from "react-icons/fa6";
 import { GiGloves, GiCannon } from "react-icons/gi";
+import Loader from "../../components/Loader/Loader";
 
 const POSITION_MAP = {
   arq: (
@@ -32,19 +33,15 @@ const POSITION_MAP = {
   ),
 };
 
-
-
-
 const PlayerDetail = () => {
   const { slug } = useParams();
   const [player, setPlayer] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getPlayerBySlug(slug).then((data) => {
-      setPlayer(data);
-      setLoading(false);
-    });
+    getPlayerBySlug(slug)
+      .then((data) => setPlayer(data))
+      .finally(() => setLoading(false));
   }, [slug]);
 
   const formatDate = (date) =>
@@ -64,8 +61,19 @@ const PlayerDetail = () => {
     return age;
   };
 
-  if (loading) return null;
-  if (!player) return <p>Jugador no encontrado</p>;
+  /* LOADER */
+  if (loading) {
+    return <Loader />;
+  }
+
+  /* EMPTY */
+  if (!player) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center text-neutral-500">
+        Jugador no encontrado
+      </div>
+    );
+  }
 
   return (
     <>
@@ -90,15 +98,14 @@ const PlayerDetail = () => {
           />
         </div>
 
-        {/* NUMERO */}
+        {/* INFO */}
         <div className="bg-violet-900 text-white p-10 flex flex-col justify-between">
-          <div>
-            <span className="text-7xl font-extrabold opacity-50 ">
-              {player.number}
-            </span>
-          </div>
+          {/* Número */}
+          <span className="text-7xl font-extrabold opacity-50">
+            {player.number}
+          </span>
 
-          {/* NOMBRE + POSICION */}
+          {/* Nombre + posición */}
           <div>
             <h1 className="text-4xl font-bold mt-6 leading-tight">
               {player.name.toUpperCase()}
@@ -108,12 +115,12 @@ const PlayerDetail = () => {
               </span>
             </h1>
 
-            <p className="mt-3 text-sm tracking-widest flex ">
+            <p className="mt-3 text-sm tracking-widest">
               {POSITION_MAP[player.position]}
             </p>
           </div>
 
-          {/* INFO PERSONAL + GOLES */}
+          {/* Stats */}
           <div className="grid grid-cols-2 gap-6 text-xl">
             <div>
               <p className="opacity-70">EDAD</p>
@@ -129,7 +136,9 @@ const PlayerDetail = () => {
 
             <div className="col-span-2">
               <p className="opacity-70">FECHA DE NACIMIENTO</p>
-              <p className="font-semibold">{formatDate(player.birthDate)}</p>
+              <p className="font-semibold">
+                {formatDate(player.birthDate)}
+              </p>
             </div>
           </div>
         </div>

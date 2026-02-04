@@ -1,24 +1,8 @@
-import { getGame } from "../../../lib/sanity";
-import { useEffect, useState } from "react";
 import { FaFutbol } from "react-icons/fa";
 import GameSkeleton from "../GameSkeleton/GameSkeleton";
 import GameEmpty from "../GameEmpty/GameEmpty";
 
-const Game = () => {
-  const [game, setGame] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchGame = async () => {
-      const data = await getGame();
-      setGame(data);
-      setLoading(false);
-    };
-
-    fetchGame();
-  }, []);
-
-  if (loading) return <GameSkeleton />;
+const Game = ({ game, loading }) => {
   if (!game) return <GameEmpty />;
 
   const date = new Date(game.date);
@@ -32,31 +16,30 @@ const Game = () => {
     hour12: false,
   });
 
-  function shortName(name, lastName) {
-    if (!name || !lastName) return "";
-    return `${name[0].toUpperCase()}. ${lastName}`;
-  }
+  const shortName = (name, lastName) =>
+    name && lastName ? `${name[0].toUpperCase()}. ${lastName}` : "";
 
-  function renderFootballs(goals) {
-    return Array.from({ length: goals }).map((_, i) => (
+  const renderFootballs = (goals) =>
+    Array.from({ length: goals }).map((_, i) => (
       <FaFutbol key={i} className="text-violet-400" />
     ));
-  }
 
   const now = new Date();
   const gameDate = new Date(game.date);
 
-  const isInProgress =
-    game.state === "por_jugar" && gameDate <= now;
+  const isInProgress = game.state === "por_jugar" && gameDate <= now;
+
+  if (loading) return <GameSkeleton />;
+  if (!game) return <GameEmpty />;
 
   return (
     <div
-      className="game-component bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-900
+      className="bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-900
       text-violet-50 p-6 shadow-black/30 shadow-lg flex items-center justify-center
       mb-4 border-t-2 border-violet-700
       animate-[fadeIn_0.4s_ease-out]"
     >
-      {/* Equipo local */}
+      {/* Local */}
       <div className="w-40 flex flex-col items-center gap-2 flex-shrink-0">
         <img
           src="/logo.webp"
@@ -70,20 +53,19 @@ const Game = () => {
 
       {/* Centro */}
       <div className="text-center font-semibold flex flex-col items-center px-6 w-2xl">
-        {/* PRÓXIMO PARTIDO */}
+        {/* Próximo */}
         {game.state === "por_jugar" && !isInProgress && (
           <>
             <h3 className="text-2xl tracking-wide">
               Próximo partido
             </h3>
-
             <h5 className="flex text-lg mt-5 justify-center items-center gap-2 opacity-90">
               {formatted}
             </h5>
           </>
         )}
 
-        {/* EN CURSO */}
+        {/* En curso */}
         {isInProgress && (
           <>
             <span className="uppercase tracking-widest text-yellow-400 text-sm mb-2">
@@ -95,12 +77,10 @@ const Game = () => {
           </>
         )}
 
-        {/* FINALIZADO */}
+        {/* Finalizado */}
         {game.state === "finalizado" && (
           <>
-            <p className="text-sm mt-1 opacity-80">
-              Finalizado
-            </p>
+            <p className="text-sm mt-1 opacity-80">Finalizado</p>
 
             <h3 className="text-8xl font-extrabold tracking-tight my-4">
               {game.result.goalsFor}
@@ -110,7 +90,6 @@ const Game = () => {
 
             <div className="w-full h-px bg-violet-700/40 my-3" />
 
-            {/* Goleadores */}
             <div className="w-full mt-2 flex justify-start">
               <div className="max-h-28 w-1/2 flex flex-wrap gap-x-6 gap-y-2 text-start">
                 {game.result?.scorers?.map((scorer, index) => (

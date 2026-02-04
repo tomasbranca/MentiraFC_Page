@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ROUTES } from "../../utils/routes";
-import Game from "../../components/GameWidget/GameWidget";
+import GameWidget from "../../components/GameWidget/GameWidget";
 import "./NavBar.css";
 
 const NavBar = () => {
@@ -89,7 +89,7 @@ const NavBar = () => {
           </ul>
         </div>
         <div className="navbar-right">
-          <Game />
+          <GameWidget />
         </div>
       </nav>
     </header>

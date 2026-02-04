@@ -1,19 +1,9 @@
-import { getGame } from "../../lib/sanity";
 import { useEffect, useState } from "react";
+import { useGame } from "../../context/useGame";
 
 const GameWidget = () => {
-  const [game, setGame] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { game, loading } = useGame();
   const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0 });
-
-  useEffect(() => {
-    const fetchGame = async () => {
-      const data = await getGame();
-      setGame(data);
-      setLoading(false);
-    };
-    fetchGame();
-  }, []);
 
   useEffect(() => {
     if (!game || game.state !== "por_jugar") return;
@@ -28,17 +18,16 @@ const GameWidget = () => {
         return;
       }
 
-      const hours = Math.floor(diff / 1000 / 60 / 60);
-      const minutes = Math.floor((diff / 1000 / 60) % 60);
-
-      setTimeLeft({ hours, minutes });
+      setTimeLeft({
+        hours: Math.floor(diff / 1000 / 60 / 60),
+        minutes: Math.floor((diff / 1000 / 60) % 60),
+      });
     }, 1000);
 
     return () => clearInterval(interval);
   }, [game]);
 
-  if (loading) return;
-  if (!game) return;
+  if (loading || !game) return null;
 
   const now = new Date();
   const gameDate = new Date(game.date);
