@@ -20,11 +20,19 @@ const NewsCard = ({ item, variant }) => {
               backgroundPosition: "center",
             }}
           ></div>
-          <div className="col-span-4 flex items-center justify-center relative">
-            <div className="bg-violet-50 h-3/4 w-full absolute right-16 flex flex-col justify-center p-4">
-              <p>{new Date(item.date).toLocaleDateString()}</p>
-              <h2 className="text-violet-900">{item.title}</h2>
-              <p>{item.description}</p>
+          <div className="col-span-4 flex items-end justify-center relative">
+            <div className="bg-violet-50 w-full absolute right-16 bottom-8 flex flex-col p-4">
+              <p className="text-xs uppercase opacity-60 mb-1">
+                {new Date(item.date).toLocaleDateString()}
+              </p>
+
+              <h2 className="text-violet-900 text-xl font-semibold leading-tight mb-2 ">
+                {item.title}
+              </h2>
+
+              <p className="text-sm text-violet-800 opacity-80 line-clamp-2">
+                {item.description}
+              </p>
             </div>
           </div>
         </Link>
@@ -45,9 +53,13 @@ const NewsCard = ({ item, variant }) => {
               backgroundPosition: "center",
             }}
           ></div>
-          <div className="bg-violet-50 row-span-2 flex flex-col justify-center p-2">
-            <h3 className="text-violet-900">{item.title}</h3>
-            <p>{item.description}</p>
+          <div className="bg-violet-50 row-span-2 flex flex-col justify-center px-4 py-3">
+            <h3 className="text-violet-900 font-medium leading-snug line-clamp-2 mb-1">
+              {item.title}
+            </h3>
+            <p className="text-sm opacity-80 line-clamp-2">
+              {item.description}
+            </p>
           </div>
         </Link>
       );
@@ -68,8 +80,10 @@ const NewsCard = ({ item, variant }) => {
             }}
           />
           <div className="news-card-featured-overlay absolute left-0 bottom-0 p-4">
-            <div className="news-card-content bg-violet-50 p-2 mb-4">
-              <h3 className="text-violet-900"> {item.title} </h3>
+            <div className="news-card-content bg-violet-50 p-3 mb-4">
+              <h3 className="text-violet-900 font-medium leading-snug line-clamp-2">
+                {item.title}
+              </h3>
             </div>
             <div className="news-card-description">
               <p className="text-violet-50">{item.description}</p>
@@ -80,7 +94,11 @@ const NewsCard = ({ item, variant }) => {
 
     case "compact":
       return (
-        <Link to={`/noticias/${item.slug.current}`} className="news-card-compact" key={item._id}>
+        <Link
+          to={`/noticias/${item.slug.current}`}
+          className="news-card-compact"
+          key={item._id}
+        >
           <article
             className="news-card-image animation-shadow"
             style={{ backgroundImage: `url(${item.imageUrl})` }}
