@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import FootballIcon from "../../assets/football.svg";
+import { FaFutbol } from "react-icons/fa";
 
 const PlayerCard = ({ player, mode }) => {
   return (
@@ -30,13 +30,10 @@ const PlayerCard = ({ player, mode }) => {
           </span>
 
           {mode === "goals" && (
-            <img
-              src={FootballIcon}
-              alt="goles"
-              className="size-7"
+            <FaFutbol
+              className="text-white text-2xl"
               style={{
                 filter: `
-                  brightness(0) invert(1)
                   drop-shadow(0 3px 8px rgba(0,0,0,.9))
                 `,
               }}
@@ -92,7 +89,6 @@ const PlayerCard = ({ player, mode }) => {
               {player.lastName}
             </span>
 
-            {/* Línea decorativa */}
             <div className="mt-1 h-[2px] w-10 bg-violet-500 rounded-full" />
           </div>
         </div>
