@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useGame } from "../../context/useGame";
 
-const GameWidget = () => {
+const GameWidget = ({ compact = false }) => {
   const { game, loading } = useGame();
   const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0 });
 
@@ -31,52 +31,75 @@ const GameWidget = () => {
 
   const now = new Date();
   const gameDate = new Date(game.date);
-
   const isInProgress = game.state === "por_jugar" && gameDate <= now;
 
   return (
-    <div className="relative w-64 max-w-xl h-16 bg-black border-2 border-gray-400 rounded-xl overflow-hidden flex items-center justify-center">
-      {/* Círculo Equipo 1 */}
-      <div className="absolute right-48 top-1/2 -translate-y-1/2 w-24 h-24 rounded-full overflow-hidden">
+    <div
+      className={`
+        relative overflow-hidden flex items-center justify-center
+        ${compact ? "w-40 h-12 text-xs" : "w-64 h-16 text-sm"}
+        bg-black border-2 border-gray-400 rounded-xl
+      `}
+    >
+      {/* LOGO LOCAL */}
+      <div
+        className={`
+    absolute top-1/2 -translate-y-1/2
+    ${
+      compact ? "-left-8 w-20 h-20 opacity-40" : "-left-10 w-28 h-28 opacity-90"
+    }
+    rounded-full overflow-hidden
+  `}
+      >
         <img
           src="/logo.webp"
-          className="w-full h-full object-cover rounded-full"
+          className="w-full h-full object-cover"
+          alt="Equipo local"
         />
       </div>
 
-      {/* Círculo Equipo 2 */}
-      <div className="absolute left-48 top-1/2 -translate-y-1/2 w-24 h-24 rounded-full overflow-hidden">
+      {/* LOGO RIVAL */}
+      <div
+        className={`
+    absolute top-1/2 -translate-y-1/2
+    ${
+      compact
+        ? "-right-8 w-20 h-20 opacity-40"
+        : "-right-10 w-28 h-28 opacity-90"
+    }
+    rounded-full overflow-hidden
+  `}
+      >
         <img
           src={game.rival.logoUrl}
-          className="w-full h-full object-cover rounded-full"
+          className="w-full h-full object-cover"
+          alt="Equipo rival"
         />
       </div>
 
-      {/* Centro */}
-      <div className="text-center text-white font-semibold z-10">
+      {/* TEXTO CENTRAL */}
+      <div className="relative z-10 text-center text-white font-semibold px-6">
         {game.state === "por_jugar" && !isInProgress && (
           <>
-            <p className="text-m ">Próximo partido</p>
-            <p className="text-s mt-1">
+            <p className="leading-tight">Próximo partido</p>
+            <p className="mt-0.5">
               {timeLeft.hours}h : {timeLeft.minutes}m
             </p>
           </>
         )}
 
         {isInProgress && (
-          <>
-            <span className="uppercase tracking-widest text-yellow-400 text-sm mb-2">
-              En curso
-            </span>
-          </>
+          <span className="uppercase tracking-widest text-yellow-400 text-xs">
+            En curso
+          </span>
         )}
 
         {game.state === "finalizado" && (
           <>
-            <p className="text-white text-2xl">
+            <p className="text-lg">
               {game.result.goalsFor} - {game.result.goalsAgainst}
             </p>
-            <p className="text-sm mt-1">Finalizado</p>
+            <p className="text-xs mt-0.5">Finalizado</p>
           </>
         )}
       </div>
