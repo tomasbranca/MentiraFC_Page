@@ -2,24 +2,24 @@ import { FaInstagram, FaTiktok, FaEnvelope } from "react-icons/fa";
 
 const Footer = () => {
   return (
-    <footer className="bg-neutral-950 text-violet-50 px-6 py-12 border-t border-violet-800/40 text-sm">
+    <footer className="bg-neutral-950 text-violet-50 px-6 py-12 border-t border-violet-800/40">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10">
         {/* Marca */}
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-4">
             <img src="/logo.webp" alt="Mentira FC" className="w-12 h-12" />
-            <h4 className="font-bold text-base tracking-wide">Mentira FC</h4>
+            <h6 className="font-bold tracking-wide">Mentira FC</h6>
           </div>
-          <p className="text-violet-300 text-xs leading-relaxed max-w-xs">
+          <p className="text-violet-300 leading-relaxed max-w-xs">
             La mentira tiene patas cortas, pero la chot* larga.
           </p>
         </div>
 
         {/* Redes */}
         <div className="flex flex-col gap-4">
-          <h5 className="font-semibold uppercase tracking-widest text-xs text-violet-300">
+          <h6 className="font-semibold uppercase tracking-widest text-violet-300">
             Redes sociales
-          </h5>
+          </h6>
 
           <ul className="flex gap-5 items-center">
             <li>
@@ -28,7 +28,7 @@ const Footer = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Instagram"
-                className="text-violet-200 hover:text-violet-50 transition text-xl"
+                className="text-violet-200 hover:text-violet-50 transition"
               >
                 <FaInstagram />
               </a>
@@ -40,7 +40,7 @@ const Footer = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="TikTok"
-                className="text-violet-200 hover:text-violet-50 transition text-xl"
+                className="text-violet-200 hover:text-violet-50 transition"
               >
                 <FaTiktok />
               </a>
@@ -50,9 +50,9 @@ const Footer = () => {
 
         {/* Sponsors */}
         <div className="flex flex-col gap-4 items-start">
-          <h5 className="font-semibold uppercase tracking-widest text-xs text-violet-300">
+          <h6 className="font-semibold uppercase tracking-widest text-violet-300">
             Sponsors
-          </h5>
+          </h6>
 
           <a
             href="https://www.neokings.com.ar"
@@ -78,19 +78,19 @@ const Footer = () => {
 
         {/* Contacto */}
         <div className="flex flex-col gap-4">
-          <h5 className="font-semibold uppercase tracking-widest text-xs text-violet-300">
+          <h6 className="font-semibold uppercase tracking-widest text-violet-300">
             Contacto
-          </h5>
+          </h6>
 
-          <p className="flex gap-3 items-center text-violet-200 text-sm">
+          <p className="flex gap-3 items-center text-violet-200">
             <FaEnvelope className="text-lg" />
             mentirafc@gmail.com
           </p>
 
           <div className="mt-2 flex flex-col gap-4">
-            <h5 className="font-semibold uppercase tracking-widest text-xs text-violet-300">
+            <h6 className="font-semibold uppercase tracking-widest text-violet-300">
               Diseño web
-            </h5>
+            </h6>
             <p className="text-violet-200 text-sm">
               Hecho por{" "}
               <a

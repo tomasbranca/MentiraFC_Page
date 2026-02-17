@@ -44,12 +44,12 @@ const GameWidget = ({ compact = false }) => {
       {/* LOGO LOCAL */}
       <div
         className={`
-    absolute top-1/2 -translate-y-1/2
-    ${
-      compact ? "-left-8 w-20 h-20 opacity-40" : "-left-10 w-28 h-28 opacity-90"
-    }
-    rounded-full overflow-hidden
-  `}
+          absolute top-1/2 -translate-y-1/2
+          ${
+            compact ? "-left-8 w-20 h-20 opacity-40" : "-left-10 w-28 h-28 opacity-90"
+          }
+          rounded-full overflow-hidden
+        `}
       >
         <img
           src="/logo.webp"
@@ -61,14 +61,14 @@ const GameWidget = ({ compact = false }) => {
       {/* LOGO RIVAL */}
       <div
         className={`
-    absolute top-1/2 -translate-y-1/2
-    ${
-      compact
-        ? "-right-8 w-20 h-20 opacity-40"
-        : "-right-10 w-28 h-28 opacity-90"
-    }
-    rounded-full overflow-hidden
-  `}
+          absolute top-1/2 -translate-y-1/2
+          ${
+            compact
+              ? "-right-8 w-20 h-20 opacity-40"
+              : "-right-10 w-28 h-28 opacity-90"
+          }
+          rounded-full overflow-hidden
+        `}
       >
         <img
           src={game.rival.logoUrl}

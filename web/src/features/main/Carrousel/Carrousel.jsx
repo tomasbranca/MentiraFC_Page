@@ -5,19 +5,42 @@ import "./Carrousel.css";
 
 const Carrousel = ({ items }) => {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [autoplay, setAutoplay] = useState(false);
+  const [manual, setManual] = useState(false);
+
+  // Autoplay SOLO desktop
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+
+    const update = (e) => {
+      setAutoplay(e.matches);
+      setManual(!e.matches);
+    };
+
+    update(mq);
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
 
   useEffect(() => {
-    if (!items || items.length === 0) return;
+    if (!autoplay || !items?.length) return;
 
     const interval = setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % items.length);
-    }, 3000);
+      setActiveIndex((p) => (p + 1) % items.length);
+    }, 4500);
 
     return () => clearInterval(interval);
-  }, [items]);
+  }, [autoplay, items]);
+
+  if (!items || items.length === 0) return null;
+
+  const prev = () =>
+    setActiveIndex((p) => (p - 1 + items.length) % items.length);
+
+  const next = () => setActiveIndex((p) => (p + 1) % items.length);
 
   return (
-    <section className="relative w-full h-[90vh] overflow-hidden -mb-[2px]">
+    <section className="carousel-wrapper relative w-full overflow-hidden">
       {items.map((item, index) => (
         <div
           key={item._id}
@@ -29,32 +52,92 @@ const Carrousel = ({ items }) => {
             className="w-full h-full object-cover"
           />
 
-          <div
-            className="absolute inset-0 flex items-end bg-gradient-to-t
-        from-violet-900
-        via-black/40
-        to-transparent
-      "
-          >
-            <div className="p-12 max-w-6xl">
-              <h2 className="text-5xl font-black uppercase leading-tight mb-4">
-                {item.title}
-              </h2>
-
-              <p className="text-lg max-w-2xl opacity-90">{item.description}</p>
-
-              <Link to={`/noticias/${item.slug.current}`}>
-                <Button
-                  variant="gradient"
-                  className="mt-6 shadow-violet-900/40"
+          <div className="absolute inset-0 flex items-end bg-gradient-to-t from-violet-900 via-black/40 to-transparent">
+            <div
+              className="
+                w-full overflow-hidden
+                px-4 pb-4
+                sm:px-6 sm:pb-5
+                lg:px-10 lg:pb-10
+              "
+            >
+              <div className="max-w-3xl">
+                <h2
+                  className="
+                    font-black uppercase text-white
+                    break-words
+                  "
                 >
-                  Leer más
-                </Button>
-              </Link>
+                  {item.title}
+                </h2>
+
+                <p
+                  className="
+                    mt-2 text-white/90
+
+                    /* Mobile */
+                    leading-snug
+                    line-clamp-2
+
+                    /* Tablet */
+                    sm:leading-snug
+                    sm:line-clamp-3
+
+                    /* Desktop */
+                    lg:mt-3
+                    lg:line-clamp-none
+                    max-w-2xl
+                  "
+                >
+                  {item.description}
+                </p>
+
+                <Link to={`/noticias/${item.slug.current}`}>
+                  <Button
+                    variant="gradient"
+                    className="
+                      mt-2
+
+                      /* Mobile */
+                      px-1
+                      h-
+                      rounded
+
+                      /* Tablet */
+                      sm:mt-3
+                      sm:px-3 sm:py-1.5
+                      sm:rounded-md
+
+                      /* Desktop */
+                      md:px-5 md:py-3
+                      md:rounded-lg
+                    "
+                  >
+                    Leer más
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
       ))}
+
+      {manual && (
+        <>
+          <button
+            onClick={prev}
+            className="absolute left-3 top-1/2 -translate-y-1/2 z-20 bg-black/40 p-2 text-white"
+          >
+            ‹
+          </button>
+          <button
+            onClick={next}
+            className="absolute right-3 top-1/2 -translate-y-1/2 z-20 bg-black/40 p-2 text-white"
+          >
+            ›
+          </button>
+        </>
+      )}
     </section>
   );
 };

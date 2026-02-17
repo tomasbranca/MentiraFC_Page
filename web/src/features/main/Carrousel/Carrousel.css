@@ -2,7 +2,7 @@
   position: absolute;
   inset: 0;
   opacity: 0;
-  transition: opacity 1.2s ease-in-out;
+  transition: opacity 0.8s ease-in-out;
   pointer-events: none;
 }
 
@@ -10,4 +10,65 @@
   opacity: 1;
   pointer-events: auto;
   z-index: 10;
+}
+
+/* =========================
+  Base — Mobile vertical
+  ========================= */
+.carousel-wrapper {
+  height: 55vh;
+}
+
+/* =========================
+  Mobile horizontal
+  ========================= */
+@media (max-width: 767px) and (orientation: landscape) {
+  .carousel-wrapper {
+    height: 60vh;
+  }
+}
+
+/* =========================
+    Tablet normal (vertical)
+  ========================= */
+@media (min-width: 768px) and (max-width: 899px) and (orientation: portrait) {
+  .carousel-wrapper {
+    height: 52vh;
+  }
+}
+
+/* =========================
+  Tablet normal (horizontal)
+  ========================= */
+@media (min-width: 768px) and (max-width: 899px) and (orientation: landscape) {
+  .carousel-wrapper {
+    height: 60vh;
+  }
+}
+
+/* =========================
+  Tablet grande (iPad Pro vertical)
+  ========================= */
+@media (min-width: 900px) and (max-width: 1200px) and (min-height: 1200px) {
+  .carousel-wrapper {
+    height: 38vh;
+  }
+}
+
+/* =========================
+  Tablet grande (horizontal)
+  ========================= */
+@media (min-width: 900px) and (max-width: 1200px) and (max-height: 900px) {
+  .carousel-wrapper {
+    height: 55vh;
+  }
+}
+
+/* =========================
+  Desktop real (SIEMPRE AL FINAL)
+  ========================= */
+@media (min-width: 1280px) {
+  .carousel-wrapper {
+    height: 80vh;
+  }
 }
