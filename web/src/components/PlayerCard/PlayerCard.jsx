@@ -6,12 +6,13 @@ const PlayerCard = ({ player, mode }) => {
     <Link to={`/plantel/${player.slug.current}`} className="group no-underline">
       <div
         className="
-        relative h-[300px] w-[200px]
+        relative
+        h-[260px] w-[170px]
+        sm:h-[300px] sm:w-[200px]
         overflow-hidden
         bg-neutral-950
         shadow-xl
         transition-all duration-300
-        group-hover:-translate-y-1
         group-hover:shadow-2xl
       "
       >
@@ -33,9 +34,7 @@ const PlayerCard = ({ player, mode }) => {
             <FaFutbol
               className="text-white text-2xl"
               style={{
-                filter: `
-                  drop-shadow(0 3px 8px rgba(0,0,0,.9))
-                `,
+                filter: `drop-shadow(0 3px 8px rgba(0,0,0,.9))`,
               }}
             />
           )}
@@ -52,7 +51,7 @@ const PlayerCard = ({ player, mode }) => {
           style={{ backgroundImage: `url(${player.imageUrl})` }}
         />
 
-        {/* Overlay identidad club */}
+        {/* Overlay */}
         <div
           className="
           absolute inset-0 z-20
@@ -63,27 +62,14 @@ const PlayerCard = ({ player, mode }) => {
         />
 
         {/* Nombre */}
-        <div
-          className="
-          absolute bottom-0 left-0 z-30
-          w-full px-3 pb-4
-        "
-        >
+        <div className="absolute bottom-0 left-0 z-30 w-full px-3 pb-4">
           <div className="flex flex-col leading-none">
-            <span
-              className="
-              text-xs font-semibold tracking-[0.25em]
-              text-violet-300 uppercase
-            "
-            >
+            <span className="text-xs font-semibold tracking-[0.25em] text-violet-300 uppercase">
               {player.name}
             </span>
 
             <span
-              className="
-                mt-1 text-2xl font-black uppercase
-                text-violet-50
-              "
+              className="mt-1 text-2xl font-black uppercase text-violet-50"
               style={{ textShadow: "1px 2px 0 #000" }}
             >
               {player.lastName}

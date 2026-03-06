@@ -43,7 +43,6 @@ const Home = () => {
           playersRes
             .filter((p) => p.goals && p.goals > 0)
             .sort((a, b) => b.goals - a.goals)
-            .slice(0, 4)
         );
 
         // tabla
@@ -70,7 +69,7 @@ const Home = () => {
 
       <Game game={game} loading={loadingGame} />
 
-      <div className="relative grid grid-cols-3">
+      <div className="relative grid grid-cols-1 lg:grid-cols-3">
         <TopScorers players={topScorers} />
         <TableWidget table={table} />
       </div>
