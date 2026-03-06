@@ -16,15 +16,16 @@ const TopScorers = ({ players }) => {
   return (
     <section className="p-4 m-6 lg:col-span-2">
       {/* HEADER */}
-      <div className="flex flex-col lg:flex-row lg:items-center mb-8">
+      <div className="flex flex-col items-center lg:flex-row lg:items-center mb-8">
         <h2
           className="
             font-extrabold uppercase whitespace-nowrap
-            text-white bg-violet-900 px-4 py-2
-            mx-auto w-fit text-center
+            text-white bg-violet-900 px-6 py-2
+            text-center
 
             text-[clamp(1.2rem,5vw,1.6rem)]
-            lg:text-violet-900 lg:bg-transparent lg:px-0 lg:py-0 lg:mx-0
+
+            lg:text-violet-900 lg:bg-transparent lg:px-0 lg:py-0
           "
         >
           Máximos goleadores
