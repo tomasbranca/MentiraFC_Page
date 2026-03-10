@@ -53,7 +53,7 @@ const TopScorers = ({ players }) => {
 
       {/* DESKTOP PAGINATION */}
       <div className="hidden lg:block">
-        <div className="flex justify-between">
+        <div className={`flex ${visiblePlayers.length < 4 ? "justify-start gap-12" : "justify-between"}`}>
           {visiblePlayers.map((player) => (
             <PlayerCard key={player._id} player={player} mode="goals" />
           ))}
