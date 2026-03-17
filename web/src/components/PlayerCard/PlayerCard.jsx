@@ -3,12 +3,15 @@ import { FaFutbol } from "react-icons/fa";
 
 const PlayerCard = ({ player, mode }) => {
   return (
-    <Link to={`/plantel/${player.slug.current}`} className="group no-underline">
+    <Link
+      to={`/plantel/${player.slug.current}`}
+      className="group block no-underline"
+    >
       <div
         className="
         relative
-        h-[260px] w-[170px]
-        sm:h-[300px] sm:w-[200px]
+        w-full
+        aspect-[3/4]
         overflow-hidden
         bg-neutral-950
         shadow-xl
@@ -16,10 +19,13 @@ const PlayerCard = ({ player, mode }) => {
         group-hover:shadow-2xl
       "
       >
-        {/* Badge número / goles */}
-        <div className="absolute top-4 left-4 z-30 select-none flex items-center gap-2">
+
+        {/* Número / goles */}
+
+        <div className="absolute top-3 left-3 z-30 flex items-center gap-2 select-none">
+
           <span
-            className="text-4xl font-black tracking-tight text-white"
+            className="text-2xl sm:text-4xl font-black tracking-tight text-white"
             style={{
               textShadow: `
                 0 3px 8px rgba(0,0,0,.9),
@@ -32,15 +38,17 @@ const PlayerCard = ({ player, mode }) => {
 
           {mode === "goals" && (
             <FaFutbol
-              className="text-white text-2xl"
+              className="text-white text-xl sm:text-2xl"
               style={{
                 filter: `drop-shadow(0 3px 8px rgba(0,0,0,.9))`,
               }}
             />
           )}
+
         </div>
 
         {/* Imagen */}
+
         <div
           className="
             absolute inset-0 z-10
@@ -52,32 +60,38 @@ const PlayerCard = ({ player, mode }) => {
         />
 
         {/* Overlay */}
+
         <div
           className="
           absolute inset-0 z-20
           bg-gradient-to-t
           from-neutral-950 via-neutral-950/40 to-violet-900/20
-          pointer-events-none
         "
         />
 
         {/* Nombre */}
+
         <div className="absolute bottom-0 left-0 z-30 w-full px-3 pb-4">
+
           <div className="flex flex-col leading-none">
-            <span className="text-xs font-semibold tracking-[0.25em] text-violet-300 uppercase">
+
+            <span className="text-[8px] sm:text-xs font-semibold tracking-[0.25em] text-violet-300 uppercase">
               {player.name}
             </span>
 
             <span
-              className="mt-1 text-2xl font-black uppercase text-violet-50"
+              className="mt-1 text-l sm:text-2xl font-black uppercase text-violet-50"
               style={{ textShadow: "1px 2px 0 #000" }}
             >
               {player.lastName}
             </span>
 
             <div className="mt-1 h-[2px] w-10 bg-violet-500 rounded-full" />
+
           </div>
+
         </div>
+
       </div>
     </Link>
   );

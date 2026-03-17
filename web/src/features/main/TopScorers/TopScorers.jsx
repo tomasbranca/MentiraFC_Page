@@ -35,17 +35,12 @@ const TopScorers = ({ players }) => {
       </div>
 
       {/* MOBILE CARRUSEL */}
-      <div
-        className="
-        flex gap-4
-        overflow-x-auto
-        snap-x snap-mandatory
-        pb-2
-        lg:hidden
-      "
-      >
+      <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-2 lg:hidden">
         {players.map((player) => (
-          <div key={player._id} className="snap-start shrink-0">
+          <div
+            key={player._id}
+            className="snap-start shrink-0 w-[75%] sm:w-[55%]"
+          >
             <PlayerCard player={player} mode="goals" />
           </div>
         ))}
@@ -53,9 +48,17 @@ const TopScorers = ({ players }) => {
 
       {/* DESKTOP PAGINATION */}
       <div className="hidden lg:block">
-        <div className={`flex ${visiblePlayers.length < 4 ? "justify-start gap-12" : "justify-between"}`}>
+        <div
+          className={`flex ${
+            visiblePlayers.length < 4
+              ? "justify-start gap-12"
+              : "justify-between"
+          }`}
+        >
           {visiblePlayers.map((player) => (
-            <PlayerCard key={player._id} player={player} mode="goals" />
+            <div key={player._id} className="w-[180px] lg:w-[200px]">
+              <PlayerCard player={player} mode="goals" />
+            </div>
           ))}
         </div>
 
