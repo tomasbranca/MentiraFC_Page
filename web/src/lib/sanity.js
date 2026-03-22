@@ -54,7 +54,6 @@ export async function getGame() {
   `);
 }
 
-
 export async function getNewsBySlug(slug) {
   const data = await client.fetch(
     `
@@ -166,3 +165,57 @@ export async function getFinishedGames() {
     }
   `);
 }
+
+export const getSuggestedNews = async (currentSlug) => {
+  const now = new Date();
+
+  const buildDate = (monthsBack) => {
+    const d = new Date();
+    d.setMonth(now.getMonth() - monthsBack);
+    return d.toISOString();
+  };
+
+  const query = `
+    *[_type == "news" && slug.current != $slug && date >= $date]
+    | order(date desc)[0...10] {
+      _id,
+      title,
+      description,
+      "slug": slug,
+      date,
+      "imageUrl": image.asset->url
+    }
+  `;
+
+  // 1️⃣ intentar 2 meses
+  let result = await client.fetch(query, {
+    slug: currentSlug,
+    date: buildDate(2),
+  });
+
+  // 2️⃣ fallback 4 meses
+  if (result.length < 3) {
+    result = await client.fetch(query, {
+      slug: currentSlug,
+      date: buildDate(4),
+    });
+  }
+
+  // 3️⃣ fallback sin filtro de fecha
+  if (result.length < 3) {
+    result = await client.fetch(
+      `*[_type == "news" && slug.current != $slug]
+        | order(date desc)[0...10] {
+        _id,
+        title,
+        description,
+        "slug": slug,
+        date,
+        "imageUrl": image.asset->url
+      }`,
+      { slug: currentSlug }
+    );
+  }
+
+  return result;
+};
