@@ -127,7 +127,7 @@ const Team = () => {
 
   return (
     <>
-      <div className="w-full md:max-w-7xl md:mx-auto px-0 md:px-4 py-0 md:py-12">
+      <div className="w-full md:max-w-7xl md:mx-auto md:px-4 md:py-12">
         <div className="bg-neutral-900  md:border border-gray-200 shadow-sm">
           {/* HEADER */}
 
@@ -140,22 +140,27 @@ const Team = () => {
               Temporada {new Date().getFullYear()}
             </p>
 
-            {/* ACORDEÓN MOBILE / TABLET */}
+            {/* ================= MOBILE / TABLET ================= */}
 
             <div className="lg:hidden mt-6">
-              {/* BOTÓN */}
-
+              {/* BOTÓN ACORDEÓN */}
               <button
                 onClick={() => setFiltersOpen(!filtersOpen)}
                 className="
                   w-full
-                  bg-gradient-to-r from-violet-800 to-violet-700
+                  bg-gradient-to-r from-violet-700 to-violet-600
                   px-4 py-3
-                  text-violet-50
+                  text-white
                   font-semibold
                   flex justify-between items-center
+
+                  rounded-lg
+                  shadow-md
+                  hover:shadow-lg
+                  hover:from-violet-600 hover:to-violet-500
+
                   transition-all duration-300
-                  active:scale-[0.98]
+                  active:scale-[0.97]
                 "
               >
                 <span>Filtrar posiciones</span>
@@ -170,8 +175,7 @@ const Team = () => {
                 </span>
               </button>
 
-              {/* CONTENIDO ANIMADO */}
-
+              {/* CONTENIDO */}
               <div
                 className={`
                   overflow-hidden
@@ -179,13 +183,22 @@ const Team = () => {
                   ${filtersOpen ? "max-h-[300px] opacity-100 mt-3" : "max-h-0 opacity-0"}
                 `}
               >
-                <div className="bg-violet-900/60 backdrop-blur-sm p-4 flex flex-wrap gap-2 justify-center">
+                <div
+                  className="
+                  bg-violet-900/60
+                    backdrop-blur-md
+                    border border-violet-500/20
+                    rounded-xl
+                    p-4
+                    flex flex-wrap gap-3 justify-center
+                  "
+                >
                   {filters.map(({ id, label }) => (
                     <Button
                       key={id}
                       onClick={() => setFilter(id)}
                       active={filter === id}
-                      variant="gradient"
+                      variant="filter"
                       className="
                         !rounded-md
                         !px-4
@@ -200,15 +213,34 @@ const Team = () => {
               </div>
             </div>
 
-            {/* FILTROS DESKTOP */}
+            {/* ================= DESKTOP ================= */}
 
-            <div className="hidden lg:flex mt-8 bg-neutral-800 md:border border-violet-200 p-4 flex-wrap gap-2">
+            <div
+              className="
+                hidden lg:flex
+                mt-8
+
+                bg-neutral-900/70
+                backdrop-blur-md
+                border border-neutral-700
+                rounded-xl
+
+                p-3
+                flex-wrap gap-3 justify-center
+              "
+            >
               {filters.map(({ id, label }) => (
                 <Button
                   key={id}
                   onClick={() => setFilter(id)}
                   active={filter === id}
-                  className="!rounded-none !px-6 !py-2 text-sm font-semibold tracking-wide"
+                  variant="filter"
+                  className="
+                    !rounded-md
+                    !px-5
+                    !py-2
+                    text-sm font-semibold tracking-wide
+                  "
                 >
                   {label}
                 </Button>

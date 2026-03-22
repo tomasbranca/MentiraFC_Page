@@ -92,25 +92,26 @@ const Table = () => {
             )}
           </div>
 
-          {/* TOGGLE MOBILE */}
-          <div className="md:hidden flex gap-2 p-4">
-            <Button
-              variant="gradient"
-              active={mode === "compact"}
-              onClick={() => setMode("compact")}
-              className="flex-1"
-            >
-              Resumen
-            </Button>
+          <div className="md:hidden p-4">
+            <div className="flex bg-neutral-900 border border-neutral-700 rounded-lg p-1">
+              <Button
+                variant="toggle"
+                active={mode === "compact"}
+                onClick={() => setMode("compact")}
+                className="flex-1 rounded-l-md"
+              >
+                Resumen
+              </Button>
 
-            <Button
-              variant="gradient"
-              active={mode === "full"}
-              onClick={() => setMode("full")}
-              className="flex-1"
-            >
-              Completa
-            </Button>
+              <Button
+                variant="toggle"
+                active={mode === "full"}
+                onClick={() => setMode("full")}
+                className="flex-1 rounded-r-md"
+              >
+                Completa
+              </Button>
+            </div>
           </div>
 
           {/* MOBILE - CARDS */}
@@ -249,17 +250,16 @@ const Table = () => {
                       key={row.team._id}
                       className={`border-b border-neutral-800 transition
                         ${i % 2 === 0 ? "bg-neutral-900" : "bg-neutral-900/70"}
-                        ${
-                          isChampion
-                            ? "border-l-4 bg-yellow-500/10"
-                            : ""
-                        }
+                        ${isChampion ? "border-l-4 bg-yellow-500/10" : ""}
                         ${isPlayoff ? "border-l-4 bg-white/[0.02]" : ""}
                         hover:bg-neutral-800
                       `}
                       style={
-                        isChampion ? { borderLeftColor: "rgba(255, 193, 7, 0.8)" } :
-                        isPlayoff ? { borderLeftColor: table.primaryColor } : {}
+                        isChampion
+                          ? { borderLeftColor: "rgba(255, 193, 7, 0.8)" }
+                          : isPlayoff
+                          ? { borderLeftColor: table.primaryColor }
+                          : {}
                       }
                     >
                       <td className="py-3 px-3 font-bold text-lg text-neutral-300">

@@ -94,24 +94,19 @@ const Carrousel = ({ items }) => {
 
                 <Link to={`/noticias/${item.slug.current}`}>
                   <Button
-                    variant="gradient"
+                    variant="primary"
                     className="
+                      group
                       mt-2
 
-                      /* Mobile */
-                      px-1
-                      h-
-                      rounded
+                      px-3 py-2
+                      rounded-md
 
-                      /* Tablet */
-                      sm:mt-3
-                      sm:px-3 sm:py-1.5
-                      sm:rounded-md
+                      sm:mt-3 sm:px-4 sm:py-2.5
 
-                      /* Desktop */
-                      md:px-5 md:py-3
-                      md:rounded-lg
+                      md:px-5 md:py-3 md:rounded-lg
                     "
+                    showArrow={true}
                   >
                     Leer más
                   </Button>

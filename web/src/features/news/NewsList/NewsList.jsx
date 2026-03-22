@@ -11,7 +11,6 @@ const NewsList = ({ items }) => {
 
   return (
     <section className="max-w-7xl mx-auto px-4">
-
       {/* Título */}
       <div className="mb-8">
         <h2 className="text-violet-900 font-bold uppercase tracking-wide">
@@ -39,7 +38,6 @@ const NewsList = ({ items }) => {
               overflow-hidden
             "
           >
-
             {/* Imagen */}
             <div
               className="
@@ -60,14 +58,15 @@ const NewsList = ({ items }) => {
             </div>
 
             {/* Contenido */}
-            <div className="
+            <div
+              className="
               flex flex-col justify-between
               px-5 py-4
               w-full
               md:w-3/4
-            ">
+            "
+            >
               <div className="max-w-3xl">
-
                 <h3
                   className="
                   text-lg
@@ -81,29 +80,31 @@ const NewsList = ({ items }) => {
                   {item.title}
                 </h3>
 
-                <p className="
+                <p
+                  className="
                   mt-2
                   text-gray-700
                   text-sm
                   leading-relaxed
                   line-clamp-3
-                ">
+                "
+                >
                   {item.description}
                 </p>
-
               </div>
 
-              <span className="
+              <span
+                className="
                 mt-4
                 text-xs
                 tracking-wide
                 text-gray-500
                 uppercase
-              ">
+              "
+              >
                 {new Date(item.date).toLocaleDateString()}
               </span>
             </div>
-
           </Link>
         ))}
       </div>
@@ -111,8 +112,12 @@ const NewsList = ({ items }) => {
       {/* Botón */}
       {visibleCount < items.length && (
         <div className="flex justify-center pt-10">
-          <Button onClick={() => setVisibleCount(visibleCount + 3)}>
-            Cargar más noticias
+          <Button
+            variant="light"
+            className="px-5 py-2.5 rounded-lg text-sm"
+            onClick={() => setVisibleCount(visibleCount + 3)}
+          >
+            Cargar más
           </Button>
         </div>
       )}
