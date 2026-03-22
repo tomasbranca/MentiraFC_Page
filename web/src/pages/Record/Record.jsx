@@ -1,22 +1,23 @@
 import { useEffect, useState } from "react";
 import { getFinishedGames } from "../../lib/sanity";
+import "./Record.css";
 import Loader from "../../components/Loader/Loader";
 import Button from "../../components/Button/Button";
 
 const RESULT_STYLES = {
   win: {
     bar: "from-green-700/70 to-green-700/0",
-    text: "text-green-700",
+    text: "text-green-500",
     label: "VICTORIA",
   },
   draw: {
-    bar: "from-neutral-400/70 to-neutral-400/0",
-    text: "text-neutral-500",
+    bar: "from-neutral-500/70 to-neutral-500/0",
+    text: "text-neutral-400",
     label: "EMPATE",
   },
   loss: {
     bar: "from-red-600/70 to-red-600/0",
-    text: "text-red-600",
+    text: "text-red-500",
     label: "DERROTA",
   },
 };
@@ -27,6 +28,7 @@ const Record = () => {
   const [games, setGames] = useState([]);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [loading, setLoading] = useState(true);
+  const [openGame, setOpenGame] = useState(null);
 
   useEffect(() => {
     getFinishedGames()
@@ -39,106 +41,183 @@ const Record = () => {
   const visibleGames = games.slice(0, visibleCount);
   const hasMore = visibleCount < games.length;
 
+  // 🔹 AGRUPAR POR MES
+  const groupedGames = visibleGames.reduce((acc, game) => {
+    const date = new Date(game.date);
+    const key = date.toLocaleDateString("es-AR", {
+      month: "long",
+      year: "numeric",
+    });
+
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(game);
+
+    return acc;
+  }, {});
+
   return (
-    <section className="max-w-6xl mx-auto px-4 py-16">
-      {/* CONTENEDOR PRINCIPAL */}
-      <div className="bg-white rounded-2xl shadow-md overflow-hidden">
+    <>
+      <section className="max-w-6xl mx-auto md:px-4 md:py-10">
+      <div className="bg-neutral-900 border border-neutral-800 overflow-hidden">
         {/* HEADER */}
-        <header className="px-8 py-6 border-b border-neutral-200">
-          <h1 className="text-3xl font-extrabold tracking-tight text-neutral-900">
+        <header className="px-4 sm:px-8 py-5 sm:py-6 border-b border-neutral-800">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-neutral-100">
             Historial de partidos
           </h1>
-          <p className="text-sm text-neutral-500 mt-1">
-            Registro oficial de todos los encuentros disputados en { new Date().getFullYear() }.
+          <p className="text-xs sm:text-sm text-neutral-400 mt-1">
+            Registro oficial de todos los encuentros disputados.
           </p>
         </header>
 
-        {/* EMPTY STATE */}
+        {/* EMPTY */}
         {!games.length && (
-          <div className="py-20 text-center text-neutral-400">
+          <div className="py-20 text-center text-neutral-500">
             No hay partidos registrados todavía
           </div>
         )}
 
-        {/* LISTA DE PARTIDOS */}
-        <div className="divide-y divide-neutral-100">
-          {visibleGames.map((game, index) => {
-            const goalsFor = game.result.goalsFor;
-            const goalsAgainst = game.result.goalsAgainst;
-
-            const matchResult =
-              goalsFor > goalsAgainst
-                ? "win"
-                : goalsFor < goalsAgainst
-                ? "loss"
-                : "draw";
-
-            const styles = RESULT_STYLES[matchResult];
-
-            return (
-              <div
-                key={`${game.date}-${index}`}
-                className="relative flex items-center px-8 py-5 gap-6 hover:bg-neutral-50 transition-colors"
-              >
-                {/* BARRA RESULTADO */}
-                <div
-                  className={`absolute inset-y-0 left-0 w-1.5 bg-gradient-to-r ${styles.bar}`}
-                  aria-hidden="true"
-                />
-
-                {/* RIVAL */}
-                <div className="flex items-center gap-4 w-1/3 pl-2">
-                  {game.rival?.logoUrl && (
-                    <img
-                      src={game.rival.logoUrl}
-                      alt={game.rival.name}
-                      className="w-10 h-10 object-contain"
-                    />
-                  )}
-                  <div>
-                    <p className="font-semibold text-neutral-900">
-                      {game.rival.name}
-                    </p>
-                    <p className="text-xs text-neutral-500">
-                      {new Date(game.date).toLocaleDateString("es-AR")}
-                    </p>
-                  </div>
-                </div>
-
-                {/* RESULTADO */}
-                <div className="w-1/3 text-center">
-                  <p className="text-3xl font-extrabold text-neutral-900">
-                    {goalsFor}
-                    <span className="mx-1 text-neutral-400">–</span>
-                    {goalsAgainst}
-                  </p>
-                  <p
-                    className={`text-xs font-semibold tracking-widest mt-1 ${styles.text}`}
-                  >
-                    {styles.label}
-                  </p>
-                </div>
-
-                {/* DETALLES */}
-                <div className="w-1/3 text-right text-sm text-neutral-500">
-                  <p className="font-medium text-neutral-700">
-                    {game.competition}
-                  </p>
-                  <p>{game.location}</p>
-                </div>
+        {/* LISTA */}
+        <div>
+          {Object.entries(groupedGames).map(([group, games]) => (
+            <div key={group}>
+              {/* MES */}
+              <div className="px-4 sm:px-6 py-2 text-xs uppercase tracking-wider text-neutral-500 bg-neutral-800">
+                {group}
               </div>
-            );
-          })}
+
+              {games.map((game) => {
+                const goalsFor = game.result.goalsFor;
+                const goalsAgainst = game.result.goalsAgainst;
+
+                const matchResult =
+                  goalsFor > goalsAgainst
+                    ? "win"
+                    : goalsFor < goalsAgainst
+                    ? "loss"
+                    : "draw";
+
+                const styles = RESULT_STYLES[matchResult];
+                const isOpen = openGame === game._id;
+                const scorers = game.result?.scorers || [];
+                const hasScorers = scorers.length > 0;
+
+                return (
+                  <div key={game._id} className="border-b border-neutral-800">
+                    {/* ITEM */}
+                    <div
+                      onClick={() =>
+                        hasScorers
+                          ? setOpenGame(isOpen ? null : game._id)
+                          : null
+                      }
+                      className={`px-4 sm:px-6 py-4 flex flex-col gap-2 
+                        ${
+                          hasScorers ? "cursor-pointer active:scale-[0.98]" : ""
+                        }
+                        hover:bg-neutral-800/60 transition`}
+                    >
+                      {/* FILA PRINCIPAL */}
+                      <div className="flex justify-between items-center">
+                        {/* RIVAL */}
+                        <div className="flex items-center gap-3">
+                          {game.rival?.logoUrl && (
+                            <img
+                              src={game.rival.logoUrl}
+                              alt={game.rival.name}
+                              className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
+                            />
+                          )}
+                          <div>
+                            <p className="text-sm sm:text-base font-semibold text-neutral-100">
+                              {game.rival.name}
+                            </p>
+                            <p className="text-xs text-neutral-500">
+                              {new Date(game.date).toLocaleDateString("es-AR")}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* RESULTADO + FLECHA */}
+                        <div className="text-right flex items-center gap-2">
+                          <div>
+                            <p className="text-2xl sm:text-4xl font-extrabold text-neutral-100">
+                              {goalsFor}
+                              <span className="mx-1 text-neutral-500">–</span>
+                              {goalsAgainst}
+                            </p>
+                            <p
+                              className={`text-[10px] sm:text-xs font-semibold tracking-widest ${styles.text}`}
+                            >
+                              {styles.label}
+                            </p>
+                          </div>
+
+                          {/* FLECHA */}
+                          {hasScorers && (
+                            <span
+                              className={`text-neutral-500 text-xs transition-transform duration-300 ${
+                                isOpen ? "rotate-180" : ""
+                              }`}
+                            >
+                              ▼
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* TEXTO UX */}
+                      {hasScorers && !isOpen && (
+                        <p className="text-[10px] text-neutral-500">
+                          Ver goleadores
+                        </p>
+                      )}
+
+                      {/* COMPETICIÓN + UBICACIÓN */}
+                      <div className="hidden sm:block text-xs text-neutral-400">
+                        {game.competition}
+                        <span className="hidden md:inline">
+                          {" "}
+                          · {game.location}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* ACORDEÓN */}
+                    {hasScorers && (
+                      <div
+                        className={`overflow-hidden transition-all duration-300 ${
+                          isOpen ? "max-h-[500px]" : "max-h-0"
+                        }`}
+                      >
+                        <div className="px-6 pb-4 text-xs text-neutral-300">
+                          <p className="mb-2 text-neutral-400 font-semibold">
+                            Goleadores
+                          </p>
+
+                          <ul className="space-y-1">
+                            {scorers.map((scorer, i) => (
+                              <li key={`${scorer.player?.name}-${i}`}>
+                                {scorer.player?.name} {scorer.player?.lastName}{" "}
+                                ({scorer.goals})
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
         </div>
 
-        {/* FOOTER / CARGAR MÁS */}
+        {/* FOOTER */}
         {hasMore && (
-          <div className="flex justify-center py-8 border-t border-neutral-200 bg-neutral-50">
+          <div className="flex justify-center py-6 sm:py-8 border-t border-neutral-800">
             <Button
               variant="gradient"
-              onClick={() =>
-                setVisibleCount((prev) => prev + PAGE_SIZE)
-              }
+              onClick={() => setVisibleCount((prev) => prev + PAGE_SIZE)}
             >
               Cargar más
             </Button>
@@ -146,6 +225,8 @@ const Record = () => {
         )}
       </div>
     </section>
+    </>
+    
   );
 };
 

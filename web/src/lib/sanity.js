@@ -142,11 +142,23 @@ export async function getTable() {
 export async function getFinishedGames() {
   return client.fetch(`
     *[_type == "games" && state == "finalizado"] | order(date desc) {
+      _id,
       date,
       state,
-      result,
       location,
       competition,
+
+      result{
+        goalsFor,
+        goalsAgainst,
+        scorers[]{
+          goals,
+          player->{
+            name,
+            lastName
+          }
+        }
+      },
       rival->{
         name,
         "logoUrl": logo.asset->url
