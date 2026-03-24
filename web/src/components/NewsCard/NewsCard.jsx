@@ -109,27 +109,22 @@ const NewsCard = ({ item, variant }) => {
           key={item._id}
           to={`/noticias/${item.slug.current}`}
           className="
-            animation-shadow
-            news-card-featured-wide
-            w-full
-            h-full
-            overflow-hidden
-            flex flex-col
-    
-            md:block
-            md:relative
-          "
+              animation-shadow
+              news-card-featured-wide
+              relative
+              w-full
+              h-full
+              overflow-hidden
+              flex flex-col
+            "
         >
-          {/* Imagen */}
+          {/* Imagen (SIEMPRE absoluta en md+) */}
           <div
             className="
-              w-full
-              h-[220px]
-    
-              md:absolute
-              md:inset-0
-              md:h-full
-            "
+                w-full h-[220px]
+      
+                md:absolute md:inset-0 md:h-full
+              "
             style={{
               backgroundImage: `url(${item.imageUrl})`,
               backgroundSize: "cover",
@@ -137,7 +132,7 @@ const NewsCard = ({ item, variant }) => {
             }}
           />
 
-          {/* MOBILE (card normal) */}
+          {/* MOBILE (card clásica) */}
           <div className="bg-neutral-950 p-4 md:hidden">
             <h3 className="text-violet-800 font-semibold mb-1">{item.title}</h3>
 
@@ -146,33 +141,29 @@ const NewsCard = ({ item, variant }) => {
             </p>
           </div>
 
-          {/* TABLET + DESKTOP OVERLAY */}
-          <div className="
-            hidden md:flex lg:flex
-            news-card-featured-overlay
-            absolute
-            left-0
-            bottom-0
-            p-4
-            w-full
-            flex-col
-          ">
-            <div className="
-              news-card-content
-              bg-violet-950
-              p-3
-              mb-3
-              md:transform-none
-            ">
-              <h3 className="text-violet-50 font-medium leading-snug line-clamp-2">
-                {item.title}
-              </h3>
-            </div>
+          {/* TABLET + DESKTOP BASE */}
+          <div
+            className="
+                hidden md:flex
+                absolute inset-0
+                flex-col justify-end
+                p-4
+                z-10
+                news-card-featured-overlay
+              "
+          >
+            <div className="news-card-inner">
+              <div className="news-card-content bg-violet-950 p-3 mb-2">
+                <h3 className="text-violet-50 font-medium leading-snug line-clamp-2">
+                  {item.title}
+                </h3>
+              </div>
 
-            <div className="news-card-description">
-              <p className="text-violet-50 text-sm line-clamp-2">
-                {item.description}
-              </p>
+              <div className="news-card-description">
+                <p className="text-violet-50 text-sm line-clamp-2">
+                  {item.description}
+                </p>
+              </div>
             </div>
           </div>
         </Link>
