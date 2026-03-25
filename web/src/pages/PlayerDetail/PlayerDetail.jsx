@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { getPlayerBySlug } from "../../lib/sanity";
+import { getPlayerWithGoalsByYear } from "../../lib/sanity";
 import { FaArrowLeft } from "react-icons/fa";
 import { FaChessRook } from "react-icons/fa";
 import { FaGears } from "react-icons/fa6";
@@ -38,12 +38,13 @@ const PlayerDetail = () => {
   const { slug } = useParams();
   const [player, setPlayer] = useState(null);
   const [loading, setLoading] = useState(true);
+  const year = new Date().getFullYear();
 
   useEffect(() => {
-    getPlayerBySlug(slug)
+    getPlayerWithGoalsByYear(slug, year)
       .then((data) => setPlayer(data))
       .finally(() => setLoading(false));
-  }, [slug]);
+  }, [slug, year]);
 
   const formatDate = (date) =>
     new Date(date + "T00:00:00Z").toLocaleDateString("es-AR", {
@@ -82,7 +83,6 @@ const PlayerDetail = () => {
         <FaArrowLeft /> Volver al plantel
       </Link>
 
-      {/* CONTENEDOR */}
       <div className="border border-neutral-800 bg-neutral-900">
         <div className="grid grid-cols-1 lg:grid-cols-2">
           {/* IMAGEN */}
@@ -97,7 +97,7 @@ const PlayerDetail = () => {
           {/* DERECHA */}
           <div className="flex flex-col">
             {/* INFO */}
-            <div className="bg-violet-900 text-violet-50 p-5 sm:p-6 lg:p-8 flex flex-1 flex-col justify-center shadow-lg shadow-black/30 lg:shadow-none">
+            <div className="bg-violet-900 text-violet-50 p-5 sm:p-6 lg:p-8 flex flex-1 flex-col justify-center">
               <span className="text-4xl sm:text-5xl lg:text-6xl font-bold opacity-30">
                 #{player.number}
               </span>
@@ -125,9 +125,11 @@ const PlayerDetail = () => {
               </div>
 
               <div>
-                <p className="text-xs sm:text-sm text-neutral-400">GOLES</p>
+                <p className="text-xs sm:text-sm text-neutral-400">
+                  GOLES ({year})
+                </p>
                 <p className="font-semibold text-sm sm:text-lg lg:text-base">
-                  {player.goals ?? "-"}
+                  {player.goalsThisYear ?? 0}
                 </p>
               </div>
 

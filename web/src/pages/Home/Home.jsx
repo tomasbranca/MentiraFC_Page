@@ -7,9 +7,9 @@ import Loader from "../../components/Loader/Loader";
 
 import {
   getNews,
-  getPlayers,
   getTable,
   getGame,
+  getTopScorers, // 🔥 NUEVO
 } from "../../lib/sanity";
 
 const Home = () => {
@@ -23,10 +23,12 @@ const Home = () => {
   useEffect(() => {
     const loadHome = async () => {
       try {
-        const [newsRes, playersRes, tableRes, gameRes] =
+        const year = new Date().getFullYear();
+
+        const [newsRes, scorersRes, tableRes, gameRes] =
           await Promise.all([
             getNews(),
-            getPlayers(),
+            getTopScorers(year),
             getTable(),
             getGame(),
           ]);
@@ -38,12 +40,8 @@ const Home = () => {
           )
         );
 
-        // goleadores
-        setTopScorers(
-          playersRes
-            .filter((p) => p.goals && p.goals > 0)
-            .sort((a, b) => b.goals - a.goals)
-        );
+        // goleadores (ya vienen ordenados y calculados)
+        setTopScorers(scorersRes);
 
         // tabla
         setTable(tableRes);

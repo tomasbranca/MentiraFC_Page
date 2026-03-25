@@ -31,23 +31,30 @@ export async function getNews() {
 export async function getGame() {
   return client.fetch(`
     *[_type == "games"] | order(date desc)[0] {
+      _id,
       date,
       state,
       location,
       competition,
+
       rival->{
         name,
         "logoUrl": logo.asset->url
       },
+
       result{
         goalsFor,
-        goalsAgainst,
-        scorers[]{
-          goals,
-          player->{
-            name,
-            lastName
-          }
+        goalsAgainst
+      },
+
+      "events": *[
+        _type == "events" &&
+        game._ref == ^._id &&
+        type == "goal"
+      ]{
+        player->{
+          name,
+          lastName
         }
       }
     }
@@ -149,18 +156,23 @@ export async function getFinishedGames() {
 
       result{
         goalsFor,
-        goalsAgainst,
-        scorers[]{
-          goals,
-          player->{
-            name,
-            lastName
-          }
-        }
+        goalsAgainst
       },
+
       rival->{
         name,
         "logoUrl": logo.asset->url
+      },
+
+      "events": *[
+        _type == "events" &&
+        game._ref == ^._id &&
+        type == "goal"
+      ]{
+        player->{
+          name,
+          lastName
+        }
       }
     }
   `);
@@ -219,3 +231,81 @@ export const getSuggestedNews = async (currentSlug) => {
 
   return result;
 };
+
+export async function getPlayerGoalsByYear(playerId, year) {
+  const start = `${year}-01-01`;
+  const end = `${year + 1}-01-01`;
+
+  return client.fetch(
+    `
+    count(
+      *[
+        _type == "events" &&
+        type == "goal" &&
+        player._ref == $playerId &&
+        game->date >= $start &&
+        game->date < $end
+      ]
+    )
+    `,
+    { playerId, start, end }
+  );
+}
+
+export async function getPlayerWithGoalsByYear(slug, year) {
+  const start = `${year}-01-01`;
+  const end = `${year + 1}-01-01`;
+
+  return client.fetch(
+    `
+    *[_type == "players" && slug.current == $slug][0]{
+      _id,
+      name,
+      lastName,
+      number,
+      position,
+      birthDate,
+      slug,
+      "imageUrl": photo.asset->url,
+
+      "goalsThisYear": count(
+        *[
+          _type == "events" &&
+          type == "goal" &&
+          player._ref == ^._id &&
+          game->date >= $start &&
+          game->date < $end
+        ]
+      )
+    }
+    `,
+    { slug, start, end }
+  );
+}
+
+export async function getTopScorers(year) {
+  const start = `${year}-01-01`;
+  const end = `${year + 1}-01-01`;
+
+  return client.fetch(`
+    *[_type == "players"]{
+      _id,
+      name,
+      lastName,
+      number,
+      slug,
+      "imageUrl": photo.asset->url,
+
+      "goals": count(
+        *[
+          _type == "events" &&
+          type == "goal" &&
+          player._ref == ^._id &&
+          game->date >= $start &&
+          game->date < $end
+        ]
+      )
+    }
+    | order(goals desc)
+  `, { start, end });
+}

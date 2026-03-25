@@ -93,12 +93,27 @@ const Record = () => {
                     goalsFor > goalsAgainst
                       ? "win"
                       : goalsFor < goalsAgainst
-                      ? "loss"
-                      : "draw";
+                        ? "loss"
+                        : "draw";
 
                   const styles = RESULT_STYLES[matchResult];
                   const isOpen = openGame === game._id;
-                  const scorers = game.result?.scorers || [];
+                  const scorers = Object.values(
+                    (game.events || []).reduce((acc, event) => {
+                      const key = `${event.player?.name}-${event.player?.lastName}`;
+
+                      if (!acc[key]) {
+                        acc[key] = {
+                          player: event.player,
+                          goals: 0,
+                        };
+                      }
+
+                      acc[key].goals += 1;
+
+                      return acc;
+                    }, {}),
+                  );
                   const hasScorers = scorers.length > 0;
 
                   return (
@@ -133,7 +148,7 @@ const Record = () => {
                               </p>
                               <p className="text-xs text-neutral-500">
                                 {new Date(game.date).toLocaleDateString(
-                                  "es-AR"
+                                  "es-AR",
                                 )}
                               </p>
                             </div>

@@ -5,13 +5,20 @@ const TopScorers = ({ players }) => {
   const [page, setPage] = useState(0);
 
   const playersPerPage = 4;
+
+  // 🔥 FILTRO CLAVE
+  const playersWithGoals = players.filter((p) => p.goals > 0);
+
   const start = page * playersPerPage;
   const end = start + playersPerPage;
 
-  const visiblePlayers = players.slice(start, end);
+  const visiblePlayers = playersWithGoals.slice(start, end);
 
-  const hasNext = end < players.length;
+  const hasNext = end < playersWithGoals.length;
   const hasPrev = page > 0;
+
+  // 🔥 EVITAR SECCIÓN VACÍA
+  if (!playersWithGoals.length) return null;
 
   return (
     <section className="p-4 m-6 lg:col-span-2">
@@ -22,9 +29,7 @@ const TopScorers = ({ players }) => {
             font-extrabold uppercase whitespace-nowrap
             text-white bg-violet-900 px-6 py-2
             text-center
-
             text-[clamp(1.2rem,5vw,1.6rem)]
-
             lg:text-violet-900 lg:bg-transparent lg:px-0 lg:py-0
           "
         >
@@ -36,12 +41,15 @@ const TopScorers = ({ players }) => {
 
       {/* MOBILE CARRUSEL */}
       <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-2 lg:hidden">
-        {players.map((player) => (
+        {playersWithGoals.map((player) => (
           <div
             key={player._id}
             className="snap-start shrink-0 w-[75%] sm:w-[55%]"
           >
-            <PlayerCard player={player} mode="goals" />
+            <PlayerCard
+              key={player._id}
+              player={player}
+              mode="goals" />
           </div>
         ))}
       </div>
@@ -57,13 +65,16 @@ const TopScorers = ({ players }) => {
         >
           {visiblePlayers.map((player) => (
             <div key={player._id} className="w-[180px] lg:w-[200px]">
-              <PlayerCard player={player} mode="goals" />
+              <PlayerCard
+                key={player._id}
+                player={player}
+                mode="goals" />
             </div>
           ))}
         </div>
 
         {/* CONTROLES */}
-        {players.length > playersPerPage && (
+        {playersWithGoals.length > playersPerPage && (
           <div className="flex justify-end gap-4 mt-6">
             <button
               onClick={() => setPage(page - 1)}
