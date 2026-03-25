@@ -95,51 +95,6 @@ export default {
           type: 'number',
           validation: (Rule) => Rule.required().min(0),
         },
-
-        {
-          name: 'scorers',
-          title: 'Goleadores',
-          type: 'array',
-          of: [
-            {
-              type: 'object',
-              fields: [
-                {
-                  name: 'player',
-                  title: 'Jugador',
-                  type: 'reference',
-                  to: [{ type: 'players' }],
-                  validation: (Rule) => Rule.required(),
-                },
-                {
-                  name: 'goals',
-                  title: 'Goles',
-                  type: 'number',
-                  validation: (Rule) => Rule.required().min(1),
-                },
-              ],
-
-              preview: {
-                select: {
-                  name: 'player.name',
-                  lastName: 'player.lastName',
-                  goals: 'goals',
-                },
-                prepare({ name, lastName, goals }) {
-                  const displayName =
-                    name && lastName
-                      ? `${name[0]}. ${lastName}`
-                      : 'Jugador sin asignar'
-
-                  return {
-                    title: displayName,
-                    subtitle: `${goals} gol${goals > 1 ? 'es' : ''}`,
-                  }
-                },
-              },
-            },
-          ],
-        },
       ],
     },
   ],

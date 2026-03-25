@@ -3,6 +3,7 @@ import teamsSchema from "./teamsSchema"
 import gamesSchema from "./gamesSchema"
 import playersSchema from "./playersSchema"
 import tableSchema from "./tableSchema"
+import eventsSchema from "./eventsSchema"
 
 export const schemaTypes = [
   newsSchema,
@@ -10,4 +11,5 @@ export const schemaTypes = [
   gamesSchema,
   playersSchema,
   tableSchema,
+  eventsSchema,
 ]

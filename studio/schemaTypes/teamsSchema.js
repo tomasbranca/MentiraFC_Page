@@ -7,19 +7,20 @@ export default {
       name: 'name',
       title: 'Nombre',
       type: 'string',
-      validation: Rule => Rule.required()
+      validation: (Rule) => Rule.required(),
     },
     {
       name: 'logo',
       title: 'Escudo',
       type: 'image',
-      validation: Rule => Rule.required()
+      validation: (Rule) => Rule.required(),
     },
     {
       name: 'isMain',
       title: 'Es equipo principal',
       type: 'boolean',
-      validation: Rule => Rule.required()
-    }
-  ]
-};
+      initialValue: false,
+      validation: (Rule) => Rule.required(),
+    },
+  ],
+}

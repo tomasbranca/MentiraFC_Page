@@ -47,12 +47,6 @@ export default {
       options: { hotspot: true },
     },
     {
-      name: 'goals',
-      title: 'Goles',
-      type: 'number',
-      validation: (Rule) => Rule.required().min(0),
-    },
-    {
       name: 'slug',
       title: 'Slug',
       type: 'slug',
