@@ -5,7 +5,7 @@ import "./Carousel.css";
 
 import { useCarousel } from "../../../../hooks/useCarrousel";
 import { useAutoplay } from "./hooks/useAutoPlay";
-import { getNewsLink } from "./carousel.utils";
+import { getNewsLink } from "../../../../utils/navigation.utils";
 
 const Carousel = ({ items }) => {
   const { activeIndex, next, prev } = useCarousel(items?.length || 0);

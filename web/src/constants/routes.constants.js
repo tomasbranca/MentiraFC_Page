@@ -4,7 +4,7 @@ export const ROUTES = {
   TEAM: "/plantel",
   TABLE: "/tabla",
   RECORD: "/historial",
-  ADMIN: "/admin",
-  NEWS_DETAIL: "/noticias/:slug",
-  PLAYER_DETAIL: "/plantel/:slug",
+
+  NEWS_DETAIL: (slug) => `/noticias/${slug}`,
+  PLAYER_DETAIL: (slug) => `/plantel/${slug}`,
 };

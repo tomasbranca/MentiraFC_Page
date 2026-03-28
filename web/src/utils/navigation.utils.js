@@ -1,3 +1,5 @@
+import { ROUTES } from "../constants/routes.constants";
+
 export const getNewsLink = (item) => {
-  return `/noticias/${item.slug.current}`;
+  return ROUTES.NEWS_DETAIL(item.slug.current);
 };

@@ -10,7 +10,7 @@ import PlayerDetail from "./pages/PlayerDetail/PlayerDetail";
 import NavBar from "./layout/NavBar/NavBar";
 import Footer from "./layout/Footer/Footer";
 import { GameProvider } from "./context/GameProvider";
-import { ROUTES } from "./utils/routes";
+import { ROUTES } from "./constants/routes.constants";
 import "./App.css";
 
 function App() {
@@ -27,8 +27,8 @@ function App() {
             <Route path={ROUTES.TABLE} element={<Table />} />
             <Route path={ROUTES.RECORD} element={<Record />} />
             <Route path={ROUTES.ADMIN} element={<Admin />} />
-            <Route path={ROUTES.NEWS_DETAIL} element={<NewsDetail />} />
-            <Route path={ROUTES.PLAYER_DETAIL} element={<PlayerDetail />} />
+            <Route path={ROUTES.NEWS_DETAIL(":slug")} element={<NewsDetail />} />
+            <Route path={ROUTES.PLAYER_DETAIL(":slug")} element={<PlayerDetail />} />
           </Routes>
         </div>
         <Footer />

@@ -4,7 +4,8 @@ import {
   getSurroundingTeams,
   calculatePoints,
 } from "./tableWidget.utils";
-
+import { Link } from "react-router-dom";
+import { ROUTES } from "../../../constants/routes.constants";
 import { getImageUrl } from "../../../services/imageService";
 
 const TableWidget = ({ table }) => {
@@ -88,12 +89,12 @@ const TableWidget = ({ table }) => {
 
       {/* LINK */}
       <div className="mt-6 text-right">
-        <a
-          href="/tabla"
+        <Link
+          to={ROUTES.TABLE}
           className="text-sm font-semibold text-violet-400 hover:text-violet-300 transition"
         >
           Ver tabla completa →
-        </a>
+        </Link>
       </div>
     </section>
   );

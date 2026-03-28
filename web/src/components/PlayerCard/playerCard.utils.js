@@ -1,5 +1,7 @@
+import { ROUTES } from "../../constants/routes.constants";
+
 export const getPlayerLink = (player) => {
-  return `/plantel/${player.slug.current}`;
+  return ROUTES.PLAYER_DETAIL(player.slug.current);
 };
 
 export const PLAYER_CARD_MODE = {

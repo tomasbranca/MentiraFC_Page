@@ -1,5 +1,6 @@
 import Carousel from "./Carousel/Carousel";
 import NewsCardHome from "../../../components/NewsCardHome/NewsCardHome";
+import { ROUTES } from "../../../constants/routes.constants";
 import { Link } from "react-router-dom";
 import { splitNews } from "./latestNews.utils";
 
@@ -23,7 +24,7 @@ const LatestNews = ({ news = [] }) => {
           </h3>
 
           <Link
-            to="/noticias"
+            to={ROUTES.NEWS}
             className="hidden sm:block font-semibold underline underline-offset-4 hover:opacity-80 transition"
           >
             Ver todas
