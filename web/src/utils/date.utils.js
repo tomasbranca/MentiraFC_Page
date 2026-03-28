@@ -23,6 +23,25 @@ export const formatLongDate = (date, locale = "es-AR") => {
 };
 
 /**
+ * 🆕 Formatea fecha + hora
+ * Ej: 28/03/2026 - 21:30
+ * 👉 usar en Game / GameWidget
+ */
+export const formatDateTime = (date, locale = "es-AR") => {
+  if (!date) return "";
+
+  const d = new Date(date);
+
+  const formattedDate = d.toLocaleDateString(locale);
+  const formattedTime = d.toLocaleTimeString(locale, {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  return `${formattedDate} - ${formattedTime}`;
+};
+
+/**
  * Formato seguro para fechas tipo YYYY-MM-DD (evita problemas de timezone)
  * usar en PlayerDetail (birthDate)
  */
