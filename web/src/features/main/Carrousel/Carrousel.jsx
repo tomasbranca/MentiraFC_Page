@@ -1,43 +1,27 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import Button from "../../../components/Button/Button";
 import "./Carrousel.css";
 
+import { useCarousel } from "../../../hooks/useCarrousel";
+import { useAutoplay } from "./hooks/useAutoPlay";
+import { getNewsLink } from "./carrousel.utils";
+
 const Carrousel = ({ items }) => {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [autoplay, setAutoplay] = useState(false);
-  const [manual, setManual] = useState(false);
-
-  // Autoplay SOLO desktop
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 1024px)");
-
-    const update = (e) => {
-      setAutoplay(e.matches);
-      setManual(!e.matches);
-    };
-
-    update(mq);
-    mq.addEventListener("change", update);
-    return () => mq.removeEventListener("change", update);
-  }, []);
+  const { activeIndex, next, prev } = useCarousel(items?.length || 0);
+  const { autoplay, manual } = useAutoplay();
 
   useEffect(() => {
     if (!autoplay || !items?.length) return;
 
     const interval = setInterval(() => {
-      setActiveIndex((p) => (p + 1) % items.length);
+      next();
     }, 4500);
 
     return () => clearInterval(interval);
-  }, [autoplay, items]);
+  }, [autoplay, items, next]);
 
   if (!items || items.length === 0) return null;
-
-  const prev = () =>
-    setActiveIndex((p) => (p - 1 + items.length) % items.length);
-
-  const next = () => setActiveIndex((p) => (p + 1) % items.length);
 
   return (
     <section className="carousel-wrapper relative w-full overflow-hidden">
@@ -53,60 +37,28 @@ const Carrousel = ({ items }) => {
           />
 
           <div className="absolute inset-0 flex items-end bg-gradient-to-t from-violet-900 via-black/40 to-transparent">
-            <div
-              className="
-                w-full overflow-hidden
-                px-4 pb-4
-                sm:px-6 sm:pb-5
-                lg:px-10 lg:pb-10
-              "
-            >
+            <div className="w-full overflow-hidden px-4 pb-4 sm:px-6 sm:pb-5 lg:px-10 lg:pb-10">
               <div className="max-w-3xl">
-                <h2
-                  className="
-                    font-black uppercase text-white
-                    break-words
-                  "
-                >
+                <h2 className="font-black uppercase text-white break-words">
                   {item.title}
                 </h2>
 
-                <p
-                  className="
-                    mt-2 text-white/90
-
-                    /* Mobile */
-                    leading-snug
-                    line-clamp-2
-
-                    /* Tablet */
-                    sm:leading-snug
-                    sm:line-clamp-3
-
-                    /* Desktop */
-                    lg:mt-3
-                    lg:line-clamp-none
-                    max-w-2xl
-                  "
-                >
+                <p className="mt-2 text-white/90 leading-snug line-clamp-2 sm:line-clamp-3 lg:mt-3 lg:line-clamp-none max-w-2xl">
                   {item.description}
                 </p>
 
-                <Link to={`/noticias/${item.slug.current}`}>
+                <Link to={getNewsLink(item)}>
                   <Button
                     variant="primary"
                     className="
                       group
                       mt-2
-
                       px-3 py-2
                       rounded-md
-
                       sm:mt-3 sm:px-4 sm:py-2.5
-
                       md:px-5 md:py-3 md:rounded-lg
                     "
-                    showArrow={true}
+                    showArrow
                   >
                     Leer más
                   </Button>
