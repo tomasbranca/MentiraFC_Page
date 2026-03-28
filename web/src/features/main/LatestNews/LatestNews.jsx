@@ -1,10 +1,12 @@
 import Carrousel from "../Carrousel/Carrousel";
 import NewsCardHome from "../../../components/NewsCardHome/NewsCardHome";
 import { Link } from "react-router-dom";
+import { splitNews } from "./latestNews.utils";
 
-const LatestNews = ({ news }) => {
-  const carouselNews = news.slice(0, 3);
-  const otherNews = news.slice(3, 6);
+const LatestNews = ({ news = [] }) => {
+  if (!news.length) return null;
+
+  const { carouselNews, otherNews } = splitNews(news);
 
   return (
     <section className="bg-violet-900 text-violet-50">
@@ -30,14 +32,7 @@ const LatestNews = ({ news }) => {
       </div>
 
       {/* Grid */}
-      <div
-        className="
-          grid gap-6 px-6 pb-14
-          grid-cols-1
-          sm:grid-cols-2
-          lg:grid-cols-3
-        "
-      >
+      <div className="grid gap-6 px-6 pb-14 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {otherNews.map((item, index) => (
           <NewsCardHome key={item._id} item={item} featured={index === 0} />
         ))}

@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { formatDate, getNewsLink } from "../newsCard.utils";
+import { getNewsLink } from "../newsCard.utils";
+import { formatDate } from "../../../utils/date.utils";
 
 const HeroCard = ({ item }) => {
   return (

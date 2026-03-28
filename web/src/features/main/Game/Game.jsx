@@ -1,7 +1,15 @@
 import { useState } from "react";
 import { FaFutbol } from "react-icons/fa";
-import GameSkeleton from "../GameSkeleton/GameSkeleton";
-import GameEmpty from "../GameEmpty/GameEmpty";
+import GameSkeleton from "./GameSkeleton/GameSkeleton";
+import GameEmpty from "./GameEmpty/GameEmpty";
+
+import {
+  isGameInProgress,
+  getScorers,
+  getShortName,
+} from "./game.utils";
+
+import { formatDateTime } from "../../../utils/date.utils";
 
 const Game = ({ game, loading }) => {
   const [showScorers, setShowScorers] = useState(false);
@@ -9,75 +17,25 @@ const Game = ({ game, loading }) => {
   if (loading) return <GameSkeleton />;
   if (!game) return <GameEmpty />;
 
-  const date = new Date(game.date);
-
-  const formatted = date.toLocaleString("es-AR", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
-
-  const shortName = (name, lastName) =>
-    name && lastName ? `${name[0].toUpperCase()}. ${lastName}` : "";
+  const formatted = formatDateTime(game.date);
+  const isInProgress = isGameInProgress(game);
+  const scorers = getScorers(game.events || []);
 
   const renderFootballs = (goals) =>
     Array.from({ length: goals }).map((_, i) => (
       <FaFutbol key={i} className="text-violet-400 text-xs sm:text-sm" />
     ));
 
-  const now = new Date();
-  const gameDate = new Date(game.date);
-  const isInProgress = game.state === "por_jugar" && gameDate <= now;
-
-  const scorers = Object.values(
-    (game.events || []).reduce((acc, event) => {
-      const key = `${event.player?.name}-${event.player?.lastName}`;
-
-      if (!acc[key]) {
-        acc[key] = {
-          player: event.player,
-          goals: 0,
-        };
-      }
-
-      acc[key].goals += 1;
-
-      return acc;
-    }, {}),
-  );
-
   return (
-    <section
-      className="
-      relative overflow-hidden
-      bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-900
-      text-violet-50
-      border-t-2 border-violet-700
-      shadow-lg shadow-black/30
-      py-12 sm:py-8
-      px-4 sm:px-6 lg:px-10
-      "
-    >
+    <section className="relative overflow-hidden bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-900 text-violet-50 border-t-2 border-violet-700 shadow-lg shadow-black/30 py-12 sm:py-8 px-4 sm:px-6 lg:px-10">
       <div className="max-w-6xl mx-auto">
-        {/* ================= FILA PRINCIPAL ================= */}
         <div className="flex items-center justify-between">
           {/* LOCAL */}
           <div className="w-[35%] sm:w-[15%] flex flex-col items-center shrink-0">
             <img
               src="/logo.webp"
               alt="Mentira FC"
-              className="
-              w-24 h-24
-              sm:w-24 sm:h-24
-              lg:w-36 lg:h-36
-              object-cover
-              rounded-full
-              scale-175 sm:scale-100
-              -translate-x-12 sm:translate-x-0
-              "
+              className="w-24 h-24 sm:w-24 sm:h-24 lg:w-36 lg:h-36 object-cover rounded-full scale-175 sm:scale-100 -translate-x-12 sm:translate-x-0"
             />
 
             <span className="hidden sm:block mt-2 text-sm lg:text-base">
@@ -85,7 +43,7 @@ const Game = ({ game, loading }) => {
             </span>
           </div>
 
-          {/* ================= CENTRO ================= */}
+          {/* CENTRO */}
           <div className="w-[30%] sm:w-[70%] flex flex-col items-center text-center gap-3">
             {game.state === "por_jugar" && !isInProgress && (
               <>
@@ -127,18 +85,15 @@ const Game = ({ game, loading }) => {
 
                 <div className="w-3/4 sm:max-w-xs h-px bg-violet-700/40" />
 
-                {/* ================= GOLEADORES DESKTOP ================= */}
+                {/* GOLEADORES DESKTOP */}
                 <div className="hidden sm:flex justify-start w-full mt-2">
                   <div className="w-1/2 flex flex-wrap gap-x-3 gap-y-1 text-xs sm:text-sm">
                     {scorers.map((scorer, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center gap-1 whitespace-nowrap"
-                      >
+                      <div key={index} className="flex items-center gap-1 whitespace-nowrap">
                         <span>
-                          {shortName(
+                          {getShortName(
                             scorer.player?.name,
-                            scorer.player?.lastName,
+                            scorer.player?.lastName
                           )}
                         </span>
 
@@ -158,15 +113,7 @@ const Game = ({ game, loading }) => {
             <img
               src={game.rival.logoUrl}
               alt={game.rival.name}
-              className="
-              w-24 h-24
-              sm:w-24 sm:h-24
-              lg:w-36 lg:h-36
-              object-cover
-              rounded-full
-              scale-175 sm:scale-100
-              translate-x-12 sm:translate-x-0
-              "
+              className="w-24 h-24 sm:w-24 sm:h-24 lg:w-36 lg:h-36 object-cover rounded-full scale-175 sm:scale-100 translate-x-12 sm:translate-x-0"
             />
 
             <span className="hidden sm:block mt-2 text-sm lg:text-base">
@@ -175,8 +122,7 @@ const Game = ({ game, loading }) => {
           </div>
         </div>
 
-        {/* ================= GOLEADORES MOBILE ================= */}
-
+        {/* GOLEADORES MOBILE */}
         {game.state === "finalizado" && scorers.length > 0 && (
           <div className="sm:hidden mt-6 text-center">
             <button
@@ -191,7 +137,10 @@ const Game = ({ game, loading }) => {
                 {scorers.map((scorer, index) => (
                   <div key={index} className="flex items-center gap-1">
                     <span>
-                      {shortName(scorer.player?.name, scorer.player?.lastName)}
+                      {getShortName(
+                        scorer.player?.name,
+                        scorer.player?.lastName
+                      )}
                     </span>
 
                     <span className="flex gap-1">

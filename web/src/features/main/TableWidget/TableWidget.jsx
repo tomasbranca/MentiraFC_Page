@@ -1,38 +1,21 @@
-import { urlFor } from "../../../lib/sanity";
+import {
+  sortStandings,
+  getMainTeamIndex,
+  getSurroundingTeams,
+  calculatePoints,
+} from "./tableWidget.utils";
+
+import { getImageUrl } from "../../../services/imageService";
 
 const TableWidget = ({ table }) => {
   if (!table) return null;
 
-  const standings = [...table.standings].sort(
-    (a, b) => a.position - b.position
-  );
-
-  const mainIndex = standings.findIndex((row) => row.team.isMain);
-
-  function getSurroundingTeams(arr, idx, range = 2) {
-    if (idx === -1) return arr.slice(0, 5);
-
-    const start = Math.max(0, idx - range);
-    const end = Math.min(arr.length, idx + range + 1);
-
-    if (start === 0) return arr.slice(0, 5);
-    if (end === arr.length) return arr.slice(-5);
-
-    return arr.slice(start, end);
-  }
-
+  const standings = sortStandings(table.standings);
+  const mainIndex = getMainTeamIndex(standings);
   const surroundingTeams = getSurroundingTeams(standings, mainIndex);
 
   return (
-    <section
-      className="
-        bg-gradient-to-b from-stone-900 to-stone-950
-        p-4 lg:p-6
-        mx-0 lg:m-6
-        shadow-xl
-        h-fit
-      "
-    >
+    <section className="bg-gradient-to-b from-stone-900 to-stone-950 p-4 lg:p-6 mx-0 lg:m-6 shadow-xl h-fit">
       {/* HEADER */}
       <div className="mb-6">
         <h4 className="text-2xl lg:text-3xl font-extrabold uppercase text-white tracking-wide">
@@ -44,7 +27,7 @@ const TableWidget = ({ table }) => {
       {/* LISTA */}
       <div className="space-y-2">
         {surroundingTeams.map((row) => {
-          const points = row.wins * 3 + row.draws;
+          const points = calculatePoints(row);
           const isMain = row.team.isMain;
 
           return (
@@ -64,23 +47,20 @@ const TableWidget = ({ table }) => {
             >
               {/* IZQUIERDA */}
               <div className="flex items-center gap-3 lg:gap-4 min-w-0">
-                {/* POSICIÓN */}
                 <span className="text-base lg:text-lg font-bold text-stone-300 w-6 text-center">
                   {row.position}
                 </span>
 
-                {/* ESCUDO (solo desktop) */}
                 <img
-                  src={urlFor(row.team.logo)
-                    .width(32)
-                    .height(32)
-                    .fit("max")
-                    .url()}
+                  src={getImageUrl(row.team.logo, {
+                    width: 32,
+                    height: 32,
+                    fit: "max",
+                  })}
                   alt={row.team.name}
                   className="hidden md:block size-8 object-contain"
                 />
 
-                {/* NOMBRE */}
                 <span
                   className={`
                     font-semibold uppercase tracking-wide
@@ -106,7 +86,7 @@ const TableWidget = ({ table }) => {
         })}
       </div>
 
-      {/* LINK TABLA COMPLETA */}
+      {/* LINK */}
       <div className="mt-6 text-right">
         <a
           href="/tabla"
