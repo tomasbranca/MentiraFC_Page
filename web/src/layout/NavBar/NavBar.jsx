@@ -1,32 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ROUTES } from "../../utils/routes";
 import GameWidget from "../../components/GameWidget/GameWidget";
 import { FiMenu, FiX } from "react-icons/fi";
+
+import { NAV_LINKS } from "./navbar.constants";
+import { useNavBarScroll } from "./hooks/useNavBarScroll";
+
 import "./NavBar.css";
 
 const NavBar = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
+  const isScrolled = useNavBarScroll();
   const [menuOpen, setMenuOpen] = useState(false);
-
-  useEffect(() => {
-    let lastScrollY = window.scrollY;
-
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-
-      if (currentScrollY > lastScrollY) {
-        setIsScrolled(true); // bajando
-      } else if (currentScrollY < lastScrollY) {
-        setIsScrolled(false); // subiendo
-      }
-
-      lastScrollY = currentScrollY;
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   return (
     <>
@@ -36,9 +20,9 @@ const NavBar = () => {
         }`}
       >
         <nav className="navbar-inner">
-          {/* IZQUIERDA: LOGO (DESKTOP) + LINKS/ LOGO (MOBILE) */}
+          {/* IZQUIERDA */}
           <div className="navbar-left">
-            <Link to={ROUTES.HOME} className="logo-link">
+            <Link to="/" className="logo-link">
               <img
                 src="/logo.webp"
                 alt="Logo de Mentira FC"
@@ -47,15 +31,17 @@ const NavBar = () => {
                 }`}
               />
             </Link>
+
             <ul className="nav-list desktop-only">
-              <li><Link to={ROUTES.NEWS}>NOTICIAS</Link></li>
-              <li><Link to={ROUTES.TEAM}>PLANTEL</Link></li>
-              <li><Link to={ROUTES.TABLE}>TABLA</Link></li>
-              <li><Link to={ROUTES.RECORD}>HISTORIAL</Link></li>
+              {NAV_LINKS.map((link) => (
+                <li key={link.to}>
+                  <Link to={link.to}>{link.label}</Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* GAME WIDGET CENTRADO EN MOBILE */}
+          {/* MOBILE GAME */}
           <div className="mobile-game-center mobile-only">
             <GameWidget compact />
           </div>
@@ -85,7 +71,7 @@ const NavBar = () => {
         />
       )}
 
-      {/* MENÚ MOBILE */}
+      {/* MENU MOBILE */}
       <aside className={`mobile-menu ${menuOpen ? "open" : ""}`}>
         <button
           className="close-menu"
@@ -96,10 +82,15 @@ const NavBar = () => {
         </button>
 
         <nav className="mobile-menu-links">
-          <Link to={ROUTES.NEWS} onClick={() => setMenuOpen(false)}>NOTICIAS</Link>
-          <Link to={ROUTES.TEAM} onClick={() => setMenuOpen(false)}>PLANTEL</Link>
-          <Link to={ROUTES.TABLE} onClick={() => setMenuOpen(false)}>TABLA</Link>
-          <Link to={ROUTES.RECORD} onClick={() => setMenuOpen(false)}>HISTORIAL</Link>
+          {NAV_LINKS.map((link) => (
+            <Link
+              key={link.to}
+              to={link.to}
+              onClick={() => setMenuOpen(false)}
+            >
+              {link.label}
+            </Link>
+          ))}
         </nav>
       </aside>
     </>
