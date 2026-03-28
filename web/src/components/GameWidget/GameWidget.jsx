@@ -1,37 +1,18 @@
-import { useEffect, useState } from "react";
 import { useGame } from "../../context/useGame";
+import { useCountdown } from "../../hooks/useCountDown";
 
 const GameWidget = ({ compact = false }) => {
   const { game, loading } = useGame();
-  const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0 });
-
-  useEffect(() => {
-    if (!game || game.state !== "por_jugar") return;
-
-    const interval = setInterval(() => {
-      const now = new Date();
-      const match = new Date(game.date);
-      const diff = match - now;
-
-      if (diff <= 0) {
-        setTimeLeft({ hours: 0, minutes: 0 });
-        return;
-      }
-
-      setTimeLeft({
-        hours: Math.floor(diff / 1000 / 60 / 60),
-        minutes: Math.floor((diff / 1000 / 60) % 60),
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [game]);
-
-  if (loading || !game) return null;
 
   const now = new Date();
-  const gameDate = new Date(game.date);
-  const isInProgress = game.state === "por_jugar" && gameDate <= now;
+  const gameDate = game ? new Date(game.date) : null;
+
+  const isUpcoming = game?.state === "por_jugar" && gameDate > now;
+  const isInProgress = game?.state === "por_jugar" && gameDate <= now;
+
+  const timeLeft = useCountdown(game?.date, isUpcoming);
+
+  if (loading || !game) return null;
 
   return (
     <div
@@ -79,7 +60,7 @@ const GameWidget = ({ compact = false }) => {
 
       {/* TEXTO CENTRAL */}
       <div className="relative z-10 text-center text-white font-semibold px-6">
-        {game.state === "por_jugar" && !isInProgress && (
+        {isUpcoming && (
           <>
             <p className="leading-tight">Próximo partido</p>
             <p className="mt-0.5">

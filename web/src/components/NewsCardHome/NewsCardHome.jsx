@@ -1,19 +1,22 @@
 import { Link } from "react-router-dom";
 import "./NewsCardHome.css";
+import { getNewsLink, getFeaturedClasses } from "./newsCardHome.utils";
 
 const NewsCardHome = ({ item, featured }) => {
+  if (!item) return null;
+
   return (
     <Link
-      to={`/noticias/${item.slug.current}`}
+      to={getNewsLink(item)}
       className={`
         group block overflow-hidden
         shadow-md hover:shadow-xl transition-shadow
       
-        aspect-[4/3]                 /* mobile */
-        sm:aspect-[16/9]              /* tablet */
+        aspect-[4/3]
+        sm:aspect-[16/9]
       
-        ${featured ? "sm:col-span-2 lg:col-span-1" : ""}
-      `}      
+        ${getFeaturedClasses(featured)}
+      `}
     >
       <article
         className="news-card-image"

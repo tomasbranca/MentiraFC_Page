@@ -1,10 +1,21 @@
 import { Link } from "react-router-dom";
 import { FaFutbol } from "react-icons/fa";
+import {
+  getPlayerLink,
+  PLAYER_CARD_MODE,
+} from "./playerCard.utils";
 
-const PlayerCard = ({ player, mode }) => {
+const PlayerCard = ({
+  player,
+  mode = PLAYER_CARD_MODE.DEFAULT,
+}) => {
+  if (!player) return null;
+
+  const isGoalsMode = mode === PLAYER_CARD_MODE.GOALS;
+
   return (
     <Link
-      to={`/plantel/${player.slug.current}`}
+      to={getPlayerLink(player)}
       className="group block no-underline"
     >
       <div
@@ -19,11 +30,8 @@ const PlayerCard = ({ player, mode }) => {
         group-hover:shadow-2xl
       "
       >
-
         {/* Número / goles */}
-
         <div className="absolute top-3 left-3 z-30 flex items-center gap-2 select-none">
-
           <span
             className="text-2xl sm:text-4xl font-black tracking-tight text-white"
             style={{
@@ -33,10 +41,10 @@ const PlayerCard = ({ player, mode }) => {
               `,
             }}
           >
-            {mode === "goals" ? player.goals : `#${player.number}`}
+            {isGoalsMode ? player.goals : `#${player.number}`}
           </span>
 
-          {mode === "goals" && (
+          {isGoalsMode && (
             <FaFutbol
               className="text-white text-xl sm:text-2xl"
               style={{
@@ -44,11 +52,9 @@ const PlayerCard = ({ player, mode }) => {
               }}
             />
           )}
-
         </div>
 
         {/* Imagen */}
-
         <div
           className="
             absolute inset-0 z-10
@@ -60,7 +66,6 @@ const PlayerCard = ({ player, mode }) => {
         />
 
         {/* Overlay */}
-
         <div
           className="
           absolute inset-0 z-20
@@ -70,11 +75,8 @@ const PlayerCard = ({ player, mode }) => {
         />
 
         {/* Nombre */}
-
         <div className="absolute bottom-0 left-0 z-30 w-full px-3 pb-4">
-
           <div className="flex flex-col leading-none">
-
             <span className="text-[8px] sm:text-xs font-semibold tracking-[0.25em] text-violet-300 uppercase">
               {player.name}
             </span>
@@ -87,11 +89,8 @@ const PlayerCard = ({ player, mode }) => {
             </span>
 
             <div className="mt-1 h-[2px] w-10 bg-violet-500 rounded-full" />
-
           </div>
-
         </div>
-
       </div>
     </Link>
   );
