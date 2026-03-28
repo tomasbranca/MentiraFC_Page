@@ -1,52 +1,62 @@
 import NewsCard from "../../../components/NewsCard/NewsCard";
 import CompactCarousel from "../CompactCarousel/CompactCarousel";
+import { mapBentoItems } from "./newsBentoGrid.utils";
 
-const NewsBentoGrid = ({ items }) => {
+const NewsBentoGrid = ({ items = [] }) => {
+  if (!items.length) return null;
+
+  const { hero, featuredBox, featuredWide, compact } =
+    mapBentoItems(items);
+
   return (
     <div className="max-w-7xl mx-auto px-4">
 
-      {/* MOBILE LAYOUT */}
+      {/* MOBILE */}
       <div className="flex flex-col gap-4 md:hidden">
 
-        {items[0] && <NewsCard item={items[0]} variant="hero" />}
+        {hero && <NewsCard item={hero} variant="hero" />}
 
-        {items[1] && <NewsCard item={items[1]} variant="featuredBox" />}
+        {featuredBox && (
+          <NewsCard item={featuredBox} variant="featuredBox" />
+        )}
 
-        {items[2] && <NewsCard item={items[2]} variant="featuredWide" />}
+        {featuredWide && (
+          <NewsCard item={featuredWide} variant="featuredWide" />
+        )}
 
-        {items.slice(3,6).length > 0 && (
-          <CompactCarousel items={items.slice(3,6)} />
+        {compact.length > 0 && (
+          <CompactCarousel items={compact} />
         )}
 
       </div>
 
-
-      {/* DESKTOP LAYOUT */}
+      {/* DESKTOP */}
       <div className="hidden md:grid md:grid-cols-3 md:auto-rows-[120px] md:gap-4">
 
         <div className="md:col-span-3 md:row-span-4">
-          {items[0] && <NewsCard item={items[0]} variant="hero" />}
+          {hero && <NewsCard item={hero} variant="hero" />}
         </div>
 
         <div className="md:col-span-1 md:row-span-3">
-          {items[1] && <NewsCard item={items[1]} variant="featuredBox" />}
+          {featuredBox && (
+            <NewsCard item={featuredBox} variant="featuredBox" />
+          )}
         </div>
 
         <div className="md:col-span-2 md:row-span-3">
-          {items[2] && <NewsCard item={items[2]} variant="featuredWide" />}
+          {featuredWide && (
+            <NewsCard item={featuredWide} variant="featuredWide" />
+          )}
         </div>
 
-        <div className="md:col-span-1 md:row-span-2">
-          {items[3] && <NewsCard item={items[3]} variant="compact" />}
-        </div>
-
-        <div className="md:col-span-1 md:row-span-2">
-          {items[4] && <NewsCard item={items[4]} variant="compact" />}
-        </div>
-
-        <div className="md:col-span-1 md:row-span-2">
-          {items[5] && <NewsCard item={items[5]} variant="compact" />}
-        </div>
+        {compact.map((item) => (
+          <div
+            key={item._id}
+            className="md:col-span-1 md:row-span-2"
+          >
+            <NewsCard item={item} variant="compact" />
+          </div>
+        ))}
 
       </div>
 

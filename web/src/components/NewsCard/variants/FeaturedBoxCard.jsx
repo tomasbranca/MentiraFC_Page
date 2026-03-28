@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { getNewsLink } from "../newsCard.utils";
+import { getNewsLink } from "../../../utils/navigation.utils";
 
 const FeaturedBoxCard = ({ item }) => {
   return (

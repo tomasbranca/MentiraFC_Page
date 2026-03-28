@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import "./NewsCardHome.css";
-import { getNewsLink, getFeaturedClasses } from "./newsCardHome.utils";
+import { getFeaturedClasses } from "./newsCardHome.utils";
+import { getNewsLink } from "../../utils/navigation.utils";
 
 const NewsCardHome = ({ item, featured }) => {
   if (!item) return null;

@@ -2,12 +2,20 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import Button from "../../../components/Button/Button";
 
-const NewsList = ({ items }) => {
+import {
+  paginateList,
+  getNextVisibleCount,
+} from "./newsList.utils";
+
+import { formatDate } from "../../../utils/date.utils";
+import { getNewsLink } from "../../../utils/navigation.utils";
+
+const NewsList = ({ items = [] }) => {
   const [visibleCount, setVisibleCount] = useState(3);
 
-  if (!items || items.length === 0) return null;
+  if (!items.length) return null;
 
-  const visibleNews = items.slice(0, visibleCount);
+  const visibleNews = paginateList(items, visibleCount);
 
   return (
     <section className="max-w-7xl mx-auto px-4">
@@ -25,7 +33,7 @@ const NewsList = ({ items }) => {
         {visibleNews.map((item) => (
           <Link
             key={item._id}
-            to={`/noticias/${item.slug.current}`}
+            to={getNewsLink(item)}
             className="
               group
               flex flex-col
@@ -44,11 +52,9 @@ const NewsList = ({ items }) => {
                 relative
                 w-full
                 h-[200px]
-
                 md:w-1/4
                 md:h-auto
                 md:min-h-[120px]
-
                 bg-cover
                 bg-center
               "
@@ -58,51 +64,19 @@ const NewsList = ({ items }) => {
             </div>
 
             {/* Contenido */}
-            <div
-              className="
-              flex flex-col justify-between
-              px-5 py-4
-              w-full
-              md:w-3/4
-            "
-            >
+            <div className="flex flex-col justify-between px-5 py-4 w-full md:w-3/4">
               <div className="max-w-3xl">
-                <h3
-                  className="
-                  text-lg
-                  md:text-xl
-                  font-extrabold
-                  uppercase
-                  text-violet-900
-                  leading-tight
-                "
-                >
+                <h3 className="text-lg md:text-xl font-extrabold uppercase text-violet-900 leading-tight">
                   {item.title}
                 </h3>
 
-                <p
-                  className="
-                  mt-2
-                  text-gray-700
-                  text-sm
-                  leading-relaxed
-                  line-clamp-3
-                "
-                >
+                <p className="mt-2 text-gray-700 text-sm leading-relaxed line-clamp-3">
                   {item.description}
                 </p>
               </div>
 
-              <span
-                className="
-                mt-4
-                text-xs
-                tracking-wide
-                text-gray-500
-                uppercase
-              "
-              >
-                {new Date(item.date).toLocaleDateString()}
+              <span className="mt-4 text-xs tracking-wide text-gray-500 uppercase">
+                {formatDate(item.date)}
               </span>
             </div>
           </Link>
@@ -115,7 +89,9 @@ const NewsList = ({ items }) => {
           <Button
             variant="light"
             className="px-5 py-2.5 rounded-lg text-sm"
-            onClick={() => setVisibleCount(visibleCount + 3)}
+            onClick={() =>
+              setVisibleCount(getNextVisibleCount(visibleCount))
+            }
           >
             Cargar más
           </Button>
