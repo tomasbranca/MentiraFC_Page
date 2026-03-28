@@ -1,23 +1,13 @@
-import { useEffect, useState } from "react";
-import { getTable, urlFor } from "../../lib/sanity";
+import { useState } from "react";
+import { urlFor } from "../../lib/sanity";
 import Loader from "../../components/Loader/Loader";
 import Button from "../../components/Button/Button";
+import { useTableData } from "./hooks/useTableData";
+import { formatDateToText } from "../../utils/date.utils";
 
 const Table = () => {
-  const [table, setTable] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-  const [mode, setMode] = useState("compact"); // compact | full
-
-  useEffect(() => {
-    getTable()
-      .then((data) => {
-        setTable(data);
-        setError(false);
-      })
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
-  }, []);
+  const { table, loading, error } = useTableData();
+  const [mode, setMode] = useState("compact");
 
   if (loading) return <Loader />;
 
@@ -45,23 +35,15 @@ const Table = () => {
     );
   }
 
-  const standings = [...table.standings].sort(
-    (a, b) => a.position - b.position
-  );
+  const standings = table.standings;
 
-  const lastUpdate = table._updatedAt
-    ? new Date(table._updatedAt).toLocaleDateString("es-AR", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-      })
-    : null;
+  const lastUpdate = formatDateToText(table._updatedAt );
 
   return (
     <>
       <div className="max-w-6xl mx-auto md:px-4 md:py-10">
-        {/* CONTENEDOR */}
         <div className="border border-neutral-800 bg-neutral-900">
+          
           {/* HEADER */}
           <div className="px-6 py-8 border-b border-neutral-800 text-center shadow-lg shadow-black/30">
             {table.logo && (
@@ -92,6 +74,7 @@ const Table = () => {
             )}
           </div>
 
+          {/* TOGGLE MOBILE */}
           <div className="md:hidden p-4">
             <div className="flex bg-neutral-900 border border-neutral-700 rounded-lg p-1">
               <Button
@@ -114,18 +97,15 @@ const Table = () => {
             </div>
           </div>
 
-          {/* MOBILE - CARDS */}
+          {/* MOBILE */}
           <div
             className={`${
               mode === "compact" ? "block" : "hidden"
             } md:hidden px-4 pb-4 space-y-3 transition-all duration-300`}
           >
             {standings.map((row) => {
-              const dg = row.goalsFor - row.goalsAgainst;
-              const points = row.wins * 3 + row.draws;
-
-              const isChampion = row.position === 1;
-              const isPlayoff = row.position >= 2 && row.position <= 5;
+              const isChampion = row.type === "champion";
+              const isPlayoff = row.type === "playoff";
 
               return (
                 <div
@@ -136,7 +116,6 @@ const Table = () => {
                   `}
                 >
                   <div className="flex justify-between items-center mb-3">
-                    {/* IZQUIERDA */}
                     <div className="flex items-center gap-3">
                       <span className="font-bold text-base text-neutral-300">
                         {row.position}
@@ -157,7 +136,6 @@ const Table = () => {
                       </span>
                     </div>
 
-                    {/* DERECHA (PTS) */}
                     <span
                       className={`text-lg font-extrabold ${
                         row.team.isMain
@@ -167,7 +145,7 @@ const Table = () => {
                           : "text-white"
                       }`}
                     >
-                      {points}
+                      {row.points}
                     </span>
                   </div>
 
@@ -195,14 +173,16 @@ const Table = () => {
                       DG:{" "}
                       <span
                         className={
-                          dg > 0
+                          row.goalDiff > 0
                             ? "text-green-400"
-                            : dg < 0
+                            : row.goalDiff < 0
                             ? "text-red-400"
                             : ""
                         }
                       >
-                        {dg > 0 ? `+${dg}` : dg}
+                        {row.goalDiff > 0
+                          ? `+${row.goalDiff}`
+                          : row.goalDiff}
                       </span>
                     </span>
                   </div>
@@ -211,7 +191,7 @@ const Table = () => {
             })}
           </div>
 
-          {/* TABLA */}
+          {/* DESKTOP - INTACTO */}
           <div
             className={`${
               mode === "full" ? "block" : "hidden"
@@ -239,11 +219,8 @@ const Table = () => {
 
               <tbody>
                 {standings.map((row, i) => {
-                  const dg = row.goalsFor - row.goalsAgainst;
-                  const points = row.wins * 3 + row.draws;
-
-                  const isChampion = row.position === 1;
-                  const isPlayoff = row.position >= 2 && row.position <= 5;
+                  const isChampion = row.type === "champion";
+                  const isPlayoff = row.type === "playoff";
 
                   return (
                     <tr
@@ -306,7 +283,9 @@ const Table = () => {
                       </td>
 
                       <td className="text-center text-neutral-400">
-                        {dg > 0 ? `+${dg}` : dg}
+                        {row.goalDiff > 0
+                          ? `+${row.goalDiff}`
+                          : row.goalDiff}
                       </td>
 
                       <td
@@ -318,7 +297,7 @@ const Table = () => {
                             : "text-white"
                         }`}
                       >
-                        {points}
+                        {row.points}
                       </td>
                     </tr>
                   );
@@ -326,6 +305,7 @@ const Table = () => {
               </tbody>
             </table>
           </div>
+
         </div>
       </div>
     </>
