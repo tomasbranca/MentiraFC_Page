@@ -1,249 +1,198 @@
-import { useEffect, useState } from "react";
-import { getFinishedGames } from "../../lib/sanity";
-import "./Record.css";
+import { useState } from "react";
 import Loader from "../../components/Loader/Loader";
 import Button from "../../components/Button/Button";
 
-const RESULT_STYLES = {
-  win: {
-    bar: "from-green-700/70 to-green-700/0",
-    text: "text-green-500",
-    label: "VICTORIA",
-  },
-  draw: {
-    bar: "from-neutral-500/70 to-neutral-500/0",
-    text: "text-neutral-400",
-    label: "EMPATE",
-  },
-  loss: {
-    bar: "from-red-600/70 to-red-600/0",
-    text: "text-red-500",
-    label: "DERROTA",
-  },
-};
-
-const PAGE_SIZE = 10;
+import { useRecordData } from "./hooks/useRecordData";
+import {
+  paginateGames,
+  groupGamesByMonth,
+  getMatchResult,
+  getScorers,
+} from "./record.utils";
+import { RESULT_STYLES, PAGE_SIZE } from "./record.constants";
+import { formatDate } from "../../utils/date.utils";
+import "./Record.css";
 
 const Record = () => {
-  const [games, setGames] = useState([]);
+  const { games, loading } = useRecordData();
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
-  const [loading, setLoading] = useState(true);
   const [openGame, setOpenGame] = useState(null);
-
-  useEffect(() => {
-    getFinishedGames()
-      .then((data) => setGames(data || []))
-      .finally(() => setLoading(false));
-  }, []);
 
   if (loading) return <Loader />;
 
-  const visibleGames = games.slice(0, visibleCount);
+  const visibleGames = paginateGames(games, visibleCount);
+  const groupedGames = groupGamesByMonth(visibleGames);
   const hasMore = visibleCount < games.length;
 
-  // 🔹 AGRUPAR POR MES
-  const groupedGames = visibleGames.reduce((acc, game) => {
-    const date = new Date(game.date);
-    const key = date.toLocaleDateString("es-AR", {
-      month: "long",
-      year: "numeric",
-    });
-
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(game);
-
-    return acc;
-  }, {});
-
   return (
-    <>
-      <section className="max-w-6xl mx-auto md:px-4 md:py-10">
-        <div className="bg-neutral-900 border border-neutral-800 overflow-hidden">
-          {/* HEADER */}
-          <header className="px-4 sm:px-8 py-5 sm:py-6 border-b border-neutral-800">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-neutral-100">
-              Historial de partidos
-            </h1>
-            <p className="text-xs sm:text-sm text-neutral-400 mt-1">
-              Registro oficial de todos los encuentros disputados.
-            </p>
-          </header>
+    <section className="max-w-6xl mx-auto md:px-4 md:py-10">
+      <div className="bg-neutral-900 border border-neutral-800 overflow-hidden">
+        {/* HEADER */}
+        <header className="px-4 sm:px-8 py-5 sm:py-6 border-b border-neutral-800">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-neutral-100">
+            Historial de partidos
+          </h1>
+          <p className="text-xs sm:text-sm text-neutral-400 mt-1">
+            Registro oficial de todos los encuentros disputados.
+          </p>
+        </header>
 
-          {/* EMPTY */}
-          {!games.length && (
-            <div className="py-20 text-center text-neutral-500">
-              No hay partidos registrados todavía
-            </div>
-          )}
+        {/* EMPTY */}
+        {!games.length && (
+          <div className="py-20 text-center text-neutral-500">
+            No hay partidos registrados todavía
+          </div>
+        )}
 
-          {/* LISTA */}
-          <div>
-            {Object.entries(groupedGames).map(([group, games]) => (
-              <div key={group}>
-                {/* MES */}
-                <div className="px-4 sm:px-6 py-2 text-xs uppercase tracking-wider text-neutral-500 bg-neutral-800">
-                  {group}
-                </div>
+        {/* LISTA */}
+        <div>
+          {Object.entries(groupedGames).map(([group, games]) => (
+            <div key={group}>
+              {/* MES */}
+              <div className="px-4 sm:px-6 py-2 text-xs uppercase tracking-wider text-neutral-500 bg-neutral-800">
+                {group}
+              </div>
 
-                {games.map((game) => {
-                  const goalsFor = game.result.goalsFor;
-                  const goalsAgainst = game.result.goalsAgainst;
+              {games.map((game) => {
+                const result = getMatchResult(game);
+                const styles = RESULT_STYLES[result];
+                const scorers = getScorers(game.events || []);
+                const isOpen = openGame === game._id;
+                const hasScorers = scorers.length > 0;
 
-                  const matchResult =
-                    goalsFor > goalsAgainst
-                      ? "win"
-                      : goalsFor < goalsAgainst
-                        ? "loss"
-                        : "draw";
-
-                  const styles = RESULT_STYLES[matchResult];
-                  const isOpen = openGame === game._id;
-                  const scorers = Object.values(
-                    (game.events || []).reduce((acc, event) => {
-                      const key = `${event.player?.name}-${event.player?.lastName}`;
-
-                      if (!acc[key]) {
-                        acc[key] = {
-                          player: event.player,
-                          goals: 0,
-                        };
+                return (
+                  <div key={game._id} className="border-b border-neutral-800">
+                    {/* ITEM */}
+                    <div
+                      onClick={() =>
+                        hasScorers
+                          ? setOpenGame(isOpen ? null : game._id)
+                          : null
                       }
+                      className={`
+                        px-4 sm:px-6 py-4 flex flex-col gap-2
+                        ${hasScorers ? "cursor-pointer active:scale-[0.98]" : ""}
+                        hover:bg-neutral-800/60 transition
+                      `}
+                    >
+                      {/* FILA PRINCIPAL */}
+                      <div className="flex justify-between items-center">
+                        {/* IZQUIERDA */}
+                        <div className="flex items-center gap-3">
+                          {game.rival?.logoUrl && (
+                            <img
+                              src={game.rival.logoUrl}
+                              alt={game.rival.name}
+                              className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
+                            />
+                          )}
 
-                      acc[key].goals += 1;
+                          <div>
+                            <p className="text-sm sm:text-base font-semibold text-neutral-100">
+                              {game.rival.name}
+                            </p>
 
-                      return acc;
-                    }, {}),
-                  );
-                  const hasScorers = scorers.length > 0;
-
-                  return (
-                    <div key={game._id} className="border-b border-neutral-800">
-                      {/* ITEM */}
-                      <div
-                        onClick={() =>
-                          hasScorers
-                            ? setOpenGame(isOpen ? null : game._id)
-                            : null
-                        }
-                        className={`px-4 sm:px-6 py-4 flex flex-col gap-2 
-                        ${
-                          hasScorers ? "cursor-pointer active:scale-[0.98]" : ""
-                        }
-                        hover:bg-neutral-800/60 transition`}
-                      >
-                        {/* FILA PRINCIPAL */}
-                        <div className="flex justify-between items-center">
-                          {/* RIVAL */}
-                          <div className="flex items-center gap-3">
-                            {game.rival?.logoUrl && (
-                              <img
-                                src={game.rival.logoUrl}
-                                alt={game.rival.name}
-                                className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
-                              />
-                            )}
-                            <div>
-                              <p className="text-sm sm:text-base font-semibold text-neutral-100">
-                                {game.rival.name}
-                              </p>
-                              <p className="text-xs text-neutral-500">
-                                {new Date(game.date).toLocaleDateString(
-                                  "es-AR",
-                                )}
-                              </p>
-                            </div>
-                          </div>
-
-                          {/* RESULTADO + FLECHA */}
-                          <div className="text-right flex items-center gap-2">
-                            <div>
-                              <p className="text-2xl sm:text-4xl font-extrabold text-neutral-100">
-                                {goalsFor}
-                                <span className="mx-1 text-neutral-500">–</span>
-                                {goalsAgainst}
-                              </p>
-                              <p
-                                className={`text-[10px] sm:text-xs font-semibold tracking-widest ${styles.text}`}
-                              >
-                                {styles.label}
-                              </p>
-                            </div>
-
-                            {/* FLECHA */}
-                            {hasScorers && (
-                              <span
-                                className={`text-neutral-500 text-xs transition-transform duration-300 ${
-                                  isOpen ? "rotate-180" : ""
-                                }`}
-                              >
-                                ▼
-                              </span>
-                            )}
+                            <p className="text-xs text-neutral-500">
+                              {formatDate(game.date)}
+                            </p>
                           </div>
                         </div>
 
-                        {/* TEXTO UX */}
-                        {hasScorers && !isOpen && (
-                          <p className="text-[10px] text-neutral-500">
-                            Ver goleadores
-                          </p>
-                        )}
+                        {/* DERECHA */}
+                        <div className="text-right flex items-center gap-2">
+                          <div>
+                            <p className="text-2xl sm:text-4xl font-extrabold text-neutral-100">
+                              {game.result.goalsFor}
+                              <span className="mx-1 text-neutral-500">–</span>
+                              {game.result.goalsAgainst}
+                            </p>
 
-                        {/* COMPETICIÓN + UBICACIÓN */}
-                        <div className="hidden sm:block text-xs text-neutral-400">
-                          {game.competition}
-                          <span className="hidden md:inline">
-                            {" "}
-                            · {game.location}
-                          </span>
+                            <p
+                              className={`text-[10px] sm:text-xs font-semibold tracking-widest ${styles.text}`}
+                            >
+                              {styles.label}
+                            </p>
+                          </div>
+
+                          {/* FLECHA */}
+                          {hasScorers && (
+                            <span
+                              className={`text-neutral-500 text-xs transition-transform duration-300 ${
+                                isOpen ? "rotate-180" : ""
+                              }`}
+                            >
+                              ▼
+                            </span>
+                          )}
                         </div>
                       </div>
 
-                      {/* ACORDEÓN */}
-                      {hasScorers && (
-                        <div
-                          className={`overflow-hidden transition-all duration-300 ${
-                            isOpen ? "max-h-[500px]" : "max-h-0"
-                          }`}
-                        >
-                          <div className="px-6 pb-4 text-xs text-neutral-300">
-                            <p className="mb-2 text-neutral-400 font-semibold">
-                              Goleadores
-                            </p>
-
-                            <ul className="space-y-1">
-                              {scorers.map((scorer, i) => (
-                                <li key={`${scorer.player?.name}-${i}`}>
-                                  {scorer.player?.name}{" "}
-                                  {scorer.player?.lastName} ({scorer.goals})
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        </div>
+                      {/* TEXTO UX */}
+                      {hasScorers && !isOpen && (
+                        <p className="text-[10px] text-neutral-500">
+                          Ver goleadores
+                        </p>
                       )}
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
-          </div>
 
-          {/* FOOTER */}
-          {hasMore && (
-            <div className="flex justify-center py-6 sm:py-8 border-t border-neutral-800">
-              <Button
-                variant="ghostStrong"
-                className="px-6 py-2.5 rounded-md text-sm w-full max-w-xs"
-                onClick={() => setVisibleCount((prev) => prev + PAGE_SIZE)}
-              >
-                Cargar más partidos
-              </Button>
+                      {/* INFO EXTRA */}
+                      <div className="hidden sm:block text-xs text-neutral-400">
+                        {game.competition}
+                        <span className="hidden md:inline">
+                          {" "}
+                          · {game.location}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* ACORDEÓN */}
+                    {hasScorers && (
+                      <div
+                        className={`overflow-hidden transition-all duration-300 ${
+                          isOpen ? "max-h-[500px]" : "max-h-0"
+                        }`}
+                      >
+                        <div
+                          className={`
+                            px-6 pb-4 text-xs text-neutral-300
+                            ${isOpen ? "animate-fadeIn" : ""}
+                          `}
+                        >
+                          <p className="mb-2 text-neutral-400 font-semibold">
+                            Goleadores
+                          </p>
+
+                          <ul className="space-y-1">
+                            {scorers.map((scorer, i) => (
+                              <li key={`${scorer.player?.name}-${i}`}>
+                                {scorer.player?.name} {scorer.player?.lastName}{" "}
+                                ({scorer.goals})
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
-          )}
+          ))}
         </div>
-      </section>
-    </>
+
+        {/* FOOTER */}
+        {hasMore && (
+          <div className="flex justify-center py-6 sm:py-8 border-t border-neutral-800">
+            <Button
+              variant="ghostStrong"
+              className="px-6 py-2.5 rounded-md text-sm w-full max-w-xs"
+              onClick={() => setVisibleCount((prev) => prev + PAGE_SIZE)}
+            >
+              Cargar más partidos
+            </Button>
+          </div>
+        )}
+      </div>
+    </section>
   );
 };
 
