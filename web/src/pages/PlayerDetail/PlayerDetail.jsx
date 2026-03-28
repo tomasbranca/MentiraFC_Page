@@ -4,7 +4,7 @@ import { FaArrowLeft } from "react-icons/fa";
 
 import { usePlayerDetail } from "./hooks/usePlayerDetail";
 import { POSITION_MAP } from "./playerDetail.constants";
-import { formatDate, calculateAge } from "../../utils/date.utils";
+import { formatDateToText, calculateAge } from "../../utils/date.utils";
 import { ROUTES } from "../../constants/routes.constants";
 
 const PlayerDetail = () => {
@@ -90,7 +90,7 @@ const PlayerDetail = () => {
                   FECHA DE NACIMIENTO
                 </p>
                 <p className="font-semibold text-sm sm:text-lg lg:text-base">
-                  {formatDate(player.birthDate)}
+                  {formatDateToText(player.birthDate)}
                 </p>
               </div>
             </div>

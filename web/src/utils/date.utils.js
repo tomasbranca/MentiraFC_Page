@@ -23,9 +23,9 @@ export const formatLongDate = (date, locale = "es-AR") => {
 };
 
 /**
- * 🆕 Formatea fecha + hora
+ * Formatea fecha + hora
  * Ej: 28/03/2026 - 21:30
- * 👉 usar en Game / GameWidget
+ * usar en Game / GameWidget
  */
 export const formatDateTime = (date, locale = "es-AR") => {
   if (!date) return "";
@@ -39,6 +39,21 @@ export const formatDateTime = (date, locale = "es-AR") => {
   });
 
   return `${formattedDate} - ${formattedTime}`;
+};
+
+/**
+ * Convierte fecha a texto completo
+ * Ej: 10 de marzo de 2003
+* usar en PlayerDetail (birthDate)
+ */
+export const formatDateToText = (date, locale = "es-AR") => {
+  if (!date) return "";
+
+  return new Date(date).toLocaleDateString(locale, {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
 };
 
 /**
