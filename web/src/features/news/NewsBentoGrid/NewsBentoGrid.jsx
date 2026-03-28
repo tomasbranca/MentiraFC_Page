@@ -1,5 +1,5 @@
 import NewsCard from "../../../components/NewsCard/NewsCard";
-import CompactCarousel from "../CompactCarrousel/CompactCarrousel";
+import CompactCarousel from "../CompactCarousel/CompactCarousel";
 
 const NewsBentoGrid = ({ items }) => {
   return (

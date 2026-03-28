@@ -1,13 +1,13 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
-import Button from "../../../components/Button/Button";
-import "./Carrousel.css";
+import Button from "../../../../components/Button/Button";
+import "./Carousel.css";
 
-import { useCarousel } from "../../../hooks/useCarrousel";
+import { useCarousel } from "../../../../hooks/useCarrousel";
 import { useAutoplay } from "./hooks/useAutoPlay";
-import { getNewsLink } from "./carrousel.utils";
+import { getNewsLink } from "./carousel.utils";
 
-const Carrousel = ({ items }) => {
+const Carousel = ({ items }) => {
   const { activeIndex, next, prev } = useCarousel(items?.length || 0);
   const { autoplay, manual } = useAutoplay();
 
@@ -89,4 +89,4 @@ const Carrousel = ({ items }) => {
   );
 };
 
-export default Carrousel;
+export default Carousel;

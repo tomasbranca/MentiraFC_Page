@@ -1,4 +1,4 @@
-import Carrousel from "../Carrousel/Carrousel";
+import Carousel from "./Carousel/Carousel";
 import NewsCardHome from "../../../components/NewsCardHome/NewsCardHome";
 import { Link } from "react-router-dom";
 import { splitNews } from "./latestNews.utils";
@@ -12,7 +12,7 @@ const LatestNews = ({ news = [] }) => {
     <section className="bg-violet-900 text-violet-50">
       {/* Carousel */}
       <div className="pt-2 px-0 sm:px-2">
-        <Carrousel items={carouselNews} />
+        <Carousel items={carouselNews} />
       </div>
 
       {/* Header */}
