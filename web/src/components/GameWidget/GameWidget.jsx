@@ -2,7 +2,7 @@ import { useGame } from "../../context/useGame";
 import { useCountdown } from "../../hooks/useCountDown";
 
 const GameWidget = ({ compact = false }) => {
-  const { game, loading } = useGame();
+  const { game, loading, error } = useGame();
 
   const now = new Date();
   const gameDate = game ? new Date(game.date) : null;
@@ -13,6 +13,14 @@ const GameWidget = ({ compact = false }) => {
   const timeLeft = useCountdown(game?.date, isUpcoming);
 
   if (loading || !game) return null;
+
+  if (error) {
+    return (
+      <div className="text-red-500">
+        Error: {error.message}
+      </div>
+    );
+  }
 
   return (
     <div
