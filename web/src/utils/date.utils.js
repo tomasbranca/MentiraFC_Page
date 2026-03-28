@@ -1,49 +1,58 @@
+/**
+ * Formatea una fecha a formato corto (default: es-AR)
+ * Ej: 28/03/2026
+ */
 export const formatDate = (date, locale = "es-AR") => {
   if (!date) return "";
+
   return new Date(date).toLocaleDateString(locale);
 };
 
-export const formatDateTime = (date, locale = "es-AR") => {
+/**
+ * Formatea una fecha a formato largo
+ * Ej: 28 de marzo de 2026
+ */
+export const formatLongDate = (date, locale = "es-AR") => {
   if (!date) return "";
 
-  return new Date(date).toLocaleString(locale, {
+  return new Date(date).toLocaleDateString(locale, {
+    day: "numeric",
+    month: "long",
     year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
   });
 };
 
-export const isPast = (date) => {
-  return new Date(date) < new Date();
+/**
+ * Formato seguro para fechas tipo YYYY-MM-DD (evita problemas de timezone)
+ * usar en PlayerDetail (birthDate)
+ */
+export const formatSafeDate = (date, locale = "es-AR") => {
+  if (!date) return "";
+
+  return new Date(date + "T00:00:00Z").toLocaleDateString(locale, {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
 };
 
-export const isFuture = (date) => {
-  return new Date(date) > new Date();
-};
+/**
+ * Calcula edad a partir de fecha de nacimiento
+ * usar en PlayerDetail
+ */
+export const calculateAge = (birthDate) => {
+  if (!birthDate) return null;
 
-export const isToday = (date) => {
-  const d = new Date(date);
+  const birth = new Date(birthDate);
   const today = new Date();
 
-  return (
-    d.getDate() === today.getDate() &&
-    d.getMonth() === today.getMonth() &&
-    d.getFullYear() === today.getFullYear()
-  );
-};
+  let age = today.getFullYear() - birth.getFullYear();
+  const m = today.getMonth() - birth.getMonth();
 
-export const getTimeDifference = (targetDate) => {
-  const now = new Date();
-  const target = new Date(targetDate);
-  const diff = target - now;
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
 
-  if (diff <= 0) return { hours: 0, minutes: 0 };
-
-  return {
-    hours: Math.floor(diff / 1000 / 60 / 60),
-    minutes: Math.floor((diff / 1000 / 60) % 60),
-  };
+  return age;
 };

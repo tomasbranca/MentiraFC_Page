@@ -1,67 +1,15 @@
-import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { getPlayerWithGoalsByYear } from "../../lib/sanity";
-import { FaArrowLeft } from "react-icons/fa";
-import { FaChessRook } from "react-icons/fa";
-import { FaGears } from "react-icons/fa6";
-import { GiGloves, GiCannon } from "react-icons/gi";
 import Loader from "../../components/Loader/Loader";
+import { FaArrowLeft } from "react-icons/fa";
 
-const POSITION_MAP = {
-  arq: (
-    <span className="flex items-center gap-2">
-      <GiGloves className="text-sm" />
-      <span>ARQUERO</span>
-    </span>
-  ),
-  def: (
-    <span className="flex items-center gap-2">
-      <FaChessRook className="text-sm" />
-      <span>DEFENSOR</span>
-    </span>
-  ),
-  med: (
-    <span className="flex items-center gap-2">
-      <FaGears className="text-sm" />
-      <span>MEDIOCAMPISTA</span>
-    </span>
-  ),
-  del: (
-    <span className="flex items-center gap-2">
-      <GiCannon className="text-sm" />
-      <span>DELANTERO</span>
-    </span>
-  ),
-};
+import { usePlayerDetail } from "./hooks/usePlayerDetail";
+import { POSITION_MAP } from "./playerDetail.constants";
+import { formatDate, calculateAge } from "../../utils/date.utils";
+import { ROUTES } from "../../constants/routes.constants";
 
 const PlayerDetail = () => {
   const { slug } = useParams();
-  const [player, setPlayer] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const year = new Date().getFullYear();
-
-  useEffect(() => {
-    getPlayerWithGoalsByYear(slug, year)
-      .then((data) => setPlayer(data))
-      .finally(() => setLoading(false));
-  }, [slug, year]);
-
-  const formatDate = (date) =>
-    new Date(date + "T00:00:00Z").toLocaleDateString("es-AR", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-      timeZone: "UTC",
-    });
-
-  const calculateAge = (date) => {
-    const birth = new Date(date);
-    const today = new Date();
-    let age = today.getFullYear() - birth.getFullYear();
-    const m = today.getMonth() - birth.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
-    return age;
-  };
+  const { player, loading, year } = usePlayerDetail(slug);
 
   if (loading) return <Loader />;
 
@@ -73,11 +21,14 @@ const PlayerDetail = () => {
     );
   }
 
+  const position = POSITION_MAP[player.position];
+  const Icon = position?.icon;
+
   return (
     <div className="max-w-6xl mx-auto md:px-4 sm:px-6 lg:px-8 md:py-6 lg:py-8">
       {/* Volver */}
       <Link
-        to="/plantel"
+        to={ROUTES.TEAM}
         className="items-center gap-2 text-sm text-violet-700 hover:text-violet-950 mb-4 hidden sm:inline-flex"
       >
         <FaArrowLeft /> Volver al plantel
@@ -110,8 +61,9 @@ const PlayerDetail = () => {
                 </span>
               </h1>
 
-              <p className="mt-3 text-xs tracking-widest text-violet-200">
-                {POSITION_MAP[player.position] || "POSICIÓN"}
+              <p className="mt-3 text-xs tracking-widest text-violet-200 flex items-center gap-2">
+                {Icon && <Icon className="text-sm" />}
+                {position?.label || "POSICIÓN"}
               </p>
             </div>
 
