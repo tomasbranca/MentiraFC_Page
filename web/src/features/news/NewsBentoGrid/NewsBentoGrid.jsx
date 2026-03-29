@@ -51,7 +51,7 @@ const NewsBentoGrid = ({ items = [] }) => {
 
         {compact.map((item) => (
           <div
-            key={item._id}
+            key={item.id}
             className="md:col-span-1 md:row-span-2"
           >
             <NewsCard item={item} variant="compact" />

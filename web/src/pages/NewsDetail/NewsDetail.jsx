@@ -71,7 +71,7 @@ const NewsDetail = () => {
           <div className="flex gap-4 overflow-x-auto pb-2 md:grid md:grid-cols-3 md:overflow-visible">
             {suggested.map((item) => (
               <div
-                key={item._id}
+                key={item.id}
                 className="min-w-[260px] md:min-w-0 h-[180px]"
               >
                 <NewsCard item={item} variant="compact" />

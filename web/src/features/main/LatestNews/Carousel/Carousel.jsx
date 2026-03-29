@@ -27,7 +27,7 @@ const Carousel = ({ items }) => {
     <section className="carousel-wrapper relative w-full overflow-hidden">
       {items.map((item, index) => (
         <div
-          key={item._id}
+          key={item.id}
           className={`carousel-slide ${index === activeIndex ? "active" : ""}`}
         >
           <img

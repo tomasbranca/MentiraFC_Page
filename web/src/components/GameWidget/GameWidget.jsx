@@ -60,7 +60,7 @@ const GameWidget = ({ compact = false }) => {
         `}
       >
         <img
-          src={game.rival.logoUrl}
+          src={game.rival.imageUrl}
           className="w-full h-full object-cover"
           alt="Equipo rival"
         />

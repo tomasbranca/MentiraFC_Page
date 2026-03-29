@@ -28,7 +28,7 @@ const CompactCarousel = ({ items = [] }) => {
       >
         {items.map((item) => (
           <div
-            key={item._id}
+            key={item.id}
             className="
               snap-start
               shrink-0

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getFinishedGames } from "../../../lib/sanity";
+import { getFinishedGames } from "../../../lib/sanity/services/games.service";
 
 export const useRecordData = () => {
   const [games, setGames] = useState([]);

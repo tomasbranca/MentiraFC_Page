@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import {
-  getNews,
-  getTable,
-  getGame,
-  getTopScorers,
-} from "../../../lib/sanity";
+
+import { getNews } from "../../../lib/sanity/services/news.service";
+import { getTable } from "../../../lib/sanity/services/table.service";
+import { getLatestGame } from "../../../lib/sanity/services/games.service";
+import { getTopScorers } from "../../../lib/sanity/services/players.service";
+
 import { sortNews } from "../../../utils/news.utils";
 
 
@@ -28,9 +28,8 @@ export const useHomeData = () => {
             getNews(),
             getTopScorers(year),
             getTable(),
-            getGame(),
+            getLatestGame(),
           ]);
-
         setData({
           news: sortNews(newsRes),
           topScorers: scorersRes,

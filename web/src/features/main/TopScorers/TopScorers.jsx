@@ -36,7 +36,7 @@ const TopScorers = ({ players = [] }) => {
       <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-2 lg:hidden">
         {playersWithGoals.map((player) => (
           <div
-            key={player._id}
+            key={player.id}
             className="snap-start shrink-0 w-[75%] sm:w-[55%]"
           >
             <PlayerCard
@@ -57,7 +57,7 @@ const TopScorers = ({ players = [] }) => {
           }`}
         >
           {visiblePlayers.map((player) => (
-            <div key={player._id} className="w-[180px] lg:w-[200px]">
+            <div key={player.id} className="w-[180px] lg:w-[200px]">
               <PlayerCard
                 player={player}
                 mode={PLAYER_CARD_MODE.GOALS}

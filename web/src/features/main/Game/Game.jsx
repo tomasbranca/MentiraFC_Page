@@ -111,7 +111,7 @@ const Game = ({ game, loading }) => {
           {/* RIVAL */}
           <div className="w-[35%] sm:w-[15%] flex flex-col items-center shrink-0">
             <img
-              src={game.rival.logoUrl}
+              src={game.rival.imageUrl}
               alt={game.rival.name}
               className="w-24 h-24 sm:w-24 sm:h-24 lg:w-36 lg:h-36 object-cover rounded-full scale-175 sm:scale-100 translate-x-12 sm:translate-x-0"
             />

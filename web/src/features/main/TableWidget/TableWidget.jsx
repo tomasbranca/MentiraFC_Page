@@ -33,7 +33,7 @@ const TableWidget = ({ table }) => {
 
           return (
             <div
-              key={row.team._id}
+              key={row.team.id}
               className={`
                 flex items-center justify-between
                 px-3 lg:px-4
@@ -53,7 +53,7 @@ const TableWidget = ({ table }) => {
                 </span>
 
                 <img
-                  src={getImageUrl(row.team.logo, {
+                  src={getImageUrl(row.team.imageUrl, {
                     width: 32,
                     height: 32,
                     fit: "max",

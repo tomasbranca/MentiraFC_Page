@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { urlFor } from "../../lib/sanity";
+import { urlFor } from "../../lib/sanity/sanity.image";
 import Loader from "../../components/Loader/Loader";
 import Button from "../../components/Button/Button";
 import { useTableData } from "./hooks/useTableData";
@@ -46,9 +46,9 @@ const Table = () => {
           
           {/* HEADER */}
           <div className="px-6 py-8 border-b border-neutral-800 text-center shadow-lg shadow-black/30">
-            {table.logo && (
+            {table.imageUrl && (
               <img
-                src={urlFor(table.logo).width(80).height(80).url()}
+                src={urlFor(table.imageUrl).width(80).height(80).url()}
                 alt={table.title}
                 className="w-20 h-20 mx-auto mb-4 object-contain"
               />
@@ -109,7 +109,7 @@ const Table = () => {
 
               return (
                 <div
-                  key={row.team._id}
+                  key={row.team.id}
                   className={`border border-neutral-800 p-4
                     ${isChampion ? "bg-yellow-500/10" : ""}
                     ${isPlayoff ? "bg-white/[0.02]" : "bg-neutral-900"}
@@ -122,7 +122,7 @@ const Table = () => {
                       </span>
 
                       <img
-                        src={urlFor(row.team.logo).width(32).height(32).url()}
+                        src={urlFor(row.team.imageUrl).width(32).height(32).url()}
                         alt={row.team.name}
                         className="w-7 h-7 object-contain"
                       />
@@ -224,7 +224,7 @@ const Table = () => {
 
                   return (
                     <tr
-                      key={row.team._id}
+                      key={row.team.id}
                       className={`border-b border-neutral-800 transition
                         ${i % 2 === 0 ? "bg-neutral-900" : "bg-neutral-900/70"}
                         ${isChampion ? "border-l-4 bg-yellow-500/10" : ""}
@@ -246,7 +246,7 @@ const Table = () => {
                       <td className="py-3 px-3">
                         <div className="flex items-center gap-3">
                           <img
-                            src={urlFor(row.team.logo)
+                            src={urlFor(row.team.imageUrl)
                               .width(30)
                               .height(30)
                               .url()}

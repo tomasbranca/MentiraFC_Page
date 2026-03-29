@@ -10,11 +10,15 @@ export const isGameInProgress = (game) => {
 export const getScorers = (events = []) => {
   return Object.values(
     events.reduce((acc, event) => {
-      const key = `${event.player?.name}-${event.player?.lastName}`;
+      const player = event.player;
+
+      if (!player) return acc;
+
+      const key = `${player.name}-${player.lastName}`;
 
       if (!acc[key]) {
         acc[key] = {
-          player: event.player,
+          player,
           goals: 0,
         };
       }

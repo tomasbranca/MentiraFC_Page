@@ -1,4 +1,4 @@
-import { urlFor } from "../lib/sanity";
+import { urlFor } from "../lib/sanity/sanity.image";
 
 export const getImageUrl = (image, options = {}) => {
   let builder = urlFor(image);

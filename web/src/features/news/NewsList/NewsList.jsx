@@ -32,7 +32,7 @@ const NewsList = ({ items = [] }) => {
       <div className="flex flex-col gap-6">
         {visibleNews.map((item) => (
           <Link
-            key={item._id}
+            key={item.id}
             to={getNewsLink(item)}
             className="
               group

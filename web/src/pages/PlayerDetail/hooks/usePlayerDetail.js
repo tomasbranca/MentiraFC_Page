@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getPlayerWithGoalsByYear } from "../../../lib/sanity";
+import { getPlayerWithGoalsByYear } from "../../../lib/sanity/services/players.service";
 
 export const usePlayerDetail = (slug) => {
   const [player, setPlayer] = useState(null);

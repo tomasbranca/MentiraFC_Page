@@ -130,7 +130,7 @@ const Team = () => {
 
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5 md:gap-8">
                     {list.map((player) => (
-                      <PlayerCard key={player._id} player={player} />
+                      <PlayerCard key={player.id} player={player} />
                     ))}
                   </div>
                 </section>

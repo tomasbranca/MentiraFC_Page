@@ -57,16 +57,16 @@ const Record = () => {
                 const result = getMatchResult(game);
                 const styles = RESULT_STYLES[result];
                 const scorers = getScorers(game.events || []);
-                const isOpen = openGame === game._id;
+                const isOpen = openGame === game.id;
                 const hasScorers = scorers.length > 0;
 
                 return (
-                  <div key={game._id} className="border-b border-neutral-800">
+                  <div key={game.id} className="border-b border-neutral-800">
                     {/* ITEM */}
                     <div
                       onClick={() =>
                         hasScorers
-                          ? setOpenGame(isOpen ? null : game._id)
+                          ? setOpenGame(isOpen ? null : game.id)
                           : null
                       }
                       className={`
@@ -79,9 +79,9 @@ const Record = () => {
                       <div className="flex justify-between items-center">
                         {/* IZQUIERDA */}
                         <div className="flex items-center gap-3">
-                          {game.rival?.logoUrl && (
+                          {game.rival?.imageUrl && (
                             <img
-                              src={game.rival.logoUrl}
+                              src={game.rival.imageUrl}
                               alt={game.rival.name}
                               className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
                             />
