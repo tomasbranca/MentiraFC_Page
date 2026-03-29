@@ -1,7 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
-import ScrollToTop from "./utils/ScrollToTop.jsx";
+import ScrollToTop from "./app/scrollToTop.js";
 import "./index.css";
 import App from "./App.jsx";
 
