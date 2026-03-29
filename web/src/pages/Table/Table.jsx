@@ -3,7 +3,7 @@ import { urlFor } from "../../lib/sanity/sanity.image";
 import Loader from "../../components/Loader/Loader";
 import Button from "../../components/Button/Button";
 import { useTableData } from "./hooks/useTableData";
-import { formatDateToText } from "../../utils/date.utils";
+import { formatLongDate } from "../../utils/date.utils";
 
 const Table = () => {
   const { table, loading, error } = useTableData();
@@ -37,7 +37,7 @@ const Table = () => {
 
   const standings = table.standings;
 
-  const lastUpdate = formatDateToText(table._updatedAt );
+  const lastUpdate = formatLongDate(table._updatedAt );
 
   return (
     <>

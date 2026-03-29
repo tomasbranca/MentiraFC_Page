@@ -1,36 +1,87 @@
-/**
- * Formatea una fecha a formato corto (default: es-AR)
- * Ej: 28/03/2026
- */
-export const formatDate = (date, locale = "es-AR") => {
-  if (!date) return "";
+// ===============================
+// PARSER CENTRAL (LA CLAVE DE TODO)
+// ===============================
 
-  return new Date(date).toLocaleDateString(locale);
+const meses = {
+  enero: 0,
+  febrero: 1,
+  marzo: 2,
+  abril: 3,
+  mayo: 4,
+  junio: 5,
+  julio: 6,
+  agosto: 7,
+  septiembre: 8,
+  octubre: 9,
+  noviembre: 10,
+  diciembre: 11,
 };
 
-/**
- * Formatea una fecha a formato largo
- * Ej: 28 de marzo de 2026
- */
-export const formatLongDate = (date, locale = "es-AR") => {
-  if (!date) return "";
+export const parseDate = (date) => {
+  if (!date) return null;
 
-  return new Date(date).toLocaleDateString(locale, {
+  // Ya es Date válido
+  if (date instanceof Date) return date;
+
+  // ===============================
+  // YYYY-MM-DD (FORMATO IDEAL)
+  // ===============================
+  if (typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    const [year, month, day] = date.split("-").map(Number);
+    return new Date(year, month - 1, day); // LOCAL → evita bug de timezone
+  }
+
+  // ===============================
+  // "3 de marzo de 2003"
+  // ===============================
+  if (typeof date === "string" && date.toLowerCase().includes("de")) {
+    const parts = date.toLowerCase().split(" ");
+
+    if (parts.length >= 5) {
+      const dia = Number(parts[0]);
+      const mes = meses[parts[2]];
+      const anio = Number(parts[4]);
+
+      if (!isNaN(dia) && mes !== undefined && !isNaN(anio)) {
+        return new Date(anio, mes, dia);
+      }
+    }
+  }
+
+  // ===============================
+  // FALLBACK (ÚLTIMO RECURSO)
+  // ===============================
+  const fallback = new Date(date);
+  return isNaN(fallback.getTime()) ? null : fallback;
+};
+
+
+
+// ===============================
+// FORMATTERS
+// ===============================
+
+export const formatDate = (date, locale = "es-AR") => {
+  const d = parseDate(date);
+  if (!d) return "";
+
+  return d.toLocaleDateString(locale);
+};
+
+export const formatLongDate = (date, locale = "es-AR") => {
+  const d = parseDate(date);
+  if (!d) return "";
+
+  return d.toLocaleDateString(locale, {
     day: "numeric",
     month: "long",
     year: "numeric",
   });
 };
 
-/**
- * Formatea fecha + hora
- * Ej: 28/03/2026 - 21:30
- * usar en Game / GameWidget
- */
 export const formatDateTime = (date, locale = "es-AR") => {
-  if (!date) return "";
-
-  const d = new Date(date);
+  const d = parseDate(date);
+  if (!d) return "";
 
   const formattedDate = d.toLocaleDateString(locale);
   const formattedTime = d.toLocaleTimeString(locale, {
@@ -41,44 +92,14 @@ export const formatDateTime = (date, locale = "es-AR") => {
   return `${formattedDate} - ${formattedTime}`;
 };
 
-/**
- * Convierte fecha a texto completo
- * Ej: 10 de marzo de 2003
-* usar en PlayerDetail (birthDate)
- */
-export const formatDateToText = (date, locale = "es-AR") => {
-  if (!date) return "";
+// ===============================
+// EDAD
+// ===============================
 
-  return new Date(date).toLocaleDateString(locale, {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-};
-
-/**
- * Formato seguro para fechas tipo YYYY-MM-DD (evita problemas de timezone)
- * usar en PlayerDetail (birthDate)
- */
-export const formatSafeDate = (date, locale = "es-AR") => {
-  if (!date) return "";
-
-  return new Date(date + "T00:00:00Z").toLocaleDateString(locale, {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    timeZone: "UTC",
-  });
-};
-
-/**
- * Calcula edad a partir de fecha de nacimiento
- * usar en PlayerDetail
- */
 export const calculateAge = (birthDate) => {
-  if (!birthDate) return null;
+  const birth = parseDate(birthDate);
+  if (!birth) return null;
 
-  const birth = new Date(birthDate);
   const today = new Date();
 
   let age = today.getFullYear() - birth.getFullYear();
