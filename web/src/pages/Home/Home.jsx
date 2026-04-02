@@ -7,7 +7,7 @@ import Loader from "../../components/Loader/Loader";
 import { useHomeData } from "./hooks/useHomeData";
 
 const Home = () => {
-  const { news, topScorers, table, game, loading } =
+  const { news, topScorers, tournament, game, loading } =
     useHomeData();
 
   if (loading) return <Loader />;
@@ -22,7 +22,7 @@ const Home = () => {
 
       <div className="relative grid grid-cols-1 lg:grid-cols-3">
         <TopScorers players={topScorers} />
-        <TableWidget table={table} />
+        <TableWidget table={tournament} />
       </div>
     </>
   );

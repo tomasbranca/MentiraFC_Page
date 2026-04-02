@@ -1,26 +1,26 @@
 import { useEffect, useState } from "react";
-import { getTable } from "../../../lib/sanity/services/table.service";
 import { formatStandings } from "../table.utils";
+import { getTournament } from "../../../lib/sanity/services/tournaments.service";
 
 export const useTableData = () => {
-  const [table, setTable] = useState(null);
+  const [tournament, setTournament] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    getTable()
+    getTournament()
       .then((data) => {
         const formatted = {
           ...data,
           standings: formatStandings(data.standings),
         };
 
-        setTable(formatted);
+        setTournament(formatted);
         setError(false);
       })
       .catch(() => setError(true))
       .finally(() => setLoading(false));
   }, []);
 
-  return { table, loading, error };
+  return { tournament, loading, error };
 };

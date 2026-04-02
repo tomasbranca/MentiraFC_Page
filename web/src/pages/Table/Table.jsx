@@ -6,7 +6,7 @@ import { useTableData } from "./hooks/useTableData";
 import { formatLongDate } from "../../utils/date.utils";
 
 const Table = () => {
-  const { table, loading, error } = useTableData();
+  const { tournament, loading, error } = useTableData();
   const [mode, setMode] = useState("compact");
 
   if (loading) return <Loader />;
@@ -23,7 +23,7 @@ const Table = () => {
     );
   }
 
-  if (!table) {
+  if (!tournament) {
     return (
       <main className="min-h-screen flex items-center justify-center px-4 text-white">
         <div className="text-center max-w-md">
@@ -35,9 +35,9 @@ const Table = () => {
     );
   }
 
-  const standings = table.standings;
+  const standings = tournament.standings;
 
-  const lastUpdate = formatLongDate(table._updatedAt );
+  const lastUpdate = formatLongDate(tournament.updatedAt );
 
   return (
     <>
@@ -46,10 +46,10 @@ const Table = () => {
           
           {/* HEADER */}
           <div className="px-6 py-8 border-b border-neutral-800 text-center shadow-lg shadow-black/30">
-            {table.imageUrl && (
+            {tournament.imageUrl && (
               <img
-                src={urlFor(table.imageUrl).width(80).height(80).url()}
-                alt={table.title}
+                src={urlFor(tournament.imageUrl).width(80).height(80).url()}
+                alt={tournament.name}
                 className="w-20 h-20 mx-auto mb-4 object-contain"
               />
             )}
@@ -59,12 +59,12 @@ const Table = () => {
             </span>
 
             <h1 className="text-2xl md:text-3xl font-extrabold text-white mt-1">
-              {table.title}
+              {tournament.name}
             </h1>
 
             <div
               className="w-16 h-[3px] mx-auto mt-2"
-              style={{ backgroundColor: table.primaryColor }}
+              style={{ backgroundColor: tournament.primaryColor }}
             />
 
             {lastUpdate && (
@@ -235,7 +235,7 @@ const Table = () => {
                         isChampion
                           ? { borderLeftColor: "rgba(255, 193, 7, 0.8)" }
                           : isPlayoff
-                          ? { borderLeftColor: table.primaryColor }
+                          ? { borderLeftColor: tournament.primaryColor }
                           : {}
                       }
                     >

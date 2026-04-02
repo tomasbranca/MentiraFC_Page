@@ -1,8 +1,9 @@
-export const adaptTable = (data) => {
+export const adaptTournament = (data) => {
   if (!data) return null;
 
   return {
-    title: data.title,
+    id: data._id,
+    name: data.name,
     imageUrl: data.logo, // ✅ consistente
     primaryColor: data.primaryColor,
     updatedAt: data._updatedAt,

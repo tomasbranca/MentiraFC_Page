@@ -1,11 +1,11 @@
 export default {
-  name: 'table',
-  title: 'Tabla',
+  name: 'tournaments',
+  title: 'Torneos',
   type: 'document',
   fields: [
     {
-      name: 'title',
-      title: 'Torneo',
+      name: 'name',
+      title: 'Nombre del torneo',
       type: 'string',
       validation: (Rule) => Rule.required(),
     },
