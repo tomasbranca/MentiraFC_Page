@@ -1,5 +1,6 @@
-export const TABLE_QUERY = `
-  *[_type == "table" && active == true][0]{
+export const TOURNAMENT_QUERY = `
+  *[_type == "tournament" && active == true][0]{
+    _id,
     title,
     logo,
     primaryColor,

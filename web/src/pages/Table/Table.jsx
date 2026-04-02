@@ -49,7 +49,7 @@ const Table = () => {
             {table.imageUrl && (
               <img
                 src={urlFor(table.imageUrl).width(80).height(80).url()}
-                alt={table.title}
+                alt={table.name}
                 className="w-20 h-20 mx-auto mb-4 object-contain"
               />
             )}
@@ -59,7 +59,7 @@ const Table = () => {
             </span>
 
             <h1 className="text-2xl md:text-3xl font-extrabold text-white mt-1">
-              {table.title}
+              {table.name}
             </h1>
 
             <div
