@@ -1,15 +1,15 @@
-import newsSchema from "./newsSchema"
-import teamsSchema from "./teamsSchema"
-import gamesSchema from "./gamesSchema"
-import playersSchema from "./playersSchema"
-import tableSchema from "./tableSchema"
-import eventsSchema from "./eventsSchema"
+import events from "./events.schema.js"
+import games from "./games.schema.js"
+import news from "./news.schema.js"
+import players from "./players.schema.js"
+import tables from "./tables.schema.js"
+import teams from "./teams.schema.js"
 
 export const schemaTypes = [
-  newsSchema,
-  teamsSchema,
-  gamesSchema,
-  playersSchema,
-  tableSchema,
-  eventsSchema,
+  events,
+  games,
+  news,
+  players,
+  tables,
+  teams,
 ]
