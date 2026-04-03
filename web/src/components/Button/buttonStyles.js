@@ -2,7 +2,6 @@ export const baseStyles = `
   inline-flex items-center justify-center
   gap-2
   px-4 py-2
-  rounded-lg
   text-sm
   font-medium
   transition-all duration-300 ease-out
@@ -16,6 +15,7 @@ export const variants = {
     bg-violet-50
     text-violet-900
     border border-violet-500/30
+    rounded-lg
 
     hover:bg-violet-600
     hover:border-violet-400
@@ -26,6 +26,7 @@ export const variants = {
   cta: `
     bg-gradient-to-r from-violet-600 to-violet-800
     text-white
+    rounded-lg
 
     hover:from-violet-500 hover:to-violet-700
     hover:scale-105
@@ -36,6 +37,7 @@ export const variants = {
     bg-transparent
     text-neutral-200
     border border-neutral-600
+    rounded-lg
 
     hover:bg-neutral-800
     hover:border-violet-400
@@ -44,6 +46,7 @@ export const variants = {
   ghost: `
     bg-transparent
     text-neutral-300
+    rounded-lg
 
     hover:bg-neutral-800
   `,
@@ -53,6 +56,7 @@ export const variants = {
     text-neutral-900
     border border-neutral-300
     shadow-sm
+    rounded-lg
 
     hover:bg-neutral-200
     hover:shadow-md
@@ -62,6 +66,7 @@ export const variants = {
   bg-neutral-800
   text-neutral-200
   border border-neutral-600
+  rounded-lg
 
   hover:bg-violet-600
   hover:text-white
@@ -79,6 +84,7 @@ export const variants = {
   ghostStrong: `
     bg-neutral-900
     text-neutral-300
+    rounded-lg
 
     hover:bg-neutral-800
     hover:text-white

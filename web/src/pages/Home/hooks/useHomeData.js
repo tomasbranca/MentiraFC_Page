@@ -33,7 +33,7 @@ export const useHomeData = () => {
         setData({
           news: sortNews(newsRes),
           topScorers: scorersRes,
-          table: tournamentRes,
+          tournament: tournamentRes,
           game: gameRes,
         });
       } finally {
