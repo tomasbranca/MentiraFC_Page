@@ -65,6 +65,15 @@ export default {
     },
 
     {
+      name: 'tournament',
+      title: 'Torneo',
+      type: 'reference',
+      to: [{ type: 'tournaments' }],
+      hidden: ({ parent }) => parent?.competition !== 'Torneo',
+      validation: (Rule) => Rule.required().error('El torneo es obligatorio para partidos de tipo "Torneo"'),
+    },
+
+    {
       name: 'state',
       title: 'Estado del Partido',
       type: 'string',

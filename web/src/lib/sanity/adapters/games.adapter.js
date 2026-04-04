@@ -8,6 +8,8 @@ export const adaptGame = (game) => {
     location: game.location,
     competition: game.competition,
 
+    tournament: game.tournament?.name,
+
     rival: {
       name: game.rival?.name,
       imageUrl: game.rival?.logoUrl,
