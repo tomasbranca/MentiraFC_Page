@@ -6,6 +6,10 @@ export const LATEST_GAME_QUERY = `
     location,
     competition,
 
+    tournament->{
+      name
+    },
+
     rival->{
       name,
       "logoUrl": logo.asset->url
@@ -36,6 +40,10 @@ export const FINISHED_GAMES_QUERY = `
     state,
     location,
     competition,
+
+    tournament->{
+      name
+    },
 
     result{
       goalsFor,
