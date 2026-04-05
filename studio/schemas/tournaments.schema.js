@@ -2,6 +2,20 @@ export default {
   name: 'tournaments',
   title: 'Torneos',
   type: 'document',
+  preview: {
+    select: {
+      name: 'name',
+      organization: 'organization.name',
+      logo: 'organization.logo',
+    },
+    prepare({name, organization, logo}) {
+      return {
+        title: `${organization} - ${name}`,
+        media: logo,
+      }
+    },
+  },
+
   fields: [
     {
       name: 'name',
@@ -32,12 +46,6 @@ export default {
           name: 'standing',
           title: 'Fila de tabla',
           fields: [
-            {
-              name: 'position',
-              title: 'Posición',
-              type: 'number',
-              validation: (Rule) => Rule.required().min(1),
-            },
             {
               name: 'team',
               title: 'Equipo',
@@ -84,13 +92,16 @@ export default {
           ],
           preview: {
             select: {
-              position: 'position',
               team: 'team.name',
-              points: 'points',
+              logo: 'team.logo',
+              wins: 'wins',
+              draws: 'draws',
+              losses: 'losses',
             },
-            prepare({position, team}) {
+            prepare({team, logo, wins, draws, losses}) {
               return {
-                title: `${position}° - ${team}`,
+                title: `${team} (${wins} - ${draws} - ${losses})`,
+                media: logo,
               }
             },
           },

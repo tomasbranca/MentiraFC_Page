@@ -1,5 +1,28 @@
 export const sortStandings = (standings = []) => {
-  return [...standings].sort((a, b) => a.position - b.position);
+  return [...standings].sort((a, b) => {
+    const pointsA = calculatePoints(a);
+    const pointsB = calculatePoints(b);
+
+    if (pointsA !== pointsB) return pointsB - pointsA;
+
+    const diffA = calculateGoalDiff(a);
+    const diffB = calculateGoalDiff(b);
+
+    if (diffA !== diffB) return diffB - diffA;
+
+    if (a.goalsFor !== b.goalsFor) return b.goalsFor - a.goalsFor;
+
+    if (a.played !== b.played) return a.played - b.played;
+
+    return 0;
+  });
+};
+
+const addPositions = (standings) => {
+  return standings.map((row, index) => ({
+    ...row,
+    position: index + 1,
+  }));
 };
 
 export const calculatePoints = (row) => {
@@ -17,18 +40,22 @@ export const getRowType = (row) => {
 };
 
 export const formatStandings = (standings = []) => {
-  return standings
-    .map((row) => {
-      const points = calculatePoints(row);
-      const goalDiff = calculateGoalDiff(row);
-      const type = getRowType(row);
+  const enriched = standings.map((row) => {
+    const points = calculatePoints(row);
+    const goalDiff = calculateGoalDiff(row);
 
-      return {
-        ...row,
-        points,
-        goalDiff,
-        type,
-      };
-    })
-    .sort((a, b) => a.position - b.position);
+    return {
+      ...row,
+      points,
+      goalDiff,
+    };
+  });
+
+  const sorted = sortStandings(enriched);
+  const withPositions = addPositions(sorted);
+
+  return withPositions.map((row) => ({
+    ...row,
+    type: getRowType(row),
+  }));
 };
