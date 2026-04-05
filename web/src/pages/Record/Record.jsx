@@ -135,7 +135,7 @@ const Record = () => {
                       )}
 
                       {/* INFO EXTRA */}
-                      <div className="hidden sm:block text-xs text-neutral-400">
+                      <div className="text-xs text-neutral-400">
                         {game.competition === "Torneo" ? game.tournament : game.competition}
                         <span className="hidden md:inline">
                           {" "}
