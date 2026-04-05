@@ -5,7 +5,7 @@ export const TOURNAMENT_QUERY = `
       name,
       logo,
       primaryColor
-    }
+    },
     name,
     standings[]{
       position,

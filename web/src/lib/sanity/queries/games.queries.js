@@ -7,7 +7,10 @@ export const LATEST_GAME_QUERY = `
     competition,
 
     tournament->{
-      name
+      name,
+      organization->{
+        name
+      }
     },
 
     rival->{
@@ -42,7 +45,10 @@ export const FINISHED_GAMES_QUERY = `
     competition,
 
     tournament->{
-      name
+      name,
+      organization->{
+        name
+      }
     },
 
     result{

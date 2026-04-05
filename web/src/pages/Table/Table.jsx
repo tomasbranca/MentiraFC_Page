@@ -37,7 +37,7 @@ const Table = () => {
 
   const standings = tournament.standings;
 
-  const lastUpdate = formatLongDate(tournament.updatedAt );
+  const lastUpdate = formatLongDate(tournament.updatedAt);
 
   return (
     <>

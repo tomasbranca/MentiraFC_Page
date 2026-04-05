@@ -8,7 +8,9 @@ export const adaptGame = (game) => {
     location: game.location,
     competition: game.competition,
 
-    tournament: game.tournament?.name,
+    tournament: game.tournament
+      ? `${game.tournament.organization?.name} · ${game.tournament.name}`
+      : null,
 
     rival: {
       name: game.rival?.name,
