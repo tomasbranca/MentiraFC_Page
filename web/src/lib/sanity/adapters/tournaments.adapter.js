@@ -3,9 +3,9 @@ export const adaptTournament = (data) => {
 
   return {
     id: data._id,
-    name: data.name,
-    imageUrl: data.logo, // ✅ consistente
-    primaryColor: data.primaryColor,
+    name: `${data.organization?.name} · ${data.name}`,
+    imageUrl: data.organization?.logo, // ✅ consistente
+    primaryColor: data.organization?.primaryColor,
     updatedAt: data._updatedAt,
 
     standings: data.standings.map((row) => ({

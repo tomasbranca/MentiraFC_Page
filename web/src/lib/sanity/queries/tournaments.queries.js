@@ -1,9 +1,12 @@
 export const TOURNAMENT_QUERY = `
   *[_type == "tournaments" && active == true][0]{
     _id,
+    organization->{
+      name,
+      logo,
+      primaryColor
+    }
     name,
-    logo,
-    primaryColor,
     standings[]{
       position,
       played,
