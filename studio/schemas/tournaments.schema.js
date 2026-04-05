@@ -4,16 +4,16 @@ export default {
   type: 'document',
   fields: [
     {
-      name: 'organization',
-      title: 'Organizadores',
-      type: 'reference',
-      to: [{ type: 'organizations' }],
-      validation: (Rule) => Rule.required()
-    },
-    {
       name: 'name',
       title: 'Nombre del torneo',
       type: 'string',
+      validation: (Rule) => Rule.required(),
+    },
+    {
+      name: 'organization',
+      title: 'Organizadores',
+      type: 'reference',
+      to: [{type: 'organizations'}],
       validation: (Rule) => Rule.required(),
     },
     {
