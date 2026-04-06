@@ -5,7 +5,7 @@ export const adaptTournament = (data) => {
     id: data._id,
     name: `${data.organization?.name} · ${data.name}`,
     imageUrl: data.organization?.logo, // ✅ consistente
-    primaryColor: data.organization?.primaryColor,
+    primaryColor: data.organization?.primaryColor.hex,
     updatedAt: data._updatedAt,
 
     standings: data.standings.map((row) => ({
