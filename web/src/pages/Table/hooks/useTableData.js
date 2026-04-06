@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { formatStandings } from "../table.utils";
+import { formatStandings } from "../../../utils/table.utils";
 import { getTournament } from "../../../lib/sanity/services/tournaments.service";
 
 export const useTableData = () => {
