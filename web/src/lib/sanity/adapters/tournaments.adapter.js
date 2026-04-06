@@ -9,7 +9,6 @@ export const adaptTournament = (data) => {
     updatedAt: data._updatedAt,
 
     standings: data.standings.map((row) => ({
-      position: row.position,
       played: row.played,
       wins: row.wins,
       draws: row.draws,

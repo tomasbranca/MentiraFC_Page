@@ -8,7 +8,6 @@ export const TOURNAMENT_QUERY = `
     },
     name,
     standings[]{
-      position,
       played,
       wins,
       draws,
