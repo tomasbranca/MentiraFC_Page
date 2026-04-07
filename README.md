@@ -43,7 +43,7 @@ La elección de tecnologías responde a la necesidad de rendimiento, mantenibili
 | **Core**    | `React.js`       | Biblioteca UI basada en componentes para interfaces reactivas.    |
 | **Styling** | `Tailwind CSS`   | Sistema Utility-first para un diseño consistente y rápido.        |
 | **Content** | `Sanity.io`      | Headless CMS para gestión estructurada de noticias y plantel.     |
-| **Routing** | `React Router 6` | Gestión de navegación SPA fluida y dinámica.                      |
+| **Routing** | `React Router 7` | Gestión de navegación SPA fluida y dinámica.                      |
 | **Build**   | `Vite`           | Entorno de desarrollo de próxima generación y bundler optimizado. |
 
 ---
@@ -82,6 +82,18 @@ El desarrollo sigue un enfoque iterativo. Próximas implementaciones:
 - [ ] Mejoras de SEO (Open Graph, Meta Tags dinámicos).
 - [ ] Testing Unitario (Vitest/Jest) y E2E (Cypress).
 - [ ] Internacionalización (i18n).
+
+---
+
+## ⚙️ Variables de Entorno (Web)
+
+El frontend soporta configuración de Sanity vía variables de entorno en `web/.env`:
+
+```bash
+VITE_SANITY_PROJECT_ID=jwpxrdo2
+VITE_SANITY_DATASET=production
+VITE_SANITY_API_VERSION=2023-01-01
+```
 
 ---
 

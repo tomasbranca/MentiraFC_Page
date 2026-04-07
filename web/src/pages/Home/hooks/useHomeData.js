@@ -17,6 +17,7 @@ export const useHomeData = () => {
   });
 
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -36,6 +37,9 @@ export const useHomeData = () => {
           tournament: tournamentRes,
           game: gameRes,
         });
+        setError(false);
+      } catch {
+        setError(true);
       } finally {
         setLoading(false);
       }
@@ -44,5 +48,5 @@ export const useHomeData = () => {
     load();
   }, []);
 
-  return { ...data, loading };
+  return { ...data, loading, error };
 };
