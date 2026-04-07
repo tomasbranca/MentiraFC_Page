@@ -7,10 +7,19 @@ import Loader from "../../components/Loader/Loader";
 import { useHomeData } from "./hooks/useHomeData";
 
 const Home = () => {
-  const { news, topScorers, tournament, game, loading } =
+  const { news, topScorers, tournament, game, loading, error } =
     useHomeData();
 
   if (loading) return <Loader />;
+  if (error) {
+    return (
+      <main className="max-w-6xl mx-auto px-4 py-10">
+        <p className="rounded-md border border-red-500/40 bg-red-900/20 p-4 text-red-100">
+          No se pudieron cargar los datos de inicio. Intentá nuevamente en unos minutos.
+        </p>
+      </main>
+    );
+  }
 
   return (
     <>
