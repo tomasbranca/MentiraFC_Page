@@ -14,6 +14,7 @@ export const LATEST_GAME_QUERY = `
     },
 
     rival->{
+      _id,
       name,
       "logoUrl": logo.asset->url
     },
@@ -28,9 +29,14 @@ export const LATEST_GAME_QUERY = `
       game._ref == ^._id &&
       type == "goal"
     ]{
+      _id,
+      type,
+      order,
       player->{
+        _id,
         name,
-        lastName
+        lastName,
+        slug
       }
     }
   }
@@ -57,6 +63,7 @@ export const FINISHED_GAMES_QUERY = `
     },
 
     rival->{
+      _id,
       name,
       "logoUrl": logo.asset->url
     },
@@ -66,9 +73,58 @@ export const FINISHED_GAMES_QUERY = `
       game._ref == ^._id &&
       type == "goal"
     ]{
+      _id,
+      type,
+      order,
       player->{
+        _id,
         name,
-        lastName
+        lastName,
+        slug
+      }
+    }
+  }
+`;
+
+export const FINISHED_TOURNAMENT_GAMES_QUERY = `
+  *[_type == "games" && state == "finalizado" && competition == "Torneo"] | order(date desc) {
+    _id,
+    date,
+    state,
+    location,
+    competition,
+
+    tournament->{
+      name,
+      organization->{
+        name
+      }
+    },
+
+    result{
+      goalsFor,
+      goalsAgainst
+    },
+
+    rival->{
+      _id,
+      name,
+      "logoUrl": logo.asset->url
+    },
+
+    "events": *[
+      _type == "events" &&
+      game._ref == ^._id &&
+      type == "goal"
+    ]{
+      _id,
+      type,
+      order,
+      player->{
+        _id,
+        name,
+        lastName,
+        slug
       }
     }
   }

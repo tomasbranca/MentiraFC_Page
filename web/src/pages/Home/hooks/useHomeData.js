@@ -2,11 +2,11 @@ import { useEffect, useState } from "react";
 
 import { getNews } from "../../../lib/sanity/services/news.service";
 import { getTournament } from "../../../lib/sanity/services/tournaments.service";
-import { getLatestGame } from "../../../lib/sanity/services/games.service";
-import { getTopScorers } from "../../../lib/sanity/services/players.service";
+import { getLatestGame, getFinishedGames } from "../../../lib/sanity/services/games.service";
+import { getPlayers } from "../../../lib/sanity/services/players.service";
 
 import { sortNews } from "../../../utils/news.utils";
-
+import { getTopScorers } from "../../../lib/domain/stats";
 
 export const useHomeData = () => {
   const [data, setData] = useState({
@@ -24,16 +24,20 @@ export const useHomeData = () => {
       try {
         const year = new Date().getFullYear();
 
-        const [newsRes, scorersRes, tournamentRes, gameRes] =
+        const [newsRes, playersRes, finishedGamesRes, tournamentRes, gameRes] =
           await Promise.all([
             getNews(),
-            getTopScorers(year),
+            getPlayers(),
+            getFinishedGames(),
             getTournament(),
             getLatestGame(),
           ]);
+
+        const topScorers = getTopScorers(finishedGamesRes, playersRes, { year });
+
         setData({
           news: sortNews(newsRes),
-          topScorers: scorersRes,
+          topScorers,
           tournament: tournamentRes,
           game: gameRes,
         });

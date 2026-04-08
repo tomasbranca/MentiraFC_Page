@@ -13,8 +13,6 @@ export const adaptPlayer = (p) => {
     number: p.number,
     position: p.position,
     birthDate: p.birthDate,
-    goals: p.goals, // opcional legacy
-    goalsThisYear: p.goalsThisYear ?? 0, // ✅ FIX
     slug: p.slug?.current || p.slug,
     imageUrl: p.imageUrl,
   };

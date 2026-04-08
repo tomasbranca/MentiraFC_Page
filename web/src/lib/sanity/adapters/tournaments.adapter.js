@@ -8,7 +8,7 @@ export const adaptTournament = (data) => {
     primaryColor: data.organization?.primaryColor.hex,
     updatedAt: data._updatedAt,
 
-    standings: data.standings.map((row) => ({
+    standings: (data.standings || []).map((row) => ({
       played: row.played,
       wins: row.wins,
       draws: row.draws,
