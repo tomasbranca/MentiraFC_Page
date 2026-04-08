@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { getTournament } from "../../../lib/sanity/services/tournaments.service";
 import { getTeams } from "../../../lib/sanity/services/teams.service";
 import { getFinishedTournamentGames } from "../../../lib/sanity/services/games.service";
-import { getTournamentTable } from "../../../lib/domain/stats";
+import { getHybridTournamentTable } from "../../../lib/domain/stats";
 
 export const useTableData = () => {
   const [tournament, setTournament] = useState(null);
@@ -17,19 +17,17 @@ export const useTableData = () => {
           return;
         }
 
-        const teamIdsInTournament = new Set(
-          (tournamentData.standings || []).map((row) => row.team.id)
+        const mainTeam = teams.find((team) => team.isMain) || null;
+
+        const gamesFromActiveTournament = games.filter(
+          (game) => game.tournamentId === tournamentData.id
         );
 
-        const scopedTeams = teams.filter((team) => teamIdsInTournament.has(team.id));
-
-        const scopedGames = games.filter(
-          (game) =>
-            game.tournamentId === tournamentData.id &&
-            teamIdsInTournament.has(game.rival?.id)
-        );
-
-        const standings = getTournamentTable(scopedGames, scopedTeams);
+        const standings = getHybridTournamentTable({
+          manualStandings: tournamentData.standings,
+          games: gamesFromActiveTournament,
+          mainTeam,
+        });
 
         setTournament({
           ...tournamentData,
