@@ -12,12 +12,24 @@ export const useTableData = () => {
   useEffect(() => {
     Promise.all([getTournament(), getTeams(), getFinishedTournamentGames()])
       .then(([tournamentData, teams, games]) => {
-        const standings = getTournamentTable(games, teams);
-
         if (!tournamentData) {
           setTournament(null);
           return;
         }
+
+        const teamIdsInTournament = new Set(
+          (tournamentData.standings || []).map((row) => row.team.id)
+        );
+
+        const scopedTeams = teams.filter((team) => teamIdsInTournament.has(team.id));
+
+        const scopedGames = games.filter(
+          (game) =>
+            game.tournamentId === tournamentData.id &&
+            teamIdsInTournament.has(game.rival?.id)
+        );
+
+        const standings = getTournamentTable(scopedGames, scopedTeams);
 
         setTournament({
           ...tournamentData,

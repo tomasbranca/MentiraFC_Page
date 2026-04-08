@@ -7,6 +7,7 @@ export const LATEST_GAME_QUERY = `
     competition,
 
     tournament->{
+      _id,
       name,
       organization->{
         name
@@ -51,6 +52,7 @@ export const FINISHED_GAMES_QUERY = `
     competition,
 
     tournament->{
+      _id,
       name,
       organization->{
         name
@@ -95,6 +97,7 @@ export const FINISHED_TOURNAMENT_GAMES_QUERY = `
     competition,
 
     tournament->{
+      _id,
       name,
       organization->{
         name

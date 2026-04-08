@@ -22,6 +22,8 @@ export const adaptGame = (game) => {
     location: game.location,
     competition: game.competition,
 
+    tournamentId: game.tournament?._id || null,
+
     tournament: game.tournament
       ? `${game.tournament.organization?.name} · ${game.tournament.name}`
       : null,
