@@ -16,18 +16,18 @@
   ],
   "dependencies": {
     "@sanity/color-input": "^6.0.4",
-    "@sanity/vision": "^5.19.0",
-    "react": "^19.1",
-    "react-dom": "^19.1",
-    "sanity": "^5.19.0",
-    "styled-components": "^6.1.18"
+    "@sanity/vision": "^5.20.0",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "sanity": "^5.20.0",
+    "styled-components": "^6.3.12"
   },
   "devDependencies": {
-    "@sanity/eslint-config-studio": "^5.0.2",
-    "@types/react": "^19.1",
-    "eslint": "^9.28",
-    "prettier": "^3.5",
-    "typescript": "^5.8"
+    "@sanity/eslint-config-studio": "^6.0.0",
+    "@types/react": "^19.2.14",
+    "eslint": "^10.2.0",
+    "prettier": "^3.8.1",
+    "typescript": "^6.0.2"
   },
   "prettier": {
     "semi": false,

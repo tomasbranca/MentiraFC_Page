@@ -1,0 +1,10 @@
+{
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  },
+  "scripts": {
+  "dev:web": "cd web && npm run dev",
+  "dev:studio": "cd studio && npm run dev",
+  "dev": "concurrently \"npm run dev:web\" \"npm run dev:studio\""
+}
+}
