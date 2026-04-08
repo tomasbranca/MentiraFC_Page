@@ -1,3 +1,17 @@
+const adaptEvent = (event) => ({
+  id: event._id,
+  type: event.type,
+  order: event.order,
+  player: event.player
+    ? {
+        id: event.player._id,
+        name: event.player.name,
+        lastName: event.player.lastName,
+        slug: event.player.slug?.current || event.player.slug,
+      }
+    : null,
+});
+
 export const adaptGame = (game) => {
   if (!game) return null;
 
@@ -8,11 +22,14 @@ export const adaptGame = (game) => {
     location: game.location,
     competition: game.competition,
 
+    tournamentId: game.tournament?._id || null,
+
     tournament: game.tournament
       ? `${game.tournament.organization?.name} · ${game.tournament.name}`
       : null,
 
     rival: {
+      id: game.rival?._id,
       name: game.rival?.name,
       imageUrl: game.rival?.logoUrl,
     },
@@ -22,7 +39,7 @@ export const adaptGame = (game) => {
       goalsAgainst: game.result?.goalsAgainst,
     },
 
-    events: game.events || [], // 🔥 CLAVE
+    events: (game.events || []).map(adaptEvent),
   };
 };
 

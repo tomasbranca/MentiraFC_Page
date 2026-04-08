@@ -1,8 +1,4 @@
-import {
-  formatStandings,
-  getMainTeamIndex,
-  getSurroundingTeams,
-} from "../../../utils/table.utils";
+import { getMainTeamIndex, getSurroundingTeams } from "../../../utils/table.utils";
 import { Link } from "react-router-dom";
 import { ROUTES } from "../../../constants/routes.constants";
 import { getImageUrl } from "../../../services/imageService";
@@ -10,7 +6,7 @@ import { getImageUrl } from "../../../services/imageService";
 const TableWidget = ({ table }) => {
   if (!table) return null;
 
-  const standings = formatStandings(table.standings);
+  const standings = table.standings || [];
   const mainIndex = getMainTeamIndex(standings);
   const surroundingTeams = getSurroundingTeams(standings, mainIndex);
 
@@ -27,7 +23,7 @@ const TableWidget = ({ table }) => {
       {/* LISTA */}
       <div className="space-y-2">
         {surroundingTeams.map((row) => {
-          const points = row.points;
+          const points = row.points ?? row.wins * 3 + row.draws;
           const isMain = row.team.isMain;
 
           return (
