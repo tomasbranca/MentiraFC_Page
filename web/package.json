@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run"
   },
   "dependencies": {
     "@portabletext/react": "^5.0.0",
@@ -31,6 +32,7 @@
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.4.0",
     "typescript": "^6.0.2",
-    "vite": "^7.1.6"
+    "vite": "^7.1.6",
+    "vitest": "^2.1.9"
   }
 }
