@@ -2,24 +2,23 @@ import { useState } from "react";
 import { urlFor } from "../../lib/sanity/sanity.image";
 import Loader from "../../components/Loader/Loader";
 import Button from "../../components/Button/Button";
+import ErrorFallback from "../../components/errors/ErrorFallback";
 import { useTableData } from "./hooks/useTableData";
 import { formatLongDate } from "../../utils/date.utils";
 
 const Table = () => {
-  const { tournament, loading, error } = useTableData();
+  const { tournament, loading, error, refetch } = useTableData();
   const [mode, setMode] = useState("compact");
 
   if (loading) return <Loader />;
 
   if (error) {
     return (
-      <main className="min-h-screen flex items-center justify-center px-4 text-white">
-        <div className="text-center max-w-md">
-          <div className="text-5xl mb-4">⚠️</div>
-          <h2 className="text-xl font-bold mb-2">Error al cargar</h2>
-          <p className="text-neutral-400">Intentá nuevamente más tarde.</p>
-        </div>
-      </main>
+      <ErrorFallback
+        title="Error al cargar la tabla"
+        message="Intentá nuevamente más tarde."
+        onRetry={refetch}
+      />
     );
   }
 

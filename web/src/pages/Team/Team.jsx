@@ -2,35 +2,27 @@ import { useState } from "react";
 import PlayerCard from "../../components/PlayerCard/PlayerCard";
 import Button from "../../components/Button/Button";
 import Loader from "../../components/Loader/Loader";
+import ErrorFallback from "../../components/errors/ErrorFallback";
 
 import { useTeamData } from "./hooks/useTeamdata";
 import { getFilteredSections } from "./team.utils";
 import { POSITION_CONFIG, FILTERS } from "./team.constants";
 
 const Team = () => {
-  const { players, grouped, loading, error } = useTeamData();
+  const { players, grouped, loading, error, refetch } = useTeamData();
 
   const [filter, setFilter] = useState("all");
   const [filtersOpen, setFiltersOpen] = useState(false);
-
-  
 
   if (loading) return <Loader />;
 
   if (error) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-violet-950">
-        <div className="bg-white md:border border-gray-200 p-10 max-w-md text-center">
-          <h2 className="text-2xl font-extrabold mb-4 text-gray-900">
-            Error al cargar el plantel
-          </h2>
-
-          <p className="text-gray-500">
-            No se pudo obtener la información de los jugadores. Intentá recargar
-            la página.
-          </p>
-        </div>
-      </main>
+      <ErrorFallback
+        title="Error al cargar el plantel"
+        message="No se pudo obtener la información de los jugadores. Intentá recargar la página."
+        onRetry={refetch}
+      />
     );
   }
 
@@ -39,7 +31,6 @@ const Team = () => {
   return (
     <div className="w-full md:max-w-7xl md:mx-auto md:px-4 md:py-12">
       <div className="bg-neutral-900 md:border border-gray-200 shadow-sm">
-        
         {/* HEADER */}
         <header className="w-full p-5 md:p-8 md:border-b border-gray-200 bg-violet-900">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-violet-50 tracking-tight">
@@ -123,8 +114,7 @@ const Team = () => {
                     </div>
 
                     <span className="text-sm font-semibold text-violet-200">
-                      {list.length}{" "}
-                      {list.length === 1 ? "jugador" : "jugadores"}
+                      {list.length} {list.length === 1 ? "jugador" : "jugadores"}
                     </span>
                   </div>
 

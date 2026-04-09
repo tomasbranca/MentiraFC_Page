@@ -56,13 +56,17 @@ export const useHomeData = () => {
     };
   }, []);
 
-  const { data, loading, error } = useFetchData(fetcher, {
+  const { data, loading, error, refetch } = useFetchData(fetcher, {
     initialData: {
       news: [],
       topScorers: [],
       tournament: null,
     },
+    errorContext: {
+      page: "Home",
+      action: "load_home_data",
+    },
   });
 
-  return { ...data, loading, error: Boolean(error) };
+  return { ...data, loading, error: Boolean(error), refetch };
 };

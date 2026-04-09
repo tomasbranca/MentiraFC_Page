@@ -35,9 +35,13 @@ export const useTableData = () => {
     };
   }, []);
 
-  const { data: tournament, loading, error } = useFetchData(fetcher, {
+  const { data: tournament, loading, error, refetch } = useFetchData(fetcher, {
     initialData: null,
+    errorContext: {
+      page: "Table",
+      action: "load_table",
+    },
   });
 
-  return { tournament, loading, error: Boolean(error) };
+  return { tournament, loading, error: Boolean(error), refetch };
 };

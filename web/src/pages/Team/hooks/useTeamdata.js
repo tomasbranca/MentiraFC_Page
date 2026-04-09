@@ -12,12 +12,16 @@ export const useTeamData = () => {
     };
   }, []);
 
-  const { data, loading, error } = useFetchData(fetcher, {
+  const { data, loading, error, refetch } = useFetchData(fetcher, {
     initialData: {
       players: [],
       grouped: {},
     },
+    errorContext: {
+      page: "Team",
+      action: "load_team",
+    },
   });
 
-  return { ...data, loading, error: Boolean(error) };
+  return { ...data, loading, error: Boolean(error), refetch };
 };

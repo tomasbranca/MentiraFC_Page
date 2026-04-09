@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { reportError } from "../lib/errors/errorLogger";
 
 export const useFetchData = (fetcher, options = {}) => {
-  const { initialData = null, onError } = options;
+  const { initialData = null, onError, errorContext } = options;
   const initialDataRef = useRef(initialData);
   const onErrorRef = useRef(onError);
+  const errorContextRef = useRef(errorContext);
 
   const [data, setData] = useState(initialDataRef.current);
   const [loading, setLoading] = useState(true);
@@ -11,7 +13,8 @@ export const useFetchData = (fetcher, options = {}) => {
 
   useEffect(() => {
     onErrorRef.current = onError;
-  }, [onError]);
+    errorContextRef.current = errorContext;
+  }, [onError, errorContext]);
 
   const execute = useCallback(async () => {
     setLoading(true);
@@ -23,9 +26,15 @@ export const useFetchData = (fetcher, options = {}) => {
       return result;
     } catch (err) {
       setError(err);
+      reportError(err, {
+        source: "useFetchData",
+        ...errorContextRef.current,
+      });
+
       if (onErrorRef.current) {
         onErrorRef.current(err);
       }
+
       return initialDataRef.current;
     } finally {
       setLoading(false);

@@ -25,9 +25,14 @@ export const usePlayerDetail = (slug) => {
     };
   }, [slug, year]);
 
-  const { data: player, loading, error } = useFetchData(fetcher, {
+  const { data: player, loading, error, refetch } = useFetchData(fetcher, {
     initialData: null,
+    errorContext: {
+      page: "PlayerDetail",
+      action: "load_player_detail",
+      slug,
+    },
   });
 
-  return { player, loading, error: Boolean(error), year };
+  return { player, loading, error: Boolean(error), year, refetch };
 };

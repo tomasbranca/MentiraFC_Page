@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Loader from "../../components/Loader/Loader";
 import Button from "../../components/Button/Button";
+import ErrorFallback from "../../components/errors/ErrorFallback";
 
 import { useRecordData } from "./hooks/useRecordData";
 import {
@@ -14,11 +15,21 @@ import { formatDate } from "../../utils/date.utils";
 import "./Record.css";
 
 const Record = () => {
-  const { games, loading } = useRecordData();
+  const { games, loading, error, refetch } = useRecordData();
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [openGame, setOpenGame] = useState(null);
 
   if (loading) return <Loader />;
+
+  if (error) {
+    return (
+      <ErrorFallback
+        title="No se pudo cargar el historial"
+        message="Intentá nuevamente en unos minutos."
+        onRetry={refetch}
+      />
+    );
+  }
 
   const visibleGames = paginateGames(games, visibleCount);
   const groupedGames = groupGamesByMonth(visibleGames);
