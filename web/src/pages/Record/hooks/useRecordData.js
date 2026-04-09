@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { getFinishedGames } from "../../../lib/sanity/services/games.service";
+import { getAllGames } from "../../../data/games";
 
 export const useRecordData = () => {
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getFinishedGames()
+    getAllGames()
       .then((data) => setGames(data || []))
       .finally(() => setLoading(false));
   }, []);

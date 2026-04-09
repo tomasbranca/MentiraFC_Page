@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getNewsBySlug, getSuggestedNews } from "../../../lib/sanity/services/news.service";
+import { getNewsBySlug, getSuggestedNews } from "../../../data/news";
 
 import { selectSuggestedNews } from "../newsDetail.utils";
 
