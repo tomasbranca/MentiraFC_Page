@@ -1,35 +1,31 @@
-import { useEffect, useState } from "react";
+import { useCallback } from "react";
 import { getNewsBySlug, getSuggestedNews } from "../../../data/news";
 
 import { selectSuggestedNews } from "../newsDetail.utils";
+import { useFetchData } from "../../../hooks/useFetchData";
 
 export const useNewsDetail = (slug) => {
-  const [newsItem, setNewsItem] = useState(null);
-  const [suggested, setSuggested] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const fetcher = useCallback(async () => {
+    const newsItem = await getNewsBySlug(slug);
+    const suggestedNews = await getSuggestedNews(slug);
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const data = await getNewsBySlug(slug);
-        setNewsItem(data);
+    const selected = selectSuggestedNews(suggestedNews);
 
-        const suggestedNews = await getSuggestedNews(slug);
-
-        const selected = selectSuggestedNews(suggestedNews);
-
-        if (selected.length >= 3) {
-          setSuggested(selected);
-        }
-      } catch (error) {
-        console.error("Error cargando noticia:", error);
-      } finally {
-        setLoading(false);
-      }
+    return {
+      newsItem,
+      suggested: selected.length >= 3 ? selected : [],
     };
-
-    load();
   }, [slug]);
 
-  return { newsItem, suggested, loading };
+  const { data, loading, error } = useFetchData(fetcher, {
+    initialData: {
+      newsItem: null,
+      suggested: [],
+    },
+    onError: (err) => {
+      console.error("Error cargando noticia:", err);
+    },
+  });
+
+  return { ...data, loading, error: Boolean(error) };
 };

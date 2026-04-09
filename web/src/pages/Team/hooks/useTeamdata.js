@@ -1,23 +1,23 @@
-import { useEffect, useState } from "react";
+import { useCallback } from "react";
 import { getPlayers } from "../../../data/players";
 import { groupPlayersByPosition } from "../team.utils";
+import { useFetchData } from "../../../hooks/useFetchData";
 
 export const useTeamData = () => {
-  const [players, setPlayers] = useState([]);
-  const [grouped, setGrouped] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    getPlayers()
-      .then((data) => {
-        setPlayers(data);
-        setGrouped(groupPlayersByPosition(data));
-        setError(false);
-      })
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
+  const fetcher = useCallback(async () => {
+    const players = await getPlayers();
+    return {
+      players,
+      grouped: groupPlayersByPosition(players),
+    };
   }, []);
 
-  return { players, grouped, loading, error };
+  const { data, loading, error } = useFetchData(fetcher, {
+    initialData: {
+      players: [],
+      grouped: {},
+    },
+  });
+
+  return { ...data, loading, error: Boolean(error) };
 };
