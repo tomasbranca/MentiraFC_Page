@@ -1,43 +1,43 @@
-import { useEffect, useState } from "react";
+import { useCallback } from "react";
 import { getTournament } from "../../../data/tournament";
 import { getTeams } from "../../../lib/sanity/services/teams.service";
 import { getTournamentGames } from "../../../data/games";
 import { getHybridTournamentTable } from "../../../lib/domain/stats";
+import { useFetchData } from "../../../hooks/useFetchData";
 
 export const useTableData = () => {
-  const [tournament, setTournament] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const fetcher = useCallback(async () => {
+    const [tournamentData, teams, games] = await Promise.all([
+      getTournament(),
+      getTeams(),
+      getTournamentGames(),
+    ]);
 
-  useEffect(() => {
-    Promise.all([getTournament(), getTeams(), getTournamentGames()])
-      .then(([tournamentData, teams, games]) => {
-        if (!tournamentData) {
-          setTournament(null);
-          return;
-        }
+    if (!tournamentData) {
+      return null;
+    }
 
-        const mainTeam = teams.find((team) => team.isMain) || null;
+    const mainTeam = teams.find((team) => team.isMain) || null;
 
-        const gamesFromActiveTournament = games.filter(
-          (game) => game.tournamentId === tournamentData.id
-        );
+    const gamesFromActiveTournament = games.filter(
+      (game) => game.tournamentId === tournamentData.id
+    );
 
-        const standings = getHybridTournamentTable({
-          manualStandings: tournamentData.standings,
-          games: gamesFromActiveTournament,
-          mainTeam,
-        });
+    const standings = getHybridTournamentTable({
+      manualStandings: tournamentData.standings,
+      games: gamesFromActiveTournament,
+      mainTeam,
+    });
 
-        setTournament({
-          ...tournamentData,
-          standings,
-        });
-        setError(false);
-      })
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
+    return {
+      ...tournamentData,
+      standings,
+    };
   }, []);
 
-  return { tournament, loading, error };
+  const { data: tournament, loading, error } = useFetchData(fetcher, {
+    initialData: null,
+  });
+
+  return { tournament, loading, error: Boolean(error) };
 };

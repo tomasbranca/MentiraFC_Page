@@ -1,40 +1,33 @@
-import { useEffect, useState } from "react";
+import { useCallback } from "react";
 import { getPlayerBySlug } from "../../../data/players";
 import { getAllGames } from "../../../data/games";
 import { getPlayerStats } from "../../../lib/domain/stats";
+import { useFetchData } from "../../../hooks/useFetchData";
 
 export const usePlayerDetail = (slug) => {
-  const [player, setPlayer] = useState(null);
-  const [loading, setLoading] = useState(true);
-
   const year = new Date().getFullYear();
 
-  useEffect(() => {
-    const loadPlayer = async () => {
-      try {
-        const [playerData, gamesData] = await Promise.all([
-          getPlayerBySlug(slug),
-          getAllGames(),
-        ]);
+  const fetcher = useCallback(async () => {
+    const [playerData, gamesData] = await Promise.all([
+      getPlayerBySlug(slug),
+      getAllGames(),
+    ]);
 
-        if (!playerData) {
-          setPlayer(null);
-          return;
-        }
+    if (!playerData) {
+      return null;
+    }
 
-        const stats = getPlayerStats(gamesData, playerData.id, { year });
+    const stats = getPlayerStats(gamesData, playerData.id, { year });
 
-        setPlayer({
-          ...playerData,
-          goalsThisYear: stats.goals,
-        });
-      } finally {
-        setLoading(false);
-      }
+    return {
+      ...playerData,
+      goalsThisYear: stats.goals,
     };
-
-    loadPlayer();
   }, [slug, year]);
 
-  return { player, loading, year };
+  const { data: player, loading, error } = useFetchData(fetcher, {
+    initialData: null,
+  });
+
+  return { player, loading, error: Boolean(error), year };
 };

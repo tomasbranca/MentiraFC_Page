@@ -1,21 +1,17 @@
-import { useEffect, useState } from "react";
+import { useCallback } from "react";
 import { getNews } from "../../../data/news";
 import { sortNews } from "../../../utils/news.utils";
+import { useFetchData } from "../../../hooks/useFetchData";
 
 export const useNewsData = () => {
-  const [news, setNews] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    getNews()
-      .then((data) => {
-        setNews(sortNews(data));
-        setError(false);
-      })
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
+  const fetcher = useCallback(async () => {
+    const data = await getNews();
+    return sortNews(data);
   }, []);
 
-  return { news, loading, error };
+  const { data: news, loading, error } = useFetchData(fetcher, {
+    initialData: [],
+  });
+
+  return { news, loading, error: Boolean(error) };
 };

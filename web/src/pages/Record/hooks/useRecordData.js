@@ -1,15 +1,16 @@
-import { useEffect, useState } from "react";
+import { useCallback } from "react";
 import { getAllGames } from "../../../data/games";
+import { useFetchData } from "../../../hooks/useFetchData";
 
 export const useRecordData = () => {
-  const [games, setGames] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    getAllGames()
-      .then((data) => setGames(data || []))
-      .finally(() => setLoading(false));
+  const fetcher = useCallback(async () => {
+    const data = await getAllGames();
+    return data || [];
   }, []);
 
-  return { games, loading };
+  const { data: games, loading, error } = useFetchData(fetcher, {
+    initialData: [],
+  });
+
+  return { games, loading, error: Boolean(error) };
 };
