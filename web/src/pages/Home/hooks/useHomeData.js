@@ -2,11 +2,7 @@ import { useEffect, useState } from "react";
 
 import { getNews } from "../../../data/news";
 import { getTournament } from "../../../data/tournament";
-import {
-  getLatestGame,
-  getAllGames,
-  getTournamentGames,
-} from "../../../data/games";
+import { getAllGames, getTournamentGames } from "../../../data/games";
 import { getPlayers } from "../../../data/players";
 import { getTeams } from "../../../lib/sanity/services/teams.service";
 
@@ -18,7 +14,6 @@ export const useHomeData = () => {
     news: [],
     topScorers: [],
     tournament: null,
-    game: null,
   });
 
   const [loading, setLoading] = useState(true);
@@ -34,7 +29,6 @@ export const useHomeData = () => {
           playersRes,
           finishedGamesRes,
           tournamentRes,
-          gameRes,
           teamsRes,
           finishedTournamentGamesRes,
         ] = await Promise.all([
@@ -42,7 +36,6 @@ export const useHomeData = () => {
           getPlayers(),
           getAllGames(),
           getTournament(),
-          getLatestGame(),
           getTeams(),
           getTournamentGames(),
         ]);
@@ -70,7 +63,6 @@ export const useHomeData = () => {
           news: sortNews(newsRes),
           topScorers,
           tournament: hybridTournament,
-          game: gameRes,
         });
         setError(false);
       } catch {

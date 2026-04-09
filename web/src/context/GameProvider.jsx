@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { GameContext } from "./GameContext";
-import { fetchGame } from "../services/gameService";
+import { getLatestGame } from "../data/games";
 
 export const GameProvider = ({ children }) => {
   const [game, setGame] = useState(null);
@@ -12,7 +12,7 @@ export const GameProvider = ({ children }) => {
       setLoading(true);
       setError(null);
 
-      const data = await fetchGame();
+      const data = await getLatestGame();
       setGame(data);
     } catch (err) {
       setError(err);
