@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { getPlayerBySlug } from "../../../lib/sanity/services/players.service";
-import { getFinishedGames } from "../../../lib/sanity/services/games.service";
+import { getPlayerBySlug } from "../../../data/players";
+import { getAllGames } from "../../../data/games";
 import { getPlayerStats } from "../../../lib/domain/stats";
 
 export const usePlayerDetail = (slug) => {
@@ -14,7 +14,7 @@ export const usePlayerDetail = (slug) => {
       try {
         const [playerData, gamesData] = await Promise.all([
           getPlayerBySlug(slug),
-          getFinishedGames(),
+          getAllGames(),
         ]);
 
         if (!playerData) {

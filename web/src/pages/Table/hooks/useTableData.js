@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { getTournament } from "../../../lib/sanity/services/tournaments.service";
+import { getTournament } from "../../../data/tournament";
 import { getTeams } from "../../../lib/sanity/services/teams.service";
-import { getFinishedTournamentGames } from "../../../lib/sanity/services/games.service";
+import { getTournamentGames } from "../../../data/games";
 import { getHybridTournamentTable } from "../../../lib/domain/stats";
 
 export const useTableData = () => {
@@ -10,7 +10,7 @@ export const useTableData = () => {
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    Promise.all([getTournament(), getTeams(), getFinishedTournamentGames()])
+    Promise.all([getTournament(), getTeams(), getTournamentGames()])
       .then(([tournamentData, teams, games]) => {
         if (!tournamentData) {
           setTournament(null);

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getNews } from "../../../lib/sanity/services/news.service";
+import { getNews } from "../../../data/news";
 import { sortNews } from "../../../utils/news.utils";
 
 export const useNewsData = () => {

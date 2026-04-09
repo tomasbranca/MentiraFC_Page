@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 
-import { getNews } from "../../../lib/sanity/services/news.service";
-import { getTournament } from "../../../lib/sanity/services/tournaments.service";
+import { getNews } from "../../../data/news";
+import { getTournament } from "../../../data/tournament";
 import {
   getLatestGame,
-  getFinishedGames,
-  getFinishedTournamentGames,
-} from "../../../lib/sanity/services/games.service";
-import { getPlayers } from "../../../lib/sanity/services/players.service";
+  getAllGames,
+  getTournamentGames,
+} from "../../../data/games";
+import { getPlayers } from "../../../data/players";
 import { getTeams } from "../../../lib/sanity/services/teams.service";
 
 import { sortNews } from "../../../utils/news.utils";
@@ -40,11 +40,11 @@ export const useHomeData = () => {
         ] = await Promise.all([
           getNews(),
           getPlayers(),
-          getFinishedGames(),
+          getAllGames(),
           getTournament(),
           getLatestGame(),
           getTeams(),
-          getFinishedTournamentGames(),
+          getTournamentGames(),
         ]);
 
         const topScorers = getTopScorers(finishedGamesRes, playersRes, { year });

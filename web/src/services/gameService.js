@@ -1,4 +1,4 @@
-import { getLatestGame } from "../lib/sanity/services/games.service";
+import { getLatestGame } from "../data/games";
 
 export const fetchGame = async () => {
   try {

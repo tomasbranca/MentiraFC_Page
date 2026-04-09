@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getPlayers } from "../../../lib/sanity/services/players.service";
+import { getPlayers } from "../../../data/players";
 import { groupPlayersByPosition } from "../team.utils";
 
 export const useTeamData = () => {
