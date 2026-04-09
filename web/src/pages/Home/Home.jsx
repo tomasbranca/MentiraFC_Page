@@ -3,12 +3,13 @@ import TopScorers from "../../features/main/TopScorers/TopScorers";
 import TableWidget from "../../features/main/TableWidget/TableWidget";
 import Game from "../../features/main/Game/Game";
 import Loader from "../../components/Loader/Loader";
+import { useGame } from "../../context/useGame";
 
 import { useHomeData } from "./hooks/useHomeData";
 
 const Home = () => {
-  const { news, topScorers, tournament, game, loading, error } =
-    useHomeData();
+  const { news, topScorers, tournament, loading, error } = useHomeData();
+  const { game, loading: gameLoading } = useGame();
 
   if (loading) return <Loader />;
   if (error) {
@@ -27,7 +28,7 @@ const Home = () => {
         <LatestNews news={news} />
       </div>
 
-      <Game game={game} />
+      <Game game={game} loading={gameLoading} />
 
       <div className="relative grid grid-cols-1 lg:grid-cols-3">
         <TopScorers players={topScorers} />
