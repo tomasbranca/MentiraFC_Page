@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import { PortableText } from "@portabletext/react";
 
 import Loader from "../../components/Loader/Loader";
+import ErrorFallback from "../../components/errors/ErrorFallback";
 import NewsCard from "../../components/NewsCard/NewsCard";
 
 import { useNewsDetail } from "./hooks/useNewsDetail";
@@ -10,10 +11,20 @@ import { formatDate } from "../../utils/date.utils";
 const NewsDetail = () => {
   const { slug } = useParams();
 
-  const { newsItem, suggested, loading } =
+  const { newsItem, suggested, loading, error, refetch } =
     useNewsDetail(slug);
 
   if (loading) return <Loader />;
+
+  if (error) {
+    return (
+      <ErrorFallback
+        title="No se pudo cargar la noticia"
+        message="Intentá nuevamente en unos minutos."
+        onRetry={refetch}
+      />
+    );
+  }
 
   if (!newsItem) {
     return (

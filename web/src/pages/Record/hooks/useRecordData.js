@@ -8,9 +8,13 @@ export const useRecordData = () => {
     return data || [];
   }, []);
 
-  const { data: games, loading, error } = useFetchData(fetcher, {
+  const { data: games, loading, error, refetch } = useFetchData(fetcher, {
     initialData: [],
+    errorContext: {
+      page: "Record",
+      action: "load_record",
+    },
   });
 
-  return { games, loading, error: Boolean(error) };
+  return { games, loading, error: Boolean(error), refetch };
 };

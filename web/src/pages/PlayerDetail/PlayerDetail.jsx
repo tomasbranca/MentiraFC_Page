@@ -1,5 +1,6 @@
 import { useParams, Link } from "react-router-dom";
 import Loader from "../../components/Loader/Loader";
+import ErrorFallback from "../../components/errors/ErrorFallback";
 import { FaArrowLeft } from "react-icons/fa";
 
 import { usePlayerDetail } from "./hooks/usePlayerDetail";
@@ -9,9 +10,19 @@ import { ROUTES } from "../../constants/routes.constants";
 
 const PlayerDetail = () => {
   const { slug } = useParams();
-  const { player, loading, year } = usePlayerDetail(slug);
+  const { player, loading, error, year, refetch } = usePlayerDetail(slug);
 
   if (loading) return <Loader />;
+
+  if (error) {
+    return (
+      <ErrorFallback
+        title="No se pudo cargar el jugador"
+        message="Intentá nuevamente en unos minutos."
+        onRetry={refetch}
+      />
+    );
+  }
 
   if (!player) {
     return (

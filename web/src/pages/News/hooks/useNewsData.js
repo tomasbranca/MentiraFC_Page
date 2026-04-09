@@ -9,9 +9,13 @@ export const useNewsData = () => {
     return sortNews(data);
   }, []);
 
-  const { data: news, loading, error } = useFetchData(fetcher, {
+  const { data: news, loading, error, refetch } = useFetchData(fetcher, {
     initialData: [],
+    errorContext: {
+      page: "News",
+      action: "load_news",
+    },
   });
 
-  return { news, loading, error: Boolean(error) };
+  return { news, loading, error: Boolean(error), refetch };
 };

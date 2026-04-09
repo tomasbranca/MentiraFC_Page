@@ -3,22 +3,23 @@ import TopScorers from "../../features/main/TopScorers/TopScorers";
 import TableWidget from "../../features/main/TableWidget/TableWidget";
 import Game from "../../features/main/Game/Game";
 import Loader from "../../components/Loader/Loader";
+import ErrorFallback from "../../components/errors/ErrorFallback";
 import { useGame } from "../../context/useGame";
 
 import { useHomeData } from "./hooks/useHomeData";
 
 const Home = () => {
-  const { news, topScorers, tournament, loading, error } = useHomeData();
+  const { news, topScorers, tournament, loading, error, refetch } = useHomeData();
   const { game, loading: gameLoading } = useGame();
 
   if (loading) return <Loader />;
   if (error) {
     return (
-      <main className="max-w-6xl mx-auto px-4 py-10">
-        <p className="rounded-md border border-red-500/40 bg-red-900/20 p-4 text-red-100">
-          No se pudieron cargar los datos de inicio. Intentá nuevamente en unos minutos.
-        </p>
-      </main>
+      <ErrorFallback
+        title="No se pudieron cargar los datos de inicio"
+        message="Intentá nuevamente en unos minutos."
+        onRetry={refetch}
+      />
     );
   }
 

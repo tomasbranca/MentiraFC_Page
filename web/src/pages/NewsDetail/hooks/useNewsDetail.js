@@ -17,15 +17,17 @@ export const useNewsDetail = (slug) => {
     };
   }, [slug]);
 
-  const { data, loading, error } = useFetchData(fetcher, {
+  const { data, loading, error, refetch } = useFetchData(fetcher, {
     initialData: {
       newsItem: null,
       suggested: [],
     },
-    onError: (err) => {
-      console.error("Error cargando noticia:", err);
+    errorContext: {
+      page: "NewsDetail",
+      action: "load_news_detail",
+      slug,
     },
   });
 
-  return { ...data, loading, error: Boolean(error) };
+  return { ...data, loading, error: Boolean(error), refetch };
 };
