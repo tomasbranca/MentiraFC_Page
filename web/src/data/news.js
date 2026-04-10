@@ -2,7 +2,7 @@ import {
   getNews as fetchNews,
   getNewsBySlug as fetchNewsBySlug,
   getSuggestedNews as fetchSuggestedNews,
-} from "../lib/sanity/services/news.service";
+} from "./sanity/services/news.service";
 
 export const getNews = async () => fetchNews();
 

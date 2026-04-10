@@ -1,4 +1,4 @@
-import { getTournament as fetchTournament } from "../lib/sanity/services/tournaments.service";
+import { getTournament as fetchTournament } from "./sanity/services/tournaments.service";
 
 export const getTournament = async () => fetchTournament();
 

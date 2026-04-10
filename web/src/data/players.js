@@ -1,7 +1,7 @@
 import {
   getPlayers as fetchPlayers,
   getPlayerBySlug as fetchPlayerBySlug,
-} from "../lib/sanity/services/players.service";
+} from "./sanity/services/players.service";
 
 export const getPlayers = async () => fetchPlayers();
 

@@ -107,6 +107,115 @@ Este código sigue principios de **Clean Code**:
 
 ---
 
+
+## 🧩 Propuesta de Reorganización (sin sobre-ingeniería)
+
+Para simplificar la evolución del frontend, se propone organizar `web/src` en tres capas claras:
+
+- `domain/`: reglas de negocio puras y modelos.
+- `data/`: acceso a datos externos (Sanity) y adaptación de respuestas.
+- `presentation/`: páginas, componentes, hooks y estado de UI.
+
+### Árbol objetivo
+
+```text
+web/src/
+├─ domain/
+│  ├─ stats/
+│  │  ├─ playerStats.js
+│  │  ├─ tournamentTable.js
+│  │  └─ index.js
+│  ├─ entities/
+│  └─ use-cases/
+├─ data/
+│  ├─ cms/
+│  │  └─ sanity/
+│  │     ├─ client/
+│  │     │  ├─ sanity.client.js
+│  │     │  └─ sanity.image.js
+│  │     ├─ queries/
+│  │     ├─ adapters/
+│  │     └─ services/
+│  ├─ repositories/
+│  └─ mappers/
+└─ presentation/
+   ├─ app/
+   ├─ pages/
+   ├─ features/
+   ├─ components/
+   ├─ layout/
+   ├─ hooks/
+   ├─ context/
+   ├─ constants/
+   └─ utils/
+```
+
+### Mapeo recomendado (actual → nuevo)
+
+- `web/src/lib/domain/stats/*` → `web/src/domain/stats/*`
+- `web/src/lib/sanity/sanity.client.js` → `web/src/data/cms/sanity/client/sanity.client.js`
+- `web/src/lib/sanity/sanity.image.js` → `web/src/data/cms/sanity/client/sanity.image.js`
+- `web/src/lib/sanity/queries/*` → `web/src/data/cms/sanity/queries/*`
+- `web/src/lib/sanity/adapters/*` → `web/src/data/cms/sanity/adapters/*`
+- `web/src/lib/sanity/services/*` → `web/src/data/cms/sanity/services/*`
+- `web/src/services/imageService.js` → `web/src/data/mappers/imageService.js` (o `presentation/utils/` si sólo formatea para UI)
+- `web/src/pages/*` → `web/src/presentation/pages/*`
+- `web/src/features/*` → `web/src/presentation/features/*`
+- `web/src/components/*` → `web/src/presentation/components/*`
+- `web/src/layout/*` → `web/src/presentation/layout/*`
+- `web/src/hooks/*` + hooks de página/feature → `web/src/presentation/hooks/*` (o colocalizados dentro de cada feature)
+- `web/src/context/*` → `web/src/presentation/context/*`
+- `web/src/constants/*` → `web/src/presentation/constants/*`
+- `web/src/utils/*` → `web/src/presentation/utils/*`
+
+### Responsabilidades por capa
+
+- **Domain**
+  - No depende de React ni de Sanity.
+  - Contiene reglas, cálculos y contratos del negocio.
+  - Debe ser fácilmente testeable con unit tests puros.
+
+- **Data**
+  - Sabe cómo pedir datos a fuentes externas (CMS/API).
+  - Traduce datos crudos a estructuras útiles para el dominio/presentación.
+  - Maneja detalles de infraestructura (cliente, queries, adapters).
+
+- **Presentation**
+  - Renderiza UI y orquesta interacción de usuario.
+  - Consume servicios/repositorios de `data` y lógica de `domain`.
+  - Evita lógica de negocio compleja en componentes.
+
+### Plan de migración paso a paso
+
+1. **Congelar estructura nueva**
+   - Crear carpetas `domain/`, `data/` y `presentation/`.
+   - Definir aliases de import (Vite + jsconfig/tsconfig) para evitar rutas relativas largas.
+
+2. **Mover primero el código puro**
+   - Migrar `lib/domain/stats` a `domain/stats`.
+   - Ejecutar tests de stats y corregir imports.
+
+3. **Migrar capa Sanity completa a `data`**
+   - Mover cliente, queries, adapters y services respetando subcarpetas.
+   - Mantener temporalmente archivos "bridge" (re-export) en rutas viejas para reducir riesgo.
+
+4. **Reubicar servicios sueltos y utilidades de datos**
+   - Analizar `services/imageService.js` y ubicarlo en `data/mappers` o `presentation/utils` según su responsabilidad real.
+
+5. **Migrar presentación por verticales**
+   - Empezar por una feature estable (ej. News): `pages`, `features`, `components`, hooks asociados.
+   - Repetir por módulos (Home, Team, PlayerDetail, etc.).
+
+6. **Eliminar puentes y limpiar deuda**
+   - Una vez actualizados imports, borrar rutas antiguas (`lib/sanity`, `lib/domain`, `services`).
+   - Ejecutar lint/build/tests y corregir warnings.
+
+7. **Normalizar convención**
+   - Definir regla simple: lo reusable de negocio va a `domain`; acceso a datos a `data`; UI a `presentation`.
+   - Documentar 4-5 ejemplos en el repo para guiar futuras contribuciones.
+
+> Esta propuesta evita una arquitectura enterprise pesada: no obliga DDD completo, CQRS ni capas extra; sólo ordena lo actual con límites claros.
+
 ## 👨‍💻 Autor
 
 **Tomás Brancatisano**

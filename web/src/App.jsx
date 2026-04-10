@@ -1,16 +1,16 @@
 import { Routes, Route } from "react-router-dom";
-import Home from "./pages/Home/Home";
-import News from "./pages/News/News";
-import Team from "./pages/Team/Team";
-import Table from "./pages/Table/Table";
-import Record from "./pages/Record/Record";
-import Admin from "./pages/Admin/Admin";
-import NewsDetail from "./pages/NewsDetail/NewsDetail";
-import PlayerDetail from "./pages/PlayerDetail/PlayerDetail";
-import NavBar from "./layout/NavBar/NavBar";
-import Footer from "./layout/Footer/Footer";
-import { GameProvider } from "./context/GameProvider";
-import { ROUTES } from "./constants/routes.constants";
+import Home from "./presentation/pages/Home/Home";
+import News from "./presentation/pages/News/News";
+import Team from "./presentation/pages/Team/Team";
+import Table from "./presentation/pages/Table/Table";
+import Record from "./presentation/pages/Record/Record";
+import Admin from "./presentation/pages/Admin/Admin";
+import NewsDetail from "./presentation/pages/NewsDetail/NewsDetail";
+import PlayerDetail from "./presentation/pages/PlayerDetail/PlayerDetail";
+import NavBar from "./presentation/layout/NavBar/NavBar";
+import Footer from "./presentation/layout/Footer/Footer";
+import { GameProvider } from "./presentation/context/GameProvider";
+import { ROUTES } from "./presentation/constants/routes.constants";
 import "./App.css";
 
 function App() {
