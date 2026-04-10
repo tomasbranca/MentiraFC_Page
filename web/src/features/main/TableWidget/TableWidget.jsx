@@ -1,7 +1,7 @@
 import { getMainTeamIndex, getSurroundingTeams } from "../../../utils/table.utils";
 import { Link } from "react-router-dom";
 import { ROUTES } from "../../../constants/routes.constants";
-import { getImageUrl } from "../../../services/imageService";
+import { getImageUrl } from "../../../data/imageService";
 
 const TableWidget = ({ table }) => {
   if (!table) return null;

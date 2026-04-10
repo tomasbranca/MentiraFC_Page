@@ -4,10 +4,10 @@ import { getNews } from "../../../data/news";
 import { getTournament } from "../../../data/tournament";
 import { getAllGames, getTournamentGames } from "../../../data/games";
 import { getPlayers } from "../../../data/players";
-import { getTeams } from "../../../lib/sanity/services/teams.service";
+import { getTeams } from "../../../data/sanity/services/teams.service";
 
 import { sortNews } from "../../../utils/news.utils";
-import { getHybridTournamentTable, getTopScorers } from "../../../lib/domain/stats";
+import { getHybridTournamentTable, getTopScorers } from "../../../domain/stats";
 import { useFetchData } from "../../../hooks/useFetchData";
 
 export const useHomeData = () => {

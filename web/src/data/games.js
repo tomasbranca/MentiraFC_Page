@@ -2,7 +2,7 @@ import {
   getLatestGame as fetchLatestGame,
   getFinishedGames as fetchFinishedGames,
   getFinishedTournamentGames as fetchFinishedTournamentGames,
-} from "../lib/sanity/services/games.service";
+} from "./sanity/services/games.service";
 
 export const getLatestGame = async () => fetchLatestGame();
 

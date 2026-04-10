@@ -1,8 +1,8 @@
 import { useCallback } from "react";
 import { getTournament } from "../../../data/tournament";
-import { getTeams } from "../../../lib/sanity/services/teams.service";
+import { getTeams } from "../../../data/sanity/services/teams.service";
 import { getTournamentGames } from "../../../data/games";
-import { getHybridTournamentTable } from "../../../lib/domain/stats";
+import { getHybridTournamentTable } from "../../../domain/stats";
 import { useFetchData } from "../../../hooks/useFetchData";
 
 export const useTableData = () => {

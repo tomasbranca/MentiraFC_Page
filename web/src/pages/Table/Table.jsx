@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { urlFor } from "../../lib/sanity/sanity.image";
+import { urlFor } from "../../data/sanity/sanity.image";
 import Loader from "../../components/Loader/Loader";
 import Button from "../../components/Button/Button";
 import ErrorFallback from "../../components/errors/ErrorFallback";

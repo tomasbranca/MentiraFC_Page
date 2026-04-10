@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { getPlayerBySlug } from "../../../data/players";
 import { getAllGames } from "../../../data/games";
-import { getPlayerStats } from "../../../lib/domain/stats";
+import { getPlayerStats } from "../../../domain/stats";
 import { useFetchData } from "../../../hooks/useFetchData";
 
 export const usePlayerDetail = (slug) => {
