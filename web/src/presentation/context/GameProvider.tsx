@@ -1,11 +1,17 @@
-import { useEffect, useState, useCallback } from "react";
-import { GameContext } from "./GameContext";
-import { getLatestGame } from "../../data/games";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 
-export const GameProvider = ({ children }) => {
-  const [game, setGame] = useState(null);
+import { getLatestGame } from "../../data/games";
+import type { Game } from "../../types/models";
+import { GameContext } from "./GameContext";
+
+type GameProviderProps = {
+  children: ReactNode;
+};
+
+export const GameProvider = ({ children }: GameProviderProps) => {
+  const [game, setGame] = useState<Game | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<unknown>(null);
 
   const loadGame = useCallback(async () => {
     try {
@@ -22,7 +28,7 @@ export const GameProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    loadGame();
+    void loadGame();
   }, [loadGame]);
 
   return (
@@ -31,7 +37,7 @@ export const GameProvider = ({ children }) => {
         game,
         loading,
         error,
-        refetch: loadGame, // 🔥 clave
+        refetch: loadGame,
       }}
     >
       {children}
