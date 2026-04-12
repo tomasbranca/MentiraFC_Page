@@ -78,7 +78,7 @@ export const sanityTeamSchema = z.object({
   _id: z.string(),
   name: z.string(),
   isMain: z.boolean().optional(),
-  logo: z.string().optional(),
+  logo: z.unknown().optional(),
 });
 
 export const sanityTournamentSchema = z.object({
@@ -88,7 +88,7 @@ export const sanityTournamentSchema = z.object({
   organization: z
     .object({
       name: z.string().nullable().optional(),
-      logo: z.string().nullable().optional(),
+      logo: z.unknown().optional(),
       primaryColor: z
         .union([
           z.object({
@@ -113,7 +113,7 @@ export const sanityStandingRowSchema = z.object({
   team: z.object({
     _id: z.string(),
     name: z.string(),
-    logo: z.string().optional(),
+    logo: z.unknown().optional(),
     isMain: z.boolean().optional(),
   }),
 });

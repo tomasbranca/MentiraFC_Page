@@ -4,7 +4,7 @@ export interface TeamRef {
   id: string;
   name: string;
   isMain?: boolean;
-  imageUrl?: string | null;
+  imageUrl?: unknown;
 }
 
 export interface Player {
