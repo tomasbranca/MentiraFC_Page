@@ -1,34 +1,65 @@
 // @ts-nocheck
-import { useCallback } from "react";
-import { getNewsBySlug, getSuggestedNews } from "../../../../data/news";
+import { useMemo } from "react";
+import { useQueries } from "@tanstack/react-query";
 
+import { getNewsBySlug, getSuggestedNews } from "../../../../data/news";
+import { queryKeys } from "../../../../data/queryKeys";
+import { reportError } from "../../../../lib/errors/errorLogger";
 import { selectSuggestedNews } from "../newsDetail.utils";
-import { useFetchData } from "../../../hooks/useFetchData";
 
 export const useNewsDetail = (slug) => {
-  const fetcher = useCallback(async () => {
-    const newsItem = await getNewsBySlug(slug);
-    const suggestedNews = await getSuggestedNews(slug);
-
-    const selected = selectSuggestedNews(suggestedNews);
-
-    return {
-      newsItem,
-      suggested: selected.length >= 3 ? selected : [],
-    };
-  }, [slug]);
-
-  const { data, loading, error, refetch } = useFetchData(fetcher, {
-    initialData: {
-      newsItem: null,
-      suggested: [],
-    },
-    errorContext: {
-      page: "NewsDetail",
-      action: "load_news_detail",
-      slug,
-    },
+  const [newsItemQuery, suggestedQuery] = useQueries({
+    queries: [
+      {
+        queryKey: queryKeys.news.bySlug(slug),
+        enabled: Boolean(slug),
+        queryFn: async () => {
+          try {
+            return await getNewsBySlug(slug);
+          } catch (error) {
+            reportError(error, {
+              page: "NewsDetail",
+              action: "load_news_detail_item",
+              slug,
+            });
+            throw error;
+          }
+        },
+      },
+      {
+        queryKey: queryKeys.news.suggested(slug),
+        enabled: Boolean(slug),
+        queryFn: async () => {
+          try {
+            return await getSuggestedNews(slug);
+          } catch (error) {
+            reportError(error, {
+              page: "NewsDetail",
+              action: "load_news_detail_suggested",
+              slug,
+            });
+            throw error;
+          }
+        },
+      },
+    ],
   });
 
-  return { ...data, loading, error: Boolean(error), refetch };
+  const suggested = useMemo(() => {
+    const selected = selectSuggestedNews(suggestedQuery.data ?? []);
+    return selected.length >= 3 ? selected : [];
+  }, [suggestedQuery.data]);
+
+  const loading = newsItemQuery.isLoading || suggestedQuery.isLoading;
+  const error = newsItemQuery.isError || suggestedQuery.isError;
+
+  return {
+    newsItem: newsItemQuery.data ?? null,
+    suggested,
+    loading,
+    error,
+    refetch: async () => {
+      await Promise.all([newsItemQuery.refetch(), suggestedQuery.refetch()]);
+    },
+  };
 };
