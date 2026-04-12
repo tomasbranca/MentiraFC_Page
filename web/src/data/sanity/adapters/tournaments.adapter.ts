@@ -1,5 +1,9 @@
 import type { StandingsRow, Tournament } from "../../../types/models";
-import { sanityStandingRowSchema, sanityTournamentSchema, type SanityStandingRow } from "../schemas";
+import {
+  sanityStandingRowSchema,
+  sanityTournamentSchema,
+  type SanityStandingRow,
+} from "../schemas";
 import { validateSanityArray, validateSanityItem } from "../validation";
 
 export const adaptTournament = (data: unknown): Tournament | null => {
@@ -10,14 +14,14 @@ export const adaptTournament = (data: unknown): Tournament | null => {
   const validated = validateSanityItem(
     sanityTournamentSchema,
     rawData,
-    "tournaments.adapter:adaptTournament",
+    "tournaments.adapter:adaptTournament"
   );
   if (!validated) return null;
 
   const validatedStandings: SanityStandingRow[] = validateSanityArray(
     sanityStandingRowSchema,
     validated.standings || [],
-    "tournaments.adapter:standings",
+    "tournaments.adapter:standings"
   );
 
   const standings: StandingsRow[] = validatedStandings.map((row) => ({
@@ -37,8 +41,13 @@ export const adaptTournament = (data: unknown): Tournament | null => {
 
   return {
     id: validated._id || "unknown-tournament",
-    name: `${validated.organization?.name || "Torneo"} · ${validated.name || "Actual"}`,
-    imageUrl: validated.organization?.logo || null,
+    name: `${validated.organization?.name || "Torneo"} · ${
+      validated.name || "Actual"
+    }`,
+    imageUrl:
+      typeof validated.organization?.logo === "string"
+        ? validated.organization.logo
+        : null,
     primaryColor:
       typeof validated.organization?.primaryColor === "string"
         ? validated.organization.primaryColor
