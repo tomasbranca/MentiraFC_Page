@@ -1,15 +1,34 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+
 import { reportError } from "../../lib/errors/errorLogger";
 
-export const useFetchData = (fetcher, options = {}) => {
-  const { initialData = null, onError, errorContext } = options;
-  const initialDataRef = useRef(initialData);
+type ErrorContext = Record<string, unknown>;
+
+type UseFetchDataOptions<T> = {
+  initialData?: T;
+  onError?: (error: unknown) => void;
+  errorContext?: ErrorContext;
+};
+
+type UseFetchDataResult<T> = {
+  data: T;
+  loading: boolean;
+  error: unknown;
+  refetch: () => Promise<T>;
+};
+
+export const useFetchData = <T,>(
+  fetcher: () => Promise<T>,
+  options: UseFetchDataOptions<T> = {}
+): UseFetchDataResult<T> => {
+  const { initialData, onError, errorContext } = options;
+  const initialDataRef = useRef(initialData as T);
   const onErrorRef = useRef(onError);
   const errorContextRef = useRef(errorContext);
 
-  const [data, setData] = useState(initialDataRef.current);
+  const [data, setData] = useState<T>(initialDataRef.current);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<unknown>(null);
 
   useEffect(() => {
     onErrorRef.current = onError;
@@ -42,7 +61,7 @@ export const useFetchData = (fetcher, options = {}) => {
   }, [fetcher]);
 
   useEffect(() => {
-    execute();
+    void execute();
   }, [execute]);
 
   return {

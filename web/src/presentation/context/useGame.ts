@@ -1,7 +1,8 @@
 import { useContext } from "react";
-import { GameContext } from "./GameContext";
 
-export const useGame = () => {
+import { GameContext, type GameContextValue } from "./GameContext";
+
+export const useGame = (): GameContextValue => {
   const context = useContext(GameContext);
 
   if (!context) {

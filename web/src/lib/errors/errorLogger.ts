@@ -1,4 +1,6 @@
-export const reportError = (error, context = {}) => {
+type ErrorContext = Record<string, unknown>;
+
+export const reportError = (error: unknown, context: ErrorContext = {}): void => {
   const normalizedError =
     error instanceof Error ? error : new Error(typeof error === "string" ? error : "Unknown error");
 
