@@ -1,3 +1,7 @@
+/** @typedef {import('../../types/models').Game} Game */
+/** @typedef {{ id: string, name: string, isMain?: boolean }} Team */
+/** @typedef {{ team: Team, played: number, wins: number, draws: number, losses: number, goalsFor: number, goalsAgainst: number, points?: number, goalDiff?: number, position?: number, type?: 'champion' | 'playoff' | 'normal' }} TableRow */
+
 const calculatePoints = (row) => row.wins * 3 + row.draws;
 const calculateGoalDiff = (row) => row.goalsFor - row.goalsAgainst;
 
@@ -9,6 +13,7 @@ const getRowType = (position) => {
 
 const normalizeNumber = (value) => (Number.isFinite(value) ? value : 0);
 
+/** @param {TableRow[]} rows */
 const sortAndDecorateTable = (rows = []) => {
   return rows
     .map((row) => ({
@@ -29,6 +34,7 @@ const sortAndDecorateTable = (rows = []) => {
     }));
 };
 
+/** @param {Game[]} games */
 const calculateMainTeamStats = (games = []) => {
   return games.reduce(
     (acc, game) => {
@@ -56,6 +62,7 @@ const calculateMainTeamStats = (games = []) => {
   );
 };
 
+/** @param {TableRow} row */
 const cloneManualRow = (row) => ({
   ...row,
   team: {
@@ -69,6 +76,10 @@ const cloneManualRow = (row) => ({
   goalsAgainst: normalizeNumber(row.goalsAgainst),
 });
 
+/**
+ * @param {{ manualStandings?: TableRow[], games?: Game[], mainTeam?: Team | null }} params
+ * @returns {TableRow[]}
+ */
 export const getHybridTournamentTable = ({
   manualStandings = [],
   games = [],
@@ -101,6 +112,7 @@ export const getHybridTournamentTable = ({
   return sortAndDecorateTable(Object.values(rowsByTeamId));
 };
 
+/** @param {Game[]} games @param {Team[]} teams @returns {TableRow[]} */
 export const getTournamentTable = (games = [], teams = []) => {
   if (!Array.isArray(teams) || teams.length === 0) return [];
 
@@ -127,10 +139,12 @@ export const getTournamentTable = (games = [], teams = []) => {
   );
 };
 
+/** @param {TableRow[]} standings */
 export const getMainTeamIndex = (standings = []) => {
   return standings.findIndex((row) => row.team.isMain);
 };
 
+/** @param {TableRow[]} standings */
 export const getSurroundingTeams = (standings = [], idx, range = 2) => {
   if (!standings.length) return [];
   if (idx === -1) return standings.slice(0, 5);

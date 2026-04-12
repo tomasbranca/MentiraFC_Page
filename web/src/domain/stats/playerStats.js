@@ -1,4 +1,11 @@
+/** @typedef {import('../../types/models').Game} Game */
+/** @typedef {import('../../types/models').Player} Player */
+/** @typedef {{ year?: number }} StatsOptions */
+/** @typedef {{ playerId: string | null, goals: number, matchesWithGoals: number }} PlayerStats */
+
+/** @param {Game[]} games */
 const normalizeGames = (games = []) => (Array.isArray(games) ? games : []);
+/** @param {Player[]} players */
 const normalizePlayers = (players = []) => (Array.isArray(players) ? players : []);
 
 const isInYear = (date, year) => {
@@ -7,6 +14,7 @@ const isInYear = (date, year) => {
   return new Date(date).getFullYear() === year;
 };
 
+/** @param {Game[]} games @param {number | undefined} year */
 const getGoalEvents = (games = [], year) => {
   return normalizeGames(games)
     .filter((game) => isInYear(game.date, year))
@@ -14,6 +22,11 @@ const getGoalEvents = (games = [], year) => {
     .filter((event) => event?.type === "goal" && event?.player?.id);
 };
 
+/**
+ * @param {Game[]} games
+ * @param {Player[]} players
+ * @param {StatsOptions} options
+ */
 export const getTopScorers = (games = [], players = [], options = {}) => {
   const { year } = options;
 
@@ -34,6 +47,12 @@ export const getTopScorers = (games = [], players = [], options = {}) => {
     });
 };
 
+/**
+ * @param {Game[]} games
+ * @param {string | null | undefined} playerId
+ * @param {StatsOptions} options
+ * @returns {PlayerStats}
+ */
 export const getPlayerStats = (games = [], playerId, options = {}) => {
   const { year } = options;
 
