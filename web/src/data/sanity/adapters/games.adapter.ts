@@ -1,65 +1,65 @@
 import type { Game, MatchEvent } from "../../../types/models";
+import {
+  sanityEventSchema,
+  sanityGameSchema,
+  type SanityEvent,
+  type SanityGame,
+} from "../schemas";
+import { validateSanityArray, validateSanityItem } from "../validation";
 
-type SanitySlug = { current?: string } | string | undefined;
-type SanityEvent = {
-  _id: string;
-  type: string;
-  order?: number;
-  player?: { _id: string; name: string; lastName: string; slug?: SanitySlug };
-};
-
-type SanityGame = {
-  _id: string;
-  date: string;
-  state: string;
-  location?: string;
-  competition?: string;
-  tournament?: { _id: string; name?: string; organization?: { name?: string } };
-  rival?: { _id?: string; name?: string; logoUrl?: string };
-  result?: { goalsFor?: number; goalsAgainst?: number };
-  events?: SanityEvent[];
-};
-
-const adaptEvent = (event: SanityEvent): MatchEvent => ({
-  id: event._id,
-  type: event.type,
-  order: event.order,
-  player: event.player
-    ? {
-        id: event.player._id,
-        name: event.player.name,
-        lastName: event.player.lastName,
-        slug: typeof event.player.slug === "string" ? event.player.slug : event.player.slug?.current,
-      }
-    : null,
-});
-
-export const adaptGame = (game: SanityGame | null | undefined): Game | null => {
-  if (!game) return null;
+const adaptEvent = (event: unknown): MatchEvent | null => {
+  const validated = validateSanityItem(sanityEventSchema, event, "games.adapter:adaptEvent");
+  if (!validated) return null;
 
   return {
-    id: game._id,
-    date: game.date,
-    state: game.state,
-    location: game.location,
-    competition: game.competition,
-    tournamentId: game.tournament?._id || null,
-    tournament: game.tournament
-      ? `${game.tournament.organization?.name} · ${game.tournament.name}`
-      : null,
-    rival: {
-      id: game.rival?._id || "",
-      name: game.rival?.name || "",
-      imageUrl: game.rival?.logoUrl,
-    },
-    result: {
-      goalsFor: Number(game.result?.goalsFor) || 0,
-      goalsAgainst: Number(game.result?.goalsAgainst) || 0,
-    },
-    events: (game.events || []).map(adaptEvent),
+    id: validated._id,
+    type: validated.type,
+    order: validated.order,
+    player: validated.player
+    ? {
+        id: validated.player._id,
+        name: validated.player.name,
+        lastName: validated.player.lastName,
+        slug:
+          typeof validated.player.slug === "string"
+            ? validated.player.slug
+            : validated.player.slug?.current,
+      }
+    : null,
   };
 };
 
-export const adaptGames = (games: SanityGame[] = []): Game[] => {
-  return games.map(adaptGame).filter((game): game is Game => Boolean(game));
+export const adaptGame = (game: unknown): Game | null => {
+  const validated = validateSanityItem(sanityGameSchema, game, "games.adapter:adaptGame");
+  if (!validated) return null;
+
+  return {
+    id: validated._id,
+    date: validated.date,
+    state: validated.state,
+    location: validated.location,
+    competition: validated.competition,
+    tournamentId: validated.tournament?._id || null,
+    tournament: validated.tournament
+      ? `${validated.tournament.organization?.name} · ${validated.tournament.name}`
+      : null,
+    rival: {
+      id: validated.rival?._id || "",
+      name: validated.rival?.name || "",
+      imageUrl: validated.rival?.logoUrl,
+    },
+    result: {
+      goalsFor: Number(validated.result?.goalsFor) || 0,
+      goalsAgainst: Number(validated.result?.goalsAgainst) || 0,
+    },
+    events: (validated.events || [])
+      .map(adaptEvent)
+      .filter((event): event is MatchEvent => Boolean(event)),
+  };
+};
+
+export const adaptGames = (games: unknown): Game[] => {
+  const validatedGames: SanityGame[] = validateSanityArray(sanityGameSchema, games, "games.adapter:adaptGames");
+
+  return validatedGames.map(adaptGame).filter((game): game is Game => Boolean(game));
 };
