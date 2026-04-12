@@ -1,0 +1,138 @@
+import { z } from "zod";
+
+const sanitySlugSchema = z.union([
+  z.string(),
+  z.object({ current: z.string().optional() }),
+  z.undefined(),
+]);
+
+export const sanityPlayerRefSchema = z.object({
+  _id: z.string(),
+  name: z.string(),
+  lastName: z.string(),
+  slug: sanitySlugSchema.optional(),
+});
+
+export const sanityNewsSchema = z.object({
+  _id: z.string(),
+  title: z.string(),
+  description: z.string().optional(),
+  content: z.unknown().optional(),
+  date: z.string(),
+  slug: sanitySlugSchema.optional(),
+  imageUrl: z.string().nullable().optional(),
+});
+
+export const sanityEventSchema = z.object({
+  _id: z.string(),
+  type: z.string(),
+  order: z.number().optional(),
+  player: sanityPlayerRefSchema.optional(),
+});
+
+export const sanityGameSchema = z.object({
+  _id: z.string(),
+  date: z.string(),
+  state: z.string(),
+  location: z.string().optional(),
+  competition: z.string().optional(),
+  tournament: z
+    .object({
+      _id: z.string(),
+      name: z.string().optional(),
+      organization: z
+        .object({
+          name: z.string().optional(),
+        })
+        .optional(),
+    })
+    .optional(),
+  rival: z
+    .object({
+      _id: z.string().optional(),
+      name: z.string().optional(),
+      logoUrl: z.string().optional(),
+    })
+    .optional(),
+  result: z
+    .object({
+      goalsFor: z.number().optional(),
+      goalsAgainst: z.number().optional(),
+    })
+    .optional(),
+  events: z.array(sanityEventSchema).optional(),
+});
+
+export const sanityPlayerSchema = z.object({
+  _id: z.string(),
+  name: z.string(),
+  lastName: z.string(),
+  number: z.number().nullable().optional(),
+  position: z.string().nullable().optional(),
+  birthDate: z.string().nullable().optional(),
+  slug: sanitySlugSchema.optional(),
+  imageUrl: z.string().nullable().optional(),
+});
+
+export const sanityTeamSchema = z.object({
+  _id: z.string(),
+  name: z.string(),
+  isMain: z.boolean().optional(),
+  logo: z.string().optional(),
+});
+
+export const sanityTournamentSchema = z.object({
+  _id: z.string(),
+  _updatedAt: z.string().optional(),
+  name: z.string(),
+  organization: z
+    .object({
+      name: z.string().optional(),
+      logo: z.string().optional(),
+      primaryColor: z
+        .object({
+          hex: z.string().optional(),
+        })
+        .optional(),
+    })
+    .optional(),
+  standings: z
+    .array(
+      z.object({
+        played: z.number(),
+        wins: z.number(),
+        draws: z.number(),
+        losses: z.number(),
+        goalsFor: z.number(),
+        goalsAgainst: z.number(),
+        team: z.object({
+          _id: z.string(),
+          name: z.string(),
+          logo: z.string().optional(),
+          isMain: z.boolean().optional(),
+        }),
+      }),
+    )
+    .optional(),
+});
+
+export const sanityGoalEventSchema = z.object({
+  _id: z.string(),
+  type: z.string(),
+  order: z.number().optional(),
+  game: z
+    .object({
+      _id: z.string(),
+      date: z.string(),
+    })
+    .optional(),
+  player: sanityPlayerRefSchema.optional(),
+});
+
+export type SanityNews = z.infer<typeof sanityNewsSchema>;
+export type SanityGame = z.infer<typeof sanityGameSchema>;
+export type SanityEvent = z.infer<typeof sanityEventSchema>;
+export type SanityPlayer = z.infer<typeof sanityPlayerSchema>;
+export type SanityTeam = z.infer<typeof sanityTeamSchema>;
+export type SanityTournament = z.infer<typeof sanityTournamentSchema>;
+export type SanityGoalEvent = z.infer<typeof sanityGoalEventSchema>;

@@ -1,25 +1,16 @@
 import type { StandingsRow, Tournament } from "../../../types/models";
+import { sanityTournamentSchema } from "../schemas";
+import { validateSanityItem } from "../validation";
 
-type SanityTournament = {
-  _id: string;
-  _updatedAt?: string;
-  name: string;
-  organization?: { name?: string; logo?: string; primaryColor?: { hex?: string } };
-  standings?: Array<{
-    played: number;
-    wins: number;
-    draws: number;
-    losses: number;
-    goalsFor: number;
-    goalsAgainst: number;
-    team: { _id: string; name: string; logo?: string; isMain?: boolean };
-  }>;
-};
+export const adaptTournament = (data: unknown): Tournament | null => {
+  const validated = validateSanityItem(
+    sanityTournamentSchema,
+    data,
+    "tournaments.adapter:adaptTournament",
+  );
+  if (!validated) return null;
 
-export const adaptTournament = (data: SanityTournament | null | undefined): Tournament | null => {
-  if (!data) return null;
-
-  const standings: StandingsRow[] = (data.standings || []).map((row) => ({
+  const standings: StandingsRow[] = (validated.standings || []).map((row) => ({
     played: Number(row.played) || 0,
     wins: Number(row.wins) || 0,
     draws: Number(row.draws) || 0,
@@ -35,11 +26,11 @@ export const adaptTournament = (data: SanityTournament | null | undefined): Tour
   }));
 
   return {
-    id: data._id,
-    name: `${data.organization?.name} · ${data.name}`,
-    imageUrl: data.organization?.logo,
-    primaryColor: data.organization?.primaryColor?.hex,
-    updatedAt: data._updatedAt,
+    id: validated._id,
+    name: `${validated.organization?.name} · ${validated.name}`,
+    imageUrl: validated.organization?.logo,
+    primaryColor: validated.organization?.primaryColor?.hex,
+    updatedAt: validated._updatedAt,
     standings,
   };
 };

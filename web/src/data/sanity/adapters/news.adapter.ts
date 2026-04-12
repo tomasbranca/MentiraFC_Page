@@ -1,32 +1,26 @@
 import type { NewsItem } from "../../../types/models";
+import { sanityNewsSchema, type SanityNews } from "../schemas";
+import { validateSanityArray, validateSanityItem } from "../validation";
 
-type SanitySlug = { current?: string } | string | undefined;
-type SanityNews = {
-  _id: string;
-  title: string;
-  description?: string;
-  content?: unknown;
-  date: string;
-  slug?: SanitySlug;
-  imageUrl?: string | null;
-};
-
-export const adaptSingleNews = (item: SanityNews | null | undefined): NewsItem | null => {
-  if (!item) return null;
+export const adaptSingleNews = (item: unknown): NewsItem | null => {
+  const validated = validateSanityItem(sanityNewsSchema, item, "news.adapter:adaptSingleNews");
+  if (!validated) return null;
 
   return {
-    id: item._id,
-    title: item.title,
-    description: item.description,
-    content: item.content,
-    date: item.date,
-    slug: typeof item.slug === "string" ? item.slug : item.slug?.current || "",
-    imageUrl: item.imageUrl,
+    id: validated._id,
+    title: validated.title,
+    description: validated.description,
+    content: validated.content,
+    date: validated.date,
+    slug: typeof validated.slug === "string" ? validated.slug : validated.slug?.current || "",
+    imageUrl: validated.imageUrl,
   };
 };
 
-export const adaptNews = (news: SanityNews[] = []): NewsItem[] => {
-  return news
+export const adaptNews = (news: unknown): NewsItem[] => {
+  const validatedNews: SanityNews[] = validateSanityArray(sanityNewsSchema, news, "news.adapter:adaptNews");
+
+  return validatedNews
     .map(adaptSingleNews)
     .filter((item): item is NewsItem => Boolean(item && item.slug));
 };

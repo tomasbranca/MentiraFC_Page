@@ -1,38 +1,41 @@
 import type { GoalEvent } from "../../../types/models";
+import { sanityGoalEventSchema, type SanityGoalEvent } from "../schemas";
+import { validateSanityArray, validateSanityItem } from "../validation";
 
-type SanitySlug = { current?: string } | string | undefined;
-type SanityGoalEvent = {
-  _id: string;
-  type: string;
-  order?: number;
-  game?: { _id: string; date: string };
-  player?: { _id: string; name: string; lastName: string; slug?: SanitySlug };
-};
-
-export const adaptGoalEvent = (event: SanityGoalEvent | null | undefined): GoalEvent | null => {
-  if (!event) return null;
+export const adaptGoalEvent = (event: unknown): GoalEvent | null => {
+  const validated = validateSanityItem(sanityGoalEventSchema, event, "events.adapter:adaptGoalEvent");
+  if (!validated) return null;
 
   return {
-    id: event._id,
-    type: event.type,
-    order: event.order,
-    game: event.game
+    id: validated._id,
+    type: validated.type,
+    order: validated.order,
+    game: validated.game
       ? {
-          id: event.game._id,
-          date: event.game.date,
+          id: validated.game._id,
+          date: validated.game.date,
         }
       : null,
-    player: event.player
+    player: validated.player
       ? {
-          id: event.player._id,
-          name: event.player.name,
-          lastName: event.player.lastName,
-          slug: typeof event.player.slug === "string" ? event.player.slug : event.player.slug?.current,
+          id: validated.player._id,
+          name: validated.player.name,
+          lastName: validated.player.lastName,
+          slug:
+            typeof validated.player.slug === "string"
+              ? validated.player.slug
+              : validated.player.slug?.current,
         }
       : null,
   };
 };
 
-export const adaptGoalEvents = (events: SanityGoalEvent[] = []): GoalEvent[] => {
-  return events.map(adaptGoalEvent).filter((event): event is GoalEvent => Boolean(event));
+export const adaptGoalEvents = (events: unknown): GoalEvent[] => {
+  const validatedEvents: SanityGoalEvent[] = validateSanityArray(
+    sanityGoalEventSchema,
+    events,
+    "events.adapter:adaptGoalEvents",
+  );
+
+  return validatedEvents.map(adaptGoalEvent).filter((event): event is GoalEvent => Boolean(event));
 };
