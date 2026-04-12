@@ -2,7 +2,10 @@
   "ci": {
     "collect": {
       "numberOfRuns": 3,
-      "staticDistDir": "./web/dist"
+      "url": ["http://localhost:4173"],
+      "startServerCommand": "npm run preview",
+      "startServerReadyPattern": "Local",
+      "startServerReadyTimeout": 10000
     },
     "assert": {
       "preset": "lighthouse:no-pwa",
