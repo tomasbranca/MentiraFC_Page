@@ -1,7 +1,7 @@
 // @ts-nocheck
+import { lazy, Suspense } from "react";
+
 import LatestNews from "../../features/main/LatestNews/LatestNews";
-import TopScorers from "../../features/main/TopScorers/TopScorers";
-import TableWidget from "../../features/main/TableWidget/TableWidget";
 import Game from "../../features/main/Game/Game";
 import Loader from "../../components/Loader/Loader";
 import ErrorFallback from "../../components/errors/ErrorFallback";
@@ -9,11 +9,26 @@ import { useGame } from "../../context/useGame";
 
 import { useHomeData } from "./hooks/useHomeData";
 
+const TopScorers = lazy(() => import("../../features/main/TopScorers/TopScorers"));
+const TableWidget = lazy(() => import("../../features/main/TableWidget/TableWidget"));
+
+const BlockPlaceholder = ({ minHeight = "min-h-[240px]" }) => (
+  <div className={`w-full ${minHeight} animate-pulse bg-violet-800/25`} />
+);
+
 const Home = () => {
-  const { news, topScorers, tournament, loading, error, refetch } = useHomeData();
+  const {
+    news,
+    topScorers,
+    tournament,
+    loadingNews,
+    loadingSecondary,
+    error,
+    secondaryError,
+    refetch,
+  } = useHomeData();
   const { game, loading: gameLoading } = useGame();
 
-  if (loading) return <Loader />;
   if (error) {
     return (
       <ErrorFallback
@@ -27,15 +42,40 @@ const Home = () => {
   return (
     <>
       <div className="bg-violet-900 text-violet-50">
-        <LatestNews news={news} />
+        {loadingNews && !news.length ? (
+          <div className="px-6 py-16">
+            <Loader />
+          </div>
+        ) : (
+          <LatestNews news={news} />
+        )}
       </div>
 
       <Game game={game} loading={gameLoading} />
 
       <div className="relative grid grid-cols-1 lg:grid-cols-3">
-        <TopScorers players={topScorers} />
-        <TableWidget table={tournament} />
+        <Suspense fallback={<BlockPlaceholder />}>
+          {loadingSecondary && !topScorers.length ? (
+            <BlockPlaceholder />
+          ) : (
+            <TopScorers players={topScorers} />
+          )}
+        </Suspense>
+
+        <Suspense fallback={<BlockPlaceholder minHeight="min-h-[420px]" />}>
+          {loadingSecondary && !tournament ? (
+            <BlockPlaceholder minHeight="min-h-[420px]" />
+          ) : (
+            <TableWidget table={tournament} />
+          )}
+        </Suspense>
       </div>
+
+      {secondaryError ? (
+        <div className="px-6 py-3 text-center text-xs text-violet-200">
+          Algunas estadísticas tardaron más de lo esperado en cargar.
+        </div>
+      ) : null}
     </>
   );
 };

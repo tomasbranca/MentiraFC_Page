@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQueries } from "@tanstack/react-query";
 
 import { getNews } from "../../../../data/news";
@@ -15,6 +15,15 @@ import { getHybridTournamentTable, getTopScorers } from "../../../../domain/stat
 
 export const useHomeData = () => {
   const year = new Date().getFullYear();
+  const [deferredQueriesEnabled, setDeferredQueriesEnabled] = useState(false);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setDeferredQueriesEnabled(true);
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, []);
 
   const [
     newsQuery,
@@ -38,6 +47,7 @@ export const useHomeData = () => {
       },
       {
         queryKey: queryKeys.players.all,
+        enabled: deferredQueriesEnabled,
         queryFn: async () => {
           try {
             return await getPlayers();
@@ -49,6 +59,7 @@ export const useHomeData = () => {
       },
       {
         queryKey: queryKeys.games.finished,
+        enabled: deferredQueriesEnabled,
         queryFn: async () => {
           try {
             return await getAllGames();
@@ -60,6 +71,7 @@ export const useHomeData = () => {
       },
       {
         queryKey: queryKeys.tournaments.current,
+        enabled: deferredQueriesEnabled,
         queryFn: async () => {
           try {
             return await getTournament();
@@ -71,6 +83,7 @@ export const useHomeData = () => {
       },
       {
         queryKey: queryKeys.teams.all,
+        enabled: deferredQueriesEnabled,
         queryFn: async () => {
           try {
             return await getTeams();
@@ -82,6 +95,7 @@ export const useHomeData = () => {
       },
       {
         queryKey: queryKeys.games.tournamentFinished,
+        enabled: deferredQueriesEnabled,
         queryFn: async () => {
           try {
             return await getTournamentGames();
@@ -139,15 +153,16 @@ export const useHomeData = () => {
 
   return {
     ...data,
-    loading:
-      newsQuery.isLoading ||
-      playersQuery.isLoading ||
-      gamesQuery.isLoading ||
-      tournamentQuery.isLoading ||
-      teamsQuery.isLoading ||
-      tournamentGamesQuery.isLoading,
-    error:
-      newsQuery.isError ||
+    loadingNews: newsQuery.isLoading,
+    loadingSecondary:
+      deferredQueriesEnabled &&
+      (playersQuery.isLoading ||
+        gamesQuery.isLoading ||
+        tournamentQuery.isLoading ||
+        teamsQuery.isLoading ||
+        tournamentGamesQuery.isLoading),
+    error: newsQuery.isError,
+    secondaryError:
       playersQuery.isError ||
       gamesQuery.isError ||
       tournamentQuery.isError ||
