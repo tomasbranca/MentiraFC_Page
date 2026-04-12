@@ -96,24 +96,22 @@ export const sanityTournamentSchema = z.object({
         .optional(),
     })
     .optional(),
-  standings: z
-    .array(
-      z.object({
-        played: z.number(),
-        wins: z.number(),
-        draws: z.number(),
-        losses: z.number(),
-        goalsFor: z.number(),
-        goalsAgainst: z.number(),
-        team: z.object({
-          _id: z.string(),
-          name: z.string(),
-          logo: z.string().optional(),
-          isMain: z.boolean().optional(),
-        }),
-      }),
-    )
-    .optional(),
+  standings: z.array(z.unknown()).optional(),
+});
+
+export const sanityStandingRowSchema = z.object({
+  played: z.union([z.number(), z.string(), z.null()]).optional(),
+  wins: z.union([z.number(), z.string(), z.null()]).optional(),
+  draws: z.union([z.number(), z.string(), z.null()]).optional(),
+  losses: z.union([z.number(), z.string(), z.null()]).optional(),
+  goalsFor: z.union([z.number(), z.string(), z.null()]).optional(),
+  goalsAgainst: z.union([z.number(), z.string(), z.null()]).optional(),
+  team: z.object({
+    _id: z.string(),
+    name: z.string(),
+    logo: z.string().optional(),
+    isMain: z.boolean().optional(),
+  }),
 });
 
 export const sanityGoalEventSchema = z.object({
@@ -135,4 +133,5 @@ export type SanityEvent = z.infer<typeof sanityEventSchema>;
 export type SanityPlayer = z.infer<typeof sanityPlayerSchema>;
 export type SanityTeam = z.infer<typeof sanityTeamSchema>;
 export type SanityTournament = z.infer<typeof sanityTournamentSchema>;
+export type SanityStandingRow = z.infer<typeof sanityStandingRowSchema>;
 export type SanityGoalEvent = z.infer<typeof sanityGoalEventSchema>;

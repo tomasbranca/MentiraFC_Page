@@ -1,6 +1,6 @@
 import type { StandingsRow, Tournament } from "../../../types/models";
-import { sanityTournamentSchema } from "../schemas";
-import { validateSanityItem } from "../validation";
+import { sanityStandingRowSchema, sanityTournamentSchema, type SanityStandingRow } from "../schemas";
+import { validateSanityArray, validateSanityItem } from "../validation";
 
 export const adaptTournament = (data: unknown): Tournament | null => {
   const validated = validateSanityItem(
@@ -10,7 +10,13 @@ export const adaptTournament = (data: unknown): Tournament | null => {
   );
   if (!validated) return null;
 
-  const standings: StandingsRow[] = (validated.standings || []).map((row) => ({
+  const validatedStandings: SanityStandingRow[] = validateSanityArray(
+    sanityStandingRowSchema,
+    validated.standings || [],
+    "tournaments.adapter:standings",
+  );
+
+  const standings: StandingsRow[] = validatedStandings.map((row) => ({
     played: Number(row.played) || 0,
     wins: Number(row.wins) || 0,
     draws: Number(row.draws) || 0,
