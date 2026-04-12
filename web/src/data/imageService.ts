@@ -1,6 +1,12 @@
 import { urlFor } from "./sanity/sanity.image";
 
-export const getImageUrl = (image, options = {}) => {
+type ImageOptions = {
+  width?: number;
+  height?: number;
+  fit?: "crop" | "clip" | "fill" | "fillmax" | "max" | "scale" | "min";
+};
+
+export const getImageUrl = (image: unknown, options: ImageOptions = {}): string => {
   let builder = urlFor(image);
 
   if (options.width) builder = builder.width(options.width);
