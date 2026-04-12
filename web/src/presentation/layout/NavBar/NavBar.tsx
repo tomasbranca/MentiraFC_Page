@@ -1,7 +1,6 @@
 // @ts-nocheck
-import { useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import GameWidget from "../../components/GameWidget/GameWidget";
 import { FiMenu, FiX } from "react-icons/fi";
 
 import { NAV_LINKS } from "./navbar.constants";
@@ -9,9 +8,27 @@ import { useNavBarScroll } from "./hooks/useNavBarScroll";
 
 import "./NavBar.css";
 
+const GameWidget = lazy(() => import("../../components/GameWidget/GameWidget"));
+
+const GameWidgetFallback = ({ compact = false }) => (
+  <div
+    className={compact ? "h-10 w-28 rounded bg-violet-700/40" : "h-12 w-56 rounded bg-violet-700/40"}
+    aria-hidden="true"
+  />
+);
+
 const NavBar = () => {
   const isScrolled = useNavBarScroll();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showGameWidget, setShowGameWidget] = useState(false);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setShowGameWidget(true);
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, []);
 
   return (
     <>
@@ -44,13 +61,25 @@ const NavBar = () => {
 
           {/* MOBILE GAME */}
           <div className="mobile-game-center mobile-only">
-            <GameWidget compact />
+            {showGameWidget ? (
+              <Suspense fallback={<GameWidgetFallback compact />}>
+                <GameWidget compact />
+              </Suspense>
+            ) : (
+              <GameWidgetFallback compact />
+            )}
           </div>
 
           {/* DERECHA */}
           <div className="navbar-right">
             <div className="desktop-only">
-              <GameWidget />
+              {showGameWidget ? (
+                <Suspense fallback={<GameWidgetFallback />}>
+                  <GameWidget />
+                </Suspense>
+              ) : (
+                <GameWidgetFallback />
+              )}
             </div>
 
             <button
@@ -65,12 +94,7 @@ const NavBar = () => {
       </header>
 
       {/* OVERLAY */}
-      {menuOpen && (
-        <div
-          className="menu-overlay"
-          onClick={() => setMenuOpen(false)}
-        />
-      )}
+      {menuOpen && <div className="menu-overlay" onClick={() => setMenuOpen(false)} />}
 
       {/* MENU MOBILE */}
       <aside className={`mobile-menu ${menuOpen ? "open" : ""}`}>

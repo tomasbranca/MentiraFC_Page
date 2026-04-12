@@ -1,21 +1,22 @@
 // @ts-nocheck
 import { useEffect, useMemo, useState } from "react";
-import { useQueries } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 import { getNews } from "../../../../data/news";
-import { getTournament } from "../../../../data/tournament";
-import { getAllGames, getTournamentGames } from "../../../../data/games";
-import { getPlayers } from "../../../../data/players";
-import { getTeams } from "../../../../data/teams";
 import { queryKeys } from "../../../../data/queryKeys";
 import { reportError } from "../../../../lib/errors/errorLogger";
 
 import { sortNews } from "../../../utils/news.utils";
-import { getHybridTournamentTable, getTopScorers } from "../../../../domain/stats";
 
 export const useHomeData = () => {
   const year = new Date().getFullYear();
   const [deferredQueriesEnabled, setDeferredQueriesEnabled] = useState(false);
+  const [secondaryData, setSecondaryData] = useState({
+    topScorers: [],
+    tournament: null,
+  });
+  const [secondaryError, setSecondaryError] = useState(false);
+  const [loadingSecondary, setLoadingSecondary] = useState(false);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -25,158 +26,101 @@ export const useHomeData = () => {
     return () => window.clearTimeout(timer);
   }, []);
 
-  const [
-    newsQuery,
-    playersQuery,
-    gamesQuery,
-    tournamentQuery,
-    teamsQuery,
-    tournamentGamesQuery,
-  ] = useQueries({
-    queries: [
-      {
-        queryKey: queryKeys.news.all,
-        queryFn: async () => {
-          try {
-            return await getNews();
-          } catch (error) {
-            reportError(error, { page: "Home", action: "load_home_news" });
-            throw error;
-          }
-        },
-      },
-      {
-        queryKey: queryKeys.players.all,
-        enabled: deferredQueriesEnabled,
-        queryFn: async () => {
-          try {
-            return await getPlayers();
-          } catch (error) {
-            reportError(error, { page: "Home", action: "load_home_players" });
-            throw error;
-          }
-        },
-      },
-      {
-        queryKey: queryKeys.games.finished,
-        enabled: deferredQueriesEnabled,
-        queryFn: async () => {
-          try {
-            return await getAllGames();
-          } catch (error) {
-            reportError(error, { page: "Home", action: "load_home_games" });
-            throw error;
-          }
-        },
-      },
-      {
-        queryKey: queryKeys.tournaments.current,
-        enabled: deferredQueriesEnabled,
-        queryFn: async () => {
-          try {
-            return await getTournament();
-          } catch (error) {
-            reportError(error, { page: "Home", action: "load_home_tournament" });
-            throw error;
-          }
-        },
-      },
-      {
-        queryKey: queryKeys.teams.all,
-        enabled: deferredQueriesEnabled,
-        queryFn: async () => {
-          try {
-            return await getTeams();
-          } catch (error) {
-            reportError(error, { page: "Home", action: "load_home_teams" });
-            throw error;
-          }
-        },
-      },
-      {
-        queryKey: queryKeys.games.tournamentFinished,
-        enabled: deferredQueriesEnabled,
-        queryFn: async () => {
-          try {
-            return await getTournamentGames();
-          } catch (error) {
-            reportError(error, {
-              page: "Home",
-              action: "load_home_tournament_games",
-            });
-            throw error;
-          }
-        },
-      },
-    ],
+  const newsQuery = useQuery({
+    queryKey: queryKeys.news.all,
+    queryFn: async () => {
+      try {
+        return await getNews();
+      } catch (error) {
+        reportError(error, { page: "Home", action: "load_home_news" });
+        throw error;
+      }
+    },
   });
 
-  const data = useMemo(() => {
-    const players = playersQuery.data ?? [];
-    const finishedGames = gamesQuery.data ?? [];
-    const tournament = tournamentQuery.data ?? null;
-    const teams = teamsQuery.data ?? [];
-    const finishedTournamentGames = tournamentGamesQuery.data ?? [];
+  useEffect(() => {
+    if (!deferredQueriesEnabled) return;
 
-    const topScorers = getTopScorers(finishedGames, players, { year });
-    const mainTeam = teams.find((team) => team.isMain) || null;
+    let cancelled = false;
 
-    const gamesFromActiveTournament = finishedTournamentGames.filter(
-      (game) => game.tournamentId === tournament?.id
-    );
+    const fetchSecondaryData = async () => {
+      setLoadingSecondary(true);
+      setSecondaryError(false);
 
-    const hybridTournament = tournament
-      ? {
-          ...tournament,
-          standings: getHybridTournamentTable({
-            manualStandings: tournament.standings,
-            games: gamesFromActiveTournament,
-            mainTeam,
-          }),
+      try {
+        const [playersModule, gamesModule, tournamentModule, teamsModule, statsModule] =
+          await Promise.all([
+            import("../../../../data/players"),
+            import("../../../../data/games"),
+            import("../../../../data/tournament"),
+            import("../../../../data/teams"),
+            import("../../../../domain/stats"),
+          ]);
+
+        const [players, finishedGames, tournament, teams, finishedTournamentGames] =
+          await Promise.all([
+            playersModule.getPlayers(),
+            gamesModule.getAllGames(),
+            tournamentModule.getTournament(),
+            teamsModule.getTeams(),
+            gamesModule.getTournamentGames(),
+          ]);
+
+        if (cancelled) return;
+
+        const topScorers = statsModule.getTopScorers(finishedGames, players, { year });
+        const mainTeam = teams.find((team) => team.isMain) || null;
+        const gamesFromActiveTournament = finishedTournamentGames.filter(
+          (game) => game.tournamentId === tournament?.id
+        );
+
+        const hybridTournament = tournament
+          ? {
+              ...tournament,
+              standings: statsModule.getHybridTournamentTable({
+                manualStandings: tournament.standings,
+                games: gamesFromActiveTournament,
+                mainTeam,
+              }),
+            }
+          : null;
+
+        setSecondaryData({ topScorers, tournament: hybridTournament });
+      } catch (error) {
+        if (cancelled) return;
+
+        reportError(error, { page: "Home", action: "load_home_secondary_data" });
+        setSecondaryError(true);
+      } finally {
+        if (!cancelled) {
+          setLoadingSecondary(false);
         }
-      : null;
-
-    return {
-      news: sortNews(newsQuery.data ?? []),
-      topScorers,
-      tournament: hybridTournament,
+      }
     };
-  }, [
-    gamesQuery.data,
-    newsQuery.data,
-    playersQuery.data,
-    teamsQuery.data,
-    tournamentGamesQuery.data,
-    tournamentQuery.data,
-    year,
-  ]);
+
+    void fetchSecondaryData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [deferredQueriesEnabled, year]);
+
+  const news = useMemo(() => sortNews(newsQuery.data ?? []), [newsQuery.data]);
 
   return {
-    ...data,
+    news,
+    topScorers: secondaryData.topScorers,
+    tournament: secondaryData.tournament,
     loadingNews: newsQuery.isLoading,
-    loadingSecondary:
-      deferredQueriesEnabled &&
-      (playersQuery.isLoading ||
-        gamesQuery.isLoading ||
-        tournamentQuery.isLoading ||
-        teamsQuery.isLoading ||
-        tournamentGamesQuery.isLoading),
+    loadingSecondary,
     error: newsQuery.isError,
-    secondaryError:
-      playersQuery.isError ||
-      gamesQuery.isError ||
-      tournamentQuery.isError ||
-      teamsQuery.isError ||
-      tournamentGamesQuery.isError,
+    secondaryError,
     refetch: async () => {
-      await Promise.all([
-        newsQuery.refetch(),
-        playersQuery.refetch(),
-        gamesQuery.refetch(),
-        tournamentQuery.refetch(),
-        teamsQuery.refetch(),
-        tournamentGamesQuery.refetch(),
-      ]);
+      await Promise.all([newsQuery.refetch()]);
+      setDeferredQueriesEnabled(false);
+      window.setTimeout(() => {
+        setDeferredQueriesEnabled(true);
+      }, 0);
     },
   };
 };
