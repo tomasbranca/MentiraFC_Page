@@ -1,48 +1,95 @@
 // @ts-nocheck
-import { useCallback } from "react";
+import { useMemo } from "react";
+import { useQueries } from "@tanstack/react-query";
+
 import { getTournament } from "../../../../data/tournament";
-import { getTeams } from "../../../../data/sanity/services/teams.service";
+import { getTeams } from "../../../../data/teams";
 import { getTournamentGames } from "../../../../data/games";
+import { queryKeys } from "../../../../data/queryKeys";
 import { getHybridTournamentTable } from "../../../../domain/stats";
-import { useFetchData } from "../../../hooks/useFetchData";
+import { reportError } from "../../../../lib/errors/errorLogger";
 
 export const useTableData = () => {
-  const fetcher = useCallback(async () => {
-    const [tournamentData, teams, games] = await Promise.all([
-      getTournament(),
-      getTeams(),
-      getTournamentGames(),
-    ]);
+  const [tournamentQuery, teamsQuery, gamesQuery] = useQueries({
+    queries: [
+      {
+        queryKey: queryKeys.tournaments.current,
+        queryFn: async () => {
+          try {
+            return await getTournament();
+          } catch (error) {
+            reportError(error, {
+              page: "Table",
+              action: "load_table_tournament",
+            });
+            throw error;
+          }
+        },
+      },
+      {
+        queryKey: queryKeys.teams.all,
+        queryFn: async () => {
+          try {
+            return await getTeams();
+          } catch (error) {
+            reportError(error, {
+              page: "Table",
+              action: "load_table_teams",
+            });
+            throw error;
+          }
+        },
+      },
+      {
+        queryKey: queryKeys.games.tournamentFinished,
+        queryFn: async () => {
+          try {
+            return await getTournamentGames();
+          } catch (error) {
+            reportError(error, {
+              page: "Table",
+              action: "load_table_games",
+            });
+            throw error;
+          }
+        },
+      },
+    ],
+  });
 
-    if (!tournamentData) {
+  const tournament = useMemo(() => {
+    if (!tournamentQuery.data) {
       return null;
     }
 
-    const mainTeam = teams.find((team) => team.isMain) || null;
+    const mainTeam = (teamsQuery.data ?? []).find((team) => team.isMain) || null;
 
-    const gamesFromActiveTournament = games.filter(
-      (game) => game.tournamentId === tournamentData.id
+    const gamesFromActiveTournament = (gamesQuery.data ?? []).filter(
+      (game) => game.tournamentId === tournamentQuery.data.id
     );
 
     const standings = getHybridTournamentTable({
-      manualStandings: tournamentData.standings,
+      manualStandings: tournamentQuery.data.standings,
       games: gamesFromActiveTournament,
       mainTeam,
     });
 
     return {
-      ...tournamentData,
+      ...tournamentQuery.data,
       standings,
     };
-  }, []);
+  }, [gamesQuery.data, teamsQuery.data, tournamentQuery.data]);
 
-  const { data: tournament, loading, error, refetch } = useFetchData(fetcher, {
-    initialData: null,
-    errorContext: {
-      page: "Table",
-      action: "load_table",
+  return {
+    tournament,
+    loading: tournamentQuery.isLoading || teamsQuery.isLoading || gamesQuery.isLoading,
+    error: tournamentQuery.isError || teamsQuery.isError || gamesQuery.isError,
+    refetch: async () => {
+      await Promise.all([
+        tournamentQuery.refetch(),
+        teamsQuery.refetch(),
+        gamesQuery.refetch(),
+      ]);
     },
-  });
-
-  return { tournament, loading, error: Boolean(error), refetch };
+  };
 };

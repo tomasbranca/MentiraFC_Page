@@ -1,44 +1,25 @@
 // @ts-nocheck
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 
-import { getLatestGame } from "../../data/games";
-import type { Game } from "../../types/models";
 import { GameContext } from "./GameContext";
+import { useLatestGame } from "../hooks/queries/useLatestGame";
 
 type GameProviderProps = {
   children: ReactNode;
 };
 
 export const GameProvider = ({ children }: GameProviderProps) => {
-  const [game, setGame] = useState<Game | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<unknown>(null);
-
-  const loadGame = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const data = await getLatestGame();
-      setGame(data);
-    } catch (err) {
-      setError(err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void loadGame();
-  }, [loadGame]);
+  const { data: game = null, isLoading, error, refetch } = useLatestGame();
 
   return (
     <GameContext.Provider
       value={{
         game,
-        loading,
+        loading: isLoading,
         error,
-        refetch: loadGame,
+        refetch: async () => {
+          await refetch();
+        },
       }}
     >
       {children}

@@ -1,28 +1,24 @@
 // @ts-nocheck
-import { useCallback } from "react";
-import { getPlayers } from "../../../../data/players";
+import { useMemo } from "react";
+
 import { groupPlayersByPosition } from "../team.utils";
-import { useFetchData } from "../../../hooks/useFetchData";
+import { usePlayers } from "../../../hooks/queries/usePlayers";
 
 export const useTeamData = () => {
-  const fetcher = useCallback(async () => {
-    const players = await getPlayers();
-    return {
-      players,
-      grouped: groupPlayersByPosition(players),
-    };
-  }, []);
+  const {
+    data: players = [],
+    isLoading,
+    isError,
+    refetch,
+  } = usePlayers();
 
-  const { data, loading, error, refetch } = useFetchData(fetcher, {
-    initialData: {
-      players: [],
-      grouped: {},
-    },
-    errorContext: {
-      page: "Team",
-      action: "load_team",
-    },
-  });
+  const grouped = useMemo(() => groupPlayersByPosition(players), [players]);
 
-  return { ...data, loading, error: Boolean(error), refetch };
+  return {
+    players,
+    grouped,
+    loading: isLoading,
+    error: isError,
+    refetch,
+  };
 };
