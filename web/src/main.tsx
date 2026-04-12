@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 
 import App from "./App";
-import ScrollToTop from "./presentation/app/scrollToTop.js";
+import ScrollToTop from "./presentation/app/scrollToTop";
 import ErrorBoundary from "./presentation/components/errors/ErrorBoundary";
 
 import "./index.css";
