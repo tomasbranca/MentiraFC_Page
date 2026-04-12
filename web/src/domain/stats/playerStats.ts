@@ -1,37 +1,35 @@
-/** @typedef {import('../../types/models').Game} Game */
-/** @typedef {import('../../types/models').Player} Player */
-/** @typedef {{ year?: number }} StatsOptions */
-/** @typedef {{ playerId: string | null, goals: number, matchesWithGoals: number }} PlayerStats */
+import type { Game, Player } from "../../types/models";
 
-/** @param {Game[]} games */
-const normalizeGames = (games = []) => (Array.isArray(games) ? games : []);
-/** @param {Player[]} players */
-const normalizePlayers = (players = []) => (Array.isArray(players) ? players : []);
+type StatsOptions = { year?: number };
+type PlayerStats = { playerId: string | null; goals: number; matchesWithGoals: number };
+type TopScorer = Player & { goals: number };
 
-const isInYear = (date, year) => {
+const normalizeGames = (games: Game[] = []): Game[] => (Array.isArray(games) ? games : []);
+const normalizePlayers = (players: Player[] = []): Player[] =>
+  Array.isArray(players) ? players : [];
+
+const isInYear = (date: string | undefined, year?: number): boolean => {
   if (!year) return true;
   if (!date) return false;
   return new Date(date).getFullYear() === year;
 };
 
-/** @param {Game[]} games @param {number | undefined} year */
-const getGoalEvents = (games = [], year) => {
+const getGoalEvents = (games: Game[] = [], year?: number) => {
   return normalizeGames(games)
     .filter((game) => isInYear(game.date, year))
     .flatMap((game) => game.events || [])
     .filter((event) => event?.type === "goal" && event?.player?.id);
 };
 
-/**
- * @param {Game[]} games
- * @param {Player[]} players
- * @param {StatsOptions} options
- */
-export const getTopScorers = (games = [], players = [], options = {}) => {
+export const getTopScorers = (
+  games: Game[] = [],
+  players: Player[] = [],
+  options: StatsOptions = {}
+): TopScorer[] => {
   const { year } = options;
 
-  const goalsByPlayer = getGoalEvents(games, year).reduce((acc, event) => {
-    const playerId = event.player.id;
+  const goalsByPlayer = getGoalEvents(games, year).reduce<Record<string, number>>((acc, event) => {
+    const playerId = event.player!.id;
     acc[playerId] = (acc[playerId] ?? 0) + 1;
     return acc;
   }, {});
@@ -47,13 +45,11 @@ export const getTopScorers = (games = [], players = [], options = {}) => {
     });
 };
 
-/**
- * @param {Game[]} games
- * @param {string | null | undefined} playerId
- * @param {StatsOptions} options
- * @returns {PlayerStats}
- */
-export const getPlayerStats = (games = [], playerId, options = {}) => {
+export const getPlayerStats = (
+  games: Game[] = [],
+  playerId?: string | null,
+  options: StatsOptions = {}
+): PlayerStats => {
   const { year } = options;
 
   if (!playerId) {

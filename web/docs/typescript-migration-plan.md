@@ -1,35 +1,28 @@
 # Migración progresiva de React (JS) a TypeScript
 
-## Objetivo
-Migrar de forma incremental sin congelar desarrollo ni acoplar el dominio al shape crudo de Sanity.
+## Estado actual (actualizado)
+- ✅ Tipos de dominio compartidos creados (`Game`, `Player`, `MatchEvent`, etc.).
+- ✅ `src/domain/stats` migrado a TypeScript.
+- ✅ `src/data` migrado a TypeScript (fetchers, adapters y services de Sanity).
+- ✅ Contratos de salida desacoplados del shape crudo de Sanity.
+- ✅ Build, tests y type-check en verde.
 
-## Orden recomendado
-1. **Base TypeScript y check no-bloqueante**
-   - Mantener `allowJs: true` y `noEmit: true`.
-   - Añadir tipos de dominio compartidos (`Game`, `Player`, `MatchEvent`).
+## Orden recomendado aplicado
+1. **Base TypeScript no bloqueante**
+   - Se mantuvo `allowJs: true` + `noEmit: true` para convivir con JS en presentación.
 2. **Dominio primero (`src/domain/stats`)**
-   - Tipar funciones puras con JSDoc + tipos compartidos.
-   - Asegurar contratos de entrada/salida con tests existentes.
+   - Funciones puras tipadas con contratos de entrada/salida.
 3. **Data/fetchers después (`src/data`)**
-   - Definir contrato de salida de fetchers en términos de dominio.
-   - Encapsular shape de Sanity en adapters.
+   - Contratos de salida tipados con modelos de dominio.
 4. **Adapters de Sanity**
-   - Traducir `Sanity*` -> `Domain*`.
-   - Validar defaults para campos faltantes.
-5. **UI y hooks**
-   - Migrar primero hooks de datos, luego componentes críticos.
-6. **Renombre gradual `.js` -> `.ts/.tsx`**
-   - Por carpeta o feature, nunca todo de golpe.
+   - Traducción `Sanity* -> Domain*` con normalización segura.
 
 ## Regla clave con Sanity
-- **No tipar UI/domino con el documento crudo de Sanity.**
-- Crear tipos de entrada mínimos (`SanityGameSource`) solo dentro de data/adapters.
-- Exponer hacia arriba únicamente tipos de dominio (`Game`, `Player`, `MatchEvent`).
+- **No tipar UI/dominio contra documento crudo de Sanity.**
+- El shape de Sanity queda encapsulado y parcial en adapters/services.
+- Hacia arriba solo se exponen tipos de dominio (`Game`, `Player`, `MatchEvent`, etc.).
 
-## Checklist sugerido
-- [ ] Tipar `domain/stats` completo.
-- [ ] Tipar `data/*` fetchers con retorno de dominio.
-- [ ] Tipar adapters de `sanity` con normalización segura.
-- [ ] Activar `checkJs` para carpetas objetivo.
-- [ ] Migrar hooks de páginas principales (`Home`, `Table`, `Record`).
-- [ ] Migrar componentes reutilizables.
+## Próximos pasos recomendados
+- Migrar gradualmente `presentation/` y hooks críticos a `.ts/.tsx` por feature.
+- Activar `checkJs` por carpetas de presentación a medida que se migren.
+- Añadir tests de adapters (casos de campos faltantes/NULL desde Sanity).

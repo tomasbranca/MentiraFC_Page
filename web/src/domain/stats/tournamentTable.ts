@@ -1,20 +1,17 @@
-/** @typedef {import('../../types/models').Game} Game */
-/** @typedef {{ id: string, name: string, isMain?: boolean }} Team */
-/** @typedef {{ team: Team, played: number, wins: number, draws: number, losses: number, goalsFor: number, goalsAgainst: number, points?: number, goalDiff?: number, position?: number, type?: 'champion' | 'playoff' | 'normal' }} TableRow */
+import type { Game, StandingsRow, TeamRef } from "../../types/models";
 
-const calculatePoints = (row) => row.wins * 3 + row.draws;
-const calculateGoalDiff = (row) => row.goalsFor - row.goalsAgainst;
+const calculatePoints = (row: StandingsRow): number => row.wins * 3 + row.draws;
+const calculateGoalDiff = (row: StandingsRow): number => row.goalsFor - row.goalsAgainst;
 
-const getRowType = (position) => {
+const getRowType = (position: number): "champion" | "playoff" | "normal" => {
   if (position === 1) return "champion";
   if (position >= 2 && position <= 5) return "playoff";
   return "normal";
 };
 
-const normalizeNumber = (value) => (Number.isFinite(value) ? value : 0);
+const normalizeNumber = (value: unknown): number => (Number.isFinite(value) ? Number(value) : 0);
 
-/** @param {TableRow[]} rows */
-const sortAndDecorateTable = (rows = []) => {
+const sortAndDecorateTable = (rows: StandingsRow[] = []): StandingsRow[] => {
   return rows
     .map((row) => ({
       ...row,
@@ -22,8 +19,8 @@ const sortAndDecorateTable = (rows = []) => {
       goalDiff: calculateGoalDiff(row),
     }))
     .sort((a, b) => {
-      if (a.points !== b.points) return b.points - a.points;
-      if (a.goalDiff !== b.goalDiff) return b.goalDiff - a.goalDiff;
+      if (a.points !== b.points) return (b.points ?? 0) - (a.points ?? 0);
+      if (a.goalDiff !== b.goalDiff) return (b.goalDiff ?? 0) - (a.goalDiff ?? 0);
       if (a.goalsFor !== b.goalsFor) return b.goalsFor - a.goalsFor;
       return a.team.name.localeCompare(b.team.name, "es");
     })
@@ -34,9 +31,8 @@ const sortAndDecorateTable = (rows = []) => {
     }));
 };
 
-/** @param {Game[]} games */
-const calculateMainTeamStats = (games = []) => {
-  return games.reduce(
+const calculateMainTeamStats = (games: Game[] = []): Omit<StandingsRow, "team"> => {
+  return games.reduce<Omit<StandingsRow, "team">>(
     (acc, game) => {
       const goalsFor = normalizeNumber(game?.result?.goalsFor);
       const goalsAgainst = normalizeNumber(game?.result?.goalsAgainst);
@@ -62,8 +58,7 @@ const calculateMainTeamStats = (games = []) => {
   );
 };
 
-/** @param {TableRow} row */
-const cloneManualRow = (row) => ({
+const cloneManualRow = (row: StandingsRow): StandingsRow => ({
   ...row,
   team: {
     ...row.team,
@@ -76,19 +71,19 @@ const cloneManualRow = (row) => ({
   goalsAgainst: normalizeNumber(row.goalsAgainst),
 });
 
-/**
- * @param {{ manualStandings?: TableRow[], games?: Game[], mainTeam?: Team | null }} params
- * @returns {TableRow[]}
- */
 export const getHybridTournamentTable = ({
   manualStandings = [],
   games = [],
   mainTeam = null,
-}) => {
+}: {
+  manualStandings?: StandingsRow[];
+  games?: Game[];
+  mainTeam?: TeamRef | null;
+}): StandingsRow[] => {
   if (!mainTeam && !manualStandings.length) return [];
 
   const manualRows = (manualStandings || []).map(cloneManualRow);
-  const rowsByTeamId = manualRows.reduce((acc, row) => {
+  const rowsByTeamId = manualRows.reduce<Record<string, StandingsRow>>((acc, row) => {
     acc[row.team.id] = row;
     return acc;
   }, {});
@@ -112,8 +107,7 @@ export const getHybridTournamentTable = ({
   return sortAndDecorateTable(Object.values(rowsByTeamId));
 };
 
-/** @param {Game[]} games @param {Team[]} teams @returns {TableRow[]} */
-export const getTournamentTable = (games = [], teams = []) => {
+export const getTournamentTable = (games: Game[] = [], teams: TeamRef[] = []): StandingsRow[] => {
   if (!Array.isArray(teams) || teams.length === 0) return [];
 
   const mainTeam = teams.find((team) => team.isMain);
@@ -124,7 +118,7 @@ export const getTournamentTable = (games = [], teams = []) => {
     (games || []).filter((game) => game?.state === "finalizado")
   );
 
-  const rows = teams.map((team) => ({
+  const rows: StandingsRow[] = teams.map((team) => ({
     team,
     played: 0,
     wins: 0,
@@ -139,13 +133,15 @@ export const getTournamentTable = (games = [], teams = []) => {
   );
 };
 
-/** @param {TableRow[]} standings */
-export const getMainTeamIndex = (standings = []) => {
+export const getMainTeamIndex = (standings: StandingsRow[] = []): number => {
   return standings.findIndex((row) => row.team.isMain);
 };
 
-/** @param {TableRow[]} standings */
-export const getSurroundingTeams = (standings = [], idx, range = 2) => {
+export const getSurroundingTeams = (
+  standings: StandingsRow[] = [],
+  idx: number,
+  range = 2
+): StandingsRow[] => {
   if (!standings.length) return [];
   if (idx === -1) return standings.slice(0, 5);
 
