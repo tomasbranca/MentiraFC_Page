@@ -86,17 +86,10 @@ jobs:
       - name: Build
         run: npm run build
         working-directory: web
-
-      - name: Start server
-        run: npm run preview &
-        working-directory: web
-
-      - name: Wait for server
-        run: npx wait-on http://localhost:4173
-
+        
       - name: Run Lighthouse CI
         uses: treosh/lighthouse-ci-action@v12
         with:
           uploadArtifacts: true
           temporaryPublicStorage: true
-          configPath: ./web/lighthouserc.json
+          configPath: web/lighthouserc.json
