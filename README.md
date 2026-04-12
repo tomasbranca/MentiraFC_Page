@@ -225,3 +225,43 @@ _Ingeniería en Sistemas — UTN_
 > "Porque la historia también se construye." — **Mentira FC**
 
 [LinkedIn](https://www.linkedin.com/in/tomas-brancatisano/)
+
+---
+
+## ✅ Calidad, métricas y CI (baseline)
+
+Se incorporó una base de calidad simple y sostenible para evitar regresiones:
+
+### Checks automáticos
+
+- **Web app (`web`)**
+  - `lint` con ESLint
+  - `typecheck` con TypeScript
+  - `test` unitario con Vitest
+  - `build` de producción con Vite
+- **Studio (`studio`)**
+  - `lint` con ESLint
+  - `build` de Sanity
+
+### Métricas de performance definidas
+
+Métricas principales (Core Web Vitals + apoyo):
+
+- **LCP** (Largest Contentful Paint) → objetivo: `<= 2500ms`
+- **CLS** (Cumulative Layout Shift) → objetivo: `<= 0.1`
+- **INP** (Interaction to Next Paint) → objetivo: `<= 200ms`
+- **FCP** (First Contentful Paint) → objetivo: `<= 1800ms`
+- **TTFB** (Time to First Byte) → objetivo: `<= 800ms`
+
+La app web registra métricas de navegación e interacción en runtime mediante `PerformanceObserver` (modo DEV por consola), quedando lista para enviar esos datos a GA4/Sentry o endpoint propio.
+
+### Integración de CI (GitHub Actions)
+
+Workflow propuesto: `.github/workflows/ci.yml`
+
+Incluye 3 jobs:
+1. `web-quality`: lint + typecheck + tests + build.
+2. `studio-quality`: lint + build.
+3. `web-performance`: auditoría Lighthouse (3 corridas) con umbrales para LCP, CLS e INP.
+
+> Este enfoque evita sobreingeniería: agrega controles clave desde el inicio y permite crecer luego a cobertura, e2e y budgets más estrictos.
