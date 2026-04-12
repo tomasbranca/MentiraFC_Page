@@ -3,9 +3,13 @@ import { sanityStandingRowSchema, sanityTournamentSchema, type SanityStandingRow
 import { validateSanityArray, validateSanityItem } from "../validation";
 
 export const adaptTournament = (data: unknown): Tournament | null => {
+  if (!data) return null;
+
+  const rawData = Array.isArray(data) ? data[0] : data;
+
   const validated = validateSanityItem(
     sanityTournamentSchema,
-    data,
+    rawData,
     "tournaments.adapter:adaptTournament",
   );
   if (!validated) return null;
@@ -32,11 +36,14 @@ export const adaptTournament = (data: unknown): Tournament | null => {
   }));
 
   return {
-    id: validated._id,
-    name: `${validated.organization?.name} · ${validated.name}`,
-    imageUrl: validated.organization?.logo,
-    primaryColor: validated.organization?.primaryColor?.hex,
-    updatedAt: validated._updatedAt,
+    id: validated._id || "unknown-tournament",
+    name: `${validated.organization?.name || "Torneo"} · ${validated.name || "Actual"}`,
+    imageUrl: validated.organization?.logo || null,
+    primaryColor:
+      typeof validated.organization?.primaryColor === "string"
+        ? validated.organization.primaryColor
+        : validated.organization?.primaryColor?.hex || null,
+    updatedAt: validated._updatedAt || undefined,
     standings,
   };
 };
