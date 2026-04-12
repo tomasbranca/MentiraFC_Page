@@ -43,6 +43,8 @@ const NavBar = () => {
             <Link to="/" className="logo-link">
               <img
                 src="/logo.webp"
+                width={100}
+                height={100}
                 alt="Logo de Mentira FC"
                 className={`logo-transition ${
                   isScrolled ? "logo-scrolled" : "logo-default"

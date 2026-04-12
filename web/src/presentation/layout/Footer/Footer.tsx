@@ -8,7 +8,7 @@ const Footer = () => {
         {/* Marca */}
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-4">
-            <img src="/logo.webp" alt="Mentira FC" className="w-12 h-12" />
+            <img src="/logo.webp" width={48} height={48} alt="Mentira FC" className="w-12 h-12" />
             <h6 className="font-bold tracking-wide">Mentira FC</h6>
           </div>
           <p className="text-violet-300 leading-relaxed max-w-xs">
@@ -63,6 +63,8 @@ const Footer = () => {
           >
             <img
               src="/sponsors/neokings.webp"
+              width={160}
+              height={56}
               alt="NeoKings"
               className="
                 w-full

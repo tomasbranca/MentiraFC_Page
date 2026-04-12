@@ -43,6 +43,8 @@ const GameWidget = ({ compact = false }) => {
       >
         <img
           src="/logo.webp"
+          width={compact ? 80 : 112}
+          height={compact ? 80 : 112}
           className="w-full h-full object-cover"
           alt="Equipo local"
         />
@@ -62,6 +64,8 @@ const GameWidget = ({ compact = false }) => {
       >
         <img
           src={game.rival.imageUrl}
+          width={compact ? 80 : 112}
+          height={compact ? 80 : 112}
           className="w-full h-full object-cover"
           alt="Equipo rival"
         />
