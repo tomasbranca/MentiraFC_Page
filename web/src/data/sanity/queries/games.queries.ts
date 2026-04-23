@@ -1,5 +1,5 @@
-export const LATEST_GAME_QUERY = `
-  *[_type == "games"] | order(date desc)[0] {
+export const LATEST_GAMES_QUERY = `
+  *[_type == "games" && defined(date)] | order(date desc)[0...20] {
     _id,
     date,
     state,
