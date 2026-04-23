@@ -56,9 +56,10 @@ export const sanityGameSchema = z.object({
     .optional(),
   result: z
     .object({
-      goalsFor: z.number().optional(),
-      goalsAgainst: z.number().optional(),
+      goalsFor: z.number().nullable().optional(),
+      goalsAgainst: z.number().nullable().optional(),
     })
+    .nullable()
     .optional(),
   events: z.array(sanityEventSchema).optional(),
 });
