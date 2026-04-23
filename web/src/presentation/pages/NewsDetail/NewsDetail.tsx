@@ -12,7 +12,7 @@ import { formatDate } from "../../utils/date.utils";
 const portableTextComponents = {
   block: {
     normal: ({ children }) => (
-      <p className="mb-4 text-base md:text-lg leading-relaxed text-neutral-200">
+      <p className="mb-4 text-base md:text-lg leading-relaxed text-neutral-200 whitespace-pre-line">
         {children}
       </p>
     ),
@@ -37,7 +37,7 @@ const portableTextComponents = {
       </h4>
     ),
     blockquote: ({ children }) => (
-      <blockquote className="my-4 border-l-4 border-violet-500 pl-4 italic text-neutral-300">
+      <blockquote className="my-4 border-l-4 border-violet-500 pl-4 italic text-neutral-300 whitespace-pre-line">
         {children}
       </blockquote>
     ),
@@ -60,8 +60,8 @@ const portableTextComponents = {
     ),
   },
   listItem: {
-    bullet: ({ children }) => <li className="list-item">{children}</li>,
-    number: ({ children }) => <li className="list-item">{children}</li>,
+    bullet: ({ children }) => <li className="list-item whitespace-pre-line">{children}</li>,
+    number: ({ children }) => <li className="list-item whitespace-pre-line">{children}</li>,
   },
   hardBreak: () => <br />,
 };
