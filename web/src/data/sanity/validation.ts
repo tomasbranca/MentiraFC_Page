@@ -1,7 +1,8 @@
 import { type ZodType } from "zod";
 import { reportError } from "../../lib/errors/errorLogger";
 
-const buildError = (origin: string): string => `Sanity schema validation failed in ${origin}`;
+const buildError = (origin: string): string =>
+  `Sanity schema validation failed in ${origin}`;
 
 const isSanityDebugEnabled = (): boolean => {
   try {
@@ -15,7 +16,7 @@ const debugValidationFailure = (
   origin: string,
   payload: unknown,
   issues: unknown,
-  extra: Record<string, unknown> = {},
+  extra: Record<string, unknown> = {}
 ): void => {
   if (!isSanityDebugEnabled()) return;
 
@@ -29,7 +30,7 @@ const debugValidationFailure = (
 export const validateSanityItem = <T>(
   schema: ZodType<T>,
   input: unknown,
-  origin: string,
+  origin: string
 ): T | null => {
   const parsed = schema.safeParse(input);
 
@@ -49,7 +50,7 @@ export const validateSanityItem = <T>(
 export const validateSanityArray = <T>(
   schema: ZodType<T>,
   input: unknown,
-  origin: string,
+  origin: string
 ): T[] => {
   if (!Array.isArray(input)) {
     debugValidationFailure(origin, input, [], { reason: "Expected array" });

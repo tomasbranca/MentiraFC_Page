@@ -49,7 +49,7 @@ const PlayerDetail = () => {
       <div className="border border-neutral-800 bg-neutral-900">
         <div className="grid grid-cols-1 lg:grid-cols-2">
           {/* IMAGEN */}
-          <div className="w-full aspect-[3/4]">
+          <div className="w-full aspect-3/4">
             <img
               src={player.imageUrl}
               alt={`${player.name} ${player.lastName}`}

@@ -37,10 +37,10 @@ const Carousel = ({ items }) => {
             className="w-full h-full object-cover"
           />
 
-          <div className="absolute inset-0 flex items-end bg-gradient-to-t from-violet-900 via-black/40 to-transparent">
+          <div className="absolute inset-0 flex items-end bg-linear-to-t from-violet-900 via-black/40 to-transparent">
             <div className="w-full overflow-hidden px-4 pb-4 sm:px-6 sm:pb-5 lg:px-10 lg:pb-10">
               <div className="max-w-3xl">
-                <h2 className="font-black uppercase text-white break-words">
+                <h2 className="font-black uppercase text-white wrap-break-word">
                   {item.title}
                 </h2>
 

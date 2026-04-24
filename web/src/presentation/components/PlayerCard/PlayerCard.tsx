@@ -1,29 +1,20 @@
 // @ts-nocheck
 import { Link } from "react-router-dom";
 import { FaFutbol } from "react-icons/fa";
-import {
-  getPlayerLink,
-  PLAYER_CARD_MODE,
-} from "./playerCard.utils";
+import { getPlayerLink, PLAYER_CARD_MODE } from "./playerCard.utils";
 
-const PlayerCard = ({
-  player,
-  mode = PLAYER_CARD_MODE.DEFAULT,
-}) => {
+const PlayerCard = ({ player, mode = PLAYER_CARD_MODE.DEFAULT }) => {
   if (!player) return null;
 
   const isGoalsMode = mode === PLAYER_CARD_MODE.GOALS;
 
   return (
-    <Link
-      to={getPlayerLink(player)}
-      className="group block no-underline"
-    >
+    <Link to={getPlayerLink(player)} className="group block no-underline">
       <div
         className="
         relative
         w-full
-        aspect-[3/4]
+        aspect-3/4
         overflow-hidden
         bg-neutral-950
         shadow-xl
@@ -70,7 +61,7 @@ const PlayerCard = ({
         <div
           className="
           absolute inset-0 z-20
-          bg-gradient-to-t
+          bg-linear-to-t
           from-neutral-950 via-neutral-950/40 to-violet-900/20
         "
         />
@@ -89,7 +80,7 @@ const PlayerCard = ({
               {player.lastName}
             </span>
 
-            <div className="mt-1 h-[2px] w-10 bg-violet-500 rounded-full" />
+            <div className="mt-1 h-0.5 w-10 bg-violet-500 rounded-full" />
           </div>
         </div>
       </div>

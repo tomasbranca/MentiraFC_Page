@@ -12,7 +12,7 @@ export default {
       goalsFor: 'result.goalsFor',
       goalsAgainst: 'result.goalsAgainst',
     },
-    prepare({ rival, media, date, state, goalsFor, goalsAgainst }) {
+    prepare({rival, media, date, state, goalsFor, goalsAgainst}) {
       let subtitle = 'Por jugar'
 
       if (state === 'finalizado') {
@@ -32,7 +32,7 @@ export default {
       name: 'rival',
       title: 'Rival',
       type: 'reference',
-      to: [{ type: 'teams' }],
+      to: [{type: 'teams'}],
       validation: (Rule) => Rule.required(),
     },
 
@@ -56,9 +56,9 @@ export default {
       type: 'string',
       options: {
         list: [
-          { title: 'Torneo', value: 'Torneo' },
-          { title: 'Copa', value: 'Copa' },
-          { title: 'Amistoso', value: 'Amistoso' },
+          {title: 'Torneo', value: 'Torneo'},
+          {title: 'Copa', value: 'Copa'},
+          {title: 'Amistoso', value: 'Amistoso'},
         ],
       },
       validation: (Rule) => Rule.required(),
@@ -68,9 +68,10 @@ export default {
       name: 'tournament',
       title: 'Torneo',
       type: 'reference',
-      to: [{ type: 'tournaments' }],
-      hidden: ({ parent }) => parent?.competition !== 'Torneo',
-      validation: (Rule) => Rule.required().error('El torneo es obligatorio para partidos de tipo "Torneo"'),
+      to: [{type: 'tournaments'}],
+      hidden: ({parent}) => parent?.competition !== 'Torneo',
+      validation: (Rule) =>
+        Rule.required().error('El torneo es obligatorio para partidos de tipo "Torneo"'),
     },
 
     {
@@ -79,8 +80,8 @@ export default {
       type: 'string',
       options: {
         list: [
-          { title: 'Por jugar', value: 'por_jugar' },
-          { title: 'Finalizado', value: 'finalizado' },
+          {title: 'Por jugar', value: 'por_jugar'},
+          {title: 'Finalizado', value: 'finalizado'},
         ],
       },
       validation: (Rule) => Rule.required(),
@@ -90,7 +91,7 @@ export default {
       name: 'result',
       title: 'Resultado',
       type: 'object',
-      hidden: ({ parent }) => parent?.state !== 'finalizado',
+      hidden: ({parent}) => parent?.state !== 'finalizado',
       fields: [
         {
           name: 'goalsFor',

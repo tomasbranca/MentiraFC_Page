@@ -4,10 +4,7 @@ import { getNewsLink } from "../../../utils/navigation.utils";
 
 const CompactCard = ({ item }) => {
   return (
-    <Link
-      to={getNewsLink(item)}
-      className="news-card-compact block h-full"
-    >
+    <Link to={getNewsLink(item)} className="news-card-compact block h-full">
       <article
         className="news-card-image animation-shadow h-full bg-cover bg-center"
         style={{ backgroundImage: `url(${item.imageUrl})` }}

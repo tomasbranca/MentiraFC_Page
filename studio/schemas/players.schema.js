@@ -44,7 +44,7 @@ export default {
       name: 'photo',
       title: 'Foto del jugador',
       type: 'image',
-      options: { hotspot: true },
+      options: {hotspot: true},
     },
     {
       name: 'slug',
@@ -54,6 +54,6 @@ export default {
         source: (doc) => `${doc.name} ${doc.lastName}`,
         maxLength: 96,
       },
-    }
-  ]
+    },
+  ],
 }

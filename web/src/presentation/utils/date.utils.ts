@@ -14,7 +14,9 @@ const meses: Record<string, number> = {
   diciembre: 11,
 };
 
-export const parseDate = (date: string | Date | null | undefined): Date | null => {
+export const parseDate = (
+  date: string | Date | null | undefined
+): Date | null => {
   if (!date) return null;
   if (date instanceof Date) return date;
 
@@ -41,14 +43,20 @@ export const parseDate = (date: string | Date | null | undefined): Date | null =
   return Number.isNaN(fallback.getTime()) ? null : fallback;
 };
 
-export const formatDate = (date: string | Date | null | undefined, locale = "es-AR"): string => {
+export const formatDate = (
+  date: string | Date | null | undefined,
+  locale = "es-AR"
+): string => {
   const d = parseDate(date);
   if (!d) return "";
 
   return d.toLocaleDateString(locale);
 };
 
-export const formatLongDate = (date: string | Date | null | undefined, locale = "es-AR"): string => {
+export const formatLongDate = (
+  date: string | Date | null | undefined,
+  locale = "es-AR"
+): string => {
   const d = parseDate(date);
   if (!d) return "";
 
@@ -59,7 +67,10 @@ export const formatLongDate = (date: string | Date | null | undefined, locale = 
   });
 };
 
-export const formatDateTime = (date: string | Date | null | undefined, locale = "es-AR"): string => {
+export const formatDateTime = (
+  date: string | Date | null | undefined,
+  locale = "es-AR"
+): string => {
   const d = parseDate(date);
   if (!d) return "";
 
@@ -72,7 +83,9 @@ export const formatDateTime = (date: string | Date | null | undefined, locale = 
   return `${formattedDate} - ${formattedTime}`;
 };
 
-export const calculateAge = (birthDate: string | Date | null | undefined): number | null => {
+export const calculateAge = (
+  birthDate: string | Date | null | undefined
+): number | null => {
   const birth = parseDate(birthDate);
   if (!birth) return null;
 

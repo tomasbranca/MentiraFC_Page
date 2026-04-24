@@ -43,7 +43,6 @@ const Table = () => {
     <>
       <div className="max-w-6xl mx-auto md:px-4 md:py-10">
         <div className="border border-neutral-800 bg-neutral-900">
-          
           {/* HEADER */}
           <div className="px-6 py-8 border-b border-neutral-800 text-center shadow-lg shadow-black/30">
             {tournament.imageUrl && (
@@ -63,7 +62,7 @@ const Table = () => {
             </h1>
 
             <div
-              className="w-16 h-[3px] mx-auto mt-2"
+              className="w-16 h-0.75 mx-auto mt-2"
               style={{ backgroundColor: tournament.primaryColor }}
             />
 
@@ -112,7 +111,7 @@ const Table = () => {
                   key={row.team.id}
                   className={`border border-neutral-800 p-4
                     ${isChampion ? "bg-yellow-500/10" : ""}
-                    ${isPlayoff ? "bg-white/[0.02]" : "bg-neutral-900"}
+                    ${isPlayoff ? "bg-white/2" : "bg-neutral-900"}
                   `}
                 >
                   <div className="flex justify-between items-center mb-3">
@@ -122,7 +121,10 @@ const Table = () => {
                       </span>
 
                       <img
-                        src={urlFor(row.team.imageUrl).width(32).height(32).url()}
+                        src={urlFor(row.team.imageUrl)
+                          .width(32)
+                          .height(32)
+                          .url()}
                         alt={row.team.name}
                         className="w-7 h-7 object-contain"
                       />
@@ -180,9 +182,7 @@ const Table = () => {
                             : ""
                         }
                       >
-                        {row.goalDiff > 0
-                          ? `+${row.goalDiff}`
-                          : row.goalDiff}
+                        {row.goalDiff > 0 ? `+${row.goalDiff}` : row.goalDiff}
                       </span>
                     </span>
                   </div>
@@ -228,7 +228,7 @@ const Table = () => {
                       className={`border-b border-neutral-800 transition
                         ${i % 2 === 0 ? "bg-neutral-900" : "bg-neutral-900/70"}
                         ${isChampion ? "border-l-4 bg-yellow-500/10" : ""}
-                        ${isPlayoff ? "border-l-4 bg-white/[0.02]" : ""}
+                        ${isPlayoff ? "border-l-4 bg-white/2" : ""}
                         hover:bg-neutral-800
                       `}
                       style={
@@ -283,9 +283,7 @@ const Table = () => {
                       </td>
 
                       <td className="text-center text-neutral-400">
-                        {row.goalDiff > 0
-                          ? `+${row.goalDiff}`
-                          : row.goalDiff}
+                        {row.goalDiff > 0 ? `+${row.goalDiff}` : row.goalDiff}
                       </td>
 
                       <td
@@ -305,7 +303,6 @@ const Table = () => {
               </tbody>
             </table>
           </div>
-
         </div>
       </div>
     </>

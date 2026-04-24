@@ -11,5 +11,6 @@ export const getNews = async (): Promise<NewsItem[]> => fetchNews();
 export const getNewsBySlug = async (slug: string): Promise<NewsItem | null> =>
   fetchNewsBySlug(slug);
 
-export const getSuggestedNews = async (currentSlug: string): Promise<NewsItem[]> =>
-  fetchSuggestedNews(currentSlug);
+export const getSuggestedNews = async (
+  currentSlug: string
+): Promise<NewsItem[]> => fetchSuggestedNews(currentSlug);

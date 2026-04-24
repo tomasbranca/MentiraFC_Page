@@ -9,7 +9,7 @@ const FeaturedWideCard = ({ item }) => {
       className="animation-shadow news-card-featured-wide relative w-full h-full overflow-hidden flex flex-col"
     >
       <div
-        className="w-full h-[220px] md:absolute md:inset-0 md:h-full"
+        className="w-full h-55 md:absolute md:inset-0 md:h-full"
         style={{
           backgroundImage: `url(${item.imageUrl})`,
           backgroundSize: "cover",

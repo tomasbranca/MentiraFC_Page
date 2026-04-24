@@ -1,5 +1,8 @@
 // @ts-nocheck
-import { getMainTeamIndex, getSurroundingTeams } from "../../../utils/table.utils";
+import {
+  getMainTeamIndex,
+  getSurroundingTeams,
+} from "../../../utils/table.utils";
 import { Link } from "react-router-dom";
 import { ROUTES } from "../../../constants/routes.constants";
 import { getImageUrl } from "../../../../data/imageService";
@@ -12,7 +15,7 @@ const TableWidget = ({ table }) => {
   const surroundingTeams = getSurroundingTeams(standings, mainIndex);
 
   return (
-    <section className="bg-gradient-to-b from-stone-900 to-stone-950 p-4 lg:p-6 mx-0 lg:m-6 shadow-xl h-fit">
+    <section className="bg-linear-to-b from-stone-900 to-stone-950 p-4 lg:p-6 mx-0 lg:m-6 shadow-xl h-fit">
       {/* HEADER */}
       <div className="mb-6">
         <h4 className="text-2xl lg:text-3xl font-extrabold uppercase text-white tracking-wide">
@@ -61,7 +64,7 @@ const TableWidget = ({ table }) => {
                 <span
                   className={`
                     font-semibold uppercase tracking-wide
-                    truncate max-w-[160px] lg:max-w-none
+                    truncate max-w-40 lg:max-w-none
                     ${isMain ? "text-white" : "text-stone-200"}
                   `}
                 >

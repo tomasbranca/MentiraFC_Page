@@ -29,7 +29,10 @@ function App() {
           <Route path={ROUTES.RECORD} element={<Record />} />
           <Route path={ROUTES.ADMIN} element={<Admin />} />
           <Route path={ROUTES.NEWS_DETAIL(":slug")} element={<NewsDetail />} />
-          <Route path={ROUTES.PLAYER_DETAIL(":slug")} element={<PlayerDetail />} />
+          <Route
+            path={ROUTES.PLAYER_DETAIL(":slug")}
+            element={<PlayerDetail />}
+          />
         </Routes>
       </div>
       <Footer />

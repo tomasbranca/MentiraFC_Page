@@ -82,27 +82,29 @@ export const sanityTeamSchema = z.object({
   logo: z.unknown().optional(),
 });
 
-export const sanityTournamentSchema = z.object({
-  _id: z.string().nullable().optional(),
-  _updatedAt: z.string().nullable().optional(),
-  name: z.string().nullable().optional(),
-  organization: z
-    .object({
-      name: z.string().nullable().optional(),
-      logo: z.unknown().optional(),
-      primaryColor: z
-        .union([
-          z.object({
-            hex: z.string().nullable().optional(),
-          }),
-          z.string(),
-          z.null(),
-        ])
-        .optional(),
-    })
-    .optional(),
-  standings: z.array(z.unknown()).nullish(),
-}).passthrough();
+export const sanityTournamentSchema = z
+  .object({
+    _id: z.string().nullable().optional(),
+    _updatedAt: z.string().nullable().optional(),
+    name: z.string().nullable().optional(),
+    organization: z
+      .object({
+        name: z.string().nullable().optional(),
+        logo: z.unknown().optional(),
+        primaryColor: z
+          .union([
+            z.object({
+              hex: z.string().nullable().optional(),
+            }),
+            z.string(),
+            z.null(),
+          ])
+          .optional(),
+      })
+      .optional(),
+    standings: z.array(z.unknown()).nullish(),
+  })
+  .passthrough();
 
 export const sanityStandingRowSchema = z.object({
   played: z.union([z.number(), z.string(), z.null()]).optional(),

@@ -11,7 +11,10 @@ import { queryKeys } from "../../../../data/queryKeys";
 import { reportError } from "../../../../lib/errors/errorLogger";
 
 import { sortNews } from "../../../utils/news.utils";
-import { getHybridTournamentTable, getTopScorers } from "../../../../domain/stats";
+import {
+  getHybridTournamentTable,
+  getTopScorers,
+} from "../../../../domain/stats";
 
 export const useHomeData = () => {
   const year = new Date().getFullYear();
@@ -64,7 +67,10 @@ export const useHomeData = () => {
           try {
             return await getTournament();
           } catch (error) {
-            reportError(error, { page: "Home", action: "load_home_tournament" });
+            reportError(error, {
+              page: "Home",
+              action: "load_home_tournament",
+            });
             throw error;
           }
         },

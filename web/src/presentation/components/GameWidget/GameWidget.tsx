@@ -16,11 +16,7 @@ const GameWidget = ({ compact = false }) => {
   if (loading || !game) return null;
 
   if (error) {
-    return (
-      <div className="text-red-500">
-        Error: {error.message}
-      </div>
-    );
+    return <div className="text-red-500">Error: {error.message}</div>;
   }
 
   return (
@@ -36,7 +32,9 @@ const GameWidget = ({ compact = false }) => {
         className={`
           absolute top-1/2 -translate-y-1/2
           ${
-            compact ? "-left-8 w-20 h-20 opacity-40" : "-left-10 w-28 h-28 opacity-90"
+            compact
+              ? "-left-8 w-20 h-20 opacity-40"
+              : "-left-10 w-28 h-28 opacity-90"
           }
           rounded-full overflow-hidden
         `}

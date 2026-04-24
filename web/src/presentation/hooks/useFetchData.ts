@@ -18,7 +18,7 @@ type UseFetchDataResult<T> = {
   refetch: () => Promise<T>;
 };
 
-export const useFetchData = <T,>(
+export const useFetchData = <T>(
   fetcher: () => Promise<T>,
   options: UseFetchDataOptions<T> = {}
 ): UseFetchDataResult<T> => {

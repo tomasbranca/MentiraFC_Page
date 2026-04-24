@@ -21,7 +21,9 @@ export const getNewsBySlug = async (slug: string): Promise<NewsItem | null> => {
   return adaptSingleNews(data);
 };
 
-export const getSuggestedNews = async (currentSlug: string): Promise<NewsItem[]> => {
+export const getSuggestedNews = async (
+  currentSlug: string
+): Promise<NewsItem[]> => {
   const now = new Date();
 
   const buildDate = (monthsBack: number): string => {

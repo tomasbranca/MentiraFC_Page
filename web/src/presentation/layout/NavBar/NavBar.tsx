@@ -66,10 +66,7 @@ const NavBar = () => {
 
       {/* OVERLAY */}
       {menuOpen && (
-        <div
-          className="menu-overlay"
-          onClick={() => setMenuOpen(false)}
-        />
+        <div className="menu-overlay" onClick={() => setMenuOpen(false)} />
       )}
 
       {/* MENU MOBILE */}
@@ -84,11 +81,7 @@ const NavBar = () => {
 
         <nav className="mobile-menu-links">
           {NAV_LINKS.map((link) => (
-            <Link
-              key={link.to}
-              to={link.to}
-              onClick={() => setMenuOpen(false)}
-            >
+            <Link key={link.to} to={link.to} onClick={() => setMenuOpen(false)}>
               {link.label}
             </Link>
           ))}

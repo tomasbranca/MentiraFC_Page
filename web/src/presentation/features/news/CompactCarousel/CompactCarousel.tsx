@@ -34,7 +34,7 @@ const CompactCarousel = ({ items = [] }) => {
               snap-start
               shrink-0
               w-[85%]
-              h-[160px]
+              h-40
             "
           >
             <NewsCard item={item} variant="compact" />

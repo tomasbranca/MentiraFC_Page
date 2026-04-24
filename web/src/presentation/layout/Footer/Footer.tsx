@@ -59,7 +59,7 @@ const Footer = () => {
             href="https://www.neokings.com.ar"
             target="_blank"
             rel="noopener noreferrer"
-            className="block max-w-[160px]"
+            className="block max-w-40"
           >
             <img
               src="/sponsors/neokings.webp"

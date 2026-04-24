@@ -77,13 +77,13 @@ const Record = () => {
                     {/* ITEM */}
                     <div
                       onClick={() =>
-                        hasScorers
-                          ? setOpenGame(isOpen ? null : game.id)
-                          : null
+                        hasScorers ? setOpenGame(isOpen ? null : game.id) : null
                       }
                       className={`
                         px-4 sm:px-6 py-4 flex flex-col gap-2
-                        ${hasScorers ? "cursor-pointer active:scale-[0.98]" : ""}
+                        ${
+                          hasScorers ? "cursor-pointer active:scale-[0.98]" : ""
+                        }
                         hover:bg-neutral-800/60 transition
                       `}
                     >
@@ -148,7 +148,9 @@ const Record = () => {
 
                       {/* INFO EXTRA */}
                       <div className="text-xs text-neutral-400">
-                        {game.competition === "Torneo" ? game.tournament : game.competition}
+                        {game.competition === "Torneo"
+                          ? game.tournament
+                          : game.competition}
                         <span className="hidden md:inline">
                           {" "}
                           · {game.location}
@@ -160,7 +162,7 @@ const Record = () => {
                     {hasScorers && (
                       <div
                         className={`overflow-hidden transition-all duration-300 ${
-                          isOpen ? "max-h-[500px]" : "max-h-0"
+                          isOpen ? "max-h-125" : "max-h-0"
                         }`}
                       >
                         <div

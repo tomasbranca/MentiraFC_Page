@@ -1,4 +1,4 @@
-export type GameState = "programado" | "en_juego" | "finalizado" | "suspendido" | string;
+export type GameState = "por_jugar" | "finalizado" | string;
 
 export interface TeamRef {
   id: string;

@@ -1,7 +1,8 @@
 // @ts-nocheck
 const GameSkeleton = () => {
   return (
-    <div className="bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-900
+    <div
+      className="bg-linear-to-r from-neutral-900 via-neutral-800 to-neutral-900
       p-6 mb-4 flex items-center justify-center gap-8
       border-t-2 border-violet-700 animate-pulse"
     >

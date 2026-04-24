@@ -27,7 +27,10 @@ const metricThresholds: Record<
   Load: { good: 2500, needsImprovement: 4000, unit: "ms" },
 };
 
-function getRating(name: WebVitalsMetricName, value: number): WebVitalsMetric["rating"] {
+function getRating(
+  name: WebVitalsMetricName,
+  value: number
+): WebVitalsMetric["rating"] {
   const threshold = metricThresholds[name];
 
   if (value <= threshold.good) {
@@ -49,11 +52,16 @@ function emitMetric(metric: WebVitalsMetric): void {
 }
 
 export function startWebVitalsTracking(): void {
-  if (typeof window === "undefined" || typeof PerformanceObserver === "undefined") {
+  if (
+    typeof window === "undefined" ||
+    typeof PerformanceObserver === "undefined"
+  ) {
     return;
   }
 
-  const navigationEntry = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
+  const navigationEntry = performance.getEntriesByType("navigation")[0] as
+    | PerformanceNavigationTiming
+    | undefined;
   if (navigationEntry) {
     emitMetric({
       name: "TTFB",
@@ -66,7 +74,10 @@ export function startWebVitalsTracking(): void {
       name: "DOMContentLoaded",
       value: navigationEntry.domContentLoadedEventEnd,
       unit: metricThresholds.DOMContentLoaded.unit,
-      rating: getRating("DOMContentLoaded", navigationEntry.domContentLoadedEventEnd),
+      rating: getRating(
+        "DOMContentLoaded",
+        navigationEntry.domContentLoadedEventEnd
+      ),
     });
 
     emitMetric({
@@ -81,7 +92,10 @@ export function startWebVitalsTracking(): void {
 
   const observer = new PerformanceObserver((entryList) => {
     for (const entry of entryList.getEntries()) {
-      if (entry.entryType === "largest-contentful-paint" && !observed.has("LCP")) {
+      if (
+        entry.entryType === "largest-contentful-paint" &&
+        !observed.has("LCP")
+      ) {
         observed.add("LCP");
         emitMetric({
           name: "LCP",
@@ -91,7 +105,11 @@ export function startWebVitalsTracking(): void {
         });
       }
 
-      if (entry.entryType === "paint" && entry.name === "first-contentful-paint" && !observed.has("FCP")) {
+      if (
+        entry.entryType === "paint" &&
+        entry.name === "first-contentful-paint" &&
+        !observed.has("FCP")
+      ) {
         observed.add("FCP");
         emitMetric({
           name: "FCP",
@@ -102,7 +120,10 @@ export function startWebVitalsTracking(): void {
       }
 
       if (entry.entryType === "layout-shift") {
-        const shift = entry as PerformanceEntry & { value: number; hadRecentInput?: boolean };
+        const shift = entry as PerformanceEntry & {
+          value: number;
+          hadRecentInput?: boolean;
+        };
         if (shift.hadRecentInput) {
           continue;
         }

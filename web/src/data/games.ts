@@ -6,9 +6,11 @@ import {
 
 import type { Game } from "../types/models";
 
-export const getLatestGame = async (): Promise<Game | null> => fetchLatestGame();
+export const getLatestGame = async (): Promise<Game | null> =>
+  fetchLatestGame();
 
 // "All games" in this project currently means finished games feed.
 export const getAllGames = async (): Promise<Game[]> => fetchFinishedGames();
 
-export const getTournamentGames = async (): Promise<Game[]> => fetchFinishedTournamentGames();
+export const getTournamentGames = async (): Promise<Game[]> =>
+  fetchFinishedTournamentGames();

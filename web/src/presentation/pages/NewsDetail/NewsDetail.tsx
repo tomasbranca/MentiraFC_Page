@@ -9,11 +9,73 @@ import NewsCard from "../../components/NewsCard/NewsCard";
 import { useNewsDetail } from "./hooks/useNewsDetail";
 import { formatDate } from "../../utils/date.utils";
 
+const portableTextComponents = {
+  block: {
+    normal: ({ children }) => (
+      <p className="mb-4 text-base md:text-lg leading-relaxed text-neutral-200 whitespace-pre-line">
+        {children}
+      </p>
+    ),
+    h1: ({ children }) => (
+      <h1 className="mb-4 text-3xl md:text-4xl font-extrabold normal-case text-white leading-tight">
+        {children}
+      </h1>
+    ),
+    h2: ({ children }) => (
+      <h2 className="mb-4 text-2xl md:text-3xl font-bold normal-case text-white leading-tight">
+        {children}
+      </h2>
+    ),
+    h3: ({ children }) => (
+      <h3 className="mb-3 text-xl md:text-2xl font-bold normal-case text-white leading-tight">
+        {children}
+      </h3>
+    ),
+    h4: ({ children }) => (
+      <h4 className="mb-3 text-lg md:text-xl font-semibold normal-case text-white leading-tight">
+        {children}
+      </h4>
+    ),
+    blockquote: ({ children }) => (
+      <blockquote className="my-4 border-l-4 border-violet-500 pl-4 italic text-neutral-300 whitespace-pre-line">
+        {children}
+      </blockquote>
+    ),
+  },
+  marks: {
+    strong: ({ children }) => (
+      <strong className="font-bold text-white">{children}</strong>
+    ),
+    em: ({ children }) => <em className="italic">{children}</em>,
+    underline: ({ children }) => <span className="underline">{children}</span>,
+  },
+  list: {
+    bullet: ({ children }) => (
+      <ul className="my-4 ml-6 list-disc space-y-2 text-base md:text-lg text-neutral-200">
+        {children}
+      </ul>
+    ),
+    number: ({ children }) => (
+      <ol className="my-4 ml-6 list-decimal space-y-2 text-base md:text-lg text-neutral-200">
+        {children}
+      </ol>
+    ),
+  },
+  listItem: {
+    bullet: ({ children }) => (
+      <li className="list-item whitespace-pre-line">{children}</li>
+    ),
+    number: ({ children }) => (
+      <li className="list-item whitespace-pre-line">{children}</li>
+    ),
+  },
+  hardBreak: () => <br />,
+};
+
 const NewsDetail = () => {
   const { slug } = useParams();
 
-  const { newsItem, suggested, loading, error, refetch } =
-    useNewsDetail(slug);
+  const { newsItem, suggested, loading, error, refetch } = useNewsDetail(slug);
 
   if (loading) return <Loader />;
 
@@ -46,7 +108,7 @@ const NewsDetail = () => {
           backgroundPosition: "center",
         }}
       >
-        <div className="absolute inset-0 bg-gradient-to-t from-violet-950 via-black/50 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-t from-violet-950 via-black/50 to-transparent" />
 
         <div className="relative z-10 w-full max-w-4xl mx-auto px-4 md:px-6 pb-6 md:pb-10">
           <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold leading-tight text-white">
@@ -69,8 +131,11 @@ const NewsDetail = () => {
       </section>
 
       {/* CONTENT */}
-      <section className="max-w-3xl mx-auto px-4 md:px-6 mt-8 md:mt-10 mb-16 md:mb-20 prose prose-invert">
-        <PortableText value={newsItem.content} />
+      <section className="max-w-3xl mx-auto px-4 md:px-6 mt-8 md:mt-10 mb-16 md:mb-20">
+        <PortableText
+          value={newsItem.content}
+          components={portableTextComponents}
+        />
       </section>
 
       {/* SUGERIDAS */}
@@ -82,10 +147,7 @@ const NewsDetail = () => {
 
           <div className="flex gap-4 overflow-x-auto pb-2 md:grid md:grid-cols-3 md:overflow-visible">
             {suggested.map((item) => (
-              <div
-                key={item.id}
-                className="min-w-[260px] md:min-w-0 h-[180px]"
-              >
+              <div key={item.id} className="min-w-65 md:min-w-0 h-45">
                 <NewsCard item={item} variant="compact" />
               </div>
             ))}

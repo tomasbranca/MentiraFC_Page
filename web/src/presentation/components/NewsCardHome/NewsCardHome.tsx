@@ -14,8 +14,8 @@ const NewsCardHome = ({ item, featured }) => {
         group block overflow-hidden
         shadow-md hover:shadow-xl transition-shadow
       
-        aspect-[4/3]
-        sm:aspect-[16/9]
+        aspect-4/3
+        sm:aspect-video
       
         ${getFeaturedClasses(featured)}
       `}

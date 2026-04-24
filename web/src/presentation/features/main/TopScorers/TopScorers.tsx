@@ -1,10 +1,7 @@
 // @ts-nocheck
 import { useState } from "react";
 import PlayerCard from "../../../components/PlayerCard/PlayerCard";
-import {
-  filterPlayersWithGoals,
-  paginate,
-} from "./topScorers.utils";
+import { filterPlayersWithGoals, paginate } from "./topScorers.utils";
 import { PLAYER_CARD_MODE } from "../../../components/PlayerCard/playerCard.utils";
 
 const TopScorers = ({ players = [] }) => {
@@ -16,11 +13,11 @@ const TopScorers = ({ players = [] }) => {
 
   if (!playersWithGoals.length) return null;
 
-  const { slice: visiblePlayers, hasNext, hasPrev } = paginate(
-    playersWithGoals,
-    page,
-    playersPerPage
-  );
+  const {
+    slice: visiblePlayers,
+    hasNext,
+    hasPrev,
+  } = paginate(playersWithGoals, page, playersPerPage);
 
   return (
     <section className="p-4 m-6 lg:col-span-2">
@@ -30,7 +27,7 @@ const TopScorers = ({ players = [] }) => {
           Máximos goleadores
         </h2>
 
-        <div className="hidden lg:block bg-violet-900 h-8 flex-grow ml-4"></div>
+        <div className="hidden lg:block bg-violet-900 h-8 grow ml-4"></div>
       </div>
 
       {/* MOBILE */}
@@ -40,10 +37,7 @@ const TopScorers = ({ players = [] }) => {
             key={player.id}
             className="snap-start shrink-0 w-[75%] sm:w-[55%]"
           >
-            <PlayerCard
-              player={player}
-              mode={PLAYER_CARD_MODE.GOALS}
-            />
+            <PlayerCard player={player} mode={PLAYER_CARD_MODE.GOALS} />
           </div>
         ))}
       </div>
@@ -58,11 +52,8 @@ const TopScorers = ({ players = [] }) => {
           }`}
         >
           {visiblePlayers.map((player) => (
-            <div key={player.id} className="w-[180px] lg:w-[200px]">
-              <PlayerCard
-                player={player}
-                mode={PLAYER_CARD_MODE.GOALS}
-              />
+            <div key={player.id} className="w-45 lg:w-50">
+              <PlayerCard player={player} mode={PLAYER_CARD_MODE.GOALS} />
             </div>
           ))}
         </div>

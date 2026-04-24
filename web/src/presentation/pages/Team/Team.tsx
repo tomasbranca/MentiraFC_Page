@@ -46,17 +46,17 @@ const Team = () => {
           <div className="lg:hidden mt-6">
             <button
               onClick={() => setFiltersOpen(!filtersOpen)}
-              className="w-full bg-gradient-to-r from-violet-700 to-violet-600 px-4 py-3 text-white font-semibold flex justify-between items-center rounded-lg shadow-md transition-all duration-300"
+              className="w-full bg-linear-to-r from-violet-700 to-violet-600 px-4 py-3 text-white font-semibold flex justify-between items-center rounded-lg shadow-md transition-all duration-300"
             >
               <span>Filtrar posiciones</span>
-              <span className={`${filtersOpen ? "rotate-180" : ""}`}>
-                ▾
-              </span>
+              <span className={`${filtersOpen ? "rotate-180" : ""}`}>▾</span>
             </button>
 
             <div
               className={`overflow-hidden transition-all duration-500 ${
-                filtersOpen ? "max-h-[300px] opacity-100 mt-3" : "max-h-0 opacity-0"
+                filtersOpen
+                  ? "max-h-75 opacity-100 mt-3"
+                  : "max-h-0 opacity-0"
               }`}
             >
               <div className="bg-violet-900/60 border border-violet-500/20 rounded-xl p-4 flex flex-wrap gap-3 justify-center">
@@ -115,7 +115,8 @@ const Team = () => {
                     </div>
 
                     <span className="text-sm font-semibold text-violet-200">
-                      {list.length} {list.length === 1 ? "jugador" : "jugadores"}
+                      {list.length}{" "}
+                      {list.length === 1 ? "jugador" : "jugadores"}
                     </span>
                   </div>
 

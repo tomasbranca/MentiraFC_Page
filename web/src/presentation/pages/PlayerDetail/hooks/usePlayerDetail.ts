@@ -52,7 +52,9 @@ export const usePlayerDetail = (slug) => {
       return null;
     }
 
-    const stats = getPlayerStats(gamesQuery.data ?? [], playerQuery.data.id, { year });
+    const stats = getPlayerStats(gamesQuery.data ?? [], playerQuery.data.id, {
+      year,
+    });
 
     return {
       ...playerQuery.data,

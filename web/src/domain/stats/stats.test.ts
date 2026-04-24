@@ -51,7 +51,11 @@ describe("getHybridTournamentTable", () => {
       { state: "programado", result: { goalsFor: 9, goalsAgainst: 0 } },
     ];
 
-    const table = getHybridTournamentTable({ manualStandings, games, mainTeam });
+    const table = getHybridTournamentTable({
+      manualStandings,
+      games,
+      mainTeam,
+    });
 
     expect(table).toHaveLength(3);
 
@@ -73,7 +77,9 @@ describe("getHybridTournamentTable", () => {
   });
 
   it("retorna arreglo vacío cuando no hay equipo principal ni tabla manual", () => {
-    expect(getHybridTournamentTable({ manualStandings: [], games: [] })).toEqual([]);
+    expect(
+      getHybridTournamentTable({ manualStandings: [], games: [] })
+    ).toEqual([]);
   });
 
   it("resuelve empates por diferencia de gol, goles a favor y nombre", () => {
@@ -136,7 +142,9 @@ describe("getHybridTournamentTable", () => {
           goalsAgainst: "-",
         },
       ],
-      games: [{ state: "finalizado", result: { goalsFor: "2", goalsAgainst: null } }],
+      games: [
+        { state: "finalizado", result: { goalsFor: "2", goalsAgainst: null } },
+      ],
       mainTeam,
     });
 

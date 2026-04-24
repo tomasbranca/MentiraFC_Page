@@ -4,11 +4,7 @@ import { FaFutbol } from "react-icons/fa";
 import GameSkeleton from "./GameSkeleton/GameSkeleton";
 import GameEmpty from "./GameEmpty/GameEmpty";
 
-import {
-  isGameInProgress,
-  getScorers,
-  getShortName,
-} from "./game.utils";
+import { isGameInProgress, getScorers, getShortName } from "./game.utils";
 
 import { formatDateTime } from "../../../utils/date.utils";
 
@@ -28,7 +24,7 @@ const Game = ({ game, loading }) => {
     ));
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-900 text-violet-50 border-t-2 border-violet-700 shadow-lg shadow-black/30 py-12 sm:py-8 px-4 sm:px-6 lg:px-10">
+    <section className="relative overflow-hidden bg-linear-to-r from-neutral-900 via-neutral-800 to-neutral-900 text-violet-50 border-t-2 border-violet-700 shadow-lg shadow-black/30 py-12 sm:py-8 px-4 sm:px-6 lg:px-10">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between">
           {/* LOCAL */}
@@ -90,7 +86,10 @@ const Game = ({ game, loading }) => {
                 <div className="hidden sm:flex justify-start w-full mt-2">
                   <div className="w-1/2 flex flex-wrap gap-x-3 gap-y-1 text-xs sm:text-sm">
                     {scorers.map((scorer, index) => (
-                      <div key={index} className="flex items-center gap-1 whitespace-nowrap">
+                      <div
+                        key={index}
+                        className="flex items-center gap-1 whitespace-nowrap"
+                      >
                         <span>
                           {getShortName(
                             scorer.player?.name,

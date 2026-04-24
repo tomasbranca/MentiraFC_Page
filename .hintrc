@@ -16,9 +16,11 @@
       "default",
       {
         "ignore": [
-          "scrollbar-width"
+          "scrollbar-width",
+          "-webkit-text-size-adjust"
         ]
       }
-    ]
+    ],
+    "no-inline-styles": "off"
   }
 }

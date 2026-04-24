@@ -3,7 +3,10 @@ import { useEffect, useState } from "react";
 
 type Countdown = { hours: number; minutes: number };
 
-export const useCountdown = (targetDate?: string | Date | null, active = true): Countdown => {
+export const useCountdown = (
+  targetDate?: string | Date | null,
+  active = true
+): Countdown => {
   const [timeLeft, setTimeLeft] = useState<Countdown>({ hours: 0, minutes: 0 });
 
   useEffect(() => {

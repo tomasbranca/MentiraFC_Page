@@ -62,7 +62,8 @@ export const useTableData = () => {
       return null;
     }
 
-    const mainTeam = (teamsQuery.data ?? []).find((team) => team.isMain) || null;
+    const mainTeam =
+      (teamsQuery.data ?? []).find((team) => team.isMain) || null;
 
     const gamesFromActiveTournament = (gamesQuery.data ?? []).filter(
       (game) => game.tournamentId === tournamentQuery.data.id
@@ -82,7 +83,8 @@ export const useTableData = () => {
 
   return {
     tournament,
-    loading: tournamentQuery.isLoading || teamsQuery.isLoading || gamesQuery.isLoading,
+    loading:
+      tournamentQuery.isLoading || teamsQuery.isLoading || gamesQuery.isLoading,
     error: tournamentQuery.isError || teamsQuery.isError || gamesQuery.isError,
     refetch: async () => {
       await Promise.all([

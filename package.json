@@ -3,8 +3,11 @@
     "concurrently": "^9.2.1"
   },
   "scripts": {
-  "dev:web": "cd web && npm run dev",
-  "dev:studio": "cd studio && npm run dev",
-  "dev": "concurrently \"npm run dev:web\" \"npm run dev:studio\""
-}
+    "dev:web": "cd web && npm run dev",
+    "dev:studio": "cd studio && npm run dev",
+    "dev": "concurrently \"npm run dev:web\" \"npm run dev:studio\"",
+    "install:web": "cd web && npm install",
+    "install:studio": "cd studio && npm install",
+    "install": "npm run install:web && npm run install:studio"
+  }
 }

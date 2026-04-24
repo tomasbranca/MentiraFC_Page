@@ -10,7 +10,8 @@ import { useGame } from "../../context/useGame";
 import { useHomeData } from "./hooks/useHomeData";
 
 const Home = () => {
-  const { news, topScorers, tournament, loading, error, refetch } = useHomeData();
+  const { news, topScorers, tournament, loading, error, refetch } =
+    useHomeData();
   const { game, loading: gameLoading } = useGame();
 
   if (loading) return <Loader />;

@@ -3,10 +3,7 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import Button from "../../../components/Button/Button";
 
-import {
-  paginateList,
-  getNextVisibleCount,
-} from "./newsList.utils";
+import { paginateList, getNextVisibleCount } from "./newsList.utils";
 
 import { formatDate } from "../../../utils/date.utils";
 import { getNewsLink } from "../../../utils/navigation.utils";
@@ -52,10 +49,10 @@ const NewsList = ({ items = [] }) => {
               className="
                 relative
                 w-full
-                h-[200px]
+                h-50
                 md:w-1/4
                 md:h-auto
-                md:min-h-[120px]
+                md:min-h-30
                 bg-cover
                 bg-center
               "
@@ -90,9 +87,7 @@ const NewsList = ({ items = [] }) => {
           <Button
             variant="light"
             className="px-5 py-2.5 rounded-lg text-sm"
-            onClick={() =>
-              setVisibleCount(getNextVisibleCount(visibleCount))
-            }
+            onClick={() => setVisibleCount(getNextVisibleCount(visibleCount))}
           >
             Cargar más
           </Button>

@@ -17,7 +17,7 @@ const HeroCard = ({ item }) => {
       "
     >
       <div
-        className="w-full h-[220px] md:h-auto md:col-span-8 animation-shadow"
+        className="w-full h-55 md:h-auto md:col-span-8 animation-shadow"
         style={{
           backgroundImage: `url(${item.imageUrl})`,
           backgroundSize: "cover",
@@ -26,7 +26,7 @@ const HeroCard = ({ item }) => {
       />
 
       <div className="md:col-span-4 relative flex">
-        <div className="bg-neutral-950 p-5 flex flex-col shadow-lg w-full md:absolute md:left-[-4rem] md:bottom-10 md:w-auto">
+        <div className="bg-neutral-950 p-5 flex flex-col shadow-lg w-full md:absolute md:-left-16 md:bottom-10 md:w-auto">
           <p className="text-xs uppercase opacity-60 mb-1 text-violet-50">
             {formatDate(item.date)}
           </p>

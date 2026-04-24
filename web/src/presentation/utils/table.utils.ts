@@ -26,13 +26,17 @@ const addPositions = (standings: StandingsRow[]): StandingsRow[] => {
   }));
 };
 
-export const getRowType = (row: StandingsRow): "champion" | "playoff" | "normal" => {
+export const getRowType = (
+  row: StandingsRow
+): "champion" | "playoff" | "normal" => {
   if (row.position === 1) return "champion";
   if ((row.position ?? 0) >= 2 && (row.position ?? 0) <= 5) return "playoff";
   return "normal";
 };
 
-export const formatStandings = (standings: StandingsRow[] = []): StandingsRow[] => {
+export const formatStandings = (
+  standings: StandingsRow[] = []
+): StandingsRow[] => {
   const enriched = standings.map((row) => ({
     ...row,
     points: calculatePoints(row),
@@ -52,7 +56,11 @@ export const getMainTeamIndex = (standings: StandingsRow[]): number => {
   return standings.findIndex((row) => row.team.isMain);
 };
 
-export const getSurroundingTeams = (arr: StandingsRow[], idx: number, range = 2): StandingsRow[] => {
+export const getSurroundingTeams = (
+  arr: StandingsRow[],
+  idx: number,
+  range = 2
+): StandingsRow[] => {
   if (idx === -1) return arr.slice(0, 5);
 
   const start = Math.max(0, idx - range);

@@ -1,5 +1,8 @@
 import { client } from "../sanity.client";
-import { PLAYERS_QUERY, PLAYER_BY_SLUG_QUERY } from "../queries/players.queries";
+import {
+  PLAYERS_QUERY,
+  PLAYER_BY_SLUG_QUERY,
+} from "../queries/players.queries";
 
 import { adaptPlayers, adaptPlayer } from "../adapters/players.adapter";
 import type { Player } from "../../../types/models";

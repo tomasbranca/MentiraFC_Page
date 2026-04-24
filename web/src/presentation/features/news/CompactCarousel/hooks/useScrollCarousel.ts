@@ -10,8 +10,7 @@ export const useScrollCarousel = () => {
     const scrollLeft = container.scrollLeft;
     const firstChild = container.firstElementChild;
 
-    const width =
-      firstChild?.offsetWidth || container.offsetWidth;
+    const width = firstChild?.offsetWidth || container.offsetWidth;
 
     if (!width) return 0;
 

@@ -1,7 +1,8 @@
 import type { Game, StandingsRow, TeamRef } from "../../types/models";
 
 const calculatePoints = (row: StandingsRow): number => row.wins * 3 + row.draws;
-const calculateGoalDiff = (row: StandingsRow): number => row.goalsFor - row.goalsAgainst;
+const calculateGoalDiff = (row: StandingsRow): number =>
+  row.goalsFor - row.goalsAgainst;
 
 const getRowType = (position: number): "champion" | "playoff" | "normal" => {
   if (position === 1) return "champion";
@@ -9,7 +10,8 @@ const getRowType = (position: number): "champion" | "playoff" | "normal" => {
   return "normal";
 };
 
-const normalizeNumber = (value: unknown): number => (Number.isFinite(value) ? Number(value) : 0);
+const normalizeNumber = (value: unknown): number =>
+  Number.isFinite(value) ? Number(value) : 0;
 
 const sortAndDecorateTable = (rows: StandingsRow[] = []): StandingsRow[] => {
   return rows
@@ -20,7 +22,8 @@ const sortAndDecorateTable = (rows: StandingsRow[] = []): StandingsRow[] => {
     }))
     .sort((a, b) => {
       if (a.points !== b.points) return (b.points ?? 0) - (a.points ?? 0);
-      if (a.goalDiff !== b.goalDiff) return (b.goalDiff ?? 0) - (a.goalDiff ?? 0);
+      if (a.goalDiff !== b.goalDiff)
+        return (b.goalDiff ?? 0) - (a.goalDiff ?? 0);
       if (a.goalsFor !== b.goalsFor) return b.goalsFor - a.goalsFor;
       return a.team.name.localeCompare(b.team.name, "es");
     })
@@ -31,7 +34,9 @@ const sortAndDecorateTable = (rows: StandingsRow[] = []): StandingsRow[] => {
     }));
 };
 
-const calculateMainTeamStats = (games: Game[] = []): Omit<StandingsRow, "team"> => {
+const calculateMainTeamStats = (
+  games: Game[] = []
+): Omit<StandingsRow, "team"> => {
   return games.reduce<Omit<StandingsRow, "team">>(
     (acc, game) => {
       const goalsFor = normalizeNumber(game?.result?.goalsFor);
@@ -83,10 +88,13 @@ export const getHybridTournamentTable = ({
   if (!mainTeam && !manualStandings.length) return [];
 
   const manualRows = (manualStandings || []).map(cloneManualRow);
-  const rowsByTeamId = manualRows.reduce<Record<string, StandingsRow>>((acc, row) => {
-    acc[row.team.id] = row;
-    return acc;
-  }, {});
+  const rowsByTeamId = manualRows.reduce<Record<string, StandingsRow>>(
+    (acc, row) => {
+      acc[row.team.id] = row;
+      return acc;
+    },
+    {}
+  );
 
   const resolvedMainTeam =
     mainTeam || manualRows.find((row) => row.team.isMain)?.team || null;
@@ -107,7 +115,10 @@ export const getHybridTournamentTable = ({
   return sortAndDecorateTable(Object.values(rowsByTeamId));
 };
 
-export const getTournamentTable = (games: Game[] = [], teams: TeamRef[] = []): StandingsRow[] => {
+export const getTournamentTable = (
+  games: Game[] = [],
+  teams: TeamRef[] = []
+): StandingsRow[] => {
   if (!Array.isArray(teams) || teams.length === 0) return [];
 
   const mainTeam = teams.find((team) => team.isMain);
@@ -129,7 +140,9 @@ export const getTournamentTable = (games: Game[] = [], teams: TeamRef[] = []): S
   }));
 
   return sortAndDecorateTable(
-    rows.map((row) => (row.team.id === mainTeam.id ? { ...row, ...mainStats } : row))
+    rows.map((row) =>
+      row.team.id === mainTeam.id ? { ...row, ...mainStats } : row
+    )
   );
 };
 

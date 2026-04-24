@@ -3,7 +3,11 @@ import { sanityGoalEventSchema, type SanityGoalEvent } from "../schemas";
 import { validateSanityArray, validateSanityItem } from "../validation";
 
 export const adaptGoalEvent = (event: unknown): GoalEvent | null => {
-  const validated = validateSanityItem(sanityGoalEventSchema, event, "events.adapter:adaptGoalEvent");
+  const validated = validateSanityItem(
+    sanityGoalEventSchema,
+    event,
+    "events.adapter:adaptGoalEvent"
+  );
   if (!validated) return null;
 
   return {
@@ -34,8 +38,10 @@ export const adaptGoalEvents = (events: unknown): GoalEvent[] => {
   const validatedEvents: SanityGoalEvent[] = validateSanityArray(
     sanityGoalEventSchema,
     events,
-    "events.adapter:adaptGoalEvents",
+    "events.adapter:adaptGoalEvents"
   );
 
-  return validatedEvents.map(adaptGoalEvent).filter((event): event is GoalEvent => Boolean(event));
+  return validatedEvents
+    .map(adaptGoalEvent)
+    .filter((event): event is GoalEvent => Boolean(event));
 };

@@ -1,10 +1,15 @@
 import type { Game, Player } from "../../types/models";
 
 type StatsOptions = { year?: number };
-type PlayerStats = { playerId: string | null; goals: number; matchesWithGoals: number };
+type PlayerStats = {
+  playerId: string | null;
+  goals: number;
+  matchesWithGoals: number;
+};
 type TopScorer = Player & { goals: number };
 
-const normalizeGames = (games: Game[] = []): Game[] => (Array.isArray(games) ? games : []);
+const normalizeGames = (games: Game[] = []): Game[] =>
+  Array.isArray(games) ? games : [];
 const normalizePlayers = (players: Player[] = []): Player[] =>
   Array.isArray(players) ? players : [];
 
@@ -28,7 +33,9 @@ export const getTopScorers = (
 ): TopScorer[] => {
   const { year } = options;
 
-  const goalsByPlayer = getGoalEvents(games, year).reduce<Record<string, number>>((acc, event) => {
+  const goalsByPlayer = getGoalEvents(games, year).reduce<
+    Record<string, number>
+  >((acc, event) => {
     const playerId = event.player!.id;
     acc[playerId] = (acc[playerId] ?? 0) + 1;
     return acc;
@@ -60,7 +67,9 @@ export const getPlayerStats = (
     };
   }
 
-  const scopedGames = normalizeGames(games).filter((game) => isInYear(game.date, year));
+  const scopedGames = normalizeGames(games).filter((game) =>
+    isInYear(game.date, year)
+  );
 
   let goals = 0;
   let matchesWithGoals = 0;

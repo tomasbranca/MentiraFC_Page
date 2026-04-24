@@ -6,7 +6,10 @@ type ImageOptions = {
   fit?: "crop" | "clip" | "fill" | "fillmax" | "max" | "scale" | "min";
 };
 
-export const getImageUrl = (image: unknown, options: ImageOptions = {}): string => {
+export const getImageUrl = (
+  image: unknown,
+  options: ImageOptions = {}
+): string => {
   let builder = urlFor(image);
 
   if (options.width) builder = builder.width(options.width);
