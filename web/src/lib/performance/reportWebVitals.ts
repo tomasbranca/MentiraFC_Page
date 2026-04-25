@@ -46,7 +46,7 @@ function getRating(
 
 function emitMetric(metric: WebVitalsMetric): void {
   // Se deja como hook simple para futura integración con GA4, Sentry o endpoint propio.
-  if (import.meta.env.DEV) {
+  if (import.meta.env.DEV && import.meta.env.VITE_ENABLE_WEB_VITALS_LOG !== "false") {
     console.info("[WebVitals]", metric);
   }
 }
