@@ -15,6 +15,11 @@ export interface InitialDataPayload {
   teams: TeamRef[];
   tournamentGames: Game[];
   latestGame: Game | null;
+  currentNewsDetail?: {
+    slug: string;
+    newsItem: NewsItem | null;
+    suggestedNews: NewsItem[];
+  };
 }
 
 export const getInitialData = async (): Promise<InitialDataPayload> => {
