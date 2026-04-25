@@ -185,6 +185,12 @@ web/src/
   - Consume servicios/repositorios de `data` y lógica de `domain`.
   - Evita lógica de negocio compleja en componentes.
 
+### Guía de fetching para primer render y LCP
+
+- Los datos críticos para **primer render** y **LCP** deben resolverse en el flujo de carga inicial (ej. `getInitialData`) y llegar listos al árbol principal.
+- Evitar hooks que inicien fetch recién en `useEffect` para contenido above-the-fold o visible al cargar.
+- El hook `useFetchData` fue eliminado por no tener usos activos; para nuevos casos, preferir hooks de página/feature alineados con la estrategia de carga inicial.
+
 ### Plan de migración paso a paso
 
 1. **Congelar estructura nueva**
