@@ -4,7 +4,8 @@ import { BrowserRouter } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
 
 import App from "./App";
-import { getInitialData, type InitialDataPayload } from "./data/getInitialData";
+import type { InitialDataPayload } from "./data/getInitialData";
+import { getRouteInitialData } from "./data/getRouteInitialData";
 import { queryKeys } from "./data/queryKeys";
 import { queryClient } from "./lib/queryClient";
 import { reportError } from "./lib/errors/errorLogger";
@@ -48,6 +49,17 @@ const preloadQueryCache = (payload: InitialDataPayload) => {
     payload.tournamentGames
   );
   queryClient.setQueryData(queryKeys.games.latest, payload.latestGame);
+
+  if (payload.currentNewsDetail) {
+    queryClient.setQueryData(
+      queryKeys.news.bySlug(payload.currentNewsDetail.slug),
+      payload.currentNewsDetail.newsItem
+    );
+    queryClient.setQueryData(
+      queryKeys.news.suggested(payload.currentNewsDetail.slug),
+      payload.currentNewsDetail.suggestedNews
+    );
+  }
 };
 
 const bootstrap = async () => {
@@ -55,7 +67,8 @@ const bootstrap = async () => {
   renderShell(<Loader />);
 
   try {
-    const initialData = await getInitialData();
+    const pathname = window.location.pathname;
+    const initialData = await getRouteInitialData(pathname);
 
     preloadQueryCache(initialData);
     renderShell(<App initialData={initialData} />);
