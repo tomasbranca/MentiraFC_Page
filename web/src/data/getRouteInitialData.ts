@@ -1,16 +1,19 @@
-import { getNewsBySlug, getSuggestedNews } from "./news";
+import { getAllGames } from "./games";
 import { getInitialData, type InitialDataPayload } from "./getInitialData";
+import { getNewsBySlug, getSuggestedNews } from "./news";
+import { getPlayerBySlug } from "./players";
 
-import { ROUTES } from "../presentation/constants/routes.constants";
+import { getPlayerStats } from "../domain/stats";
 import { reportError } from "../lib/errors/errorLogger";
+import { ROUTES } from "../presentation/constants/routes.constants";
 
 const escapeRegex = (value: string): string =>
   value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-export const extractNewsSlugFromPathname = (
-  pathname: string
+const extractSlugFromPathname = (
+  pathname: string,
+  routePattern: string
 ): string | null => {
-  const routePattern = ROUTES.NEWS_DETAIL(":slug");
   const matcher = new RegExp(
     `^${escapeRegex(routePattern).replace(
       escapeRegex(":slug"),
@@ -24,16 +27,19 @@ export const extractNewsSlugFromPathname = (
   return slug ?? null;
 };
 
-export const getRouteInitialData = async (
-  pathname: string
+const getBasePayload = (): InitialDataPayload => ({
+  news: [],
+  players: [],
+  games: [],
+  tournament: null,
+  teams: [],
+  tournamentGames: [],
+  latestGame: null,
+});
+
+const getNewsDetailInitialData = async (
+  slug: string
 ): Promise<InitialDataPayload> => {
-  const payload = await getInitialData();
-  const slug = extractNewsSlugFromPathname(pathname);
-
-  if (!slug) {
-    return payload;
-  }
-
   try {
     const [newsItem, suggestedNews] = await Promise.all([
       getNewsBySlug(slug),
@@ -41,7 +47,7 @@ export const getRouteInitialData = async (
     ]);
 
     return {
-      ...payload,
+      ...getBasePayload(),
       currentNewsDetail: {
         slug,
         newsItem,
@@ -57,4 +63,70 @@ export const getRouteInitialData = async (
 
     throw error;
   }
+};
+
+const getPlayerDetailInitialData = async (
+  slug: string
+): Promise<InitialDataPayload> => {
+  try {
+    const year = new Date().getFullYear();
+    const player = await getPlayerBySlug(slug);
+
+    if (!player) {
+      return {
+        ...getBasePayload(),
+        currentPlayerDetail: {
+          slug,
+          player: null,
+          goalsThisYear: 0,
+          year,
+        },
+      };
+    }
+
+    const games = await getAllGames();
+    const stats = getPlayerStats(games, player.id, { year });
+
+    return {
+      ...getBasePayload(),
+      currentPlayerDetail: {
+        slug,
+        player,
+        goalsThisYear: stats.goals,
+        year,
+      },
+    };
+  } catch (error) {
+    reportError(error, {
+      scope: "data:getRouteInitialData",
+      action: "load_player_detail_initial_data",
+      slug,
+    });
+
+    throw error;
+  }
+};
+
+export const getRouteInitialData = async (
+  pathname: string
+): Promise<InitialDataPayload> => {
+  const newsSlug = extractSlugFromPathname(
+    pathname,
+    ROUTES.NEWS_DETAIL(":slug")
+  );
+
+  if (newsSlug) {
+    return getNewsDetailInitialData(newsSlug);
+  }
+
+  const playerSlug = extractSlugFromPathname(
+    pathname,
+    ROUTES.PLAYER_DETAIL(":slug")
+  );
+
+  if (playerSlug) {
+    return getPlayerDetailInitialData(playerSlug);
+  }
+
+  return getInitialData();
 };
