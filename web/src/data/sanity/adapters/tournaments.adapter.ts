@@ -6,6 +6,15 @@ import {
 } from "../schemas";
 import { validateSanityArray, validateSanityItem } from "../validation";
 
+const getImageUrl = (image: unknown): string | null => {
+  if (!image) return null;
+  if (typeof image === "string") return image;
+  if (typeof image === "object" && image !== null) {
+    return (image as any)?._ref || (image as any)?.asset?._ref || null;
+  }
+  return null;
+};
+
 export const adaptTournament = (data: unknown): Tournament | null => {
   if (!data) return null;
 
@@ -44,10 +53,7 @@ export const adaptTournament = (data: unknown): Tournament | null => {
     name: `${validated.organization?.name || "Torneo"} · ${
       validated.name || "Actual"
     }`,
-    imageUrl:
-      typeof validated.organization?.logo === "string"
-        ? validated.organization.logo
-        : null,
+    imageUrl: getImageUrl(validated.organization?.logo),
     primaryColor:
       typeof validated.organization?.primaryColor === "string"
         ? validated.organization.primaryColor

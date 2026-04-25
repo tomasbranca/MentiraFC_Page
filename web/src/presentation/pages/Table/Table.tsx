@@ -10,7 +10,6 @@ import { formatLongDate } from "../../utils/date.utils";
 const Table = () => {
   const { tournament, loading, error, refetch } = useTableData();
   const [mode, setMode] = useState("compact");
-
   if (loading) return <Loader />;
 
   if (error) {
