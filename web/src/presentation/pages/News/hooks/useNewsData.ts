@@ -1,27 +1,39 @@
 // @ts-nocheck
-import { useQuery } from "@tanstack/react-query";
+import { useCallback, useMemo, useState } from "react";
 
 import { getNews } from "../../../../data/news";
-import { queryKeys } from "../../../../data/queryKeys";
 import { reportError } from "../../../../lib/errors/errorLogger";
+import { useInitialData } from "../../../context/InitialDataContext";
 import { sortNews } from "../../../utils/news.utils";
 
 export const useNewsData = () => {
-  const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: queryKeys.news.all,
-    queryFn: async () => {
-      try {
-        const news = await getNews();
-        return sortNews(news);
-      } catch (error) {
-        reportError(error, {
-          page: "News",
-          action: "load_news",
-        });
-        throw error;
-      }
-    },
-  });
+  const { initialData } = useInitialData();
+  const [overrideNews, setOverrideNews] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
 
-  return { news: data ?? [], loading: isLoading, error: isError, refetch };
+  const news = useMemo(() => {
+    const source = overrideNews ?? initialData.news;
+    return sortNews(source);
+  }, [initialData.news, overrideNews]);
+
+  const refetch = useCallback(async () => {
+    setLoading(true);
+
+    try {
+      const nextNews = await getNews();
+      setOverrideNews(nextNews);
+      setError(false);
+    } catch (nextError) {
+      setError(true);
+      reportError(nextError, {
+        page: "News",
+        action: "refresh_news",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { news, loading, error, refetch };
 };

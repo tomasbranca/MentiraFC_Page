@@ -1,26 +1,35 @@
 // @ts-nocheck
-import { useQuery } from "@tanstack/react-query";
+import { useCallback, useState } from "react";
 
 import { getAllGames } from "../../../../data/games";
-import { queryKeys } from "../../../../data/queryKeys";
 import { reportError } from "../../../../lib/errors/errorLogger";
+import { useInitialData } from "../../../context/InitialDataContext";
 
 export const useRecordData = () => {
-  const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: queryKeys.games.finished,
-    queryFn: async () => {
-      try {
-        const games = await getAllGames();
-        return games || [];
-      } catch (error) {
-        reportError(error, {
-          page: "Record",
-          action: "load_record",
-        });
-        throw error;
-      }
-    },
-  });
+  const { initialData } = useInitialData();
+  const [overrideGames, setOverrideGames] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
 
-  return { games: data ?? [], loading: isLoading, error: isError, refetch };
+  const games = overrideGames ?? initialData.games;
+
+  const refetch = useCallback(async () => {
+    setLoading(true);
+
+    try {
+      const nextGames = await getAllGames();
+      setOverrideGames(nextGames || []);
+      setError(false);
+    } catch (nextError) {
+      setError(true);
+      reportError(nextError, {
+        page: "Record",
+        action: "refresh_record",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { games, loading, error, refetch };
 };
