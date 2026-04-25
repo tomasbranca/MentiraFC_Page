@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { getAllGames } from "../../../../data/games";
 import { getPlayerBySlug } from "../../../../data/players";
@@ -12,6 +12,7 @@ export const usePlayerDetail = (slug) => {
   const [overridePlayer, setOverridePlayer] = useState(null);
   const [overrideGoals, setOverrideGoals] = useState(null);
   const [overrideYear, setOverrideYear] = useState(null);
+  const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
@@ -77,9 +78,34 @@ export const usePlayerDetail = (slug) => {
         slug,
       });
     } finally {
+      setHasAttemptedFetch(true);
       setLoading(false);
     }
   }, [slug]);
+
+  useEffect(() => {
+    if (!slug) {
+      return;
+    }
+
+    if (
+      detailFromInitialData?.player ||
+      overridePlayer !== null ||
+      loading ||
+      hasAttemptedFetch
+    ) {
+      return;
+    }
+
+    void refetch();
+  }, [
+    detailFromInitialData?.player,
+    hasAttemptedFetch,
+    loading,
+    overridePlayer,
+    refetch,
+    slug,
+  ]);
 
   return {
     player:

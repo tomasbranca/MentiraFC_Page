@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { getPlayers } from "../../../../data/players";
 import { reportError } from "../../../../lib/errors/errorLogger";
@@ -9,6 +9,7 @@ import { groupPlayersByPosition } from "../team.utils";
 export const useTeamData = () => {
   const { initialData } = useInitialData();
   const [overridePlayers, setOverridePlayers] = useState(null);
+  const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
@@ -30,9 +31,18 @@ export const useTeamData = () => {
         action: "refresh_team_players",
       });
     } finally {
+      setHasAttemptedFetch(true);
       setLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    if (players.length > 0 || loading || hasAttemptedFetch) {
+      return;
+    }
+
+    void refetch();
+  }, [hasAttemptedFetch, loading, players.length, refetch]);
 
   return {
     players,
