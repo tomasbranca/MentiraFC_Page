@@ -32,23 +32,26 @@ export const getSuggestedNews = async (
     return d.toISOString();
   };
 
-  let result = await client.fetch(SUGGESTED_NEWS_QUERY, {
-    slug: currentSlug,
-    date: buildDate(2),
-  });
-
-  if (result.length < MIN_RESULTS) {
-    result = await client.fetch(SUGGESTED_NEWS_QUERY, {
+  const [shortWindow, longWindow, fallback] = await Promise.all([
+    client.fetch(SUGGESTED_NEWS_QUERY, {
+      slug: currentSlug,
+      date: buildDate(2),
+    }),
+    client.fetch(SUGGESTED_NEWS_QUERY, {
       slug: currentSlug,
       date: buildDate(4),
-    });
-  }
-
-  if (result.length < MIN_RESULTS) {
-    result = await client.fetch(FALLBACK_NEWS_QUERY, {
+    }),
+    client.fetch(FALLBACK_NEWS_QUERY, {
       slug: currentSlug,
-    });
-  }
+    }),
+  ]);
 
-  return adaptNews(result);
+  const selectedResult =
+    shortWindow.length >= MIN_RESULTS
+      ? shortWindow
+      : longWindow.length >= MIN_RESULTS
+      ? longWindow
+      : fallback;
+
+  return adaptNews(selectedResult);
 };
