@@ -69,6 +69,7 @@ const bootstrap = async () => {
       <ErrorFallback
         title="No se pudieron cargar los datos iniciales"
         message="Intentá recargar la página en unos minutos."
+        onRetry={() => window.location.reload()}
       />
     );
   }
