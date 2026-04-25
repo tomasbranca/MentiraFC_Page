@@ -1,74 +1,78 @@
 // @ts-nocheck
-import { useMemo } from "react";
-import { useQueries } from "@tanstack/react-query";
+import { useCallback, useMemo, useState } from "react";
 
 import { getPlayerBySlug } from "../../../../data/players";
 import { getAllGames } from "../../../../data/games";
-import { queryKeys } from "../../../../data/queryKeys";
 import { getPlayerStats } from "../../../../domain/stats";
 import { reportError } from "../../../../lib/errors/errorLogger";
+import { useInitialData } from "../../../context/InitialDataContext";
 
 export const usePlayerDetail = (slug) => {
+  const { initialData } = useInitialData();
+  const [overridePlayer, setOverridePlayer] = useState(null);
+  const [overrideGames, setOverrideGames] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
   const year = new Date().getFullYear();
 
-  const [playerQuery, gamesQuery] = useQueries({
-    queries: [
-      {
-        queryKey: queryKeys.players.bySlug(slug),
-        enabled: Boolean(slug),
-        queryFn: async () => {
-          try {
-            return await getPlayerBySlug(slug);
-          } catch (error) {
-            reportError(error, {
-              page: "PlayerDetail",
-              action: "load_player_detail",
-              slug,
-            });
-            throw error;
-          }
-        },
-      },
-      {
-        queryKey: queryKeys.games.finished,
-        queryFn: async () => {
-          try {
-            return await getAllGames();
-          } catch (error) {
-            reportError(error, {
-              page: "PlayerDetail",
-              action: "load_player_games",
-              slug,
-            });
-            throw error;
-          }
-        },
-      },
-    ],
-  });
+  const playerSource = useMemo(() => {
+    if (overridePlayer !== null) {
+      return overridePlayer;
+    }
+
+    return (initialData.players ?? []).find((nextPlayer) => nextPlayer.slug === slug) || null;
+  }, [initialData.players, overridePlayer, slug]);
+
+  const gamesSource = overrideGames ?? initialData.games;
 
   const player = useMemo(() => {
-    if (!playerQuery.data) {
+    if (!playerSource) {
       return null;
     }
 
-    const stats = getPlayerStats(gamesQuery.data ?? [], playerQuery.data.id, {
+    const stats = getPlayerStats(gamesSource ?? [], playerSource.id, {
       year,
     });
 
     return {
-      ...playerQuery.data,
+      ...playerSource,
       goalsThisYear: stats.goals,
     };
-  }, [gamesQuery.data, playerQuery.data, year]);
+  }, [gamesSource, playerSource, year]);
+
+  const refetch = useCallback(async () => {
+    if (!slug) {
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const [nextPlayer, nextGames] = await Promise.all([
+        getPlayerBySlug(slug),
+        getAllGames(),
+      ]);
+
+      setOverridePlayer(nextPlayer);
+      setOverrideGames(nextGames);
+      setError(false);
+    } catch (nextError) {
+      setError(true);
+      reportError(nextError, {
+        page: "PlayerDetail",
+        action: "refresh_player_detail",
+        slug,
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [slug]);
 
   return {
     player,
-    loading: playerQuery.isLoading || gamesQuery.isLoading,
-    error: playerQuery.isError || gamesQuery.isError,
+    loading,
+    error,
     year,
-    refetch: async () => {
-      await Promise.all([playerQuery.refetch(), gamesQuery.refetch()]);
-    },
+    refetch,
   };
 };

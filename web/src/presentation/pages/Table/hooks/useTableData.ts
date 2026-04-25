@@ -1,97 +1,77 @@
 // @ts-nocheck
-import { useMemo } from "react";
-import { useQueries } from "@tanstack/react-query";
+import { useCallback, useMemo, useState } from "react";
 
 import { getTournament } from "../../../../data/tournament";
 import { getTeams } from "../../../../data/teams";
 import { getTournamentGames } from "../../../../data/games";
-import { queryKeys } from "../../../../data/queryKeys";
 import { getHybridTournamentTable } from "../../../../domain/stats";
 import { reportError } from "../../../../lib/errors/errorLogger";
+import { useInitialData } from "../../../context/InitialDataContext";
 
 export const useTableData = () => {
-  const [tournamentQuery, teamsQuery, gamesQuery] = useQueries({
-    queries: [
-      {
-        queryKey: queryKeys.tournaments.current,
-        queryFn: async () => {
-          try {
-            return await getTournament();
-          } catch (error) {
-            reportError(error, {
-              page: "Table",
-              action: "load_table_tournament",
-            });
-            throw error;
-          }
-        },
-      },
-      {
-        queryKey: queryKeys.teams.all,
-        queryFn: async () => {
-          try {
-            return await getTeams();
-          } catch (error) {
-            reportError(error, {
-              page: "Table",
-              action: "load_table_teams",
-            });
-            throw error;
-          }
-        },
-      },
-      {
-        queryKey: queryKeys.games.tournamentFinished,
-        queryFn: async () => {
-          try {
-            return await getTournamentGames();
-          } catch (error) {
-            reportError(error, {
-              page: "Table",
-              action: "load_table_games",
-            });
-            throw error;
-          }
-        },
-      },
-    ],
-  });
+  const { initialData } = useInitialData();
+  const [overrideTournament, setOverrideTournament] = useState(null);
+  const [overrideTeams, setOverrideTeams] = useState(null);
+  const [overrideGames, setOverrideGames] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+
+  const tournamentSource = overrideTournament ?? initialData.tournament;
+  const teamsSource = overrideTeams ?? initialData.teams;
+  const gamesSource = overrideGames ?? initialData.tournamentGames;
 
   const tournament = useMemo(() => {
-    if (!tournamentQuery.data) {
+    if (!tournamentSource) {
       return null;
     }
 
-    const mainTeam =
-      (teamsQuery.data ?? []).find((team) => team.isMain) || null;
+    const mainTeam = (teamsSource ?? []).find((team) => team.isMain) || null;
 
-    const gamesFromActiveTournament = (gamesQuery.data ?? []).filter(
-      (game) => game.tournamentId === tournamentQuery.data.id
+    const gamesFromActiveTournament = (gamesSource ?? []).filter(
+      (game) => game.tournamentId === tournamentSource.id
     );
 
     const standings = getHybridTournamentTable({
-      manualStandings: tournamentQuery.data.standings,
+      manualStandings: tournamentSource.standings,
       games: gamesFromActiveTournament,
       mainTeam,
     });
 
     return {
-      ...tournamentQuery.data,
+      ...tournamentSource,
       standings,
     };
-  }, [gamesQuery.data, teamsQuery.data, tournamentQuery.data]);
+  }, [gamesSource, teamsSource, tournamentSource]);
+
+  const refetch = useCallback(async () => {
+    setLoading(true);
+
+    try {
+      const [nextTournament, nextTeams, nextGames] = await Promise.all([
+        getTournament(),
+        getTeams(),
+        getTournamentGames(),
+      ]);
+
+      setOverrideTournament(nextTournament);
+      setOverrideTeams(nextTeams);
+      setOverrideGames(nextGames);
+      setError(false);
+    } catch (nextError) {
+      setError(true);
+      reportError(nextError, {
+        page: "Table",
+        action: "refresh_table",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   return {
     tournament,
-    loading:
-      tournamentQuery.isLoading || teamsQuery.isLoading || gamesQuery.isLoading,
-    error: tournamentQuery.isError || teamsQuery.isError || gamesQuery.isError,
-    refetch: async () => {
-      await Promise.all([
-        tournamentQuery.refetch(),
-        teamsQuery.refetch(),
-        gamesQuery.refetch(),
-      ]);
-    },
+    loading,
+    error,
+    refetch,
   };
 };

@@ -4,40 +4,16 @@ import TopScorers from "../../features/main/TopScorers/TopScorers";
 import TableWidget from "../../features/main/TableWidget/TableWidget";
 import Game from "../../features/main/Game/Game";
 import { useGame } from "../../context/useGame";
-import { useInitialData } from "../../context/InitialDataContext";
-import { sortNews } from "../../utils/news.utils";
-import { getHybridTournamentTable, getTopScorers } from "../../../domain/stats";
+import { useHomeData } from "./hooks/useHomeData";
 
 const Home = () => {
   const { game, loading: gameLoading } = useGame();
-  const { initialData } = useInitialData();
-  const year = new Date().getFullYear();
-
-  const topScorers = getTopScorers(initialData.games, initialData.players, {
-    year,
-  });
-
-  const mainTeam = initialData.teams.find((team) => team.isMain) || null;
-
-  const gamesFromActiveTournament = initialData.tournamentGames.filter(
-    (nextGame) => nextGame.tournamentId === initialData.tournament?.id
-  );
-
-  const tournament = initialData.tournament
-    ? {
-        ...initialData.tournament,
-        standings: getHybridTournamentTable({
-          manualStandings: initialData.tournament.standings,
-          games: gamesFromActiveTournament,
-          mainTeam,
-        }),
-      }
-    : null;
+  const { news, topScorers, tournament } = useHomeData();
 
   return (
     <>
       <div className="bg-violet-900 text-violet-50">
-        <LatestNews news={sortNews(initialData.news)} />
+        <LatestNews news={news} />
       </div>
 
       <Game game={game} loading={gameLoading} />
