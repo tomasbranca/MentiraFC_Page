@@ -60,6 +60,13 @@ const preloadQueryCache = (payload: InitialDataPayload) => {
       payload.currentNewsDetail.suggestedNews
     );
   }
+
+  if (payload.currentPlayerDetail) {
+    queryClient.setQueryData(
+      queryKeys.players.bySlug(payload.currentPlayerDetail.slug),
+      payload.currentPlayerDetail.player
+    );
+  }
 };
 
 const bootstrap = async () => {

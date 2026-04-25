@@ -1,8 +1,8 @@
 // @ts-nocheck
 import { useCallback, useMemo, useState } from "react";
 
-import { getPlayerBySlug } from "../../../../data/players";
 import { getAllGames } from "../../../../data/games";
+import { getPlayerBySlug } from "../../../../data/players";
 import { getPlayerStats } from "../../../../domain/stats";
 import { reportError } from "../../../../lib/errors/errorLogger";
 import { useInitialData } from "../../../context/InitialDataContext";
@@ -10,35 +10,32 @@ import { useInitialData } from "../../../context/InitialDataContext";
 export const usePlayerDetail = (slug) => {
   const { initialData } = useInitialData();
   const [overridePlayer, setOverridePlayer] = useState(null);
-  const [overrideGames, setOverrideGames] = useState(null);
+  const [overrideGoals, setOverrideGoals] = useState(null);
+  const [overrideYear, setOverrideYear] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
-  const year = new Date().getFullYear();
 
-  const playerSource = useMemo(() => {
+  const detailFromInitialData =
+    initialData.currentPlayerDetail?.slug === slug
+      ? initialData.currentPlayerDetail
+      : null;
+
+  const player = useMemo(() => {
     if (overridePlayer !== null) {
       return overridePlayer;
     }
 
-    return (initialData.players ?? []).find((nextPlayer) => nextPlayer.slug === slug) || null;
-  }, [initialData.players, overridePlayer, slug]);
-
-  const gamesSource = overrideGames ?? initialData.games;
-
-  const player = useMemo(() => {
-    if (!playerSource) {
+    if (!detailFromInitialData?.player) {
       return null;
     }
 
-    const stats = getPlayerStats(gamesSource ?? [], playerSource.id, {
-      year,
-    });
-
     return {
-      ...playerSource,
-      goalsThisYear: stats.goals,
+      ...detailFromInitialData.player,
+      goalsThisYear: detailFromInitialData.goalsThisYear,
     };
-  }, [gamesSource, playerSource, year]);
+  }, [detailFromInitialData, overridePlayer]);
+
+  const year = overrideYear ?? detailFromInitialData?.year ?? new Date().getFullYear();
 
   const refetch = useCallback(async () => {
     if (!slug) {
@@ -53,8 +50,24 @@ export const usePlayerDetail = (slug) => {
         getAllGames(),
       ]);
 
-      setOverridePlayer(nextPlayer);
-      setOverrideGames(nextGames);
+      if (!nextPlayer) {
+        setOverridePlayer(null);
+        setOverrideGoals(0);
+        setOverrideYear(new Date().getFullYear());
+      } else {
+        const nextYear = new Date().getFullYear();
+        const stats = getPlayerStats(nextGames, nextPlayer.id, {
+          year: nextYear,
+        });
+
+        setOverridePlayer({
+          ...nextPlayer,
+          goalsThisYear: stats.goals,
+        });
+        setOverrideGoals(stats.goals);
+        setOverrideYear(nextYear);
+      }
+
       setError(false);
     } catch (nextError) {
       setError(true);
@@ -69,7 +82,13 @@ export const usePlayerDetail = (slug) => {
   }, [slug]);
 
   return {
-    player,
+    player:
+      player && overrideGoals !== null
+        ? {
+            ...player,
+            goalsThisYear: overrideGoals,
+          }
+        : player,
     loading,
     error,
     year,

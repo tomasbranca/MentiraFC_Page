@@ -20,6 +20,12 @@ export interface InitialDataPayload {
     newsItem: NewsItem | null;
     suggestedNews: NewsItem[];
   };
+  currentPlayerDetail?: {
+    slug: string;
+    player: Player | null;
+    goalsThisYear: number;
+    year: number;
+  };
 }
 
 export const getInitialData = async (): Promise<InitialDataPayload> => {
