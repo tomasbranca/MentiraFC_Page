@@ -27,6 +27,8 @@ const NavBar = () => {
               <img
                 src="/logo.webp"
                 alt="Logo de Mentira FC"
+                width={809}
+                height={809}
                 className={`logo-transition ${
                   isScrolled ? "logo-scrolled" : "logo-default"
                 }`}

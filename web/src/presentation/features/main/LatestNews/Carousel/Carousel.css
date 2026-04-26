@@ -16,6 +16,7 @@
   Base — Mobile vertical
   ========================= */
 .carousel-wrapper {
+  aspect-ratio: 16 / 9;
   height: 55vh;
 }
 
