@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { useState } from "react";
+import { FiBarChart2 } from "react-icons/fi";
 import { urlFor } from "../../../data/sanity/sanity.image";
 import Loader from "../../components/Loader/Loader";
 import Button from "../../components/Button/Button";
@@ -26,7 +27,9 @@ const Table = () => {
     return (
       <main className="min-h-screen flex items-center justify-center px-4 text-white">
         <div className="text-center max-w-md">
-          <div className="text-5xl mb-4">📊</div>
+          <div className="text-5xl mb-4 flex justify-center" aria-hidden="true">
+            <FiBarChart2 />
+          </div>
           <h2 className="text-xl font-bold mb-2">Sin tabla activa</h2>
           <p className="text-neutral-400">Aún no hay datos disponibles.</p>
         </div>
