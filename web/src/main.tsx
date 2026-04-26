@@ -13,7 +13,6 @@ import { startWebVitalsTracking } from "./lib/performance/reportWebVitals";
 import ScrollToTop from "./presentation/app/scrollToTop";
 import Loader from "./presentation/components/Loader/Loader";
 import ErrorBoundary from "./presentation/components/errors/ErrorBoundary";
-import ErrorFallback from "./presentation/components/errors/ErrorFallback";
 
 import "./index.css";
 
@@ -24,6 +23,16 @@ if (!rootElement) {
 }
 
 const root = createRoot(rootElement);
+
+const EMPTY_INITIAL_DATA: InitialDataPayload = {
+  news: [],
+  players: [],
+  games: [],
+  tournament: null,
+  teams: [],
+  tournamentGames: [],
+  latestGame: null,
+};
 
 const renderShell = (node: ReactNode) => {
   root.render(
@@ -37,6 +46,17 @@ const renderShell = (node: ReactNode) => {
         </StrictMode>
       </QueryClientProvider>
     </BrowserRouter>
+  );
+};
+
+const renderAppShell = (
+  initialData: InitialDataPayload,
+  phase: "shell" | "hydrated"
+) => {
+  renderShell(
+    <Suspense fallback={<Loader />}>
+      <App key={phase} initialData={initialData} />
+    </Suspense>
   );
 };
 
@@ -73,27 +93,19 @@ const preloadQueryCache = (payload: InitialDataPayload) => {
 
 const bootstrap = async () => {
   startWebVitalsTracking();
-  renderShell(<Loader />);
+  renderAppShell(EMPTY_INITIAL_DATA, "shell");
 
   try {
     const pathname = window.location.pathname;
     const initialData = await getRouteInitialData(pathname);
 
     preloadQueryCache(initialData);
-    renderShell(<App initialData={initialData} />);
+    renderAppShell(initialData, "hydrated");
   } catch (error) {
     reportError(error, {
       scope: "main",
-      action: "bootstrap_initial_render",
+      action: "bootstrap_background_hydration",
     });
-
-    renderShell(
-      <ErrorFallback
-        title="No se pudieron cargar los datos iniciales"
-        message="Intentá recargar la página en unos minutos."
-        onRetry={() => window.location.reload()}
-      />
-    );
   }
 };
 
