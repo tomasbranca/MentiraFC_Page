@@ -35,6 +35,9 @@ const Carousel = ({ items }) => {
             src={item.imageUrl}
             alt={item.title}
             className="w-full h-full object-cover"
+            fetchpriority={index === activeIndex ? "high" : "auto"}
+            loading={index === activeIndex ? "eager" : "lazy"}
+            decoding="async"
           />
 
           <div className="absolute inset-0 flex items-end bg-linear-to-t from-violet-900 via-black/40 to-transparent">
