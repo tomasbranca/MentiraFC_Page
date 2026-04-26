@@ -41,9 +41,9 @@ function App({ initialData }: AppProps) {
       return () => window.cancelIdleCallback(idleId);
     }
 
-    const timeoutId = window.setTimeout(loadDeferredStyles, 1);
+    const timeoutId = setTimeout(loadDeferredStyles, 1);
 
-    return () => window.clearTimeout(timeoutId);
+    return () => clearTimeout(timeoutId);
   }, []);
 
   return (
