@@ -47,10 +47,13 @@ const renderShell = (node: ReactNode) => {
   );
 };
 
-const renderAppShell = (initialData: InitialDataPayload) => {
+const renderAppShell = (
+  initialData: InitialDataPayload,
+  phase: "shell" | "hydrated"
+) => {
   renderShell(
     <Suspense fallback={<Loader />}>
-      <App initialData={initialData} />
+      <App key={phase} initialData={initialData} />
     </Suspense>
   );
 };
@@ -88,14 +91,14 @@ const preloadQueryCache = (payload: InitialDataPayload) => {
 
 const bootstrap = async () => {
   startWebVitalsTracking();
-  renderAppShell(EMPTY_INITIAL_DATA);
+  renderAppShell(EMPTY_INITIAL_DATA, "shell");
 
   try {
     const pathname = window.location.pathname;
     const initialData = await getRouteInitialData(pathname);
 
     preloadQueryCache(initialData);
-    renderAppShell(initialData);
+    renderAppShell(initialData, "hydrated");
   } catch (error) {
     reportError(error, {
       scope: "main",
