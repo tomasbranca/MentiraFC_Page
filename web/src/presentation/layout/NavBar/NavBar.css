@@ -68,6 +68,7 @@
 
 .logo-transition {
   transition: height 0.3s ease;
+  width: auto;
 }
 
 .logo-default {
