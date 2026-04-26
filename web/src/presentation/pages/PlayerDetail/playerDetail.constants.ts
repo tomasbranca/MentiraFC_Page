@@ -1,23 +1,21 @@
 // @ts-nocheck
-import { FaChessRook } from "react-icons/fa";
-import { FaGears } from "react-icons/fa6";
-import { GiGloves, GiCannon } from "react-icons/gi";
+import { POSITION_ICONS } from "../../constants/positionIcons";
 
 export const POSITION_MAP = {
   arq: {
     label: "ARQUERO",
-    icon: GiGloves,
+    icon: POSITION_ICONS.arq,
   },
   def: {
     label: "DEFENSOR",
-    icon: FaChessRook,
+    icon: POSITION_ICONS.def,
   },
   med: {
     label: "MEDIOCAMPISTA",
-    icon: FaGears,
+    icon: POSITION_ICONS.med,
   },
   del: {
     label: "DELANTERO",
-    icon: GiCannon,
+    icon: POSITION_ICONS.del,
   },
 };
