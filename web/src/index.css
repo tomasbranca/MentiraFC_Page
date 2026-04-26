@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+:root {
+  --font-heading: "Archivo", "Roboto", "Inter", "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-body: "Roboto", "Archivo", "Inter", "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
 html {
   font-size: 100%;
 }
@@ -13,6 +18,7 @@ body {
   margin: 0;
   position: relative;
   z-index: 0;
+  font-family: var(--font-body);
 }
 
 body::before {
@@ -35,34 +41,11 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: "Archivo", sans-serif;
+  font-family: var(--font-heading);
   text-transform: uppercase;
   font-weight: bolder;
-  line-height: 1;
 }
 
-p,
-span,
-div,
-li,
-a,
-td {
-  font-family: "Roboto", sans-serif;
-}
-
-li {
-  list-style: none;
-  text-decoration: none;
-}
-a {
-  text-decoration: none;
-}
-
-td {
-  text-transform: uppercase;
-  text-align: center;
-  font-weight: bolder;
-}
 h1 {
   font-size: clamp(1.8rem, 4vw, 3.2rem);
   line-height: 1.1;
@@ -73,24 +56,12 @@ h2 {
   line-height: 1.15;
 }
 
-h3 {
-  font-size: clamp(1.25rem, 2.5vw, 2rem);
-  line-height: 1.2;
-}
-
-h4 {
-  font-size: clamp(1.1rem, 2vw, 1.6rem);
-  line-height: 1.25;
-}
-
-h5 {
-  font-size: clamp(1rem, 1.6vw, 1.3rem);
-  line-height: 1.3;
-}
-
-h6 {
-  font-size: clamp(0.9rem, 1.2vw, 1.1rem);
-  line-height: 1.3;
+p,
+span,
+div,
+li,
+a {
+  font-family: var(--font-body);
 }
 
 p {
@@ -98,6 +69,11 @@ p {
   line-height: 1.6;
 }
 
-small {
-  font-size: clamp(0.75rem, 1vw, 0.85rem);
+li {
+  list-style: none;
+  text-decoration: none;
+}
+
+a {
+  text-decoration: none;
 }

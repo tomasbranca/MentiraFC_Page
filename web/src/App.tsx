@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Route, Routes } from "react-router-dom";
 
 import type { InitialDataPayload } from "./data/getInitialData";
@@ -28,7 +28,24 @@ const PlayerDetail = lazy(
   () => import("./presentation/pages/PlayerDetail/PlayerDetail"),
 );
 
+
 function App({ initialData }: AppProps) {
+  useEffect(() => {
+    const loadDeferredStyles = () => {
+      void import("./presentation/app/nonCritical.css");
+    };
+
+    if ("requestIdleCallback" in window) {
+      const idleId = window.requestIdleCallback(loadDeferredStyles);
+
+      return () => window.cancelIdleCallback(idleId);
+    }
+
+    const timeoutId = window.setTimeout(loadDeferredStyles, 1);
+
+    return () => window.clearTimeout(timeoutId);
+  }, []);
+
   return (
     <InitialDataProvider initialData={initialData}>
       <GameProvider initialGame={initialData.latestGame}>
