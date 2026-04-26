@@ -2,19 +2,21 @@
 import { Link } from "react-router-dom";
 import { getNewsLink } from "../../../utils/navigation.utils";
 
-const FeaturedWideCard = ({ item }) => {
+const FeaturedWideCard = ({ item, imageLoading = "lazy", imagePriority = false }) => {
   return (
     <Link
       to={getNewsLink(item)}
       className="animation-shadow news-card-featured-wide relative w-full h-full overflow-hidden flex flex-col"
     >
-      <div
-        className="w-full h-55 md:absolute md:inset-0 md:h-full"
-        style={{
-          backgroundImage: `url(${item.imageUrl})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
+      <img
+        src={item.imageUrl}
+        alt={item.title}
+        className="w-full h-55 md:absolute md:inset-0 md:h-full object-cover"
+        loading={imageLoading}
+        fetchpriority={imagePriority ? "high" : "auto"}
+        decoding="async"
+        width="1600"
+        height="900"
       />
 
       <div className="bg-neutral-950 p-4 md:hidden">

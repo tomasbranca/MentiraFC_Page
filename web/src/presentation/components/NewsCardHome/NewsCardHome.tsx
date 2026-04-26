@@ -4,7 +4,7 @@ import "./NewsCardHome.css";
 import { getFeaturedClasses } from "./newsCardHome.utils";
 import { getNewsLink } from "../../utils/navigation.utils";
 
-const NewsCardHome = ({ item, featured }) => {
+const NewsCardHome = ({ item, featured, priority = false }) => {
   if (!item) return null;
 
   return (
@@ -20,10 +20,17 @@ const NewsCardHome = ({ item, featured }) => {
         ${getFeaturedClasses(featured)}
       `}
     >
-      <article
-        className="news-card-image"
-        style={{ backgroundImage: `url(${item.imageUrl})` }}
-      >
+      <article className="news-card-image">
+        <img
+          src={item.imageUrl}
+          alt={item.title}
+          className="news-card-media"
+          loading={priority ? "eager" : "lazy"}
+          fetchpriority={priority ? "high" : "auto"}
+          decoding="async"
+          width="1200"
+          height="900"
+        />
         <div className="news-card-overlay">
           <h3
             className={`news-card-title ${

@@ -36,7 +36,12 @@ const LatestNews = ({ news = [] }) => {
       {/* Grid */}
       <div className="grid gap-6 px-6 pb-14 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {otherNews.map((item, index) => (
-          <NewsCardHome key={item.id} item={item} featured={index === 0} />
+          <NewsCardHome
+            key={item.id}
+            item={item}
+            featured={index === 0}
+            priority={index === 0}
+          />
         ))}
       </div>
     </section>

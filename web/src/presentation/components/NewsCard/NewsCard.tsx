@@ -5,7 +5,7 @@ import FeaturedBoxCard from "./variants/FeaturedBoxCard";
 import FeaturedWideCard from "./variants/FeaturedWideCard";
 import CompactCard from "./variants/CompactCard";
 
-const NewsCard = ({ item, variant }) => {
+const NewsCard = ({ item, variant, imageLoading = "lazy", imagePriority = false }) => {
   if (!item) return null;
 
   const variantsMap = {
@@ -19,7 +19,13 @@ const NewsCard = ({ item, variant }) => {
 
   if (!Component) return null;
 
-  return <Component item={item} />;
+  return (
+    <Component
+      item={item}
+      imageLoading={imageLoading}
+      imagePriority={imagePriority}
+    />
+  );
 };
 
 export default NewsCard;
