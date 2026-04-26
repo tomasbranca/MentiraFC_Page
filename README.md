@@ -141,30 +141,16 @@ npm run dev:studio
 
 ---
 
-## 9) Variables de entorno
+## 9) Scripts disponibles
 
-Crear `web/.env` con los valores de Sanity:
-
-```bash
-VITE_SANITY_PROJECT_ID=tu_project_id
-VITE_SANITY_DATASET=production
-VITE_SANITY_API_VERSION=2023-01-01
-```
-
-> Recomendación: no versionar secretos y mantener valores sensibles fuera del repositorio.
-
----
-
-## 10) Scripts disponibles
-
-### 10.1 Scripts en raíz
+### 9.1 Scripts en raíz
 
 - `npm run dev` → ejecuta `web` y `studio` en paralelo.
 - `npm run dev:web` → inicia sólo la app pública.
 - `npm run dev:studio` → inicia sólo Sanity Studio.
 - `npm run install` → instala dependencias de ambos proyectos.
 
-### 10.2 Scripts en `web/`
+### 9.2 Scripts en `web/`
 
 - `npm run dev` → servidor local Vite.
 - `npm run lint` → ESLint.
@@ -173,7 +159,7 @@ VITE_SANITY_API_VERSION=2023-01-01
 - `npm run build` → build de producción.
 - `npm run check` → pipeline completo (`lint + typecheck + test + build`).
 
-### 10.3 Scripts en `studio/`
+### 9.3 Scripts en `studio/`
 
 - `npm run dev` → Sanity Studio en desarrollo.
 - `npm run lint` → ESLint.
@@ -184,7 +170,7 @@ VITE_SANITY_API_VERSION=2023-01-01
 
 ---
 
-## 11) Modelo de contenido (Sanity)
+## 10) Modelo de contenido (Sanity)
 
 En `studio/schemas/` se definen tipos para soportar el producto:
 
@@ -200,7 +186,7 @@ Estos esquemas alimentan los servicios y adapters de `web/src/data/sanity`.
 
 ---
 
-## 12) Calidad y flujo recomendado
+## 11) Calidad y flujo recomendado
 
 Antes de abrir PR:
 
@@ -216,7 +202,7 @@ Antes de abrir PR:
 
 ---
 
-## 13) Convenciones de desarrollo
+## 12) Convenciones de desarrollo
 
 - Priorizar componentes y funciones pequeñas con responsabilidad única.
 - Evitar mezclar lógica de negocio con renderizado.
@@ -226,7 +212,7 @@ Antes de abrir PR:
 
 ---
 
-## 14) Roadmap sugerido
+## 13) Roadmap sugerido
 
 - Tests de integración de features críticas (news, roster, home widgets).
 - Métricas de performance automatizadas en CI (Lighthouse/Bundle budgets).
@@ -236,6 +222,6 @@ Antes de abrir PR:
 
 ---
 
-## 15) Licencia
+## 14) Licencia
 
 Proyecto interno/demostrativo de uso educativo y de portfolio.
