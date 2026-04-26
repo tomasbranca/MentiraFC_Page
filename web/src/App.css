@@ -1,23 +1,2 @@
-:root {
-  --font-heading: "Archivo", "Roboto", "Inter", "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  --font-body: "Roboto", "Archivo", "Inter", "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
-}
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-family: var(--font-heading);
-}
-
-body,
-p,
-span,
-div,
-li,
-a,
-td {
-  font-family: var(--font-body);
-}
+/* Critical app-shell styles only.
+   Non-critical global typography is deferred via nonCritical.css */

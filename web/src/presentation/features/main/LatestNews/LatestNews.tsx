@@ -1,9 +1,10 @@
 // @ts-nocheck
+import { lazy, Suspense } from "react";
+
 import Carousel from "./Carousel/Carousel";
-import NewsCardHome from "../../../components/NewsCardHome/NewsCardHome";
-import { ROUTES } from "../../../constants/routes.constants";
-import { Link } from "react-router-dom";
 import { splitNews } from "./latestNews.utils";
+
+const MoreNews = lazy(() => import("./MoreNews"));
 
 const LatestNews = ({ news = [] }) => {
   if (!news.length) return null;
@@ -17,33 +18,9 @@ const LatestNews = ({ news = [] }) => {
         <Carousel items={carouselNews} />
       </div>
 
-      {/* Header */}
-      <div className="mt-10 mb-6 px-6 pt-6 border-t border-violet-700/60">
-        <div className="flex justify-center sm:justify-between items-center">
-          <h3 className="font-extrabold uppercase tracking-widest">
-            Más noticias
-          </h3>
-
-          <Link
-            to={ROUTES.NEWS}
-            className="hidden sm:block font-semibold underline underline-offset-4 hover:opacity-80 transition"
-          >
-            Ver todas
-          </Link>
-        </div>
-      </div>
-
-      {/* Grid */}
-      <div className="grid gap-6 px-6 pb-14 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-        {otherNews.map((item, index) => (
-          <NewsCardHome
-            key={item.id}
-            item={item}
-            featured={index === 0}
-            priority={index === 0}
-          />
-        ))}
-      </div>
+      <Suspense fallback={<div className="min-h-80" aria-hidden="true" />}>
+        <MoreNews news={otherNews} />
+      </Suspense>
     </section>
   );
 };
