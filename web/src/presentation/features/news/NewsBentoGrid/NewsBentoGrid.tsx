@@ -1,7 +1,9 @@
 // @ts-nocheck
+import { lazy, Suspense } from "react";
 import NewsCard from "../../../components/NewsCard/NewsCard";
-import CompactCarousel from "../CompactCarousel/CompactCarousel";
 import { mapBentoItems } from "./newsBentoGrid.utils";
+
+const CompactCarousel = lazy(() => import("../CompactCarousel/CompactCarousel"));
 
 const NewsBentoGrid = ({ items = [] }) => {
   if (!items.length) return null;
@@ -20,7 +22,18 @@ const NewsBentoGrid = ({ items = [] }) => {
           <NewsCard item={featuredWide} variant="featuredWide" />
         )}
 
-        {compact.length > 0 && <CompactCarousel items={compact} />}
+        {compact.length > 0 && (
+          <Suspense
+            fallback={
+              <div
+                className="h-40 w-full animate-pulse rounded-xl bg-white/5"
+                aria-label="Cargando carrusel de noticias"
+              />
+            }
+          >
+            <CompactCarousel items={compact} />
+          </Suspense>
+        )}
       </div>
 
       {/* DESKTOP */}
