@@ -1,4 +1,4 @@
-import { StrictMode, type ReactNode } from "react";
+import { StrictMode, Suspense, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -11,6 +11,7 @@ import { queryClient } from "./lib/queryClient";
 import { reportError } from "./lib/errors/errorLogger";
 import { startWebVitalsTracking } from "./lib/performance/reportWebVitals";
 import ScrollToTop from "./presentation/app/scrollToTop";
+import Loader from "./presentation/components/Loader/Loader";
 import ErrorBoundary from "./presentation/components/errors/ErrorBoundary";
 
 import "./index.css";
@@ -43,6 +44,14 @@ const renderShell = (node: ReactNode) => {
         </StrictMode>
       </QueryClientProvider>
     </BrowserRouter>
+  );
+};
+
+const renderAppShell = (initialData: InitialDataPayload) => {
+  renderShell(
+    <Suspense fallback={<Loader />}>
+      <App initialData={initialData} />
+    </Suspense>
   );
 };
 
@@ -79,14 +88,14 @@ const preloadQueryCache = (payload: InitialDataPayload) => {
 
 const bootstrap = async () => {
   startWebVitalsTracking();
-  renderShell(<App initialData={EMPTY_INITIAL_DATA} />);
+  renderAppShell(EMPTY_INITIAL_DATA);
 
   try {
     const pathname = window.location.pathname;
     const initialData = await getRouteInitialData(pathname);
 
     preloadQueryCache(initialData);
-    renderShell(<App initialData={initialData} />);
+    renderAppShell(initialData);
   } catch (error) {
     reportError(error, {
       scope: "main",
