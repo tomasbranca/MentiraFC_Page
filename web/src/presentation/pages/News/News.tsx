@@ -1,11 +1,13 @@
 // @ts-nocheck
+import { lazy, Suspense } from "react";
 import NewsBentoGrid from "../../features/news/NewsBentoGrid/NewsBentoGrid";
-import NewsList from "../../features/news/NewsList/NewsList";
 import Loader from "../../components/Loader/Loader";
 import ErrorFallback from "../../components/errors/ErrorFallback";
 
 import { useNewsData } from "./hooks/useNewsData";
 import { splitNewsForPage } from "./newsPage.utils";
+
+const NewsList = lazy(() => import("../../features/news/NewsList/NewsList"));
 
 const News = () => {
   const { news, loading, error, refetch } = useNewsData();
@@ -37,7 +39,16 @@ const News = () => {
       {/* LISTA */}
       <section className="border-t border-violet-700 py-10 md:py-14 lg:py-16">
         <div className="max-w-6xl mx-auto px-4 md:px-6 lg:px-8">
-          <NewsList items={list} />
+          <Suspense
+            fallback={
+              <div
+                className="h-24 w-full animate-pulse rounded-xl bg-white/5"
+                aria-label="Cargando listado de noticias"
+              />
+            }
+          >
+            <NewsList items={list} />
+          </Suspense>
         </div>
       </section>
     </main>
