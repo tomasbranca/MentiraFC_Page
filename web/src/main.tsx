@@ -9,6 +9,7 @@ import { getRouteInitialData } from "./data/getRouteInitialData";
 import { queryKeys } from "./data/queryKeys";
 import { queryClient } from "./lib/queryClient";
 import { reportError } from "./lib/errors/errorLogger";
+import { sortNews } from "./presentation/utils/news.utils";
 import { startWebVitalsTracking } from "./lib/performance/reportWebVitals";
 import ScrollToTop from "./presentation/app/scrollToTop";
 import Loader from "./presentation/components/Loader/Loader";
@@ -60,6 +61,31 @@ const renderAppShell = (
   );
 };
 
+const HOME_PATHNAME = "/";
+const HOME_LCP_PRELOAD_ID = "home-lcp-image-preload";
+
+const ensureHomeLcpPreload = (payload: InitialDataPayload, pathname: string) => {
+  if (pathname !== HOME_PATHNAME) return;
+
+  const firstCarouselImage = sortNews(payload.news)[0]?.imageUrl;
+
+  if (!firstCarouselImage) return;
+
+  const existing = document.getElementById(HOME_LCP_PRELOAD_ID);
+
+  if (existing instanceof HTMLLinkElement) {
+    existing.href = firstCarouselImage;
+    return;
+  }
+
+  const link = document.createElement("link");
+  link.id = HOME_LCP_PRELOAD_ID;
+  link.rel = "preload";
+  link.as = "image";
+  link.href = firstCarouselImage;
+  document.head.appendChild(link);
+};
+
 const preloadQueryCache = (payload: InitialDataPayload) => {
   queryClient.setQueryData(queryKeys.news.all, payload.news);
   queryClient.setQueryData(queryKeys.players.all, payload.players);
@@ -99,6 +125,7 @@ const bootstrap = async () => {
     const pathname = window.location.pathname;
     const initialData = await getRouteInitialData(pathname);
 
+    ensureHomeLcpPreload(initialData, pathname);
     preloadQueryCache(initialData);
     renderAppShell(initialData, "hydrated");
   } catch (error) {
