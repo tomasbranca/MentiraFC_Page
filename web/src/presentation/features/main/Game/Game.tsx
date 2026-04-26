@@ -32,6 +32,8 @@ const Game = ({ game, loading }) => {
             <img
               src="/logo.webp"
               alt="Mentira FC"
+              width={809}
+              height={809}
               className="w-24 h-24 sm:w-24 sm:h-24 lg:w-36 lg:h-36 object-cover rounded-full scale-175 sm:scale-100 -translate-x-12 sm:translate-x-0"
             />
 
