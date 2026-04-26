@@ -1,273 +1,241 @@
-# 🟣 Mentira FC — Sitio Oficial
+# Mentira FC — Plataforma Web + CMS Headless
 
 <div align="center">
 
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
 ![Sanity](https://img.shields.io/badge/Sanity-F03E2F?style=for-the-badge&logo=sanity&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
 
-<br />
-
-**Tradición. Identidad. Ficción competitiva.**
-
-<p>
-  <em>Plataforma institucional desarrollada con arquitectura moderna, diseño profesional y gestión de contenido Headless.</em>
-</p>
+**Sitio institucional ficticio de un club de fútbol, construido con arquitectura modular y CMS desacoplado.**
 
 </div>
 
 ---
 
-## 📌 Overview
+## 1) Descripción general
 
-**Mentira FC** es una aplicación web SPA (Single Page Application) que simula la identidad digital de un club de fútbol argentino tradicional.
+**Mentira FC** es un proyecto full front-end + CMS que simula la presencia digital de un club de fútbol. Está orientado a una implementación profesional: componentes reutilizables, separación por capas, tipado fuerte y estrategia de carga de datos para un primer render eficiente.
 
-Más que una maqueta visual, este proyecto es un ejercicio de ingeniería frontend que combina una **estética institucional sobria** con una **arquitectura de software escalable**. El objetivo es emular un producto real en producción, priorizando la optimización, la estructura de componentes y la gestión dinámica de datos.
+El repositorio está organizado como un **monorepo simple con dos aplicaciones**:
 
-### 🎯 Objetivos de Ingeniería
-
-- **Identidad de Marca:** Construir una UI que transmita historia y seriedad.
-- **Escalabilidad:** Arquitectura modular que permite el crecimiento sin deuda técnica.
-- **Headless CMS:** Desacople total entre el frontend y la gestión de contenido.
-- **Performance:** Optimización de assets y renderizado eficiente.
+- `web/`: SPA pública (React + Vite + TypeScript + Tailwind + React Query).
+- `studio/`: panel editorial (Sanity Studio) para administrar contenido estructurado.
 
 ---
 
-## 🧱 Stack Tecnológico
+## 2) Objetivos del proyecto
 
-La elección de tecnologías responde a la necesidad de rendimiento, mantenibilidad y una excelente experiencia de desarrollo (DX).
-
-| Área        | Tecnología       | Justificación                                                     |
-| :---------- | :--------------- | :---------------------------------------------------------------- |
-| **Core**    | `React.js`       | Biblioteca UI basada en componentes para interfaces reactivas.    |
-| **Styling** | `Tailwind CSS`   | Sistema Utility-first para un diseño consistente y rápido.        |
-| **Content** | `Sanity.io`      | Headless CMS para gestión estructurada de noticias y plantel.     |
-| **Routing** | `React Router 7` | Gestión de navegación SPA fluida y dinámica.                      |
-| **Build**   | `Vite`           | Entorno de desarrollo de próxima generación y bundler optimizado. |
+- Diseñar una experiencia web con identidad institucional sólida.
+- Mantener una base de código escalable y mantenible.
+- Desacoplar completamente presentación y contenido mediante Headless CMS.
+- Facilitar evolución por módulos (noticias, plantel, tabla, historial, etc.).
+- Sostener calidad técnica con linting, type-checking, tests y build verificable.
 
 ---
 
-## 🎨 Sistema de Diseño
+## 3) Arquitectura y organización
 
-El diseño visual busca el equilibrio entre la **institucionalidad** (colores oscuros, tipografía seria) y la **modernidad** (espaciado, micro-interacciones).
+### 3.1 Estructura del repositorio
 
-### Paleta Institucional
+```text
+.
+├── README.md
+├── package.json           # scripts raíz para orquestar web + studio
+├── web/                   # aplicación pública
+└── studio/                # Sanity Studio
+```
 
-| Token     | Valor (Tailwind) | Hex (Aprox) | Uso                                   |
-| :-------- | :--------------- | :---------- | :------------------------------------ |
-| `Primary` | `violet-900`     | `#4c1d95`   | Identidad de marca, headers.          |
-| `Surface` | `neutral-950`    | `#0a0a0a`   | Fondos profundos, modo oscuro.        |
-| `Accent`  | `violet-50`      | `#f5f3ff`   | Texto, componentes de alto contraste. |
+### 3.2 Organización principal de `web/src`
 
----
+```text
+web/src/
+├── domain/                # lógica de negocio pura (sin UI)
+├── data/                  # acceso/transformación de datos (Sanity + mappers)
+├── presentation/          # páginas, features, componentes, layout, hooks, contexto
+├── lib/                   # utilidades transversales (query client, performance, errores)
+├── types/                 # modelos y tipados compartidos
+└── App.tsx / main.tsx
+```
 
-## 🏟 Estructura del Sitio
+### 3.3 Separación por capas
 
-La aplicación está dividida en módulos funcionales:
+- **Domain**: reglas de negocio y cálculos (ej. estadísticas/tablas).
+- **Data**: servicios, queries y adapters para hablar con Sanity y normalizar respuesta.
+- **Presentation**: renderizado de UI, navegación, interacción y composición de features.
 
-- **🏠 Home:** Dashboard principal con Hero Section, Match Center y últimas novedades.
-- **📰 Noticias:** Blog dinámico con paginación y renderizado de contenido enriquecido (Portable Text) desde Sanity.
-- **👥 Plantel:** Grid de jugadores con fichas técnicas individuales y filtros por posición.
-- **📊 Tabla & Historial:** Visualización de datos estadísticos y palmarés del club.
-
----
-
-## 🛣️ Roadmap
-
-El desarrollo sigue un enfoque iterativo. Próximas implementaciones:
-
-- [ ] Integración con APIs deportivas reales (ej. datos simulados de liga).
-- [ ] Animaciones avanzadas con Framer Motion.
-- [ ] Mejoras de SEO (Open Graph, Meta Tags dinámicos).
-- [ ] Testing Unitario (Vitest/Jest) y E2E (Cypress).
-- [ ] Internacionalización (i18n).
+Esta división reduce acoplamiento, facilita pruebas unitarias y permite evolucionar UI y datos de forma independiente.
 
 ---
 
-## ⚙️ Variables de Entorno (Web)
+## 4) Stack tecnológico
 
-El frontend soporta configuración de Sanity vía variables de entorno en `web/.env`:
+| Capa | Tecnología | Rol |
+|---|---|---|
+| UI | React 19 | Renderizado declarativo basado en componentes |
+| Lenguaje | TypeScript | Tipado estático y mayor seguridad en refactors |
+| Build/Dev Server | Vite | DX rápida, build optimizado |
+| Estilos | Tailwind CSS 4 | Diseño utility-first consistente |
+| Datos cliente | TanStack React Query | Cache, sincronización y estado server-state |
+| CMS | Sanity Studio v5 + Sanity Client | Edición y consumo de contenido headless |
+| Routing | React Router 7 | Navegación SPA |
+| Testing | Vitest | pruebas unitarias |
+| Calidad | ESLint + `tsc --noEmit` | linting y validación de tipos |
+
+---
+
+## 5) Módulos funcionales (web)
+
+La SPA pública contiene secciones orientadas a producto real:
+
+- **Home**: portada, widgets de juego, tabla y noticias destacadas.
+- **Noticias**: listado, grillas y detalle con renderizado de contenido rico.
+- **Plantel**: vista de jugadores y detalle individual.
+- **Tabla / Historial**: visualización de información deportiva estructurada.
+- **Admin (página técnica)**: utilidades internas para soporte de datos/flujos.
+
+---
+
+## 6) Requisitos
+
+- **Node.js** 20+ recomendado.
+- **npm** 10+ recomendado.
+- Acceso a proyecto/dataset de Sanity para contenido real.
+
+---
+
+## 7) Instalación
+
+Desde la raíz del repositorio:
 
 ```bash
-VITE_SANITY_PROJECT_ID=jwpxrdo2
+npm install
+```
+
+Este comando instala dependencias de ambas apps (`web` y `studio`) usando scripts del root.
+
+Si necesitás hacerlo por separado:
+
+```bash
+npm run install:web
+npm run install:studio
+```
+
+---
+
+## 8) Ejecución en desarrollo
+
+### 8.1 Levantar todo el entorno (web + studio)
+
+```bash
+npm run dev
+```
+
+### 8.2 Levantar servicios individualmente
+
+```bash
+npm run dev:web
+npm run dev:studio
+```
+
+---
+
+## 9) Variables de entorno
+
+Crear `web/.env` con los valores de Sanity:
+
+```bash
+VITE_SANITY_PROJECT_ID=tu_project_id
 VITE_SANITY_DATASET=production
 VITE_SANITY_API_VERSION=2023-01-01
 ```
 
----
-
-## 🧠 Filosofía de Desarrollo
-
-Este código sigue principios de **Clean Code**:
-
-- **Separación de responsabilidades:** Lógica de negocio separada de la UI.
-- **DRY (Don't Repeat Yourself):** Abstracción de componentes reutilizables.
-- **Mobile First:** Diseño adaptativo desde pantallas pequeñas hacia grandes.
+> Recomendación: no versionar secretos y mantener valores sensibles fuera del repositorio.
 
 ---
 
+## 10) Scripts disponibles
 
-## 🧩 Propuesta de Reorganización (sin sobre-ingeniería)
+### 10.1 Scripts en raíz
 
-Para simplificar la evolución del frontend, se propone organizar `web/src` en tres capas claras:
+- `npm run dev` → ejecuta `web` y `studio` en paralelo.
+- `npm run dev:web` → inicia sólo la app pública.
+- `npm run dev:studio` → inicia sólo Sanity Studio.
+- `npm run install` → instala dependencias de ambos proyectos.
 
-- `domain/`: reglas de negocio puras y modelos.
-- `data/`: acceso a datos externos (Sanity) y adaptación de respuestas.
-- `presentation/`: páginas, componentes, hooks y estado de UI.
+### 10.2 Scripts en `web/`
 
-### Árbol objetivo
+- `npm run dev` → servidor local Vite.
+- `npm run lint` → ESLint.
+- `npm run typecheck` → validación de tipos (`tsc --noEmit`).
+- `npm run test` → Vitest (`run`).
+- `npm run build` → build de producción.
+- `npm run check` → pipeline completo (`lint + typecheck + test + build`).
 
-```text
-web/src/
-├─ domain/
-│  ├─ stats/
-│  │  ├─ playerStats.js
-│  │  ├─ tournamentTable.js
-│  │  └─ index.js
-│  ├─ entities/
-│  └─ use-cases/
-├─ data/
-│  ├─ cms/
-│  │  └─ sanity/
-│  │     ├─ client/
-│  │     │  ├─ sanity.client.js
-│  │     │  └─ sanity.image.js
-│  │     ├─ queries/
-│  │     ├─ adapters/
-│  │     └─ services/
-│  ├─ repositories/
-│  └─ mappers/
-└─ presentation/
-   ├─ app/
-   ├─ pages/
-   ├─ features/
-   ├─ components/
-   ├─ layout/
-   ├─ hooks/
-   ├─ context/
-   ├─ constants/
-   └─ utils/
-```
+### 10.3 Scripts en `studio/`
 
-### Mapeo recomendado (actual → nuevo)
-
-- `web/src/lib/domain/stats/*` → `web/src/domain/stats/*`
-- `web/src/lib/sanity/sanity.client.js` → `web/src/data/cms/sanity/client/sanity.client.js`
-- `web/src/lib/sanity/sanity.image.js` → `web/src/data/cms/sanity/client/sanity.image.js`
-- `web/src/lib/sanity/queries/*` → `web/src/data/cms/sanity/queries/*`
-- `web/src/lib/sanity/adapters/*` → `web/src/data/cms/sanity/adapters/*`
-- `web/src/lib/sanity/services/*` → `web/src/data/cms/sanity/services/*`
-- `web/src/services/imageService.js` → `web/src/data/mappers/imageService.js` (o `presentation/utils/` si sólo formatea para UI)
-- `web/src/pages/*` → `web/src/presentation/pages/*`
-- `web/src/features/*` → `web/src/presentation/features/*`
-- `web/src/components/*` → `web/src/presentation/components/*`
-- `web/src/layout/*` → `web/src/presentation/layout/*`
-- `web/src/hooks/*` + hooks de página/feature → `web/src/presentation/hooks/*` (o colocalizados dentro de cada feature)
-- `web/src/context/*` → `web/src/presentation/context/*`
-- `web/src/constants/*` → `web/src/presentation/constants/*`
-- `web/src/utils/*` → `web/src/presentation/utils/*`
-
-### Responsabilidades por capa
-
-- **Domain**
-  - No depende de React ni de Sanity.
-  - Contiene reglas, cálculos y contratos del negocio.
-  - Debe ser fácilmente testeable con unit tests puros.
-
-- **Data**
-  - Sabe cómo pedir datos a fuentes externas (CMS/API).
-  - Traduce datos crudos a estructuras útiles para el dominio/presentación.
-  - Maneja detalles de infraestructura (cliente, queries, adapters).
-
-- **Presentation**
-  - Renderiza UI y orquesta interacción de usuario.
-  - Consume servicios/repositorios de `data` y lógica de `domain`.
-  - Evita lógica de negocio compleja en componentes.
-
-### Guía de fetching para primer render y LCP
-
-- Los datos críticos para **primer render** y **LCP** deben resolverse en el flujo de carga inicial (ej. `getInitialData`) y llegar listos al árbol principal.
-- Evitar hooks que inicien fetch recién en `useEffect` para contenido above-the-fold o visible al cargar.
-- El hook `useFetchData` fue eliminado por no tener usos activos; para nuevos casos, preferir hooks de página/feature alineados con la estrategia de carga inicial.
-
-### Plan de migración paso a paso
-
-1. **Congelar estructura nueva**
-   - Crear carpetas `domain/`, `data/` y `presentation/`.
-   - Definir aliases de import (Vite + jsconfig/tsconfig) para evitar rutas relativas largas.
-
-2. **Mover primero el código puro**
-   - Migrar `lib/domain/stats` a `domain/stats`.
-   - Ejecutar tests de stats y corregir imports.
-
-3. **Migrar capa Sanity completa a `data`**
-   - Mover cliente, queries, adapters y services respetando subcarpetas.
-   - Mantener temporalmente archivos "bridge" (re-export) en rutas viejas para reducir riesgo.
-
-4. **Reubicar servicios sueltos y utilidades de datos**
-   - Analizar `services/imageService.js` y ubicarlo en `data/mappers` o `presentation/utils` según su responsabilidad real.
-
-5. **Migrar presentación por verticales**
-   - Empezar por una feature estable (ej. News): `pages`, `features`, `components`, hooks asociados.
-   - Repetir por módulos (Home, Team, PlayerDetail, etc.).
-
-6. **Eliminar puentes y limpiar deuda**
-   - Una vez actualizados imports, borrar rutas antiguas (`lib/sanity`, `lib/domain`, `services`).
-   - Ejecutar lint/build/tests y corregir warnings.
-
-7. **Normalizar convención**
-   - Definir regla simple: lo reusable de negocio va a `domain`; acceso a datos a `data`; UI a `presentation`.
-   - Documentar 4-5 ejemplos en el repo para guiar futuras contribuciones.
-
-> Esta propuesta evita una arquitectura enterprise pesada: no obliga DDD completo, CQRS ni capas extra; sólo ordena lo actual con límites claros.
-
-## 👨‍💻 Autor
-
-**Tomás Brancatisano**
-<br>
-_Ingeniería en Sistemas — UTN_
-
-> "Porque la historia también se construye." — **Mentira FC**
-
-[LinkedIn](https://www.linkedin.com/in/tomas-brancatisano/)
+- `npm run dev` → Sanity Studio en desarrollo.
+- `npm run lint` → ESLint.
+- `npm run build` → build de Studio.
+- `npm run deploy` → despliegue de Studio.
+- `npm run deploy-graphql` → despliegue del esquema GraphQL.
+- `npm run check` → lint + build.
 
 ---
 
-## ✅ Calidad, métricas y CI (baseline)
+## 11) Modelo de contenido (Sanity)
 
-Se incorporó una base de calidad simple y sostenible para evitar regresiones:
+En `studio/schemas/` se definen tipos para soportar el producto:
 
-### Checks automáticos
+- Noticias
+- Jugadores
+- Equipos
+- Torneos
+- Partidos
+- Eventos
+- Organizaciones
 
-- **Web app (`web`)**
-  - `lint` con ESLint
-  - `typecheck` con TypeScript
-  - `test` unitario con Vitest
-  - `build` de producción con Vite
-- **Studio (`studio`)**
-  - `lint` con ESLint
-  - `build` de Sanity
+Estos esquemas alimentan los servicios y adapters de `web/src/data/sanity`.
 
-### Métricas de performance definidas
+---
 
-Métricas principales (Core Web Vitals + apoyo):
+## 12) Calidad y flujo recomendado
 
-- **LCP** (Largest Contentful Paint) → objetivo: `<= 2500ms`
-- **CLS** (Cumulative Layout Shift) → objetivo: `<= 0.1`
-- **INP** (Interaction to Next Paint) → objetivo: `<= 200ms`
-- **FCP** (First Contentful Paint) → objetivo: `<= 1800ms`
-- **TTFB** (Time to First Byte) → objetivo: `<= 800ms`
+Antes de abrir PR:
 
-La app web registra métricas de navegación e interacción en runtime mediante `PerformanceObserver` (modo DEV por consola), quedando lista para enviar esos datos a GA4/Sentry o endpoint propio.
+1. Ejecutar checks de `web`:
+   ```bash
+   cd web && npm run check
+   ```
+2. Ejecutar checks de `studio`:
+   ```bash
+   cd studio && npm run check
+   ```
+3. Verificar manualmente navegación principal y estados vacíos/error.
 
-### Integración de CI (GitHub Actions)
+---
 
-Workflow propuesto: `.github/workflows/ci.yml`
+## 13) Convenciones de desarrollo
 
-Incluye 3 jobs:
-1. `web-quality`: lint + typecheck + tests + build.
-2. `studio-quality`: lint + build.
-3. `web-performance`: auditoría Lighthouse (3 corridas) con umbrales para LCP, CLS e INP.
+- Priorizar componentes y funciones pequeñas con responsabilidad única.
+- Evitar mezclar lógica de negocio con renderizado.
+- Centralizar acceso a datos en la capa `data`.
+- Mantener tipados explícitos en adaptadores y modelos compartidos.
+- Documentar decisiones técnicas relevantes en PRs.
 
-> Este enfoque evita sobreingeniería: agrega controles clave desde el inicio y permite crecer luego a cobertura, e2e y budgets más estrictos.
+---
+
+## 14) Roadmap sugerido
+
+- Tests de integración de features críticas (news, roster, home widgets).
+- Métricas de performance automatizadas en CI (Lighthouse/Bundle budgets).
+- Estrategia de revalidación/caché para contenido editorial frecuente.
+- Internacionalización (i18n) y mejoras de accesibilidad (a11y).
+- Hardenización SEO técnico (metadatos dinámicos, OG por noticia, sitemap).
+
+---
+
+## 15) Licencia
+
+Proyecto interno/demostrativo de uso educativo y de portfolio.
