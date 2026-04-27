@@ -148,6 +148,18 @@ const bootstrap = async () => {
     ensureHomeLcpPreload(initialData, pathname);
     preloadQueryCache(initialData);
     renderAppShell(initialData, "hydrated");
+
+    // Cargar datos del inicio en background (sin await)
+    if (pathname !== HOME_PATHNAME) {
+      getRouteInitialData(HOME_PATHNAME)
+        .then(preloadQueryCache)
+        .catch((error) => {
+          reportError(error, {
+            scope: "main",
+            action: "bootstrap_home_preload",
+          });
+        });
+    }
   } catch (error) {
     reportError(error, {
       scope: "main",
