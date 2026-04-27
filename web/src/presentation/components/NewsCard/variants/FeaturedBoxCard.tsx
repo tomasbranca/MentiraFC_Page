@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { Link } from "react-router-dom";
+import { getImageSrcSet, getImageUrl } from "../../../../data/imageService";
 import { getNewsLink } from "../../../utils/navigation.utils";
 
 const FeaturedBoxCard = ({ item, imageLoading = "lazy", imagePriority = false }) => {
@@ -9,11 +10,26 @@ const FeaturedBoxCard = ({ item, imageLoading = "lazy", imagePriority = false })
       className="animation-shadow news-card-featured-box grid grid-rows-5 size-full overflow-hidden"
     >
       <img
-        src={item.imageUrl}
+        src={getImageUrl(item.imageUrl, {
+          width: 720,
+          height: 480,
+          fit: "crop",
+          quality: 70,
+          autoFormat: true,
+        })}
+        srcSet={getImageSrcSet(item.imageUrl, [360, 540, 720], {
+          height: 480,
+          fit: "crop",
+          quality: 70,
+          autoFormat: true,
+        })}
+        sizes="(max-width: 768px) 100vw, 33vw"
         alt={item.title}
         className="row-span-3 w-full h-full object-cover"
         loading={imageLoading}
-        fetchpriority={imagePriority ? "high" : "auto"}
+        {...(HTMLImageElement.prototype.hasOwnProperty("fetchPriority") && {
+          fetchpriority: imagePriority ? "high" : "auto",
+        })}
         decoding="async"
         width="1200"
         height="800"

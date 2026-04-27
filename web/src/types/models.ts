@@ -1,4 +1,10 @@
 export type GameState = "por_jugar" | "finalizado" | string;
+export type BootstrapScope =
+  | "empty"
+  | "full"
+  | "home-critical"
+  | "news-detail"
+  | "player-detail";
 
 export interface TeamRef {
   id: string;

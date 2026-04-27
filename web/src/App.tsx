@@ -7,6 +7,7 @@ import { GameProvider } from "./presentation/context/GameProvider";
 import { InitialDataProvider } from "./presentation/context/InitialDataContext";
 import Footer from "./presentation/layout/Footer/Footer";
 import NavBar from "./presentation/layout/NavBar/NavBar";
+import Home from "./presentation/pages/Home/Home";
 import { ROUTES } from "./presentation/constants/routes.constants";
 
 import "./App.css";
@@ -15,7 +16,6 @@ type AppProps = {
   initialData: InitialDataPayload;
 };
 
-const Home = lazy(() => import("./presentation/pages/Home/Home"));
 const News = lazy(() => import("./presentation/pages/News/News"));
 const Team = lazy(() => import("./presentation/pages/Team/Team"));
 const Table = lazy(() => import("./presentation/pages/Table/Table"));
@@ -48,10 +48,12 @@ function App({ initialData }: AppProps) {
 
   return (
     <InitialDataProvider initialData={initialData}>
-      <GameProvider initialGame={initialData.latestGame}>
+      <GameProvider
+        initialGame={initialData.latestGame}
+        isBootstrapping={initialData.bootstrapScope === "empty"}
+      >
         <NavBar />
         <div className="border-t-96 border-t-violet-900 min-h-screen ">
-          <div className="absolute inset-0 bg-pattern-only pointer-events-none" />
           <Suspense fallback={<Loader />}>
             <Routes>
               <Route path={ROUTES.HOME} element={<Home />} />

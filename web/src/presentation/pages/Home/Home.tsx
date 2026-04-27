@@ -1,10 +1,10 @@
 // @ts-nocheck
 import { lazy, Suspense } from "react";
 import LatestNews from "../../features/main/LatestNews/LatestNews";
+import Game from "../../features/main/Game/Game";
 import { useGame } from "../../context/useGame";
 import { useHomeData } from "./hooks/useHomeData";
 
-const Game = lazy(() => import("../../features/main/Game/Game"));
 const TopScorers = lazy(
   () => import("../../features/main/TopScorers/TopScorers")
 );
@@ -22,15 +22,13 @@ const Home = () => {
         <LatestNews news={news} />
       </div>
 
-      <Suspense fallback={<div className="min-h-[20rem]" aria-hidden="true" />}>
-        <Game game={game} loading={gameLoading} />
-      </Suspense>
+      <Game game={game} loading={gameLoading} />
 
       <div className="relative grid grid-cols-1 lg:grid-cols-3">
-        <Suspense fallback={<div className="min-h-[28rem]" aria-hidden="true" />}>
+        <Suspense fallback={<div className="min-h-112" aria-hidden="true" />}>
           <TopScorers players={topScorers} />
         </Suspense>
-        <Suspense fallback={<div className="min-h-[28rem]" aria-hidden="true" />}>
+        <Suspense fallback={<div className="min-h-112" aria-hidden="true" />}>
           <TableWidget table={tournament} />
         </Suspense>
       </div>

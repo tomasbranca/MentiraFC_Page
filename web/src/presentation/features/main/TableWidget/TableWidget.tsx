@@ -56,8 +56,12 @@ const TableWidget = ({ table }) => {
                     width: 32,
                     height: 32,
                     fit: "max",
+                    quality: 70,
+                    autoFormat: true,
                   })}
                   alt={row.team.name}
+                  width={32}
+                  height={32}
                   className="hidden md:block size-8 object-contain"
                 />
 

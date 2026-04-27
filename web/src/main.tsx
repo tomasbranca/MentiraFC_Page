@@ -2,9 +2,16 @@ import { StrictMode, Suspense, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
+import "@fontsource/archivo/latin-700.css";
+import "@fontsource/archivo/latin-900.css";
+import "@fontsource/roboto/latin-400.css";
+import "@fontsource/roboto/latin-500.css";
+import "@fontsource/roboto/latin-700.css";
+import "@fontsource/roboto/latin-900.css";
 
 import App from "./App";
 import type { InitialDataPayload } from "./data/getInitialData";
+import { getImageUrl } from "./data/imageService";
 import { getRouteInitialData } from "./data/getRouteInitialData";
 import { queryKeys } from "./data/queryKeys";
 import { queryClient } from "./lib/queryClient";
@@ -26,6 +33,7 @@ if (!rootElement) {
 const root = createRoot(rootElement);
 
 const EMPTY_INITIAL_DATA: InitialDataPayload = {
+  bootstrapScope: "empty",
   news: [],
   players: [],
   games: [],
@@ -71,10 +79,18 @@ const ensureHomeLcpPreload = (payload: InitialDataPayload, pathname: string) => 
 
   if (!firstCarouselImage) return;
 
+  const optimizedLcpImage = getImageUrl(firstCarouselImage, {
+    width: 1280,
+    height: 720,
+    fit: "crop",
+    quality: 70,
+    autoFormat: true,
+  });
+
   const existing = document.getElementById(HOME_LCP_PRELOAD_ID);
 
   if (existing instanceof HTMLLinkElement) {
-    existing.href = firstCarouselImage;
+    existing.href = optimizedLcpImage;
     return;
   }
 
@@ -82,21 +98,25 @@ const ensureHomeLcpPreload = (payload: InitialDataPayload, pathname: string) => 
   link.id = HOME_LCP_PRELOAD_ID;
   link.rel = "preload";
   link.as = "image";
-  link.href = firstCarouselImage;
+  link.href = optimizedLcpImage;
+  link.fetchPriority = "high";
   document.head.appendChild(link);
 };
 
 const preloadQueryCache = (payload: InitialDataPayload) => {
-  queryClient.setQueryData(queryKeys.news.all, payload.news);
-  queryClient.setQueryData(queryKeys.players.all, payload.players);
-  queryClient.setQueryData(queryKeys.games.finished, payload.games);
-  queryClient.setQueryData(queryKeys.tournaments.current, payload.tournament);
-  queryClient.setQueryData(queryKeys.teams.all, payload.teams);
-  queryClient.setQueryData(
-    queryKeys.games.tournamentFinished,
-    payload.tournamentGames
-  );
   queryClient.setQueryData(queryKeys.games.latest, payload.latestGame);
+
+  if (payload.bootstrapScope === "full") {
+    queryClient.setQueryData(queryKeys.news.all, payload.news);
+    queryClient.setQueryData(queryKeys.players.all, payload.players);
+    queryClient.setQueryData(queryKeys.games.finished, payload.games);
+    queryClient.setQueryData(queryKeys.tournaments.current, payload.tournament);
+    queryClient.setQueryData(queryKeys.teams.all, payload.teams);
+    queryClient.setQueryData(
+      queryKeys.games.tournamentFinished,
+      payload.tournamentGames
+    );
+  }
 
   if (payload.currentNewsDetail) {
     queryClient.setQueryData(

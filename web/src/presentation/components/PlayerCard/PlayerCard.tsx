@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { Link } from "react-router-dom";
-import { FaFutbol } from "react-icons/fa";
+import { getImageUrl } from "../../../data/imageService";
+import { SoccerBallIcon } from "../icons/InlineIcons";
 import { getPlayerLink, PLAYER_CARD_MODE } from "./playerCard.utils";
 
 const PlayerCard = ({ player, mode = PLAYER_CARD_MODE.DEFAULT }) => {
@@ -37,8 +38,8 @@ const PlayerCard = ({ player, mode = PLAYER_CARD_MODE.DEFAULT }) => {
           </span>
 
           {isGoalsMode && (
-            <FaFutbol
-              className="text-white text-xl sm:text-2xl"
+            <SoccerBallIcon
+              className="size-5 text-white sm:size-8"
               style={{
                 filter: `drop-shadow(0 3px 8px rgba(0,0,0,.9))`,
               }}
@@ -54,7 +55,15 @@ const PlayerCard = ({ player, mode = PLAYER_CARD_MODE.DEFAULT }) => {
             transition-transform duration-500
             group-hover:scale-105
           "
-          style={{ backgroundImage: `url(${player.imageUrl})` }}
+          style={{
+            backgroundImage: `url(${getImageUrl(player.imageUrl, {
+              width: 420,
+              height: 560,
+              fit: "crop",
+              quality: 68,
+              autoFormat: true,
+            })})`,
+          }}
         />
 
         {/* Overlay */}

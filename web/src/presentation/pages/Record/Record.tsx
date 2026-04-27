@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { useState } from "react";
+import { getImageUrl } from "../../../data/imageService";
 import Loader from "../../components/Loader/Loader";
 import Button from "../../components/Button/Button";
 import ErrorFallback from "../../components/errors/ErrorFallback";
@@ -93,8 +94,16 @@ const Record = () => {
                         <div className="flex items-center gap-3">
                           {game.rival?.imageUrl && (
                             <img
-                              src={game.rival.imageUrl}
+                              src={getImageUrl(game.rival.imageUrl, {
+                                width: 40,
+                                height: 40,
+                                fit: "max",
+                                quality: 70,
+                                autoFormat: true,
+                              })}
                               alt={game.rival.name}
+                              width={40}
+                              height={40}
                               className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
                             />
                           )}

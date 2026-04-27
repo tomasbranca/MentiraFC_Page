@@ -6,6 +6,7 @@ import Loader from "../../components/Loader/Loader";
 import ErrorFallback from "../../components/errors/ErrorFallback";
 import NewsCard from "../../components/NewsCard/NewsCard";
 
+import { getImageUrl } from "../../../data/imageService";
 import { useNewsDetail } from "./hooks/useNewsDetail";
 import { formatDate } from "../../utils/date.utils";
 
@@ -42,7 +43,13 @@ const NewsDetail = () => {
       <header
         className="relative w-full flex items-end h-[35vh] md:h-[45vh] lg:h-[60vh] border-b-2 border-violet-700"
         style={{
-          backgroundImage: `url(${newsItem.imageUrl})`,
+          backgroundImage: `url(${getImageUrl(newsItem.imageUrl, {
+            width: 1600,
+            height: 900,
+            fit: "crop",
+            quality: 72,
+            autoFormat: true,
+          })})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}

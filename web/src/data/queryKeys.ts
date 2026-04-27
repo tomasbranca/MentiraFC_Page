@@ -1,4 +1,7 @@
 export const queryKeys = {
+  home: {
+    deferred: ["home", "deferred"] as const,
+  },
   games: {
     all: ["games"] as const,
     latest: ["games", "latest"] as const,

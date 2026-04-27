@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { type ReactNode, useCallback, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useState } from "react";
 
 import { getLatestGame } from "../../data/games";
 import { reportError } from "../../lib/errors/errorLogger";
@@ -9,12 +9,27 @@ import { GameContext } from "./GameContext";
 type GameProviderProps = {
   children: ReactNode;
   initialGame: Game | null;
+  isBootstrapping?: boolean;
 };
 
-export const GameProvider = ({ children, initialGame }: GameProviderProps) => {
+export const GameProvider = ({
+  children,
+  initialGame,
+  isBootstrapping = false,
+}: GameProviderProps) => {
   const [game, setGame] = useState<Game | null>(initialGame);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(isBootstrapping);
   const [error, setError] = useState<unknown>(null);
+
+  useEffect(() => {
+    setGame(initialGame);
+  }, [initialGame]);
+
+  useEffect(() => {
+    if (!isBootstrapping) {
+      setLoading(false);
+    }
+  }, [isBootstrapping]);
 
   const refetch = useCallback(async () => {
     setLoading(true);

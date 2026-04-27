@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { Link } from "react-router-dom";
+import { getImageSrcSet, getImageUrl } from "../../../../data/imageService";
 import { getNewsLink } from "../../../utils/navigation.utils";
 import { formatDate } from "../../../utils/date.utils";
 
@@ -18,11 +19,26 @@ const HeroCard = ({ item, imageLoading = "lazy", imagePriority = false }) => {
     >
       <div className="w-full h-55 md:h-auto md:col-span-8 animation-shadow relative overflow-hidden">
         <img
-          src={item.imageUrl}
+          src={getImageUrl(item.imageUrl, {
+            width: 1200,
+            height: 675,
+            fit: "crop",
+            quality: 70,
+            autoFormat: true,
+          })}
+          srcSet={getImageSrcSet(item.imageUrl, [640, 960, 1200], {
+            height: 675,
+            fit: "crop",
+            quality: 70,
+            autoFormat: true,
+          })}
+          sizes="(max-width: 768px) 100vw, 66vw"
           alt={item.title}
           className="absolute inset-0 w-full h-full object-cover"
           loading={imageLoading}
-          fetchpriority={imagePriority ? "high" : "auto"}
+          {...(HTMLImageElement.prototype.hasOwnProperty("fetchPriority") && {
+            fetchpriority: imagePriority ? "high" : "auto",
+          })}
           decoding="async"
           width="1600"
           height="900"

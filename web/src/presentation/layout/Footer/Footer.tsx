@@ -1,5 +1,13 @@
 // @ts-nocheck
-import { FaInstagram, FaTiktok, FaEnvelope } from "react-icons/fa";
+import {
+  InstagramIcon,
+  MailIcon,
+  TikTokIcon,
+} from "../../components/icons/InlineIcons";
+import {
+  NEOKINGS_ASSET,
+  SITE_LOGO_ASSETS,
+} from "../../constants/assets.constants";
 
 const Footer = () => {
   return (
@@ -8,7 +16,13 @@ const Footer = () => {
         {/* Marca */}
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-4">
-            <img src="/logo.webp" alt="Mentira FC" className="w-12 h-12" />
+            <img
+              src={SITE_LOGO_ASSETS.small}
+              alt="Mentira FC"
+              width={48}
+              height={48}
+              className="w-12 h-12"
+            />
             <h6 className="font-bold tracking-wide">Mentira FC</h6>
           </div>
           <p className="text-violet-300 leading-relaxed max-w-xs">
@@ -31,7 +45,7 @@ const Footer = () => {
                 aria-label="Instagram"
                 className="text-violet-200 hover:text-violet-50 transition"
               >
-                <FaInstagram />
+                <InstagramIcon width={18} height={18} />
               </a>
             </li>
 
@@ -43,7 +57,7 @@ const Footer = () => {
                 aria-label="TikTok"
                 className="text-violet-200 hover:text-violet-50 transition"
               >
-                <FaTiktok />
+                <TikTokIcon width={18} height={18} />
               </a>
             </li>
           </ul>
@@ -62,8 +76,10 @@ const Footer = () => {
             className="block max-w-40"
           >
             <img
-              src="/sponsors/neokings.webp"
+              src={NEOKINGS_ASSET.src}
               alt="NeoKings"
+              width={NEOKINGS_ASSET.width}
+              height={NEOKINGS_ASSET.height}
               className="
                 w-full
                 object-contain
@@ -84,7 +100,7 @@ const Footer = () => {
           </h6>
 
           <p className="flex gap-3 items-center text-violet-200">
-            <FaEnvelope className="text-lg" />
+            <MailIcon width={18} height={18} />
             mentirafc@gmail.com
           </p>
 

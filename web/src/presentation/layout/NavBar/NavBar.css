@@ -90,7 +90,7 @@
 
 .nav-list a {
   color: #fff;
-  font-family: "Archivo", sans-serif;
+  font-family: var(--font-heading);
   font-weight: bold;
   font-size: 0.95rem;
   text-decoration: none;

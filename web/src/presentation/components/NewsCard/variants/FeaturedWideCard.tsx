@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { Link } from "react-router-dom";
+import { getImageSrcSet, getImageUrl } from "../../../../data/imageService";
 import { getNewsLink } from "../../../utils/navigation.utils";
 
 const FeaturedWideCard = ({ item, imageLoading = "lazy", imagePriority = false }) => {
@@ -9,11 +10,26 @@ const FeaturedWideCard = ({ item, imageLoading = "lazy", imagePriority = false }
       className="animation-shadow news-card-featured-wide relative w-full h-full overflow-hidden flex flex-col"
     >
       <img
-        src={item.imageUrl}
+        src={getImageUrl(item.imageUrl, {
+          width: 1200,
+          height: 675,
+          fit: "crop",
+          quality: 70,
+          autoFormat: true,
+        })}
+        srcSet={getImageSrcSet(item.imageUrl, [640, 960, 1200], {
+          height: 675,
+          fit: "crop",
+          quality: 70,
+          autoFormat: true,
+        })}
+        sizes="(max-width: 768px) 100vw, 66vw"
         alt={item.title}
         className="w-full h-55 md:absolute md:inset-0 md:h-full object-cover"
         loading={imageLoading}
-        fetchpriority={imagePriority ? "high" : "auto"}
+        {...(HTMLImageElement.prototype.hasOwnProperty('fetchPriority') && {
+          fetchpriority: imagePriority ? "high" : "auto",
+        })}
         decoding="async"
         width="1600"
         height="900"

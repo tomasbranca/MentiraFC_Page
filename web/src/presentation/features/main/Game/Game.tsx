@@ -1,10 +1,16 @@
 // @ts-nocheck
 import { useState } from "react";
-import { FaFutbol } from "react-icons/fa";
 import GameSkeleton from "./GameSkeleton/GameSkeleton";
 import GameEmpty from "./GameEmpty/GameEmpty";
 
+import { getImageUrl } from "../../../../data/imageService";
+import { SoccerBallIcon } from "../../../components/icons/InlineIcons";
 import { isGameInProgress, getScorers, getShortName } from "./game.utils";
+import {
+  SITE_LOGO_ASSETS,
+  SITE_LOGO_SIZES,
+  SITE_LOGO_SRC_SET,
+} from "../../../constants/assets.constants";
 
 import { formatDateTime } from "../../../utils/date.utils";
 
@@ -20,7 +26,10 @@ const Game = ({ game, loading }) => {
 
   const renderFootballs = (goals) =>
     Array.from({ length: goals }).map((_, i) => (
-      <FaFutbol key={i} className="text-violet-400 text-xs sm:text-sm" />
+      <SoccerBallIcon
+        key={i}
+        className="size-3 text-violet-400 sm:size-4"
+      />
     ));
 
   return (
@@ -30,10 +39,12 @@ const Game = ({ game, loading }) => {
           {/* LOCAL */}
           <div className="w-[35%] sm:w-[15%] flex flex-col items-center shrink-0">
             <img
-              src="/logo.webp"
+              src={SITE_LOGO_ASSETS.large}
+              srcSet={SITE_LOGO_SRC_SET}
+              sizes={SITE_LOGO_SIZES}
               alt="Mentira FC"
-              width={809}
-              height={809}
+              width={160}
+              height={160}
               className="w-24 h-24 sm:w-24 sm:h-24 lg:w-36 lg:h-36 object-cover rounded-full scale-175 sm:scale-100 -translate-x-12 sm:translate-x-0"
             />
 
@@ -113,8 +124,16 @@ const Game = ({ game, loading }) => {
           {/* RIVAL */}
           <div className="w-[35%] sm:w-[15%] flex flex-col items-center shrink-0">
             <img
-              src={game.rival.imageUrl}
+              src={getImageUrl(game.rival.imageUrl, {
+                width: 144,
+                height: 144,
+                fit: "max",
+                quality: 70,
+                autoFormat: true,
+              })}
               alt={game.rival.name}
+              width={144}
+              height={144}
               className="w-24 h-24 sm:w-24 sm:h-24 lg:w-36 lg:h-36 object-cover rounded-full scale-175 sm:scale-100 translate-x-12 sm:translate-x-0"
             />
 

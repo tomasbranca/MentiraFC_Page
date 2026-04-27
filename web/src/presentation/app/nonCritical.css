@@ -1,4 +1,23 @@
 /* Global styles deferred after initial paint */
+body::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  min-height: 100%;
+  background-image: -webkit-image-set(
+    url("/patterns/background-640.webp") 1x,
+    url("/patterns/background-1280.webp") 2x
+  );
+  background-image: image-set(
+    url("/patterns/background-640.webp") 1x,
+    url("/patterns/background-1280.webp") 2x
+  );
+  background-size: cover;
+  background-position: center;
+  opacity: 0.3;
+  z-index: -1;
+}
+
 h3 {
   font-size: clamp(1.25rem, 2.5vw, 2rem);
   line-height: 1.2;

@@ -2,7 +2,12 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import GameWidget from "../../components/GameWidget/GameWidget";
-import { FiMenu, FiX } from "react-icons/fi";
+import { CloseIcon, MenuIcon } from "../../components/icons/InlineIcons";
+import {
+  SITE_LOGO_ASSETS,
+  SITE_LOGO_SIZES,
+  SITE_LOGO_SRC_SET,
+} from "../../constants/assets.constants";
 
 import { NAV_LINKS } from "./navbar.constants";
 import { useNavBarScroll } from "./hooks/useNavBarScroll";
@@ -25,10 +30,12 @@ const NavBar = () => {
           <div className="navbar-left">
             <Link to="/" className="logo-link">
               <img
-                src="/logo.webp"
+                src={SITE_LOGO_ASSETS.large}
+                srcSet={SITE_LOGO_SRC_SET}
+                sizes={SITE_LOGO_SIZES}
                 alt="Logo de Mentira FC"
-                width={809}
-                height={809}
+                width={160}
+                height={160}
                 className={`logo-transition ${
                   isScrolled ? "logo-scrolled" : "logo-default"
                 }`}
@@ -60,7 +67,7 @@ const NavBar = () => {
               onClick={() => setMenuOpen(true)}
               aria-label="Abrir menú"
             >
-              <FiMenu size={26} />
+              <MenuIcon width={26} height={26} />
             </button>
           </div>
         </nav>
@@ -78,7 +85,7 @@ const NavBar = () => {
           onClick={() => setMenuOpen(false)}
           aria-label="Cerrar menú"
         >
-          <FiX size={28} />
+          <CloseIcon width={28} height={28} />
         </button>
 
         <nav className="mobile-menu-links">

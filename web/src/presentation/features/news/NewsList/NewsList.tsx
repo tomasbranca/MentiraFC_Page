@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import { getImageUrl } from "../../../../data/imageService";
 import Button from "../../../components/Button/Button";
 
 import { paginateList, getNextVisibleCount } from "./newsList.utils";
@@ -56,7 +57,15 @@ const NewsList = ({ items = [] }) => {
                 bg-cover
                 bg-center
               "
-              style={{ backgroundImage: `url(${item.imageUrl})` }}
+              style={{
+                backgroundImage: `url(${getImageUrl(item.imageUrl, {
+                  width: 480,
+                  height: 320,
+                  fit: "crop",
+                  quality: 68,
+                  autoFormat: true,
+                })})`,
+              }}
             >
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
             </div>

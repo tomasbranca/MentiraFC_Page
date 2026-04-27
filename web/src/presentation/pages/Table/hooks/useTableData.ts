@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { getTournament } from "../../../../data/tournament";
 import { getTeams } from "../../../../data/teams";
@@ -13,6 +13,7 @@ export const useTableData = () => {
   const [overrideTournament, setOverrideTournament] = useState(null);
   const [overrideTeams, setOverrideTeams] = useState(null);
   const [overrideGames, setOverrideGames] = useState(null);
+  const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
@@ -64,9 +65,32 @@ export const useTableData = () => {
         action: "refresh_table",
       });
     } finally {
+      setHasAttemptedFetch(true);
       setLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    const needsTableData =
+      initialData.bootstrapScope === "home-critical" ||
+      !tournamentSource ||
+      (teamsSource ?? []).length === 0 ||
+      (gamesSource ?? []).length === 0;
+
+    if (!needsTableData || loading || hasAttemptedFetch) {
+      return;
+    }
+
+    void refetch();
+  }, [
+    gamesSource,
+    hasAttemptedFetch,
+    initialData.bootstrapScope,
+    loading,
+    refetch,
+    teamsSource,
+    tournamentSource,
+  ]);
 
   return {
     tournament,

@@ -1,4 +1,11 @@
 // @ts-nocheck
+import { getImageUrl } from "../../../data/imageService";
+import {
+  SITE_LOGO_ASSETS,
+  SITE_LOGO_SIZES,
+  SITE_LOGO_SRC_SET,
+} from "../../constants/assets.constants";
+
 import { useGame } from "../../context/useGame";
 import { useCountdown } from "../../hooks/useCountDown";
 
@@ -40,9 +47,13 @@ const GameWidget = ({ compact = false }) => {
         `}
       >
         <img
-          src="/logo.webp"
+          src={SITE_LOGO_ASSETS.medium}
+          srcSet={SITE_LOGO_SRC_SET}
+          sizes={SITE_LOGO_SIZES}
           className="w-full h-full object-cover"
           alt="Equipo local"
+          width={100}
+          height={100}
         />
       </div>
 
@@ -59,9 +70,17 @@ const GameWidget = ({ compact = false }) => {
         `}
       >
         <img
-          src={game.rival.imageUrl}
+          src={getImageUrl(game.rival.imageUrl, {
+            width: compact ? 80 : 112,
+            height: compact ? 80 : 112,
+            fit: "max",
+            quality: 70,
+            autoFormat: true,
+          })}
           className="w-full h-full object-cover"
           alt="Equipo rival"
+          width={compact ? 80 : 112}
+          height={compact ? 80 : 112}
         />
       </div>
 

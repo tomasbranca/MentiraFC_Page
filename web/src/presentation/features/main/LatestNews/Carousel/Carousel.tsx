@@ -2,6 +2,7 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import Button from "../../../../components/Button/Button";
+import { getImageSrcSet, getImageUrl } from "../../../../../data/imageService";
 import "./Carousel.css";
 
 import { useCarousel } from "../../../../hooks/useCarrousel";
@@ -32,12 +33,29 @@ const Carousel = ({ items }) => {
           className={`carousel-slide ${index === activeIndex ? "active" : ""}`}
         >
           <img
-            src={item.imageUrl}
+            src={getImageUrl(item.imageUrl, {
+              width: 1280,
+              height: 720,
+              fit: "crop",
+              quality: 70,
+              autoFormat: true,
+            })}
+            srcSet={getImageSrcSet(item.imageUrl, [640, 960, 1280], {
+              height: 720,
+              fit: "crop",
+              quality: 70,
+              autoFormat: true,
+            })}
+            sizes="100vw"
             alt={item.title}
             className="w-full h-full object-cover"
-            fetchpriority={index === activeIndex ? "high" : "auto"}
+            {...(HTMLImageElement.prototype.hasOwnProperty("fetchPriority")
+              ? { fetchpriority: index === activeIndex ? "high" : "auto" }
+              : {})}
             loading={index === activeIndex ? "eager" : "lazy"}
             decoding="async"
+            width={1280}
+            height={720}
           />
 
           <div className="absolute inset-0 flex items-end bg-linear-to-t from-violet-900 via-black/40 to-transparent">

@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { getAllGames } from "../../../../data/games";
 import { reportError } from "../../../../lib/errors/errorLogger";
@@ -8,6 +8,7 @@ import { useInitialData } from "../../../context/InitialDataContext";
 export const useRecordData = () => {
   const { initialData } = useInitialData();
   const [overrideGames, setOverrideGames] = useState(null);
+  const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
@@ -27,9 +28,21 @@ export const useRecordData = () => {
         action: "refresh_record",
       });
     } finally {
+      setHasAttemptedFetch(true);
       setLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    const needsGames =
+      initialData.bootstrapScope === "home-critical" || games.length === 0;
+
+    if (!needsGames || loading || hasAttemptedFetch) {
+      return;
+    }
+
+    void refetch();
+  }, [games.length, hasAttemptedFetch, initialData.bootstrapScope, loading, refetch]);
 
   return { games, loading, error, refetch };
 };

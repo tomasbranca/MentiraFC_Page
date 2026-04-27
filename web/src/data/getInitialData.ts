@@ -1,13 +1,22 @@
 import { getAllGames, getLatestGame, getTournamentGames } from "./games";
+import { getHomeCriticalData as fetchHomeCriticalData } from "./sanity/services/home.service";
 import { getNews } from "./news";
 import { getPlayers } from "./players";
 import { getTeams } from "./teams";
 import { getTournament } from "./tournament";
 
 import { reportError } from "../lib/errors/errorLogger";
-import type { Game, NewsItem, Player, TeamRef, Tournament } from "../types/models";
+import type {
+  BootstrapScope,
+  Game,
+  NewsItem,
+  Player,
+  TeamRef,
+  Tournament,
+} from "../types/models";
 
 export interface InitialDataPayload {
+  bootstrapScope: BootstrapScope;
   news: NewsItem[];
   players: Player[];
   games: Game[];
@@ -27,6 +36,30 @@ export interface InitialDataPayload {
     year: number;
   };
 }
+
+export const getHomeCriticalData = async (): Promise<InitialDataPayload> => {
+  try {
+    const { news, latestGame } = await fetchHomeCriticalData();
+
+    return {
+      bootstrapScope: "home-critical",
+      news,
+      players: [],
+      games: [],
+      tournament: null,
+      teams: [],
+      tournamentGames: [],
+      latestGame,
+    };
+  } catch (error) {
+    reportError(error, {
+      scope: "data:getHomeCriticalData",
+      action: "load_home_critical_render_data",
+    });
+
+    throw error;
+  }
+};
 
 export const getInitialData = async (): Promise<InitialDataPayload> => {
   try {
@@ -49,6 +82,7 @@ export const getInitialData = async (): Promise<InitialDataPayload> => {
     ]);
 
     return {
+      bootstrapScope: "full",
       news,
       players,
       games,

@@ -1,5 +1,9 @@
 import { getAllGames } from "./games";
-import { getInitialData, type InitialDataPayload } from "./getInitialData";
+import {
+  getHomeCriticalData,
+  getInitialData,
+  type InitialDataPayload,
+} from "./getInitialData";
 import { getNewsBySlug, getSuggestedNews } from "./news";
 import { getPlayerBySlug } from "./players";
 
@@ -28,6 +32,7 @@ const extractSlugFromPathname = (
 };
 
 const getBasePayload = (): InitialDataPayload => ({
+  bootstrapScope: "empty",
   news: [],
   players: [],
   games: [],
@@ -48,6 +53,7 @@ const getNewsDetailInitialData = async (
 
     return {
       ...getBasePayload(),
+      bootstrapScope: "news-detail",
       currentNewsDetail: {
         slug,
         newsItem,
@@ -75,6 +81,7 @@ const getPlayerDetailInitialData = async (
     if (!player) {
       return {
         ...getBasePayload(),
+        bootstrapScope: "player-detail",
         currentPlayerDetail: {
           slug,
           player: null,
@@ -89,6 +96,7 @@ const getPlayerDetailInitialData = async (
 
     return {
       ...getBasePayload(),
+      bootstrapScope: "player-detail",
       currentPlayerDetail: {
         slug,
         player,
@@ -110,6 +118,10 @@ const getPlayerDetailInitialData = async (
 export const getRouteInitialData = async (
   pathname: string
 ): Promise<InitialDataPayload> => {
+  if (pathname === ROUTES.HOME) {
+    return getHomeCriticalData();
+  }
+
   const newsSlug = extractSlugFromPathname(
     pathname,
     ROUTES.NEWS_DETAIL(":slug")
