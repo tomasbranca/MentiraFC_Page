@@ -23,13 +23,8 @@ export const GameProvider = ({
 
   useEffect(() => {
     setGame(initialGame);
+    setLoading(false);
   }, [initialGame]);
-
-  useEffect(() => {
-    if (!isBootstrapping) {
-      setLoading(false);
-    }
-  }, [isBootstrapping]);
 
   const refetch = useCallback(async () => {
     setLoading(true);

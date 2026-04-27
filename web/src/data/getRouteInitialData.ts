@@ -1,4 +1,4 @@
-import { getAllGames } from "./games";
+import { getAllGames, getLatestGame } from "./games";
 import {
   getHomeCriticalData,
   getInitialData,
@@ -46,14 +46,16 @@ const getNewsDetailInitialData = async (
   slug: string
 ): Promise<InitialDataPayload> => {
   try {
-    const [newsItem, suggestedNews] = await Promise.all([
+    const [newsItem, suggestedNews, latestGame] = await Promise.all([
       getNewsBySlug(slug),
       getSuggestedNews(slug),
+      getLatestGame(),
     ]);
 
     return {
       ...getBasePayload(),
       bootstrapScope: "news-detail",
+      latestGame,
       currentNewsDetail: {
         slug,
         newsItem,
@@ -76,12 +78,16 @@ const getPlayerDetailInitialData = async (
 ): Promise<InitialDataPayload> => {
   try {
     const year = new Date().getFullYear();
-    const player = await getPlayerBySlug(slug);
+    const [player, latestGame] = await Promise.all([
+      getPlayerBySlug(slug),
+      getLatestGame(),
+    ]);
 
     if (!player) {
       return {
         ...getBasePayload(),
         bootstrapScope: "player-detail",
+        latestGame,
         currentPlayerDetail: {
           slug,
           player: null,
@@ -97,6 +103,7 @@ const getPlayerDetailInitialData = async (
     return {
       ...getBasePayload(),
       bootstrapScope: "player-detail",
+      latestGame,
       currentPlayerDetail: {
         slug,
         player,

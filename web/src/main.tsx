@@ -13,7 +13,6 @@ import App from "./App";
 import type { InitialDataPayload } from "./data/getInitialData";
 import { getImageUrl } from "./data/imageService";
 import { getRouteInitialData } from "./data/getRouteInitialData";
-import { queryKeys } from "./data/queryKeys";
 import { queryClient } from "./lib/queryClient";
 import { reportError } from "./lib/errors/errorLogger";
 import { sortNews } from "./presentation/utils/news.utils";
@@ -104,9 +103,10 @@ const ensureHomeLcpPreload = (payload: InitialDataPayload, pathname: string) => 
 };
 
 const preloadQueryCache = (payload: InitialDataPayload) => {
-  queryClient.setQueryData(queryKeys.games.latest, payload.latestGame);
+  const { queryKeys } = require("./data/queryKeys");
 
   if (payload.bootstrapScope === "full") {
+    queryClient.setQueryData(queryKeys.games.latest, payload.latestGame);
     queryClient.setQueryData(queryKeys.news.all, payload.news);
     queryClient.setQueryData(queryKeys.players.all, payload.players);
     queryClient.setQueryData(queryKeys.games.finished, payload.games);
@@ -148,18 +148,6 @@ const bootstrap = async () => {
     ensureHomeLcpPreload(initialData, pathname);
     preloadQueryCache(initialData);
     renderAppShell(initialData, "hydrated");
-
-    // Cargar datos del inicio en background (sin await)
-    if (pathname !== HOME_PATHNAME) {
-      getRouteInitialData(HOME_PATHNAME)
-        .then(preloadQueryCache)
-        .catch((error) => {
-          reportError(error, {
-            scope: "main",
-            action: "bootstrap_home_preload",
-          });
-        });
-    }
   } catch (error) {
     reportError(error, {
       scope: "main",
