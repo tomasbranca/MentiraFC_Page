@@ -27,9 +27,9 @@ const FeaturedWideCard = ({ item, imageLoading = "lazy", imagePriority = false }
         alt={item.title}
         className="w-full h-55 md:absolute md:inset-0 md:h-full object-cover"
         loading={imageLoading}
-        {...(HTMLImageElement.prototype.hasOwnProperty('fetchPriority') && {
-          fetchpriority: imagePriority ? "high" : "auto",
-        })}
+            {...(HTMLImageElement.prototype.hasOwnProperty('fetchPriority') && {
+              fetchPriority: imagePriority ? "high" : "auto",
+            })}
         decoding="async"
         width="1600"
         height="900"

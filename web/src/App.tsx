@@ -48,10 +48,7 @@ function App({ initialData }: AppProps) {
 
   return (
     <InitialDataProvider initialData={initialData}>
-      <GameProvider
-        initialGame={initialData.latestGame}
-        isBootstrapping={initialData.bootstrapScope === "empty"}
-      >
+      <GameProvider>
         <NavBar />
         <div className="border-t-96 border-t-violet-900 min-h-screen ">
           <Suspense fallback={<Loader />}>

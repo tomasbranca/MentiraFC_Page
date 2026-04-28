@@ -40,9 +40,9 @@ const NewsCardHome = ({ item, featured, priority = false }) => {
           alt={item.title}
           className="news-card-media"
           loading={priority ? "eager" : "lazy"}
-          {...(HTMLImageElement.prototype.hasOwnProperty("fetchPriority")
-            ? { fetchpriority: priority ? "high" : "auto" }
-            : {})}
+            {...(HTMLImageElement.prototype.hasOwnProperty("fetchPriority")
+              ? { fetchPriority: priority ? "high" : "auto" }
+              : {})}
           decoding="async"
           width="1200"
           height="900"

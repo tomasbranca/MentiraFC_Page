@@ -8,19 +8,24 @@ import { getPlayers } from "../../../../data/players";
 import { queryKeys } from "../../../../data/queryKeys";
 import { getTeams } from "../../../../data/teams";
 import { getTournament } from "../../../../data/tournament";
-import {
-  getHybridTournamentTable,
-  getTopScorers,
-} from "../../../../domain/stats";
 import { reportError } from "../../../../lib/errors/errorLogger";
 import { useInitialData } from "../../../context/InitialDataContext";
-import { sortNews } from "../../../utils/news.utils";
+import {
+  getDeferredHomeQueryBehavior,
+  hasCompleteDeferredHomeData,
+  resolveHomeData,
+} from "./useHomeData.utils";
 
 export const useHomeData = () => {
   const { initialData } = useInitialData();
   const queryClient = useQueryClient();
   const year = new Date().getFullYear();
   const shouldHydrateDeferredData = initialData.bootstrapScope === "home-critical";
+  const cachedDeferredHomeData = queryClient.getQueryData(
+    queryKeys.home.deferred
+  );
+  const deferredHomeQueryBehavior =
+    getDeferredHomeQueryBehavior(cachedDeferredHomeData);
 
   const deferredHomeQuery = useQuery({
     queryKey: queryKeys.home.deferred,
@@ -52,26 +57,32 @@ export const useHomeData = () => {
         throw error;
       }
     },
-    staleTime: 1000 * 60 * 5,
+    staleTime: deferredHomeQueryBehavior.staleTime,
+    refetchOnMount: deferredHomeQueryBehavior.refetchOnMount,
   });
 
+  const deferredHomeData =
+    shouldHydrateDeferredData && hasCompleteDeferredHomeData(deferredHomeQuery.data)
+      ? deferredHomeQuery.data
+      : null;
+
   useEffect(() => {
-    if (!deferredHomeQuery.data) {
+    if (!deferredHomeData) {
       return;
     }
 
-    queryClient.setQueryData(queryKeys.players.all, deferredHomeQuery.data.players);
-    queryClient.setQueryData(queryKeys.games.finished, deferredHomeQuery.data.games);
+    queryClient.setQueryData(queryKeys.players.all, deferredHomeData.players);
+    queryClient.setQueryData(queryKeys.games.finished, deferredHomeData.games);
     queryClient.setQueryData(
       queryKeys.tournaments.current,
-      deferredHomeQuery.data.tournament
+      deferredHomeData.tournament
     );
-    queryClient.setQueryData(queryKeys.teams.all, deferredHomeQuery.data.teams);
+    queryClient.setQueryData(queryKeys.teams.all, deferredHomeData.teams);
     queryClient.setQueryData(
       queryKeys.games.tournamentFinished,
-      deferredHomeQuery.data.tournamentGames
+      deferredHomeData.tournamentGames
     );
-  }, [deferredHomeQuery.data, queryClient]);
+  }, [deferredHomeData, queryClient]);
 
   useEffect(() => {
     if (initialData.bootstrapScope !== "home-critical") {
@@ -96,41 +107,8 @@ export const useHomeData = () => {
   }, [initialData.bootstrapScope, queryClient]);
 
   const homeData = useMemo(() => {
-    const players = deferredHomeQuery.data?.players ?? initialData.players;
-    const games = deferredHomeQuery.data?.games ?? initialData.games;
-    const tournamentSource =
-      deferredHomeQuery.data?.tournament ?? initialData.tournament;
-    const teams = deferredHomeQuery.data?.teams ?? initialData.teams;
-    const tournamentGames =
-      deferredHomeQuery.data?.tournamentGames ?? initialData.tournamentGames;
-
-    const topScorers = getTopScorers(games, players, {
-      year,
-    });
-
-    const mainTeam = teams.find((team) => team.isMain) || null;
-
-    const gamesFromActiveTournament = tournamentGames.filter(
-      (nextGame) => nextGame.tournamentId === tournamentSource?.id
-    );
-
-    const tournament = tournamentSource
-      ? {
-          ...tournamentSource,
-          standings: getHybridTournamentTable({
-            manualStandings: tournamentSource.standings,
-            games: gamesFromActiveTournament,
-            mainTeam,
-          }),
-        }
-      : null;
-
-    return {
-      news: sortNews(initialData.news),
-      topScorers,
-      tournament,
-    };
-  }, [deferredHomeQuery.data, initialData, year]);
+    return resolveHomeData(initialData, deferredHomeData, year);
+  }, [deferredHomeData, initialData, year]);
 
   return {
     ...homeData,

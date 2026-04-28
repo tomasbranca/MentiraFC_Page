@@ -1,9 +1,16 @@
-import { createContext, useContext, type ReactNode, useState, useEffect } from "react";
+import { createContext, useContext, type ReactNode, useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import type { InitialDataPayload } from "../../data/getInitialData";
 import { getRouteInitialData } from "../../data/getRouteInitialData";
-import { queryClient } from "../../lib/queryClient";
 import { queryKeys } from "../../data/queryKeys";
+import { queryClient } from "../../lib/queryClient";
 import { reportError } from "../../lib/errors/errorLogger";
+import { ROUTES } from "../constants/routes.constants";
+import {
+  HOME_CRITICAL_BACKGROUND_STALE_TIME,
+  mergeHomeCriticalIntoInitialData,
+  shouldLoadHomeCriticalData,
+} from "./initialDataContext.utils";
 
 type InitialDataContextValue = {
   initialData: InitialDataPayload;
@@ -20,37 +27,50 @@ export const InitialDataProvider = ({
   initialData,
   children,
 }: InitialDataProviderProps) => {
+  const { pathname } = useLocation();
   const [data, setData] = useState<InitialDataPayload>(initialData);
 
   useEffect(() => {
     setData(initialData);
   }, [initialData]);
 
-  // Lazy load home data si estamos en otra ruta y Home está vacío
   useEffect(() => {
-    const pathname = window.location.pathname;
-    const isHomePage = pathname === "/";
-    const isHomeDataEmpty = !data.news.length;
-
-    if (!isHomePage && isHomeDataEmpty) {
-      getRouteInitialData("/")
-        .then((homeData) => {
-          // Guardar en React Query
-          queryClient.setQueryData(queryKeys.home.deferred, homeData);
-          // Actualizar contexto
-          setData((prev) => ({
-            ...prev,
-            ...homeData,
-          }));
-        })
-        .catch((error) => {
-          reportError(error, {
-            scope: "InitialDataProvider",
-            action: "lazy_load_home_data",
-          });
-        });
+    if (!shouldLoadHomeCriticalData(data.news.length, data.bootstrapScope)) {
+      return;
     }
-  }, [data.news.length]);
+
+    let isCancelled = false;
+
+    queryClient
+      .fetchQuery({
+        queryKey: queryKeys.home.critical,
+        queryFn: () => getRouteInitialData(ROUTES.HOME),
+        staleTime: HOME_CRITICAL_BACKGROUND_STALE_TIME,
+      })
+      .then((homeData) => {
+        if (isCancelled) {
+          return;
+        }
+
+        setData((previousData) =>
+          mergeHomeCriticalIntoInitialData(previousData, homeData)
+        );
+      })
+      .catch((error) => {
+        if (isCancelled) {
+          return;
+        }
+
+        reportError(error, {
+          scope: "InitialDataProvider",
+          action: "lazy_load_home_data",
+        });
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [data.bootstrapScope, data.news.length, pathname]);
 
   return (
     <InitialDataContext.Provider value={{ initialData: data }}>

@@ -1,5 +1,6 @@
 export const queryKeys = {
   home: {
+    critical: ["home", "critical"] as const,
     deferred: ["home", "deferred"] as const,
   },
   games: {

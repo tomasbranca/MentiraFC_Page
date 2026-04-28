@@ -27,7 +27,7 @@ const CompactCard = ({ item, imageLoading = "lazy", imagePriority = false }) => 
           loading={imageLoading}
           {...(typeof navigator !== "undefined" && navigator.userAgent.includes("Firefox")
             ? {}
-            : { fetchpriority: imagePriority ? "high" : "auto" })}
+            : { fetchPriority: imagePriority ? "high" : "auto" })}
           decoding="async"
           width="1200"
           height="900"

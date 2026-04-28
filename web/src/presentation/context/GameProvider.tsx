@@ -5,26 +5,27 @@ import { getLatestGame } from "../../data/games";
 import { reportError } from "../../lib/errors/errorLogger";
 import type { Game } from "../../types/models";
 import { GameContext } from "./GameContext";
+import { useInitialData } from "./InitialDataContext";
+import { getGameProviderSnapshot } from "./gameProvider.utils";
 
 type GameProviderProps = {
   children: ReactNode;
-  initialGame: Game | null;
-  isBootstrapping?: boolean;
 };
 
-export const GameProvider = ({
-  children,
-  initialGame,
-  isBootstrapping = false,
-}: GameProviderProps) => {
-  const [game, setGame] = useState<Game | null>(initialGame);
-  const [loading, setLoading] = useState(isBootstrapping);
+export const GameProvider = ({ children }: GameProviderProps) => {
+  const { initialData } = useInitialData();
+  const initialSnapshot = getGameProviderSnapshot(initialData);
+  const [game, setGame] = useState<Game | null>(initialSnapshot.game);
+  const [loading, setLoading] = useState(initialSnapshot.loading);
   const [error, setError] = useState<unknown>(null);
 
   useEffect(() => {
-    setGame(initialGame);
-    setLoading(false);
-  }, [initialGame]);
+    const nextSnapshot = getGameProviderSnapshot(initialData);
+
+    setGame(nextSnapshot.game);
+    setLoading(nextSnapshot.loading);
+    setError(null);
+  }, [initialData.bootstrapScope, initialData.latestGame]);
 
   const refetch = useCallback(async () => {
     setLoading(true);

@@ -27,9 +27,9 @@ const FeaturedBoxCard = ({ item, imageLoading = "lazy", imagePriority = false })
         alt={item.title}
         className="row-span-3 w-full h-full object-cover"
         loading={imageLoading}
-        {...(HTMLImageElement.prototype.hasOwnProperty("fetchPriority") && {
-          fetchpriority: imagePriority ? "high" : "auto",
-        })}
+            {...(HTMLImageElement.prototype.hasOwnProperty("fetchPriority") && {
+              fetchPriority: imagePriority ? "high" : "auto",
+            })}
         decoding="async"
         width="1200"
         height="800"

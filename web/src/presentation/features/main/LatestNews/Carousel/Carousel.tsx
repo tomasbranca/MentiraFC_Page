@@ -50,7 +50,7 @@ const Carousel = ({ items }) => {
             alt={item.title}
             className="w-full h-full object-cover"
             {...(HTMLImageElement.prototype.hasOwnProperty("fetchPriority")
-              ? { fetchpriority: index === activeIndex ? "high" : "auto" }
+              ? { fetchPriority: index === activeIndex ? "high" : "auto" }
               : {})}
             loading={index === activeIndex ? "eager" : "lazy"}
             decoding="async"

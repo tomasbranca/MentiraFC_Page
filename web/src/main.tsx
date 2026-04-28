@@ -11,7 +11,8 @@ import "@fontsource/roboto/latin-900.css";
 
 import App from "./App";
 import type { InitialDataPayload } from "./data/getInitialData";
-import { getImageUrl } from "./data/imageService";
+import { getImageSrcSet, getImageUrl } from "./data/imageService";
+import { queryKeys } from "./data/queryKeys";
 import { getRouteInitialData } from "./data/getRouteInitialData";
 import { queryClient } from "./lib/queryClient";
 import { reportError } from "./lib/errors/errorLogger";
@@ -70,6 +71,8 @@ const renderAppShell = (
 
 const HOME_PATHNAME = "/";
 const HOME_LCP_PRELOAD_ID = "home-lcp-image-preload";
+const HOME_LCP_IMAGE_WIDTHS = [640, 960, 1280] as const;
+const HOME_LCP_IMAGE_SIZES = "100vw";
 
 const ensureHomeLcpPreload = (payload: InitialDataPayload, pathname: string) => {
   if (pathname !== HOME_PATHNAME) return;
@@ -85,11 +88,23 @@ const ensureHomeLcpPreload = (payload: InitialDataPayload, pathname: string) => 
     quality: 70,
     autoFormat: true,
   });
+  const optimizedLcpImageSrcSet = getImageSrcSet(
+    firstCarouselImage,
+    [...HOME_LCP_IMAGE_WIDTHS],
+    {
+      height: 720,
+      fit: "crop",
+      quality: 70,
+      autoFormat: true,
+    }
+  );
 
   const existing = document.getElementById(HOME_LCP_PRELOAD_ID);
 
   if (existing instanceof HTMLLinkElement) {
     existing.href = optimizedLcpImage;
+    existing.setAttribute("imagesrcset", optimizedLcpImageSrcSet);
+    existing.setAttribute("imagesizes", HOME_LCP_IMAGE_SIZES);
     return;
   }
 
@@ -99,12 +114,12 @@ const ensureHomeLcpPreload = (payload: InitialDataPayload, pathname: string) => 
   link.as = "image";
   link.href = optimizedLcpImage;
   link.fetchPriority = "high";
+  link.setAttribute("imagesrcset", optimizedLcpImageSrcSet);
+  link.setAttribute("imagesizes", HOME_LCP_IMAGE_SIZES);
   document.head.appendChild(link);
 };
 
 const preloadQueryCache = (payload: InitialDataPayload) => {
-  const { queryKeys } = require("./data/queryKeys");
-
   if (payload.bootstrapScope === "full") {
     queryClient.setQueryData(queryKeys.games.latest, payload.latestGame);
     queryClient.setQueryData(queryKeys.news.all, payload.news);
