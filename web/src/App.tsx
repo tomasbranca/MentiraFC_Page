@@ -10,7 +10,7 @@ import NavBar from "./presentation/layout/NavBar/NavBar";
 import Home from "./presentation/pages/Home/Home";
 import { ROUTES } from "./presentation/constants/routes.constants";
 
-import { Analytics } from "@vercel/analytics/next"
+import { Analytics } from "@vercel/analytics/react";
 
 import "./App.css";
 
