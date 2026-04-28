@@ -31,7 +31,6 @@ const PlayerDetail = lazy(
   () => import("./presentation/pages/PlayerDetail/PlayerDetail"),
 );
 
-
 function App({ initialData }: AppProps) {
   useEffect(() => {
     const loadDeferredStyles = () => {

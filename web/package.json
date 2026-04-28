@@ -18,6 +18,8 @@
     "@portabletext/react": "^5.0.0",
     "@sanity/client": "^7.13.1",
     "@sanity/image-url": "^2.0.1",
+    "@sentry/react": "^10.50.0",
+    "@sentry/vite-plugin": "^5.2.0",
     "@tailwindcss/vite": "^4.1.13",
     "@tanstack/react-query": "^5.90.5",
     "@vercel/analytics": "^2.0.1",

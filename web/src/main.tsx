@@ -2,6 +2,7 @@ import { StrictMode, Suspense, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
+import * as Sentry from "@sentry/react";
 import "@fontsource/archivo/latin-700.css";
 import "@fontsource/archivo/latin-900.css";
 import "@fontsource/roboto/latin-400.css";
@@ -23,6 +24,11 @@ import Loader from "./presentation/components/Loader/Loader";
 import ErrorBoundary from "./presentation/components/errors/ErrorBoundary";
 
 import "./index.css";
+
+Sentry.init({
+  dsn: import.meta.env.SENTRY_DSN,
+  sendDefaultPii: true,
+});
 
 const rootElement = document.getElementById("root");
 
@@ -74,7 +80,10 @@ const HOME_LCP_PRELOAD_ID = "home-lcp-image-preload";
 const HOME_LCP_IMAGE_WIDTHS = [640, 960, 1280] as const;
 const HOME_LCP_IMAGE_SIZES = "100vw";
 
-const ensureHomeLcpPreload = (payload: InitialDataPayload, pathname: string) => {
+const ensureHomeLcpPreload = (
+  payload: InitialDataPayload,
+  pathname: string
+) => {
   if (pathname !== HOME_PATHNAME) return;
 
   const firstCarouselImage = sortNews(payload.news)[0]?.imageUrl;
