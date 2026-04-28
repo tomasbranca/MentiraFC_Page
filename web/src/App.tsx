@@ -10,6 +10,8 @@ import NavBar from "./presentation/layout/NavBar/NavBar";
 import Home from "./presentation/pages/Home/Home";
 import { ROUTES } from "./presentation/constants/routes.constants";
 
+import { Analytics } from "@vercel/analytics/next"
+
 import "./App.css";
 
 type AppProps = {
@@ -48,6 +50,7 @@ function App({ initialData }: AppProps) {
 
   return (
     <InitialDataProvider initialData={initialData}>
+      <Analytics/>
       <GameProvider>
         <NavBar />
         <div className="border-t-96 border-t-violet-900 min-h-screen ">
