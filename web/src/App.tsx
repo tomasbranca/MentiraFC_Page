@@ -11,6 +11,7 @@ import Home from "./presentation/pages/Home/Home";
 import { ROUTES } from "./presentation/constants/routes.constants";
 
 import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 import "./App.css";
 
@@ -51,6 +52,7 @@ function App({ initialData }: AppProps) {
   return (
     <InitialDataProvider initialData={initialData}>
       <Analytics/>
+      <SpeedInsights/>
       <GameProvider>
         <NavBar />
         <div className="border-t-96 border-t-violet-900 min-h-screen ">
