@@ -18,12 +18,12 @@ const Footer = () => {
           <div className="flex items-center gap-4">
             <img
               src={SITE_LOGO_ASSETS.small}
-              alt="Mentira FC"
+              alt=""
               width={48}
               height={48}
               className="w-12 h-12"
             />
-            <h6 className="font-bold tracking-wide">Mentira FC</h6>
+            <p className="font-bold tracking-wide">Mentira FC</p>
           </div>
           <p className="text-violet-300 leading-relaxed max-w-xs">
             La mentira tiene patas cortas, pero la chot* larga.
@@ -32,9 +32,9 @@ const Footer = () => {
 
         {/* Redes */}
         <div className="flex flex-col gap-4">
-          <h6 className="font-semibold uppercase tracking-widest text-violet-300">
+          <h2 className="font-semibold uppercase tracking-widest text-violet-300">
             Redes sociales
-          </h6>
+          </h2>
 
           <ul className="flex gap-5 items-center">
             <li>
@@ -65,9 +65,9 @@ const Footer = () => {
 
         {/* Sponsors */}
         <div className="flex flex-col gap-4 items-start">
-          <h6 className="font-semibold uppercase tracking-widest text-violet-300">
+          <h2 className="font-semibold uppercase tracking-widest text-violet-300">
             Sponsors
-          </h6>
+          </h2>
 
           <a
             href="https://www.neokings.com.ar"
@@ -95,9 +95,9 @@ const Footer = () => {
 
         {/* Contacto */}
         <div className="flex flex-col gap-4">
-          <h6 className="font-semibold uppercase tracking-widest text-violet-300">
+          <h2 className="font-semibold uppercase tracking-widest text-violet-300">
             Contacto
-          </h6>
+          </h2>
 
           <p className="flex gap-3 items-center text-violet-200">
             <MailIcon width={18} height={18} />
@@ -105,9 +105,9 @@ const Footer = () => {
           </p>
 
           <div className="mt-2 flex flex-col gap-4">
-            <h6 className="font-semibold uppercase tracking-widest text-violet-300">
+            <h3 className="font-semibold uppercase tracking-widest text-violet-300">
               Diseño web
-            </h6>
+            </h3>
             <p className="text-violet-200 text-sm">
               Hecho por{" "}
               <a

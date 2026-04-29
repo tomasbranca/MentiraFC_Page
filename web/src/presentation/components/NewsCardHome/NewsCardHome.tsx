@@ -37,7 +37,7 @@ const NewsCardHome = ({ item, featured, priority = false }) => {
             autoFormat: true,
           })}
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          alt={item.title}
+          alt=""
           className="news-card-media"
           loading={priority ? "eager" : "lazy"}
             {...(HTMLImageElement.prototype.hasOwnProperty("fetchPriority")

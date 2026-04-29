@@ -18,9 +18,9 @@ const TableWidget = ({ table }) => {
     <section className="bg-linear-to-b from-stone-900 to-stone-950 p-4 lg:p-6 mx-0 lg:m-6 shadow-xl h-fit">
       {/* HEADER */}
       <div className="mb-6">
-        <h4 className="text-2xl lg:text-3xl font-extrabold uppercase text-white tracking-wide">
+        <h2 className="text-2xl lg:text-3xl font-extrabold uppercase text-white tracking-wide">
           Clasificación
-        </h4>
+        </h2>
         <div className="mt-2 h-1 w-16 bg-violet-600" />
       </div>
 

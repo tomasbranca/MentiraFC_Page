@@ -8,9 +8,6 @@ export default defineConfig({
   plugins: [react(), tailwindcss(), sentryVitePlugin({
     org: "tomas-brancatisano",
     project: "mentira-fc"
-  }), sentryVitePlugin({
-    org: "tomas-brancatisano",
-    project: "mentira-fc"
   })],
 
   build: {
