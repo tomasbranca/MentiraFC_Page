@@ -1,13 +1,14 @@
 // @ts-nocheck
 import { Link } from "react-router-dom";
 import { getImageSrcSet, getImageUrl } from "../../../../data/imageService";
+import ProgressiveMedia from "../../ProgressiveMedia/ProgressiveMedia";
 import { getNewsLink } from "../../../utils/navigation.utils";
 
 const CompactCard = ({ item, imageLoading = "lazy", imagePriority = false }) => {
   return (
     <Link to={getNewsLink(item)} className="news-card-compact block h-full">
       <article className="news-card-image animation-shadow h-full">
-        <img
+        <ProgressiveMedia
           src={getImageUrl(item.imageUrl, {
             width: 720,
             height: 540,
@@ -23,6 +24,7 @@ const CompactCard = ({ item, imageLoading = "lazy", imagePriority = false }) => 
           })}
           sizes="(max-width: 768px) 100vw, 33vw"
           alt={item.title}
+          wrapperClassName="news-card-image h-full"
           className="news-card-media"
           loading={imageLoading}
           {...(typeof navigator !== "undefined" && navigator.userAgent.includes("Firefox")
@@ -31,10 +33,13 @@ const CompactCard = ({ item, imageLoading = "lazy", imagePriority = false }) => 
           decoding="async"
           width="1200"
           height="900"
+          skeletonClassName="bg-violet-950/70"
+          overlay={
+            <div className="news-card-overlay">
+              <h3 className="news-card-title text-violet-50">{item.title}</h3>
+            </div>
+          }
         />
-        <div className="news-card-overlay">
-          <h3 className="news-card-title text-violet-50">{item.title}</h3>
-        </div>
       </article>
     </Link>
   );

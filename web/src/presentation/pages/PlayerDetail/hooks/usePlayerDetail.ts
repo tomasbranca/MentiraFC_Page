@@ -5,24 +5,29 @@ import { getAllGames } from "../../../../data/games";
 import { getPlayerBySlug } from "../../../../data/players";
 import { getPlayerStats } from "../../../../domain/stats";
 import { reportError } from "../../../../lib/errors/errorLogger";
+import { shouldLoadPlayerDetailInitially } from "../../../hooks/loading/loadingState.utils";
 import { useInitialData } from "../../../context/InitialDataContext";
 
 export const usePlayerDetail = (slug) => {
   const { initialData } = useInitialData();
-  const [overridePlayer, setOverridePlayer] = useState(null);
-  const [overrideGoals, setOverrideGoals] = useState(null);
+  const [overridePlayer, setOverridePlayer] = useState(undefined);
+  const [overrideGoals, setOverrideGoals] = useState(undefined);
   const [overrideYear, setOverrideYear] = useState(null);
   const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
   const detailFromInitialData =
     initialData.currentPlayerDetail?.slug === slug
       ? initialData.currentPlayerDetail
       : null;
+  const needsInitialFetch = shouldLoadPlayerDetailInitially({
+    slug,
+    hasInitialDetail: Boolean(detailFromInitialData),
+  });
+  const [loading, setLoading] = useState(needsInitialFetch);
 
   const player = useMemo(() => {
-    if (overridePlayer !== null) {
+    if (overridePlayer !== undefined) {
       return overridePlayer;
     }
 
@@ -84,32 +89,16 @@ export const usePlayerDetail = (slug) => {
   }, [slug]);
 
   useEffect(() => {
-    if (!slug) {
-      return;
-    }
-
-    if (
-      detailFromInitialData?.player ||
-      overridePlayer !== null ||
-      loading ||
-      hasAttemptedFetch
-    ) {
+    if (!needsInitialFetch || hasAttemptedFetch) {
       return;
     }
 
     void refetch();
-  }, [
-    detailFromInitialData?.player,
-    hasAttemptedFetch,
-    loading,
-    overridePlayer,
-    refetch,
-    slug,
-  ]);
+  }, [hasAttemptedFetch, needsInitialFetch, refetch]);
 
   return {
     player:
-      player && overrideGoals !== null
+      player && overrideGoals !== undefined
         ? {
             ...player,
             goalsThisYear: overrideGoals,

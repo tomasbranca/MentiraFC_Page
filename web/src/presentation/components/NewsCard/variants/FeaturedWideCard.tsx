@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { Link } from "react-router-dom";
 import { getImageSrcSet, getImageUrl } from "../../../../data/imageService";
+import ProgressiveMedia from "../../ProgressiveMedia/ProgressiveMedia";
 import { getNewsLink } from "../../../utils/navigation.utils";
 
 const FeaturedWideCard = ({ item, imageLoading = "lazy", imagePriority = false }) => {
@@ -9,7 +10,7 @@ const FeaturedWideCard = ({ item, imageLoading = "lazy", imagePriority = false }
       to={getNewsLink(item)}
       className="animation-shadow news-card-featured-wide relative w-full h-full overflow-hidden flex flex-col"
     >
-      <img
+      <ProgressiveMedia
         src={getImageUrl(item.imageUrl, {
           width: 1200,
           height: 675,
@@ -25,14 +26,16 @@ const FeaturedWideCard = ({ item, imageLoading = "lazy", imagePriority = false }
         })}
         sizes="(max-width: 768px) 100vw, 66vw"
         alt={item.title}
+        wrapperClassName="w-full h-55 md:absolute md:inset-0 md:h-full"
         className="w-full h-55 md:absolute md:inset-0 md:h-full object-cover"
         loading={imageLoading}
-            {...(HTMLImageElement.prototype.hasOwnProperty('fetchPriority') && {
-              fetchPriority: imagePriority ? "high" : "auto",
-            })}
+        {...(HTMLImageElement.prototype.hasOwnProperty("fetchPriority") && {
+          fetchPriority: imagePriority ? "high" : "auto",
+        })}
         decoding="async"
         width="1600"
         height="900"
+        skeletonClassName="bg-neutral-900"
       />
 
       <div className="bg-neutral-950 p-4 md:hidden">

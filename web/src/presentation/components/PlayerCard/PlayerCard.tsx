@@ -2,6 +2,7 @@
 import { Link } from "react-router-dom";
 import { getImageUrl } from "../../../data/imageService";
 import { SoccerBallIcon } from "../icons/InlineIcons";
+import ProgressiveMedia from "../ProgressiveMedia/ProgressiveMedia";
 import { getPlayerLink, PLAYER_CARD_MODE } from "./playerCard.utils";
 
 const PlayerCard = ({ player, mode = PLAYER_CARD_MODE.DEFAULT }) => {
@@ -48,22 +49,27 @@ const PlayerCard = ({ player, mode = PLAYER_CARD_MODE.DEFAULT }) => {
         </div>
 
         {/* Imagen */}
-        <div
+        <ProgressiveMedia
+          src={getImageUrl(player.imageUrl, {
+            width: 420,
+            height: 560,
+            fit: "crop",
+            quality: 68,
+            autoFormat: true,
+          })}
+          alt={`${player.name} ${player.lastName}`}
+          wrapperClassName="absolute inset-0 z-10"
           className="
-            absolute inset-0 z-10
-            bg-cover bg-center
+            absolute inset-0
+            object-cover
             transition-transform duration-500
             group-hover:scale-105
           "
-          style={{
-            backgroundImage: `url(${getImageUrl(player.imageUrl, {
-              width: 420,
-              height: 560,
-              fit: "crop",
-              quality: 68,
-              autoFormat: true,
-            })})`,
-          }}
+          width={420}
+          height={560}
+          loading="lazy"
+          decoding="async"
+          skeletonClassName="bg-neutral-900"
         />
 
         {/* Overlay */}

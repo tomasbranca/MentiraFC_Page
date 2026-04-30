@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { Link } from "react-router-dom";
 import { getImageSrcSet, getImageUrl } from "../../../../data/imageService";
+import ProgressiveMedia from "../../ProgressiveMedia/ProgressiveMedia";
 import { getNewsLink } from "../../../utils/navigation.utils";
 
 const FeaturedBoxCard = ({ item, imageLoading = "lazy", imagePriority = false }) => {
@@ -9,7 +10,7 @@ const FeaturedBoxCard = ({ item, imageLoading = "lazy", imagePriority = false })
       to={getNewsLink(item)}
       className="animation-shadow news-card-featured-box grid grid-rows-5 size-full overflow-hidden"
     >
-      <img
+      <ProgressiveMedia
         src={getImageUrl(item.imageUrl, {
           width: 720,
           height: 480,
@@ -25,14 +26,16 @@ const FeaturedBoxCard = ({ item, imageLoading = "lazy", imagePriority = false })
         })}
         sizes="(max-width: 768px) 100vw, 33vw"
         alt={item.title}
+        wrapperClassName="row-span-3"
         className="row-span-3 w-full h-full object-cover"
         loading={imageLoading}
-            {...(HTMLImageElement.prototype.hasOwnProperty("fetchPriority") && {
-              fetchPriority: imagePriority ? "high" : "auto",
-            })}
+        {...(HTMLImageElement.prototype.hasOwnProperty("fetchPriority") && {
+          fetchPriority: imagePriority ? "high" : "auto",
+        })}
         decoding="async"
         width="1200"
         height="800"
+        skeletonClassName="bg-neutral-900"
       />
 
       <div className="bg-neutral-950 row-span-2 flex flex-col justify-center px-4 py-4">

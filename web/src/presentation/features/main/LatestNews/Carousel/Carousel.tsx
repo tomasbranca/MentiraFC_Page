@@ -2,6 +2,7 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import Button from "../../../../components/Button/Button";
+import ProgressiveMedia from "../../../../components/ProgressiveMedia/ProgressiveMedia";
 import { getImageSrcSet, getImageUrl } from "../../../../../data/imageService";
 import "./Carousel.css";
 
@@ -32,7 +33,7 @@ const Carousel = ({ items }) => {
           key={item.id}
           className={`carousel-slide ${index === activeIndex ? "active" : ""}`}
         >
-          <img
+          <ProgressiveMedia
             src={getImageUrl(item.imageUrl, {
               width: 1280,
               height: 720,
@@ -48,6 +49,7 @@ const Carousel = ({ items }) => {
             })}
             sizes="100vw"
             alt={item.title}
+            wrapperClassName="absolute inset-0"
             className="w-full h-full object-cover"
             {...(HTMLImageElement.prototype.hasOwnProperty("fetchPriority")
               ? { fetchPriority: index === activeIndex ? "high" : "auto" }
@@ -56,6 +58,7 @@ const Carousel = ({ items }) => {
             decoding="async"
             width={1280}
             height={720}
+            skeletonClassName="bg-violet-950"
           />
 
           <div className="absolute inset-0 flex items-end bg-linear-to-t from-violet-900 via-black/40 to-transparent">

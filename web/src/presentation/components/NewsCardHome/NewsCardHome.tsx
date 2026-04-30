@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { Link } from "react-router-dom";
 import { getImageSrcSet, getImageUrl } from "../../../data/imageService";
+import ProgressiveMedia from "../ProgressiveMedia/ProgressiveMedia";
 import "./NewsCardHome.css";
 import { getFeaturedClasses } from "./newsCardHome.utils";
 import { getNewsLink } from "../../utils/navigation.utils";
@@ -22,7 +23,7 @@ const NewsCardHome = ({ item, featured, priority = false }) => {
       `}
     >
       <article className="news-card-image">
-        <img
+        <ProgressiveMedia
           src={getImageUrl(item.imageUrl, {
             width: 720,
             height: 540,
@@ -38,24 +39,28 @@ const NewsCardHome = ({ item, featured, priority = false }) => {
           })}
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           alt=""
+          wrapperClassName="news-card-image"
           className="news-card-media"
           loading={priority ? "eager" : "lazy"}
-            {...(HTMLImageElement.prototype.hasOwnProperty("fetchPriority")
-              ? { fetchPriority: priority ? "high" : "auto" }
-              : {})}
+          {...(HTMLImageElement.prototype.hasOwnProperty("fetchPriority")
+            ? { fetchPriority: priority ? "high" : "auto" }
+            : {})}
           decoding="async"
           width="1200"
           height="900"
+          skeletonClassName="bg-violet-950/70"
+          overlay={
+            <div className="news-card-overlay">
+              <h3
+                className={`news-card-title ${
+                  featured ? "news-card-title-featured" : ""
+                }`}
+              >
+                {item.title}
+              </h3>
+            </div>
+          }
         />
-        <div className="news-card-overlay">
-          <h3
-            className={`news-card-title ${
-              featured ? "news-card-title-featured" : ""
-            }`}
-          >
-            {item.title}
-          </h3>
-        </div>
       </article>
     </Link>
   );

@@ -5,12 +5,15 @@ import {
   SITE_LOGO_SIZES,
   SITE_LOGO_SRC_SET,
 } from "../../constants/assets.constants";
+import { GameWidgetSkeleton } from "../Skeletons/SectionSkeletons";
 
 import { useGame } from "../../context/useGame";
 import { useCountdown } from "../../hooks/useCountDown";
+import { getGameWidgetVisualState } from "./GameWidget.utils";
 
 const GameWidget = ({ compact = false }) => {
   const { game, loading, error } = useGame();
+  const visualState = getGameWidgetVisualState({ game, loading });
 
   const now = new Date();
   const gameDate = game ? new Date(game.date) : null;
@@ -20,11 +23,15 @@ const GameWidget = ({ compact = false }) => {
 
   const timeLeft = useCountdown(game?.date, isUpcoming);
 
-  if (loading || !game) return null;
+  if (visualState === "skeleton") {
+    return <GameWidgetSkeleton compact={compact} />;
+  }
 
   if (error) {
     return <div className="text-red-500">Error: {error.message}</div>;
   }
+
+  if (visualState === "empty") return null;
 
   return (
     <div

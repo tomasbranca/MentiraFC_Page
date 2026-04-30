@@ -7,6 +7,7 @@ import { lazyWithReload } from "../../../lib/lazyWithReload";
 import ErrorFallback from "../../components/errors/ErrorFallback";
 import Loader from "../../components/Loader/Loader";
 import NewsCard from "../../components/NewsCard/NewsCard";
+import ProgressiveMedia from "../../components/ProgressiveMedia/ProgressiveMedia";
 import { formatDate } from "../../utils/date.utils";
 import { useNewsDetail } from "./hooks/useNewsDetail";
 
@@ -39,21 +40,27 @@ const NewsDetail = () => {
 
   return (
     <article className="w-full bg-neutral-900 text-neutral-200">
-      <header
-        className="relative w-full flex items-end h-[35vh] md:h-[45vh] lg:h-[60vh] border-b-2 border-violet-700"
-        style={{
-          backgroundImage: `url(${getImageUrl(newsItem.imageUrl, {
+      <header className="relative w-full flex items-end h-[35vh] md:h-[45vh] lg:h-[60vh] border-b-2 border-violet-700">
+        <ProgressiveMedia
+          src={getImageUrl(newsItem.imageUrl, {
             width: 1600,
             height: 900,
             fit: "crop",
             quality: 72,
             autoFormat: true,
-          })})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      >
-        <div className="absolute inset-0 bg-linear-to-t from-violet-950 via-black/50 to-transparent" />
+          })}
+          alt={newsItem.title}
+          wrapperClassName="absolute inset-0"
+          className="w-full h-full object-cover"
+          width={1600}
+          height={900}
+          loading="eager"
+          decoding="async"
+          skeletonClassName="bg-violet-950"
+          overlay={
+            <div className="absolute inset-0 bg-linear-to-t from-violet-950 via-black/50 to-transparent" />
+          }
+        />
 
         <div className="relative z-10 w-full max-w-4xl mx-auto px-4 md:px-6 pb-6 md:pb-10">
           <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold leading-tight text-white">

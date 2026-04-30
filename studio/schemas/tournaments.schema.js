@@ -10,7 +10,7 @@ export default {
     },
     prepare({name, organization, logo}) {
       return {
-        title: `${organization} - ${name}`,
+        title: `${organization} · ${name}`,
         media: logo,
       }
     },

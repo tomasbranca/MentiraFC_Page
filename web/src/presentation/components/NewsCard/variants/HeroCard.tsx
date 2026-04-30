@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { Link } from "react-router-dom";
 import { getImageSrcSet, getImageUrl } from "../../../../data/imageService";
+import ProgressiveMedia from "../../ProgressiveMedia/ProgressiveMedia";
 import { getNewsLink } from "../../../utils/navigation.utils";
 import { formatDate } from "../../../utils/date.utils";
 
@@ -18,7 +19,7 @@ const HeroCard = ({ item, imageLoading = "lazy", imagePriority = false }) => {
       "
     >
       <div className="w-full h-55 md:h-auto md:col-span-8 animation-shadow relative overflow-hidden">
-        <img
+        <ProgressiveMedia
           src={getImageUrl(item.imageUrl, {
             width: 1200,
             height: 675,
@@ -34,14 +35,16 @@ const HeroCard = ({ item, imageLoading = "lazy", imagePriority = false }) => {
           })}
           sizes="(max-width: 768px) 100vw, 66vw"
           alt={item.title}
+          wrapperClassName="absolute inset-0"
           className="absolute inset-0 w-full h-full object-cover"
           loading={imageLoading}
-            {...(HTMLImageElement.prototype.hasOwnProperty("fetchPriority") && {
-              fetchPriority: imagePriority ? "high" : "auto",
-            })}
+          {...(HTMLImageElement.prototype.hasOwnProperty("fetchPriority") && {
+            fetchPriority: imagePriority ? "high" : "auto",
+          })}
           decoding="async"
           width="1600"
           height="900"
+          skeletonClassName="bg-neutral-900"
         />
       </div>
 

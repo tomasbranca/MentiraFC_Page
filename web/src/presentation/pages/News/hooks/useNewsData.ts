@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { getNews } from "../../../../data/news";
 import { reportError } from "../../../../lib/errors/errorLogger";
+import { shouldLoadNewsInitially } from "../../../hooks/loading/loadingState.utils";
 import { useInitialData } from "../../../context/InitialDataContext";
 import { sortNews } from "../../../utils/news.utils";
 
@@ -10,13 +11,17 @@ export const useNewsData = () => {
   const { initialData } = useInitialData();
   const [overrideNews, setOverrideNews] = useState(null);
   const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
   const news = useMemo(() => {
     const source = overrideNews ?? initialData.news;
     return sortNews(source);
   }, [initialData.news, overrideNews]);
+  const needsInitialFetch = shouldLoadNewsInitially(
+    initialData.bootstrapScope,
+    news.length
+  );
+  const [loading, setLoading] = useState(needsInitialFetch);
 
   const refetch = useCallback(async () => {
     setLoading(true);
@@ -38,15 +43,12 @@ export const useNewsData = () => {
   }, []);
 
   useEffect(() => {
-    const needsFullNews =
-      initialData.bootstrapScope === "home-critical" || news.length === 0;
-
-    if (!needsFullNews || loading || hasAttemptedFetch) {
+    if (!needsInitialFetch || hasAttemptedFetch) {
       return;
     }
 
     void refetch();
-  }, [hasAttemptedFetch, initialData.bootstrapScope, loading, news.length, refetch]);
+  }, [hasAttemptedFetch, needsInitialFetch, refetch]);
 
   return { news, loading, error, refetch };
 };

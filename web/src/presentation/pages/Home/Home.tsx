@@ -2,8 +2,14 @@
 import { Suspense } from "react";
 import LatestNews from "../../features/main/LatestNews/LatestNews";
 import Game from "../../features/main/Game/Game";
+import Loader from "../../components/Loader/Loader";
 import { useGame } from "../../context/useGame";
+import { useInitialData } from "../../context/InitialDataContext";
 import { lazyWithReload } from "../../../lib/lazyWithReload";
+import {
+  TableWidgetSkeleton,
+  TopScorersSkeleton,
+} from "../../components/Skeletons/SectionSkeletons";
 import { useHomeData } from "./hooks/useHomeData";
 
 const TopScorers = lazyWithReload(
@@ -14,8 +20,16 @@ const TableWidget = lazyWithReload(
 );
 
 const Home = () => {
+  const { initialData, isHomeCriticalLoading } = useInitialData();
   const { game, loading: gameLoading } = useGame();
   const { news, topScorers, tournament } = useHomeData();
+
+  const isHomeLoading =
+    initialData.bootstrapScope === "empty" || isHomeCriticalLoading;
+
+  if (isHomeLoading) {
+    return <Loader />;
+  }
 
   return (
     <>
@@ -26,10 +40,10 @@ const Home = () => {
       <Game game={game} loading={gameLoading} />
 
       <div className="relative grid grid-cols-1 lg:grid-cols-3">
-        <Suspense fallback={<div className="min-h-112" aria-hidden="true" />}>
+        <Suspense fallback={<TopScorersSkeleton />}>
           <TopScorers players={topScorers} />
         </Suspense>
-        <Suspense fallback={<div className="min-h-112" aria-hidden="true" />}>
+        <Suspense fallback={<TableWidgetSkeleton />}>
           <TableWidget table={tournament} />
         </Suspense>
       </div>

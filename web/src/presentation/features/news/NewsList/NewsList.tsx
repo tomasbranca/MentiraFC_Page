@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 
 import { getImageUrl } from "../../../../data/imageService";
 import Button from "../../../components/Button/Button";
+import ProgressiveMedia from "../../../components/ProgressiveMedia/ProgressiveMedia";
 import { formatDate } from "../../../utils/date.utils";
 import { getNewsLink } from "../../../utils/navigation.utils";
 import { getNextVisibleCount, paginateList } from "./newsList.utils";
@@ -42,29 +43,33 @@ const NewsList = ({ items = [] }) => {
               overflow-hidden
             "
           >
-            <div
-              className="
+            <ProgressiveMedia
+              src={getImageUrl(item.imageUrl, {
+                width: 480,
+                height: 320,
+                fit: "crop",
+                quality: 68,
+                autoFormat: true,
+              })}
+              alt={item.title}
+              wrapperClassName="
                 relative
                 w-full
                 h-50
                 md:w-1/4
                 md:h-auto
                 md:min-h-30
-                bg-cover
-                bg-center
               "
-              style={{
-                backgroundImage: `url(${getImageUrl(item.imageUrl, {
-                  width: 480,
-                  height: 320,
-                  fit: "crop",
-                  quality: 68,
-                  autoFormat: true,
-                })})`,
-              }}
-            >
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
-            </div>
+              className="w-full h-full object-cover"
+              width={480}
+              height={320}
+              loading="lazy"
+              decoding="async"
+              skeletonClassName="bg-neutral-300"
+              overlay={
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+              }
+            />
 
             <div className="flex flex-col justify-between px-5 py-4 w-full md:w-3/4">
               <div className="max-w-3xl">

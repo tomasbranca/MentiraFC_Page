@@ -14,6 +14,7 @@ import {
 
 type InitialDataContextValue = {
   initialData: InitialDataPayload;
+  isHomeCriticalLoading: boolean;
 };
 
 const InitialDataContext = createContext<InitialDataContextValue | null>(null);
@@ -29,17 +30,21 @@ export const InitialDataProvider = ({
 }: InitialDataProviderProps) => {
   const { pathname } = useLocation();
   const [data, setData] = useState<InitialDataPayload>(initialData);
+  const [isHomeCriticalLoading, setIsHomeCriticalLoading] = useState(false);
 
   useEffect(() => {
     setData(initialData);
+    setIsHomeCriticalLoading(false);
   }, [initialData]);
 
   useEffect(() => {
     if (!shouldLoadHomeCriticalData(data.news.length, data.bootstrapScope)) {
+      setIsHomeCriticalLoading(false);
       return;
     }
 
     let isCancelled = false;
+    setIsHomeCriticalLoading(true);
 
     queryClient
       .fetchQuery({
@@ -55,11 +60,14 @@ export const InitialDataProvider = ({
         setData((previousData) =>
           mergeHomeCriticalIntoInitialData(previousData, homeData)
         );
+        setIsHomeCriticalLoading(false);
       })
       .catch((error) => {
         if (isCancelled) {
           return;
         }
+
+        setIsHomeCriticalLoading(false);
 
         reportError(error, {
           scope: "InitialDataProvider",
@@ -73,7 +81,9 @@ export const InitialDataProvider = ({
   }, [data.bootstrapScope, data.news.length, pathname]);
 
   return (
-    <InitialDataContext.Provider value={{ initialData: data }}>
+    <InitialDataContext.Provider
+      value={{ initialData: data, isHomeCriticalLoading }}
+    >
       {children}
     </InitialDataContext.Provider>
   );

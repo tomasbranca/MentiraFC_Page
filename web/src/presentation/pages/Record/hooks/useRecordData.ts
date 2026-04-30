@@ -3,16 +3,21 @@ import { useCallback, useEffect, useState } from "react";
 
 import { getAllGames } from "../../../../data/games";
 import { reportError } from "../../../../lib/errors/errorLogger";
+import { shouldLoadRecordInitially } from "../../../hooks/loading/loadingState.utils";
 import { useInitialData } from "../../../context/InitialDataContext";
 
 export const useRecordData = () => {
   const { initialData } = useInitialData();
   const [overrideGames, setOverrideGames] = useState(null);
   const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
   const games = overrideGames ?? initialData.games;
+  const needsInitialFetch = shouldLoadRecordInitially(
+    initialData.bootstrapScope,
+    games.length
+  );
+  const [loading, setLoading] = useState(needsInitialFetch);
 
   const refetch = useCallback(async () => {
     setLoading(true);
@@ -34,15 +39,12 @@ export const useRecordData = () => {
   }, []);
 
   useEffect(() => {
-    const needsGames =
-      initialData.bootstrapScope === "home-critical" || games.length === 0;
-
-    if (!needsGames || loading || hasAttemptedFetch) {
+    if (!needsInitialFetch || hasAttemptedFetch) {
       return;
     }
 
     void refetch();
-  }, [games.length, hasAttemptedFetch, initialData.bootstrapScope, loading, refetch]);
+  }, [hasAttemptedFetch, needsInitialFetch, refetch]);
 
   return { games, loading, error, refetch };
 };

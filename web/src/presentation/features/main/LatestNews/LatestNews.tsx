@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { Suspense } from "react";
 import { lazyWithReload } from "../../../../lib/lazyWithReload";
+import { MoreNewsSkeleton } from "../../../components/Skeletons/SectionSkeletons";
 
 import Carousel from "./Carousel/Carousel";
 import { splitNews } from "./latestNews.utils";
@@ -19,7 +20,7 @@ const LatestNews = ({ news = [] }) => {
         <Carousel items={carouselNews} />
       </div>
 
-      <Suspense fallback={<div className="min-h-80" aria-hidden="true" />}>
+      <Suspense fallback={<MoreNewsSkeleton />}>
         <MoreNews news={otherNews} />
       </Suspense>
     </section>

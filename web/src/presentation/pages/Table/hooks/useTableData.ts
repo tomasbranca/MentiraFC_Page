@@ -6,6 +6,7 @@ import { getTeams } from "../../../../data/teams";
 import { getTournamentGames } from "../../../../data/games";
 import { getHybridTournamentTable } from "../../../../domain/stats";
 import { reportError } from "../../../../lib/errors/errorLogger";
+import { shouldLoadTableInitially } from "../../../hooks/loading/loadingState.utils";
 import { useInitialData } from "../../../context/InitialDataContext";
 
 export const useTableData = () => {
@@ -14,12 +15,18 @@ export const useTableData = () => {
   const [overrideTeams, setOverrideTeams] = useState(null);
   const [overrideGames, setOverrideGames] = useState(null);
   const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
   const tournamentSource = overrideTournament ?? initialData.tournament;
   const teamsSource = overrideTeams ?? initialData.teams;
   const gamesSource = overrideGames ?? initialData.tournamentGames;
+  const needsInitialFetch = shouldLoadTableInitially({
+    bootstrapScope: initialData.bootstrapScope,
+    tournament: tournamentSource,
+    teamsLength: (teamsSource ?? []).length,
+    gamesLength: (gamesSource ?? []).length,
+  });
+  const [loading, setLoading] = useState(needsInitialFetch);
 
   const tournament = useMemo(() => {
     if (!tournamentSource) {
@@ -71,26 +78,12 @@ export const useTableData = () => {
   }, []);
 
   useEffect(() => {
-    const needsTableData =
-      initialData.bootstrapScope === "home-critical" ||
-      !tournamentSource ||
-      (teamsSource ?? []).length === 0 ||
-      (gamesSource ?? []).length === 0;
-
-    if (!needsTableData || loading || hasAttemptedFetch) {
+    if (!needsInitialFetch || hasAttemptedFetch) {
       return;
     }
 
     void refetch();
-  }, [
-    gamesSource,
-    hasAttemptedFetch,
-    initialData.bootstrapScope,
-    loading,
-    refetch,
-    teamsSource,
-    tournamentSource,
-  ]);
+  }, [hasAttemptedFetch, needsInitialFetch, refetch]);
 
   return {
     tournament,

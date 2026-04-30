@@ -4,6 +4,7 @@ import { getImageUrl } from "../../../data/imageService";
 import Loader from "../../components/Loader/Loader";
 import Button from "../../components/Button/Button";
 import ErrorFallback from "../../components/errors/ErrorFallback";
+import ProgressiveMedia from "../../components/ProgressiveMedia/ProgressiveMedia";
 
 import { useRecordData } from "./hooks/useRecordData";
 import {
@@ -93,7 +94,7 @@ const Record = () => {
                         {/* IZQUIERDA */}
                         <div className="flex items-center gap-3">
                           {game.rival?.imageUrl && (
-                            <img
+                            <ProgressiveMedia
                               src={getImageUrl(game.rival.imageUrl, {
                                 width: 40,
                                 height: 40,
@@ -102,9 +103,13 @@ const Record = () => {
                                 autoFormat: true,
                               })}
                               alt={game.rival.name}
+                              wrapperClassName="w-8 h-8 sm:w-10 sm:h-10 shrink-0"
                               width={40}
                               height={40}
-                              className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
+                              className="object-contain"
+                              loading="lazy"
+                              decoding="async"
+                              skeletonClassName="rounded-full bg-neutral-700"
                             />
                           )}
 

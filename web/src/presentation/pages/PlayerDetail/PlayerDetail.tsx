@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import Loader from "../../components/Loader/Loader";
 import ErrorFallback from "../../components/errors/ErrorFallback";
 import { FaArrowLeft } from "react-icons/fa";
+import ProgressiveMedia from "../../components/ProgressiveMedia/ProgressiveMedia";
 
 import { usePlayerDetail } from "./hooks/usePlayerDetail";
 import { POSITION_MAP } from "./playerDetail.constants";
@@ -50,10 +51,14 @@ const PlayerDetail = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2">
           {/* IMAGEN */}
           <div className="w-full aspect-3/4">
-            <img
+            <ProgressiveMedia
               src={player.imageUrl}
               alt={`${player.name} ${player.lastName}`}
+              wrapperClassName="w-full h-full"
               className="w-full h-full object-cover border-b-2 border-violet-700 lg:border-0"
+              skeletonClassName="bg-neutral-800"
+              loading="eager"
+              decoding="async"
             />
           </div>
 
