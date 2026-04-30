@@ -11,30 +11,42 @@ import {
 
 const Footer = () => {
   return (
-    <footer className="bg-neutral-950 text-violet-50 px-6 py-12 border-t border-violet-800/40">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10">
+    <footer className="bg-neutral-950 text-violet-50 px-4 sm:px-6 py-10 sm:py-12 border-t border-violet-800/40">
+      <div
+        className="
+          max-w-7xl mx-auto
+          grid grid-cols-1
+          sm:grid-cols-2
+          lg:grid-cols-4
+          gap-10 sm:gap-8
+        "
+      >
         {/* Marca */}
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col gap-4 sm:col-span-2 lg:col-span-1">
+          <div className="flex items-center gap-3">
             <img
               src={SITE_LOGO_ASSETS.small}
-              alt=""
+              alt="Logo Mentira FC"
               width={48}
               height={48}
-              className="w-12 h-12"
+              className="w-11 h-11 sm:w-12 sm:h-12"
             />
-            <p className="font-bold tracking-wide">Mentira FC</p>
+
+            <p className="font-bold tracking-wide text-base sm:text-lg">
+              Mentira FC
+            </p>
           </div>
-          <p className="text-violet-300 leading-relaxed max-w-xs">
+
+          <p className="text-violet-300 leading-relaxed text-sm sm:text-base max-w-xs">
             La mentira tiene patas cortas, pero la chot* larga.
           </p>
         </div>
 
         {/* Redes */}
         <div className="flex flex-col gap-4">
-          <h4 className="font-semibold uppercase tracking-widest text-violet-300">
+          <p className="text-sm font-semibold uppercase tracking-widest text-violet-300">
             Redes sociales
-          </h4>
+          </p>
 
           <ul className="flex gap-5 items-center">
             <li>
@@ -65,15 +77,15 @@ const Footer = () => {
 
         {/* Sponsors */}
         <div className="flex flex-col gap-4 items-start">
-          <h4 className="font-semibold uppercase tracking-widest text-violet-300">
+          <p className="text-sm font-semibold uppercase tracking-widest text-violet-300">
             Sponsors
-          </h4>
+          </p>
 
           <a
             href="https://www.neokings.com.ar"
             target="_blank"
             rel="noopener noreferrer"
-            className="block max-w-40"
+            className="block max-w-32 sm:max-w-36 lg:max-w-40"
           >
             <img
               src={NEOKINGS_ASSET.src}
@@ -95,19 +107,20 @@ const Footer = () => {
 
         {/* Contacto */}
         <div className="flex flex-col gap-4">
-          <h4 className="font-semibold uppercase tracking-widest text-violet-300">
+          <p className="text-sm font-semibold uppercase tracking-widest text-violet-300">
             Contacto
-          </h4>
+          </p>
 
-          <p className="flex gap-3 items-center text-violet-200">
+          <p className="flex gap-3 items-center text-violet-200 text-sm sm:text-base break-all">
             <MailIcon width={18} height={18} />
             mentirafc@gmail.com
           </p>
 
-          <div className="mt-2 flex flex-col gap-4">
-            <h4 className="font-semibold uppercase tracking-widest text-violet-300">
+          <div className="mt-2 flex flex-col gap-3">
+            <p className="text-sm font-semibold uppercase tracking-widest text-violet-300">
               Diseño web
-            </h4>
+            </p>
+
             <p className="text-violet-200 text-sm">
               Hecho por{" "}
               <a
@@ -124,7 +137,7 @@ const Footer = () => {
       </div>
 
       {/* Copyright */}
-      <div className="text-center text-xs text-violet-400 mt-12">
+      <div className="text-center text-xs text-violet-400 mt-10 sm:mt-12">
         &copy; {new Date().getFullYear()} Mentira FC. Todos los derechos
         inventados.
       </div>
