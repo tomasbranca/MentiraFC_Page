@@ -32,9 +32,9 @@ const Footer = () => {
 
         {/* Redes */}
         <div className="flex flex-col gap-4">
-          <h2 className="font-semibold uppercase tracking-widest text-violet-300">
+          <h4 className="font-semibold uppercase tracking-widest text-violet-300">
             Redes sociales
-          </h2>
+          </h4>
 
           <ul className="flex gap-5 items-center">
             <li>
@@ -65,9 +65,9 @@ const Footer = () => {
 
         {/* Sponsors */}
         <div className="flex flex-col gap-4 items-start">
-          <h2 className="font-semibold uppercase tracking-widest text-violet-300">
+          <h4 className="font-semibold uppercase tracking-widest text-violet-300">
             Sponsors
-          </h2>
+          </h4>
 
           <a
             href="https://www.neokings.com.ar"
@@ -95,9 +95,9 @@ const Footer = () => {
 
         {/* Contacto */}
         <div className="flex flex-col gap-4">
-          <h2 className="font-semibold uppercase tracking-widest text-violet-300">
+          <h4 className="font-semibold uppercase tracking-widest text-violet-300">
             Contacto
-          </h2>
+          </h4>
 
           <p className="flex gap-3 items-center text-violet-200">
             <MailIcon width={18} height={18} />
@@ -105,9 +105,9 @@ const Footer = () => {
           </p>
 
           <div className="mt-2 flex flex-col gap-4">
-            <h3 className="font-semibold uppercase tracking-widest text-violet-300">
+            <h4 className="font-semibold uppercase tracking-widest text-violet-300">
               Diseño web
-            </h3>
+            </h4>
             <p className="text-violet-200 text-sm">
               Hecho por{" "}
               <a

@@ -1,13 +1,16 @@
 // @ts-nocheck
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
 import NewsBentoGrid from "../../features/news/NewsBentoGrid/NewsBentoGrid";
 import Loader from "../../components/Loader/Loader";
 import ErrorFallback from "../../components/errors/ErrorFallback";
+import { lazyWithReload } from "../../../lib/lazyWithReload";
 
 import { useNewsData } from "./hooks/useNewsData";
 import { splitNewsForPage } from "./newsPage.utils";
 
-const NewsList = lazy(() => import("../../features/news/NewsList/NewsList"));
+const NewsList = lazyWithReload(
+  () => import("../../features/news/NewsList/NewsList")
+);
 
 const News = () => {
   const { news, loading, error, refetch } = useNewsData();

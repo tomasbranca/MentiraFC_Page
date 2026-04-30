@@ -45,6 +45,7 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.0.2",
+    "@vitest/ui": "^4.1.5",
     "baseline-browser-mapping": "^2.9.11",
     "eslint": "^9.35.0",
     "eslint-plugin-react-hooks": "^5.2.0",
@@ -52,6 +53,6 @@
     "globals": "^16.4.0",
     "typescript": "^6.0.2",
     "vite": "^7.3.2",
-    "vitest": "^2.1.9"
+    "vitest": "^4.1.5"
   }
 }

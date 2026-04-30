@@ -1,9 +1,8 @@
 /* Global styles deferred after initial paint */
 body::before {
   content: "";
-  position: absolute;
+  position: fixed;
   inset: 0;
-  min-height: 100%;
   background-image: -webkit-image-set(
     url("/patterns/background-640.webp") 1x,
     url("/patterns/background-1280.webp") 2x
@@ -14,8 +13,10 @@ body::before {
   );
   background-size: cover;
   background-position: center;
+  background-repeat: no-repeat;
   opacity: 0.3;
   z-index: -1;
+  pointer-events: none;
 }
 
 h3 {

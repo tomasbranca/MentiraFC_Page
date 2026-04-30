@@ -1,16 +1,16 @@
 // @ts-nocheck
-import { Suspense, lazy } from "react";
+import { Suspense } from "react";
 import { useParams } from "react-router-dom";
 
-import Loader from "../../components/Loader/Loader";
-import ErrorFallback from "../../components/errors/ErrorFallback";
-import NewsCard from "../../components/NewsCard/NewsCard";
-
 import { getImageUrl } from "../../../data/imageService";
-import { useNewsDetail } from "./hooks/useNewsDetail";
+import { lazyWithReload } from "../../../lib/lazyWithReload";
+import ErrorFallback from "../../components/errors/ErrorFallback";
+import Loader from "../../components/Loader/Loader";
+import NewsCard from "../../components/NewsCard/NewsCard";
 import { formatDate } from "../../utils/date.utils";
+import { useNewsDetail } from "./hooks/useNewsDetail";
 
-const NewsRichContent = lazy(() => import("./NewsRichContent"));
+const NewsRichContent = lazyWithReload(() => import("./NewsRichContent"));
 
 const NewsDetail = () => {
   const { slug } = useParams();
@@ -39,7 +39,6 @@ const NewsDetail = () => {
 
   return (
     <article className="w-full bg-neutral-900 text-neutral-200">
-      {/* HERO */}
       <header
         className="relative w-full flex items-end h-[35vh] md:h-[45vh] lg:h-[60vh] border-b-2 border-violet-700"
         style={{
@@ -63,7 +62,6 @@ const NewsDetail = () => {
         </div>
       </header>
 
-      {/* INFO */}
       <section className="max-w-3xl mx-auto px-4 md:px-6 mt-6 md:mt-10">
         <p className="text-xs md:text-sm text-neutral-500">
           {formatDate(newsItem.date)}
@@ -76,12 +74,11 @@ const NewsDetail = () => {
         )}
       </section>
 
-      {/* CONTENT */}
       <section className="max-w-3xl mx-auto px-4 md:px-6 mt-8 md:mt-10 mb-16 md:mb-20">
         <Suspense
           fallback={
             <p className="text-sm md:text-base text-neutral-400 animate-pulse">
-              Cargando contenido…
+              Cargando contenido...
             </p>
           }
         >
@@ -89,7 +86,6 @@ const NewsDetail = () => {
         </Suspense>
       </section>
 
-      {/* SUGERIDAS */}
       {suggested.length >= 3 && (
         <section className="max-w-5xl mx-auto px-4 md:px-6 py-8">
           <h2 className="text-xl md:text-2xl font-bold mb-6 text-white">

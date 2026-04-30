@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { Route, Routes } from "react-router-dom";
 
 import type { InitialDataPayload } from "./data/getInitialData";
@@ -12,6 +12,7 @@ import { ROUTES } from "./presentation/constants/routes.constants";
 
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
+import { lazyWithReload } from "./lib/lazyWithReload";
 
 import "./App.css";
 
@@ -19,15 +20,15 @@ type AppProps = {
   initialData: InitialDataPayload;
 };
 
-const News = lazy(() => import("./presentation/pages/News/News"));
-const Team = lazy(() => import("./presentation/pages/Team/Team"));
-const Table = lazy(() => import("./presentation/pages/Table/Table"));
-const Record = lazy(() => import("./presentation/pages/Record/Record"));
-const Admin = lazy(() => import("./presentation/pages/Admin/Admin"));
-const NewsDetail = lazy(
+const News = lazyWithReload(() => import("./presentation/pages/News/News"));
+const Team = lazyWithReload(() => import("./presentation/pages/Team/Team"));
+const Table = lazyWithReload(() => import("./presentation/pages/Table/Table"));
+const Record = lazyWithReload(() => import("./presentation/pages/Record/Record"));
+const Admin = lazyWithReload(() => import("./presentation/pages/Admin/Admin"));
+const NewsDetail = lazyWithReload(
   () => import("./presentation/pages/NewsDetail/NewsDetail"),
 );
-const PlayerDetail = lazy(
+const PlayerDetail = lazyWithReload(
   () => import("./presentation/pages/PlayerDetail/PlayerDetail"),
 );
 

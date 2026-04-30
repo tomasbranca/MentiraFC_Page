@@ -1,14 +1,15 @@
 // @ts-nocheck
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
 import LatestNews from "../../features/main/LatestNews/LatestNews";
 import Game from "../../features/main/Game/Game";
 import { useGame } from "../../context/useGame";
+import { lazyWithReload } from "../../../lib/lazyWithReload";
 import { useHomeData } from "./hooks/useHomeData";
 
-const TopScorers = lazy(
+const TopScorers = lazyWithReload(
   () => import("../../features/main/TopScorers/TopScorers")
 );
-const TableWidget = lazy(
+const TableWidget = lazyWithReload(
   () => import("../../features/main/TableWidget/TableWidget")
 );
 

@@ -1,7 +1,8 @@
 // @ts-nocheck
 import { Component } from "react";
-import ErrorFallback from "./ErrorFallback";
+
 import { reportError } from "../../../lib/errors/errorLogger";
+import ErrorFallback from "./ErrorFallback";
 
 class ErrorBoundary extends Component {
   constructor(props) {
@@ -21,7 +22,9 @@ class ErrorBoundary extends Component {
   }
 
   handleRetry = () => {
-    this.setState({ hasError: false, error: null });
+    this.setState({ hasError: false, error: null }, () => {
+      window.location.reload();
+    });
   };
 
   render() {

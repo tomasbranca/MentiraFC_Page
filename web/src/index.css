@@ -7,6 +7,8 @@
 
 html {
   font-size: 100%;
+  min-height: 100%;
+  background-color: #f5efff;
 }
 
 * {
@@ -15,11 +17,18 @@ html {
 }
 
 body {
+  min-height: 100vh;
+  min-height: 100dvh;
   margin: 0;
   position: relative;
   z-index: 0;
   font-family: var(--font-body);
   background-color: #f5efff;
+}
+
+#root {
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 h1,

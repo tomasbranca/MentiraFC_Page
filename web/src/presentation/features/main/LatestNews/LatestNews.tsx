@@ -1,10 +1,11 @@
 // @ts-nocheck
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
+import { lazyWithReload } from "../../../../lib/lazyWithReload";
 
 import Carousel from "./Carousel/Carousel";
 import { splitNews } from "./latestNews.utils";
 
-const MoreNews = lazy(() => import("./MoreNews"));
+const MoreNews = lazyWithReload(() => import("./MoreNews"));
 
 const LatestNews = ({ news = [] }) => {
   if (!news.length) return null;

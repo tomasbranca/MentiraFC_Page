@@ -1,9 +1,12 @@
 // @ts-nocheck
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
 import NewsCard from "../../../components/NewsCard/NewsCard";
+import { lazyWithReload } from "../../../../lib/lazyWithReload";
 import { mapBentoItems } from "./newsBentoGrid.utils";
 
-const CompactCarousel = lazy(() => import("../CompactCarousel/CompactCarousel"));
+const CompactCarousel = lazyWithReload(
+  () => import("../CompactCarousel/CompactCarousel")
+);
 
 const NewsBentoGrid = ({ items = [] }) => {
   if (!items.length) return null;
