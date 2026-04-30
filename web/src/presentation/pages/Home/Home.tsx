@@ -1,6 +1,5 @@
 // @ts-nocheck
-import { Suspense } from "react";
-import LatestNews from "../../features/main/LatestNews/LatestNews";
+import { Suspense, lazy } from "react";
 import Game from "../../features/main/Game/Game";
 import Loader from "../../components/Loader/Loader";
 import { useGame } from "../../context/useGame";
@@ -11,6 +10,10 @@ import {
   TopScorersSkeleton,
 } from "../../components/Skeletons/SectionSkeletons";
 import { useHomeData } from "./hooks/useHomeData";
+
+const LatestNews = lazy(
+  () => import("../../features/main/LatestNews/LatestNews")
+);
 
 const TopScorers = lazyWithReload(
   () => import("../../features/main/TopScorers/TopScorers")
