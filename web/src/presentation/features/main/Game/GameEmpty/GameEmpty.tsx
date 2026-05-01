@@ -13,8 +13,8 @@ const GameEmpty = () => {
       </h3>
 
       <p className="text-sm opacity-80 mt-2 text-center max-w-sm">
-        Todavía no hay información del último partido. Cuando se cargue, la vas
-        a ver acá.
+        Todavía no hay información del último partido. Cuando el equipo cargue
+        los datos, se va a publicar acá.
       </p>
     </div>
   );

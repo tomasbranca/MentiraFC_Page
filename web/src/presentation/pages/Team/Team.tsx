@@ -34,7 +34,7 @@ const Team = () => {
         {/* HEADER */}
         <header className="w-full p-5 md:p-8 md:border-b border-gray-200 bg-violet-900">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-violet-50 tracking-tight">
-            Plantel Profesional
+            Plantel oficial
           </h1>
 
           <p className="text-base md:text-lg text-violet-200 mt-2">

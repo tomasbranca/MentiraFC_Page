@@ -9,7 +9,7 @@ const SITE_URL = (
 ).replace(/\/+$/, "");
 const DEFAULT_IMAGE_PATH = "/og_image.png";
 const DEFAULT_DESCRIPTION =
-  "Mentira FC: estadisticas, jugadores y partidos del club amateur en la Liga Castrol.";
+  "Mentira FC: estadísticas, jugadores y partidos del club amateur en la Liga Castrol.";
 
 const absoluteUrl = (value: string): string => {
   try {
@@ -63,7 +63,7 @@ export const STATIC_PAGE_HEAD = {
   news: {
     ...DEFAULT_HEAD,
     title: withSiteName("Noticias"),
-    description: "Noticias, novedades y cronicas recientes de Mentira FC.",
+    description: "Noticias, novedades y crónicas recientes de Mentira FC.",
     canonicalUrl: canonicalUrl(ROUTES.NEWS),
   },
   team: {
@@ -81,7 +81,7 @@ export const STATIC_PAGE_HEAD = {
   record: {
     ...DEFAULT_HEAD,
     title: withSiteName("Historial"),
-    description: "Historial de partidos, resultados y estadisticas de Mentira FC.",
+    description: "Historial de partidos, resultados y estadísticas de Mentira FC.",
     canonicalUrl: canonicalUrl(ROUTES.RECORD),
   },
   admin: {

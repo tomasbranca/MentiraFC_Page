@@ -42,8 +42,8 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     if (hasError) {
       return (
         <ErrorFallback
-          title="Se produjo un error al renderizar la aplicación"
-          message="Recargá o intentá nuevamente. Si persiste, avisá al equipo técnico."
+          title="Hubo un problema al cargar el sitio"
+          message="Recargá la página o intentá nuevamente en unos minutos. Si el problema persiste, contactá al equipo."
           onRetry={this.handleRetry}
           retryLabel="Volver a intentar"
         />

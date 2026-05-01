@@ -37,7 +37,7 @@ const Footer = () => {
           </div>
 
           <p className="text-violet-300 leading-relaxed text-sm sm:text-base max-w-xs">
-            La mentira tiene patas cortas, pero la chot* larga.
+            Sitio oficial del club amateur.
           </p>
         </div>
 
@@ -138,7 +138,7 @@ const Footer = () => {
       {/* Copyright */}
       <div className="text-center text-xs text-violet-400 mt-10 sm:mt-12">
         &copy; {new Date().getFullYear()} Mentira FC. Todos los derechos
-        inventados.
+        reservados.
       </div>
     </footer>
   );

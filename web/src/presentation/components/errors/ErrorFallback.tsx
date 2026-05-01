@@ -8,7 +8,7 @@ type ErrorFallbackProps = {
 };
 
 const ErrorFallback = ({
-  title = "Ocurrió un error inesperado",
+  title = "No pudimos cargar esta sección",
   message = "Intentá nuevamente en unos minutos.",
   onRetry,
   retryLabel = "Reintentar",
