@@ -1,118 +1,143 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { getAllGames } from "../../../../data/games";
 import { getPlayerBySlug } from "../../../../data/players";
+import { queryKeys } from "../../../../data/queryKeys";
 import { getPlayerStats } from "../../../../domain/stats";
 import { reportError } from "../../../../lib/errors/errorLogger";
-import { shouldLoadPlayerDetailInitially } from "../../../hooks/loading/loadingState.utils";
 import { useInitialData } from "../../../context/useInitialData";
-import type { Player } from "../../../../types/models";
+import type { Game, Player } from "../../../../types/models";
 
 type PlayerDetailViewModel = Player & { goalsThisYear: number };
 
 export const usePlayerDetail = (slug: string | undefined) => {
   const { initialData } = useInitialData();
-  const [overridePlayer, setOverridePlayer] = useState<
-    PlayerDetailViewModel | null | undefined
-  >(undefined);
-  const [overrideGoals, setOverrideGoals] = useState<number | undefined>(
-    undefined
-  );
-  const [overrideYear, setOverrideYear] = useState<number | null>(null);
-  const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);
-  const [error, setError] = useState(false);
-
+  const queryClient = useQueryClient();
+  const currentYear = new Date().getFullYear();
   const detailFromInitialData =
     initialData.currentPlayerDetail?.slug === slug
       ? initialData.currentPlayerDetail
       : null;
-  const needsInitialFetch = shouldLoadPlayerDetailInitially({
-    slug,
-    hasInitialDetail: Boolean(detailFromInitialData),
+  const playerQueryKey = useMemo(
+    () => queryKeys.players.bySlug(slug ?? ""),
+    [slug]
+  );
+  const cacheSnapshot = useMemo(() => {
+    const hasPlayer =
+      queryClient.getQueryState(playerQueryKey)?.data !== undefined;
+    const hasGames =
+      queryClient.getQueryState(queryKeys.games.finished)?.data !== undefined;
+
+    return {
+      cachedPlayer: hasPlayer
+        ? queryClient.getQueryData<Player | null>(playerQueryKey)
+        : undefined,
+      cachedGames: hasGames
+        ? queryClient.getQueryData<Game[]>(queryKeys.games.finished)
+        : undefined,
+      hasGames,
+      hasPlayer,
+    };
+  }, [playerQueryKey, queryClient]);
+  const initialPlayer = cacheSnapshot.hasPlayer
+    ? cacheSnapshot.cachedPlayer ?? null
+    : detailFromInitialData?.player ?? undefined;
+  const initialGames =
+    cacheSnapshot.cachedGames ??
+    (initialData.bootstrapScope === "full" ? initialData.games : undefined);
+  const hasResolvedMissingPlayer =
+    (cacheSnapshot.hasPlayer && cacheSnapshot.cachedPlayer === null) ||
+    detailFromInitialData?.player === null;
+  const shouldLoadPlayer =
+    Boolean(slug) && !detailFromInitialData && !cacheSnapshot.hasPlayer;
+  const shouldLoadGames =
+    Boolean(slug) &&
+    !detailFromInitialData &&
+    !cacheSnapshot.hasGames &&
+    !hasResolvedMissingPlayer;
+
+  const playerQuery = useQuery({
+    queryKey: playerQueryKey,
+    queryFn: async () => {
+      try {
+        return await getPlayerBySlug(slug ?? "");
+      } catch (error) {
+        reportError(error, {
+          page: "PlayerDetail",
+          action: "refresh_player_detail",
+          slug,
+        });
+        throw error;
+      }
+    },
+    enabled: shouldLoadPlayer,
+    initialData: shouldLoadPlayer ? undefined : initialPlayer,
+    placeholderData: shouldLoadPlayer ? initialPlayer : undefined,
+    refetchOnMount: shouldLoadPlayer ? "always" : false,
   });
-  const [loading, setLoading] = useState(needsInitialFetch);
 
-  const player = useMemo(() => {
-    if (overridePlayer !== undefined) {
-      return overridePlayer;
-    }
+  const gamesQuery = useQuery({
+    queryKey: queryKeys.games.finished,
+    queryFn: async () => {
+      try {
+        return await getAllGames();
+      } catch (error) {
+        reportError(error, {
+          page: "PlayerDetail",
+          action: "refresh_player_detail_games",
+          slug,
+        });
+        throw error;
+      }
+    },
+    enabled: shouldLoadGames,
+    initialData: shouldLoadGames ? undefined : initialGames,
+    placeholderData: shouldLoadGames ? initialGames : undefined,
+    refetchOnMount: shouldLoadGames ? "always" : false,
+  });
 
-    if (!detailFromInitialData?.player) {
+  const player = useMemo<PlayerDetailViewModel | null>(() => {
+    const playerSource = playerQuery.data ?? null;
+
+    if (!playerSource) {
       return null;
     }
 
-    return {
-      ...detailFromInitialData.player,
-      goalsThisYear: detailFromInitialData.goalsThisYear,
-    };
-  }, [detailFromInitialData, overridePlayer]);
+    const gamesSource = gamesQuery.data;
 
-  const year = overrideYear ?? detailFromInitialData?.year ?? new Date().getFullYear();
-
-  const refetch = useCallback(async () => {
-    if (!slug) {
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const [nextPlayer, nextGames] = await Promise.all([
-        getPlayerBySlug(slug),
-        getAllGames(),
-      ]);
-
-      if (!nextPlayer) {
-        setOverridePlayer(null);
-        setOverrideGoals(0);
-        setOverrideYear(new Date().getFullYear());
-      } else {
-        const nextYear = new Date().getFullYear();
-        const stats = getPlayerStats(nextGames, nextPlayer.id, {
-          year: nextYear,
-        });
-
-        setOverridePlayer({
-          ...nextPlayer,
-          goalsThisYear: stats.goals,
-        });
-        setOverrideGoals(stats.goals);
-        setOverrideYear(nextYear);
-      }
-
-      setError(false);
-    } catch (nextError) {
-      setError(true);
-      reportError(nextError, {
-        page: "PlayerDetail",
-        action: "refresh_player_detail",
-        slug,
+    if (gamesSource) {
+      const stats = getPlayerStats(gamesSource, playerSource.id, {
+        year: currentYear,
       });
-    } finally {
-      setHasAttemptedFetch(true);
-      setLoading(false);
-    }
-  }, [slug]);
 
-  useEffect(() => {
-    if (!needsInitialFetch || hasAttemptedFetch) {
-      return;
+      return {
+        ...playerSource,
+        goalsThisYear: stats.goals,
+      };
     }
 
-    void refetch();
-  }, [hasAttemptedFetch, needsInitialFetch, refetch]);
+    return {
+      ...playerSource,
+      goalsThisYear: detailFromInitialData?.goalsThisYear ?? 0,
+    };
+  }, [currentYear, detailFromInitialData, gamesQuery.data, playerQuery.data]);
+
+  const hasGamesForStats = gamesQuery.data !== undefined;
+  const loading =
+    (shouldLoadPlayer && playerQuery.isFetching) ||
+    (shouldLoadGames && gamesQuery.isFetching);
+  const error = Boolean(playerQuery.error || gamesQuery.error);
 
   return {
-    player:
-      player && overrideGoals !== undefined
-        ? {
-            ...player,
-            goalsThisYear: overrideGoals,
-          }
-        : player,
+    player,
     loading,
     error,
-    year,
-    refetch,
+    year: hasGamesForStats
+      ? currentYear
+      : detailFromInitialData?.year ?? currentYear,
+    refetch: async () => {
+      await Promise.all([playerQuery.refetch(), gamesQuery.refetch()]);
+    },
   };
 };

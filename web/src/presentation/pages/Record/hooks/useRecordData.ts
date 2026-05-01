@@ -1,6 +1,8 @@
-import { useCallback, useEffect, useState } from "react";
+import { useRef } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { getAllGames } from "../../../../data/games";
+import { queryKeys } from "../../../../data/queryKeys";
 import { reportError } from "../../../../lib/errors/errorLogger";
 import { shouldLoadRecordInitially } from "../../../hooks/loading/loadingState.utils";
 import { useInitialData } from "../../../context/useInitialData";
@@ -8,43 +10,43 @@ import type { Game } from "../../../../types/models";
 
 export const useRecordData = () => {
   const { initialData } = useInitialData();
-  const [overrideGames, setOverrideGames] = useState<Game[] | null>(null);
-  const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);
-  const [error, setError] = useState(false);
-
-  const games = overrideGames ?? initialData.games;
-  const needsInitialFetch = shouldLoadRecordInitially(
-    initialData.bootstrapScope,
-    games.length
+  const queryClient = useQueryClient();
+  const hasCachedGames = useRef(
+    queryClient.getQueryState(queryKeys.games.finished)?.data !== undefined
   );
-  const [loading, setLoading] = useState(needsInitialFetch);
+  const cachedGames = hasCachedGames.current
+    ? queryClient.getQueryData<Game[]>(queryKeys.games.finished)
+    : undefined;
+  const initialGames = cachedGames ?? initialData.games;
+  const needsInitialFetch =
+    !hasCachedGames.current &&
+    shouldLoadRecordInitially(initialData.bootstrapScope, initialGames.length);
 
-  const refetch = useCallback(async () => {
-    setLoading(true);
+  const gamesQuery = useQuery({
+    queryKey: queryKeys.games.finished,
+    queryFn: async () => {
+      try {
+        return await getAllGames();
+      } catch (error) {
+        reportError(error, {
+          page: "Record",
+          action: "refresh_record",
+        });
+        throw error;
+      }
+    },
+    enabled: needsInitialFetch,
+    initialData: needsInitialFetch ? undefined : initialGames,
+    placeholderData: needsInitialFetch ? initialGames : undefined,
+    refetchOnMount: needsInitialFetch ? "always" : false,
+  });
 
-    try {
-      const nextGames = await getAllGames();
-      setOverrideGames(nextGames || []);
-      setError(false);
-    } catch (nextError) {
-      setError(true);
-      reportError(nextError, {
-        page: "Record",
-        action: "refresh_record",
-      });
-    } finally {
-      setHasAttemptedFetch(true);
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!needsInitialFetch || hasAttemptedFetch) {
-      return;
-    }
-
-    void refetch();
-  }, [hasAttemptedFetch, needsInitialFetch, refetch]);
-
-  return { games, loading, error, refetch };
+  return {
+    games: gamesQuery.data ?? [],
+    loading: needsInitialFetch && gamesQuery.isFetching,
+    error: Boolean(gamesQuery.error),
+    refetch: async () => {
+      await gamesQuery.refetch();
+    },
+  };
 };

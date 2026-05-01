@@ -1,59 +1,61 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useRef } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { getPlayers } from "../../../../data/players";
+import { queryKeys } from "../../../../data/queryKeys";
 import { reportError } from "../../../../lib/errors/errorLogger";
 import { shouldLoadTeamInitially } from "../../../hooks/loading/loadingState.utils";
 import { useInitialData } from "../../../context/useInitialData";
 import { groupPlayersByPosition } from "../team.utils";
 import type { Player } from "../../../../types/models";
 
+const EMPTY_PLAYERS: Player[] = [];
+
 export const useTeamData = () => {
   const { initialData } = useInitialData();
-  const [overridePlayers, setOverridePlayers] = useState<Player[] | null>(null);
-  const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);
-  const [error, setError] = useState(false);
-
-  const players = overridePlayers ?? initialData.players;
-  const needsInitialFetch = shouldLoadTeamInitially(
-    initialData.bootstrapScope,
-    players.length
+  const queryClient = useQueryClient();
+  const hasCachedPlayers = useRef(
+    queryClient.getQueryState(queryKeys.players.all)?.data !== undefined
   );
-  const [loading, setLoading] = useState(needsInitialFetch);
+  const cachedPlayers = hasCachedPlayers.current
+    ? queryClient.getQueryData<Player[]>(queryKeys.players.all)
+    : undefined;
+  const initialPlayers = cachedPlayers ?? initialData.players;
+  const needsInitialFetch =
+    !hasCachedPlayers.current &&
+    shouldLoadTeamInitially(initialData.bootstrapScope, initialPlayers.length);
 
+  const playersQuery = useQuery({
+    queryKey: queryKeys.players.all,
+    queryFn: async () => {
+      try {
+        return await getPlayers();
+      } catch (error) {
+        reportError(error, {
+          page: "Team",
+          action: "refresh_team_players",
+        });
+        throw error;
+      }
+    },
+    enabled: needsInitialFetch,
+    initialData: needsInitialFetch ? undefined : initialPlayers,
+    placeholderData: needsInitialFetch ? initialPlayers : undefined,
+    refetchOnMount: needsInitialFetch ? "always" : false,
+  });
+
+  const players = playersQuery.data ?? EMPTY_PLAYERS;
   const grouped = useMemo(() => groupPlayersByPosition(players), [players]);
-
-  const refetch = useCallback(async () => {
-    setLoading(true);
-
-    try {
-      const nextPlayers = await getPlayers();
-      setOverridePlayers(nextPlayers);
-      setError(false);
-    } catch (nextError) {
-      setError(true);
-      reportError(nextError, {
-        page: "Team",
-        action: "refresh_team_players",
-      });
-    } finally {
-      setHasAttemptedFetch(true);
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!needsInitialFetch || hasAttemptedFetch) {
-      return;
-    }
-
-    void refetch();
-  }, [hasAttemptedFetch, needsInitialFetch, refetch]);
+  const loading = needsInitialFetch && playersQuery.isFetching;
+  const error = Boolean(playersQuery.error);
 
   return {
     players,
     grouped,
     loading,
     error,
-    refetch,
+    refetch: async () => {
+      await playersQuery.refetch();
+    },
   };
 };

@@ -1,6 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useRef } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { getNews } from "../../../../data/news";
+import { queryKeys } from "../../../../data/queryKeys";
 import { reportError } from "../../../../lib/errors/errorLogger";
 import { shouldLoadNewsInitially } from "../../../hooks/loading/loadingState.utils";
 import { useInitialData } from "../../../context/useInitialData";
@@ -9,46 +11,47 @@ import type { NewsItem } from "../../../../types/models";
 
 export const useNewsData = () => {
   const { initialData } = useInitialData();
-  const [overrideNews, setOverrideNews] = useState<NewsItem[] | null>(null);
-  const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);
-  const [error, setError] = useState(false);
-
-  const news = useMemo(() => {
-    const source = overrideNews ?? initialData.news;
-    return sortNews(source);
-  }, [initialData.news, overrideNews]);
-  const needsInitialFetch = shouldLoadNewsInitially(
-    initialData.bootstrapScope,
-    news.length
+  const queryClient = useQueryClient();
+  const hasCachedNews = useRef(
+    queryClient.getQueryState(queryKeys.news.all)?.data !== undefined
   );
-  const [loading, setLoading] = useState(needsInitialFetch);
+  const cachedNews = hasCachedNews.current
+    ? queryClient.getQueryData<NewsItem[]>(queryKeys.news.all)
+    : undefined;
+  const initialNews = cachedNews ?? initialData.news;
+  const needsInitialFetch =
+    !hasCachedNews.current &&
+    shouldLoadNewsInitially(initialData.bootstrapScope, initialNews.length);
 
-  const refetch = useCallback(async () => {
-    setLoading(true);
+  const newsQuery = useQuery({
+    queryKey: queryKeys.news.all,
+    queryFn: async () => {
+      try {
+        return await getNews();
+      } catch (error) {
+        reportError(error, {
+          page: "News",
+          action: "refresh_news",
+        });
+        throw error;
+      }
+    },
+    enabled: needsInitialFetch,
+    initialData: needsInitialFetch ? undefined : initialNews,
+    placeholderData: needsInitialFetch ? initialNews : undefined,
+    refetchOnMount: needsInitialFetch ? "always" : false,
+  });
 
-    try {
-      const nextNews = await getNews();
-      setOverrideNews(nextNews);
-      setError(false);
-    } catch (nextError) {
-      setError(true);
-      reportError(nextError, {
-        page: "News",
-        action: "refresh_news",
-      });
-    } finally {
-      setHasAttemptedFetch(true);
-      setLoading(false);
-    }
-  }, []);
+  const news = useMemo(() => sortNews(newsQuery.data ?? []), [newsQuery.data]);
+  const loading = needsInitialFetch && newsQuery.isFetching;
+  const error = Boolean(newsQuery.error);
 
-  useEffect(() => {
-    if (!needsInitialFetch || hasAttemptedFetch) {
-      return;
-    }
-
-    void refetch();
-  }, [hasAttemptedFetch, needsInitialFetch, refetch]);
-
-  return { news, loading, error, refetch };
+  return {
+    news,
+    loading,
+    error,
+    refetch: async () => {
+      await newsQuery.refetch();
+    },
+  };
 };
