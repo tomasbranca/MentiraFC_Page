@@ -26,6 +26,7 @@ describe("initialDataContext.utils", () => {
     expect(shouldLoadHomeCriticalData(0, "player-detail")).toBe(true);
     expect(shouldLoadHomeCriticalData(3, "news-detail")).toBe(false);
     expect(shouldLoadHomeCriticalData(0, "empty")).toBe(false);
+    expect(shouldLoadHomeCriticalData(0, "bootstrap-error")).toBe(false);
   });
 
   it("mezcla Home critico sin perder el detalle actual de noticia o jugador", () => {

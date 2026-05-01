@@ -1,6 +1,7 @@
 export type GameState = "por_jugar" | "finalizado" | string;
 export type BootstrapScope =
   | "empty"
+  | "bootstrap-error"
   | "full"
   | "home-critical"
   | "news-detail"

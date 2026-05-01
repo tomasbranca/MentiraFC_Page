@@ -35,7 +35,30 @@ export interface InitialDataPayload {
     goalsThisYear: number;
     year: number;
   };
+  bootstrapError?: {
+    message: string;
+  };
 }
+
+export const createEmptyInitialData = (): InitialDataPayload => ({
+  bootstrapScope: "empty",
+  news: [],
+  players: [],
+  games: [],
+  tournament: null,
+  teams: [],
+  tournamentGames: [],
+  latestGame: null,
+});
+
+export const createBootstrapErrorPayload = (): InitialDataPayload => ({
+  ...createEmptyInitialData(),
+  bootstrapScope: "bootstrap-error",
+  bootstrapError: {
+    message:
+      "No pudimos cargar los datos iniciales. Reintenta en unos segundos.",
+  },
+});
 
 export const getHomeCriticalData = async (): Promise<InitialDataPayload> => {
   try {

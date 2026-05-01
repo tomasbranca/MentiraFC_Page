@@ -2,6 +2,7 @@ import { Suspense, useEffect } from "react";
 import { Route, Routes } from "react-router-dom";
 
 import type { InitialDataPayload } from "./data/getInitialData";
+import ErrorFallback from "./presentation/components/errors/ErrorFallback";
 import Loader from "./presentation/components/Loader/Loader";
 import { GameProvider } from "./presentation/context/GameProvider";
 import { InitialDataProvider } from "./presentation/context/InitialDataContext";
@@ -35,6 +36,7 @@ const PlayerDetail = lazyWithReload(
 function App({ initialData }: AppProps) {
   const enableAnalytics =
     import.meta.env.VITE_ENABLE_ANALYTICS === "true";
+  const hasBootstrapError = initialData.bootstrapScope === "bootstrap-error";
 
   useEffect(() => {
     const loadDeferredStyles = () => {
@@ -52,6 +54,10 @@ function App({ initialData }: AppProps) {
     return () => clearTimeout(timeoutId);
   }, []);
 
+  const handleBootstrapRetry = () => {
+    window.location.reload();
+  };
+
   return (
     <InitialDataProvider initialData={initialData}>
       {enableAnalytics && <Analytics />}
@@ -61,24 +67,33 @@ function App({ initialData }: AppProps) {
         <NavBar />
 
         <div className="border-t-96 border-t-violet-900 min-h-screen">
-          <Suspense fallback={<Loader />}>
-            <Routes>
-              <Route path={ROUTES.HOME} element={<Home />} />
-              <Route path={ROUTES.NEWS} element={<News />} />
-              <Route path={ROUTES.TEAM} element={<Team />} />
-              <Route path={ROUTES.TABLE} element={<Table />} />
-              <Route path={ROUTES.RECORD} element={<Record />} />
-              <Route path={ROUTES.ADMIN} element={<Admin />} />
-              <Route
-                path={ROUTES.NEWS_DETAIL(":slug")}
-                element={<NewsDetail />}
-              />
-              <Route
-                path={ROUTES.PLAYER_DETAIL(":slug")}
-                element={<PlayerDetail />}
-              />
-            </Routes>
-          </Suspense>
+          {hasBootstrapError ? (
+            <ErrorFallback
+              title="No pudimos cargar la pagina"
+              message={initialData.bootstrapError?.message}
+              onRetry={handleBootstrapRetry}
+              retryLabel="Volver a intentar"
+            />
+          ) : (
+            <Suspense fallback={<Loader />}>
+              <Routes>
+                <Route path={ROUTES.HOME} element={<Home />} />
+                <Route path={ROUTES.NEWS} element={<News />} />
+                <Route path={ROUTES.TEAM} element={<Team />} />
+                <Route path={ROUTES.TABLE} element={<Table />} />
+                <Route path={ROUTES.RECORD} element={<Record />} />
+                <Route path={ROUTES.ADMIN} element={<Admin />} />
+                <Route
+                  path={ROUTES.NEWS_DETAIL(":slug")}
+                  element={<NewsDetail />}
+                />
+                <Route
+                  path={ROUTES.PLAYER_DETAIL(":slug")}
+                  element={<PlayerDetail />}
+                />
+              </Routes>
+            </Suspense>
+          )}
         </div>
 
         <Footer />

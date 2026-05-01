@@ -11,7 +11,11 @@ import "@fontsource/roboto/latin-700.css";
 import "@fontsource/roboto/latin-900.css";
 
 import App from "./App";
-import type { InitialDataPayload } from "./data/getInitialData";
+import {
+  createBootstrapErrorPayload,
+  createEmptyInitialData,
+  type InitialDataPayload,
+} from "./data/getInitialData";
 import { getImageSrcSet, getImageUrl } from "./data/imageService";
 import { queryKeys } from "./data/queryKeys";
 import { getRouteInitialData } from "./data/getRouteInitialData";
@@ -38,16 +42,7 @@ if (!rootElement) {
 
 const root = createRoot(rootElement);
 
-const EMPTY_INITIAL_DATA: InitialDataPayload = {
-  bootstrapScope: "empty",
-  news: [],
-  players: [],
-  games: [],
-  tournament: null,
-  teams: [],
-  tournamentGames: [],
-  latestGame: null,
-};
+const EMPTY_INITIAL_DATA: InitialDataPayload = createEmptyInitialData();
 
 const renderShell = (node: ReactNode) => {
   root.render(
@@ -177,6 +172,7 @@ const bootstrap = async () => {
       scope: "main",
       action: "bootstrap_background_hydration",
     });
+    renderAppShell(createBootstrapErrorPayload(), "hydrated");
   }
 };
 

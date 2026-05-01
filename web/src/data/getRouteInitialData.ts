@@ -1,5 +1,6 @@
 import { getAllGames, getLatestGame } from "./games";
 import {
+  createEmptyInitialData,
   getHomeCriticalData,
   getInitialData,
   type InitialDataPayload,
@@ -31,17 +32,6 @@ const extractSlugFromPathname = (
   return slug ?? null;
 };
 
-const getBasePayload = (): InitialDataPayload => ({
-  bootstrapScope: "empty",
-  news: [],
-  players: [],
-  games: [],
-  tournament: null,
-  teams: [],
-  tournamentGames: [],
-  latestGame: null,
-});
-
 const getNewsDetailInitialData = async (
   slug: string
 ): Promise<InitialDataPayload> => {
@@ -53,7 +43,7 @@ const getNewsDetailInitialData = async (
     ]);
 
     return {
-      ...getBasePayload(),
+      ...createEmptyInitialData(),
       bootstrapScope: "news-detail",
       latestGame,
       currentNewsDetail: {
@@ -85,7 +75,7 @@ const getPlayerDetailInitialData = async (
 
     if (!player) {
       return {
-        ...getBasePayload(),
+        ...createEmptyInitialData(),
         bootstrapScope: "player-detail",
         latestGame,
         currentPlayerDetail: {
@@ -101,7 +91,7 @@ const getPlayerDetailInitialData = async (
     const stats = getPlayerStats(games, player.id, { year });
 
     return {
-      ...getBasePayload(),
+      ...createEmptyInitialData(),
       bootstrapScope: "player-detail",
       latestGame,
       currentPlayerDetail: {

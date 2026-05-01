@@ -25,6 +25,17 @@ describe("gameProvider.utils", () => {
     });
   });
 
+  it("no mantiene loading cuando el bootstrap termina en error", () => {
+    expect(
+      getGameProviderSnapshot(
+        createPayload({ bootstrapScope: "bootstrap-error" })
+      )
+    ).toEqual({
+      game: null,
+      loading: false,
+    });
+  });
+
   it("sincroniza el partido cuando cambia latestGame en initialData", () => {
     const firstSnapshot = getGameProviderSnapshot(
       createPayload({
