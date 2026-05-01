@@ -1,5 +1,9 @@
 import type { GoalEvent } from "../../../types/models";
-import { sanityGoalEventSchema, type SanityGoalEvent } from "../schemas";
+import {
+  getSanitySlugValue,
+  sanityGoalEventSchema,
+  type SanityGoalEvent,
+} from "../schemas";
 import { validateSanityArray, validateSanityItem } from "../validation";
 
 export const adaptGoalEvent = (event: unknown): GoalEvent | null => {
@@ -25,10 +29,7 @@ export const adaptGoalEvent = (event: unknown): GoalEvent | null => {
           id: validated.player._id,
           name: validated.player.name,
           lastName: validated.player.lastName,
-          slug:
-            typeof validated.player.slug === "string"
-              ? validated.player.slug
-              : validated.player.slug?.current,
+          slug: getSanitySlugValue(validated.player.slug),
         }
       : null,
   };

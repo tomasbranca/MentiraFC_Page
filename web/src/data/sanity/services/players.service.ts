@@ -1,7 +1,7 @@
 import { client } from "../sanity.client";
 import {
   PLAYERS_QUERY,
-  PLAYER_BY_SLUG_QUERY,
+  PLAYER_BY_SLUG_OR_ID_QUERY,
 } from "../queries/players.queries";
 
 import { adaptPlayers, adaptPlayer } from "../adapters/players.adapter";
@@ -13,6 +13,6 @@ export const getPlayers = async (): Promise<Player[]> => {
 };
 
 export const getPlayerBySlug = async (slug: string): Promise<Player | null> => {
-  const data = await client.fetch(PLAYER_BY_SLUG_QUERY, { slug });
+  const data = await client.fetch(PLAYER_BY_SLUG_OR_ID_QUERY, { slug });
   return adaptPlayer(data);
 };

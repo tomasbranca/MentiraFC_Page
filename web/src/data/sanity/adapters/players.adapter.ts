@@ -1,5 +1,9 @@
 import type { Player } from "../../../types/models";
-import { sanityPlayerSchema, type SanityPlayer } from "../schemas";
+import {
+  getSanitySlugValue,
+  sanityPlayerSchema,
+  type SanityPlayer,
+} from "../schemas";
 import { validateSanityArray, validateSanityItem } from "../validation";
 
 export const adaptPlayer = (p: unknown): Player | null => {
@@ -18,10 +22,7 @@ export const adaptPlayer = (p: unknown): Player | null => {
     number: validated.number,
     position: validated.position,
     birthDate: validated.birthDate,
-    slug:
-      typeof validated.slug === "string"
-        ? validated.slug
-        : validated.slug?.current,
+    slug: getSanitySlugValue(validated.slug),
     imageUrl: validated.imageUrl,
   };
 };

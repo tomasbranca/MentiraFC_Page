@@ -2,6 +2,7 @@ import type { Game, MatchEvent } from "../../../types/models";
 import {
   sanityEventSchema,
   sanityGameSchema,
+  getSanitySlugValue,
   type SanityEvent,
   type SanityGame,
 } from "../schemas";
@@ -24,10 +25,7 @@ const adaptEvent = (event: unknown): MatchEvent | null => {
           id: validated.player._id,
           name: validated.player.name,
           lastName: validated.player.lastName,
-          slug:
-            typeof validated.player.slug === "string"
-              ? validated.player.slug
-              : validated.player.slug?.current,
+          slug: getSanitySlugValue(validated.player.slug),
         }
       : null,
   };

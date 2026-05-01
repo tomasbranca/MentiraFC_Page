@@ -11,8 +11,11 @@ export const PLAYERS_QUERY = `
   }
 `;
 
-export const PLAYER_BY_SLUG_QUERY = `
-  *[_type == "players" && slug.current == $slug][0] {
+export const PLAYER_BY_SLUG_OR_ID_QUERY = `
+  coalesce(
+    *[_type == "players" && slug.current == $slug][0],
+    *[_type == "players" && _id == $slug][0]
+  ) {
     _id,
     name,
     lastName,

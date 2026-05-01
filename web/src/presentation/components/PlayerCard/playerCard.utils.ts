@@ -2,7 +2,7 @@ import { ROUTES } from "../../constants/routes.constants";
 import type { Player } from "../../../types/models";
 
 export const getPlayerLink = (player: Player): string => {
-  return ROUTES.PLAYER_DETAIL(player.slug ?? player.id);
+  return ROUTES.PLAYER_DETAIL(player.slug?.trim() || player.id);
 };
 
 export const PLAYER_CARD_MODE = {

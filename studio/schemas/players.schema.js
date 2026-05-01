@@ -54,6 +54,12 @@ export default {
         source: (doc) => `${doc.name} ${doc.lastName}`,
         maxLength: 96,
       },
+      validation: (Rule) =>
+        Rule.required().custom((slug) =>
+          slug?.current
+            ? true
+            : 'El slug es obligatorio para publicar URLs canonicas de jugadores.'
+        ),
     },
   ],
 }

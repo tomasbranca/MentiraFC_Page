@@ -1,0 +1,17 @@
+import { describe, expect, it } from "vitest";
+
+import { PLAYER_BY_SLUG_OR_ID_QUERY } from "./players.queries";
+
+describe("players queries", () => {
+  it("busca el detalle por slug canonico o por id de documento", () => {
+    expect(PLAYER_BY_SLUG_OR_ID_QUERY).toContain("coalesce(");
+    expect(PLAYER_BY_SLUG_OR_ID_QUERY).toContain("slug.current == $slug");
+    expect(PLAYER_BY_SLUG_OR_ID_QUERY).toContain("_id == $slug");
+  });
+
+  it("prioriza coincidencias por slug antes del fallback por id", () => {
+    expect(PLAYER_BY_SLUG_OR_ID_QUERY.indexOf("slug.current == $slug")).toBeLessThan(
+      PLAYER_BY_SLUG_OR_ID_QUERY.indexOf("_id == $slug")
+    );
+  });
+});

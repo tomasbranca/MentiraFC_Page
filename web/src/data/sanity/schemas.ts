@@ -4,7 +4,17 @@ const sanitySlugSchema = z.union([
   z.string(),
   z.object({ current: z.string().optional() }),
   z.undefined(),
+  z.null(),
 ]);
+
+type SanitySlug = z.infer<typeof sanitySlugSchema>;
+
+export const getSanitySlugValue = (slug: SanitySlug): string | undefined => {
+  const value = typeof slug === "string" ? slug : slug?.current;
+  const normalizedValue = value?.trim();
+
+  return normalizedValue ? normalizedValue : undefined;
+};
 
 export const sanityPlayerRefSchema = z.object({
   _id: z.string(),

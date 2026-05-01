@@ -1,5 +1,9 @@
 import type { NewsItem } from "../../../types/models";
-import { sanityNewsSchema, type SanityNews } from "../schemas";
+import {
+  getSanitySlugValue,
+  sanityNewsSchema,
+  type SanityNews,
+} from "../schemas";
 import { validateSanityArray, validateSanityItem } from "../validation";
 
 export const adaptSingleNews = (item: unknown): NewsItem | null => {
@@ -16,10 +20,7 @@ export const adaptSingleNews = (item: unknown): NewsItem | null => {
     description: validated.description,
     content: validated.content,
     date: validated.date,
-    slug:
-      typeof validated.slug === "string"
-        ? validated.slug
-        : validated.slug?.current || "",
+    slug: getSanitySlugValue(validated.slug) ?? "",
     imageUrl: validated.imageUrl,
   };
 };
