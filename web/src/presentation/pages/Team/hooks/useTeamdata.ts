@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { getPlayers } from "../../../../data/players";
 import { reportError } from "../../../../lib/errors/errorLogger";
 import { shouldLoadTeamInitially } from "../../../hooks/loading/loadingState.utils";
-import { useInitialData } from "../../../context/InitialDataContext";
+import { useInitialData } from "../../../context/useInitialData";
 import { groupPlayersByPosition } from "../team.utils";
 import type { Player } from "../../../../types/models";
 

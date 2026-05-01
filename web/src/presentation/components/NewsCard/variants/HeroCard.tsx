@@ -42,7 +42,10 @@ const HeroCard = ({
           wrapperClassName="absolute inset-0"
           className="absolute inset-0 w-full h-full object-cover"
           loading={imageLoading}
-          {...(HTMLImageElement.prototype.hasOwnProperty("fetchPriority") && {
+          {...(Object.prototype.hasOwnProperty.call(
+            HTMLImageElement.prototype,
+            "fetchPriority"
+          ) && {
             fetchPriority: imagePriority ? "high" : "auto",
           })}
           decoding="async"

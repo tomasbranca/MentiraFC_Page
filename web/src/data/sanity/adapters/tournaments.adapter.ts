@@ -6,11 +6,24 @@ import {
 } from "../schemas";
 import { validateSanityArray, validateSanityItem } from "../validation";
 
+type SanityImageRef = {
+  _ref?: unknown;
+  asset?: {
+    _ref?: unknown;
+  };
+};
+
 const getImageUrl = (image: unknown): string | null => {
   if (!image) return null;
   if (typeof image === "string") return image;
   if (typeof image === "object" && image !== null) {
-    return (image as any)?._ref || (image as any)?.asset?._ref || null;
+    const imageRef = image as SanityImageRef;
+
+    return typeof imageRef._ref === "string"
+      ? imageRef._ref
+      : typeof imageRef.asset?._ref === "string"
+        ? imageRef.asset._ref
+        : null;
   }
   return null;
 };

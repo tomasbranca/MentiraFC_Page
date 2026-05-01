@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getNewsBySlug, getSuggestedNews } from "../../../../data/news";
 import { queryKeys } from "../../../../data/queryKeys";
 import { reportError } from "../../../../lib/errors/errorLogger";
-import { useInitialData } from "../../../context/InitialDataContext";
+import { useInitialData } from "../../../context/useInitialData";
 import { selectSuggestedNews } from "../newsDetail.utils";
 
 export const useNewsDetail = (slug: string | undefined) => {
@@ -49,14 +49,13 @@ export const useNewsDetail = (slug: string | undefined) => {
     },
   });
 
-  const suggestedSource = canUseInitialData
-    ? detailFromInitialData.suggestedNews
-    : suggestedQuery.data ?? [];
-
   const suggested = useMemo(() => {
+    const suggestedSource = canUseInitialData
+      ? detailFromInitialData.suggestedNews
+      : suggestedQuery.data ?? [];
     const selected = selectSuggestedNews(suggestedSource);
     return selected.length >= 3 ? selected : [];
-  }, [suggestedSource]);
+  }, [canUseInitialData, detailFromInitialData, suggestedQuery.data]);
 
   const loading =
     !canUseInitialData && (newsItemQuery.isLoading || suggestedQuery.isLoading);

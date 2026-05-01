@@ -52,7 +52,10 @@ const NewsCardHome = ({
           wrapperClassName="news-card-image"
           className="news-card-media"
           loading={priority ? "eager" : "lazy"}
-          {...(HTMLImageElement.prototype.hasOwnProperty("fetchPriority")
+          {...(Object.prototype.hasOwnProperty.call(
+            HTMLImageElement.prototype,
+            "fetchPriority"
+          )
             ? { fetchPriority: priority ? "high" : "auto" }
             : {})}
           decoding="async"

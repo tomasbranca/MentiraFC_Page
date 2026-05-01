@@ -2,7 +2,7 @@ import { Suspense, lazy } from "react";
 import Game from "../../features/main/Game/Game";
 import Loader from "../../components/Loader/Loader";
 import { useGame } from "../../context/useGame";
-import { useInitialData } from "../../context/InitialDataContext";
+import { useInitialData } from "../../context/useInitialData";
 import { lazyWithReload } from "../../../lib/lazyWithReload";
 import {
   TableWidgetSkeleton,

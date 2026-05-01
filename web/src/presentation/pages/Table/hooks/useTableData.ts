@@ -6,7 +6,7 @@ import { getTournamentGames } from "../../../../data/games";
 import { getHybridTournamentTable } from "../../../../domain/stats";
 import { reportError } from "../../../../lib/errors/errorLogger";
 import { shouldLoadTableInitially } from "../../../hooks/loading/loadingState.utils";
-import { useInitialData } from "../../../context/InitialDataContext";
+import { useInitialData } from "../../../context/useInitialData";
 import type { Game, TeamRef, Tournament } from "../../../../types/models";
 
 export const useTableData = () => {

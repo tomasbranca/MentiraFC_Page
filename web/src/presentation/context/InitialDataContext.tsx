@@ -1,4 +1,4 @@
-import { createContext, useContext, type ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import type { InitialDataPayload } from "../../data/getInitialData";
 import { getRouteInitialData } from "../../data/getRouteInitialData";
@@ -11,13 +11,7 @@ import {
   mergeHomeCriticalIntoInitialData,
   shouldLoadHomeCriticalData,
 } from "./initialDataContext.utils";
-
-type InitialDataContextValue = {
-  initialData: InitialDataPayload;
-  isHomeCriticalLoading: boolean;
-};
-
-const InitialDataContext = createContext<InitialDataContextValue | null>(null);
+import { InitialDataContext } from "./initialData.context";
 
 type InitialDataProviderProps = {
   initialData: InitialDataPayload;
@@ -87,14 +81,4 @@ export const InitialDataProvider = ({
       {children}
     </InitialDataContext.Provider>
   );
-};
-
-export const useInitialData = (): InitialDataContextValue => {
-  const context = useContext(InitialDataContext);
-
-  if (!context) {
-    throw new Error("useInitialData must be used within InitialDataProvider");
-  }
-
-  return context;
 };

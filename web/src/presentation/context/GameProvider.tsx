@@ -4,7 +4,7 @@ import { getLatestGame } from "../../data/games";
 import { reportError } from "../../lib/errors/errorLogger";
 import type { Game } from "../../types/models";
 import { GameContext } from "./GameContext";
-import { useInitialData } from "./InitialDataContext";
+import { useInitialData } from "./useInitialData";
 import { getGameProviderSnapshot } from "./gameProvider.utils";
 
 type GameProviderProps = {
@@ -24,7 +24,7 @@ export const GameProvider = ({ children }: GameProviderProps) => {
     setGame(nextSnapshot.game);
     setLoading(nextSnapshot.loading);
     setError(null);
-  }, [initialData.bootstrapScope, initialData.latestGame]);
+  }, [initialData]);
 
   const refetch = useCallback(async () => {
     setLoading(true);

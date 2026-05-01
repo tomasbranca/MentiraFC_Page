@@ -1,9 +1,8 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
-import ProgressiveMedia, {
-  getProgressiveMediaWrapperClassName,
-} from "./ProgressiveMedia";
+import ProgressiveMedia from "./ProgressiveMedia";
+import { getProgressiveMediaWrapperClassName } from "./ProgressiveMedia.utils";
 
 describe("ProgressiveMedia", () => {
   it("renderiza un placeholder inicial y mantiene reservada la imagen", () => {

@@ -33,7 +33,10 @@ const FeaturedBoxCard = ({
         wrapperClassName="row-span-3"
         className="row-span-3 w-full h-full object-cover"
         loading={imageLoading}
-        {...(HTMLImageElement.prototype.hasOwnProperty("fetchPriority") && {
+        {...(Object.prototype.hasOwnProperty.call(
+          HTMLImageElement.prototype,
+          "fetchPriority"
+        ) && {
           fetchPriority: imagePriority ? "high" : "auto",
         })}
         decoding="async"

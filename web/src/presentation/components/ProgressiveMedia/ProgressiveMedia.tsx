@@ -6,6 +6,10 @@ import {
   useRef,
   useState,
 } from "react";
+import {
+  getProgressiveMediaWrapperClassName,
+  joinClasses,
+} from "./ProgressiveMedia.utils";
 
 type ProgressiveMediaProps = Omit<
   ImgHTMLAttributes<HTMLImageElement>,
@@ -17,20 +21,6 @@ type ProgressiveMediaProps = Omit<
   skeletonClassName?: string;
   overlay?: ReactNode;
 };
-
-const joinClasses = (...classes: Array<string | false | null | undefined>) =>
-  classes.filter(Boolean).join(" ");
-
-const POSITION_CLASS_PATTERN = /(^|\s)(static|fixed|absolute|relative|sticky)(?=\s|$)/;
-
-export const getProgressiveMediaWrapperClassName = (
-  wrapperClassName?: string
-) =>
-  joinClasses(
-    POSITION_CLASS_PATTERN.test(wrapperClassName ?? "") ? undefined : "relative",
-    "overflow-hidden",
-    wrapperClassName
-  );
 
 const ProgressiveMedia = ({
   alt,

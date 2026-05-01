@@ -33,7 +33,10 @@ const FeaturedWideCard = ({
         wrapperClassName="w-full h-55 md:absolute md:inset-0 md:h-full"
         className="w-full h-55 md:absolute md:inset-0 md:h-full object-cover"
         loading={imageLoading}
-        {...(HTMLImageElement.prototype.hasOwnProperty("fetchPriority") && {
+        {...(Object.prototype.hasOwnProperty.call(
+          HTMLImageElement.prototype,
+          "fetchPriority"
+        ) && {
           fetchPriority: imagePriority ? "high" : "auto",
         })}
         decoding="async"

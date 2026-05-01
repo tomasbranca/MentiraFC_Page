@@ -5,7 +5,7 @@ import { getPlayerBySlug } from "../../../../data/players";
 import { getPlayerStats } from "../../../../domain/stats";
 import { reportError } from "../../../../lib/errors/errorLogger";
 import { shouldLoadPlayerDetailInitially } from "../../../hooks/loading/loadingState.utils";
-import { useInitialData } from "../../../context/InitialDataContext";
+import { useInitialData } from "../../../context/useInitialData";
 import type { Player } from "../../../../types/models";
 
 type PlayerDetailViewModel = Player & { goalsThisYear: number };

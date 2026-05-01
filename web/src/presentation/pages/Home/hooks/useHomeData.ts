@@ -8,7 +8,7 @@ import { queryKeys } from "../../../../data/queryKeys";
 import { getTeams } from "../../../../data/teams";
 import { getTournament } from "../../../../data/tournament";
 import { reportError } from "../../../../lib/errors/errorLogger";
-import { useInitialData } from "../../../context/InitialDataContext";
+import { useInitialData } from "../../../context/useInitialData";
 import {
   getDeferredHomeQueryBehavior,
   hasCompleteDeferredHomeData,

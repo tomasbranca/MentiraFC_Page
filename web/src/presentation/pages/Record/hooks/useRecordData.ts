@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { getAllGames } from "../../../../data/games";
 import { reportError } from "../../../../lib/errors/errorLogger";
 import { shouldLoadRecordInitially } from "../../../hooks/loading/loadingState.utils";
-import { useInitialData } from "../../../context/InitialDataContext";
+import { useInitialData } from "../../../context/useInitialData";
 import type { Game } from "../../../../types/models";
 
 export const useRecordData = () => {

@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { getNews } from "../../../../data/news";
 import { reportError } from "../../../../lib/errors/errorLogger";
 import { shouldLoadNewsInitially } from "../../../hooks/loading/loadingState.utils";
-import { useInitialData } from "../../../context/InitialDataContext";
+import { useInitialData } from "../../../context/useInitialData";
 import { sortNews } from "../../../utils/news.utils";
 import type { NewsItem } from "../../../../types/models";
 

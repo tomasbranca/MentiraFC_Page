@@ -32,14 +32,22 @@ const markPendingReload = () => {
   sessionStorage.setItem(RELOAD_GUARD_KEY, "1");
 };
 
+// React.lazy's public type is intentionally ComponentType<any>; keep the any
+// contained here so lazy-loaded components retain their own prop types.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type LazyComponent = ComponentType<any>;
+
+type LazyModule<TComponent extends LazyComponent> = {
+  default: TComponent;
+};
+
 export const clearLazyReloadGuard = () => {
   sessionStorage.removeItem(RELOAD_GUARD_KEY);
 };
 
 export const resolveLazyImportWithReload = async <
-  T extends {
-    default: ComponentType<any>;
-  },
+  TComponent extends LazyComponent,
+  T extends LazyModule<TComponent>,
 >(
   importer: () => Promise<T>
 ) => {
@@ -65,9 +73,8 @@ export const resolveLazyImportWithReload = async <
 };
 
 export const lazyWithReload = <
-  T extends {
-    default: ComponentType<any>;
-  },
+  TComponent extends LazyComponent,
+  T extends LazyModule<TComponent>,
 >(
   importer: () => Promise<T>
 ) => lazy(() => resolveLazyImportWithReload(importer));

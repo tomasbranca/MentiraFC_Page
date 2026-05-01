@@ -1,9 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import {
-  clearLazyReloadGuard,
-  resolveLazyImportWithReload,
-} from "./lazyWithReload";
+import { resolveLazyImportWithReload } from "./lazyWithReload";
 
 const createStorageMock = () => {
   const store = new Map<string, string>();
