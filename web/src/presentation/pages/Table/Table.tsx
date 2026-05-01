@@ -1,11 +1,69 @@
 import { useState } from "react";
 import { FiBarChart2 } from "react-icons/fi";
-import { urlFor } from "../../../data/sanity/sanity.image";
+import { getImageUrl } from "../../../data/imageService";
 import Loader from "../../components/Loader/Loader";
 import Button from "../../components/Button/Button";
 import ErrorFallback from "../../components/errors/ErrorFallback";
 import { useTableData } from "./hooks/useTableData";
 import { formatLongDate } from "../../utils/date.utils";
+
+type LogoSize = "sm" | "lg";
+
+const logoSizes: Record<LogoSize, string> = {
+  sm: "w-7 h-7 text-[10px]",
+  lg: "w-20 h-20 text-xl",
+};
+
+const getLogoInitials = (name: string): string => {
+  const initials = name
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word[0])
+    .join("")
+    .toUpperCase();
+
+  return initials || "?";
+};
+
+type LogoImageProps = {
+  image: unknown;
+  name: string;
+  size: LogoSize;
+  className?: string;
+};
+
+const LogoImage = ({ image, name, size, className = "" }: LogoImageProps) => {
+  const dimensions = size === "lg" ? 80 : 32;
+  const imageUrl = getImageUrl(image, {
+    width: dimensions,
+    height: dimensions,
+    fit: "max",
+    autoFormat: true,
+  });
+  const classes = `${logoSizes[size]} ${className}`;
+
+  if (imageUrl) {
+    return (
+      <img
+        src={imageUrl}
+        alt={name}
+        className={`${classes} object-contain`}
+      />
+    );
+  }
+
+  return (
+    <span
+      role="img"
+      aria-label={`Logo no disponible: ${name}`}
+      className={`${classes} shrink-0 rounded-full border border-neutral-700 bg-neutral-800 text-neutral-300 flex items-center justify-center font-bold uppercase`}
+    >
+      {getLogoInitials(name)}
+    </span>
+  );
+};
 
 const Table = () => {
   const { tournament, loading, error, refetch } = useTableData();
@@ -46,13 +104,12 @@ const Table = () => {
         <div className="border border-neutral-800 bg-neutral-900">
           {/* HEADER */}
           <div className="px-6 py-8 border-b border-neutral-800 text-center shadow-lg shadow-black/30">
-            {tournament.imageUrl && (
-              <img
-                src={urlFor(tournament.imageUrl).width(80).height(80).url()}
-                alt={tournament.name}
-                className="w-20 h-20 mx-auto mb-4 object-contain"
-              />
-            )}
+            <LogoImage
+              image={tournament.imageUrl}
+              name={tournament.name}
+              size="lg"
+              className="mx-auto mb-4"
+            />
 
             <span className="text-xs uppercase tracking-widest text-neutral-500">
               Tabla de posiciones
@@ -122,13 +179,10 @@ const Table = () => {
                         {row.position}
                       </span>
 
-                      <img
-                        src={urlFor(row.team.imageUrl)
-                          .width(32)
-                          .height(32)
-                          .url()}
-                        alt={row.team.name}
-                        className="w-7 h-7 object-contain"
+                      <LogoImage
+                        image={row.team.imageUrl}
+                        name={row.team.name}
+                        size="sm"
                       />
 
                       <span
@@ -247,13 +301,10 @@ const Table = () => {
 
                       <td className="py-3 px-3">
                         <div className="flex items-center gap-3">
-                          <img
-                            src={urlFor(row.team.imageUrl)
-                              .width(30)
-                              .height(30)
-                              .url()}
-                            alt={row.team.name}
-                            className="w-7 h-7"
+                          <LogoImage
+                            image={row.team.imageUrl}
+                            name={row.team.name}
+                            size="sm"
                           />
                           <span
                             className={`font-semibold ${

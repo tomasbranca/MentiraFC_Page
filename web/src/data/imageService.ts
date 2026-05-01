@@ -12,6 +12,9 @@ type ImageOptions = {
 const isSanityImageUrl = (value: string): boolean =>
   value.includes("cdn.sanity.io/images/");
 
+const isSanityImageAssetRef = (value: string): boolean =>
+  /^image-[a-zA-Z0-9]+-\d+x\d+-[a-z0-9]+$/.test(value);
+
 const buildSanityImageUrlFromString = (
   imageUrl: string,
   options: ImageOptions
@@ -32,6 +35,26 @@ const buildSanityImageUrlFromString = (
   }
 };
 
+const buildSanityImageUrl = (
+  image: unknown,
+  options: ImageOptions
+): string => {
+  try {
+    let builder = urlFor(image);
+
+    if (options.width) builder = builder.width(options.width);
+    if (options.height) builder = builder.height(options.height);
+    if (options.fit) builder = builder.fit(options.fit);
+    if (options.quality) builder = builder.quality(options.quality);
+    if (options.autoFormat) builder = builder.auto("format");
+    if (options.format) builder = builder.format(options.format);
+
+    return builder.url();
+  } catch {
+    return "";
+  }
+};
+
 export const getImageUrl = (
   image: unknown,
   options: ImageOptions = {}
@@ -41,23 +64,24 @@ export const getImageUrl = (
   }
 
   if (typeof image === "string") {
-    if (!isSanityImageUrl(image)) {
-      return image;
+    const normalizedImage = image.trim();
+
+    if (!normalizedImage) {
+      return "";
     }
 
-    return buildSanityImageUrlFromString(image, options);
+    if (isSanityImageUrl(normalizedImage)) {
+      return buildSanityImageUrlFromString(normalizedImage, options);
+    }
+
+    if (isSanityImageAssetRef(normalizedImage)) {
+      return buildSanityImageUrl(normalizedImage, options);
+    }
+
+    return normalizedImage;
   }
 
-  let builder = urlFor(image);
-
-  if (options.width) builder = builder.width(options.width);
-  if (options.height) builder = builder.height(options.height);
-  if (options.fit) builder = builder.fit(options.fit);
-  if (options.quality) builder = builder.quality(options.quality);
-  if (options.autoFormat) builder = builder.auto("format");
-  if (options.format) builder = builder.format(options.format);
-
-  return builder.url();
+  return buildSanityImageUrl(image, options);
 };
 
 export const getImageSrcSet = (
@@ -66,5 +90,10 @@ export const getImageSrcSet = (
   options: Omit<ImageOptions, "width"> = {}
 ): string =>
   widths
-    .map((width) => `${getImageUrl(image, { ...options, width })} ${width}w`)
+    .map((width) => {
+      const url = getImageUrl(image, { ...options, width });
+
+      return url ? `${url} ${width}w` : "";
+    })
+    .filter(Boolean)
     .join(", ");
