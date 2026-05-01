@@ -1,4 +1,7 @@
-import * as Sentry from "@sentry/react";
+import {
+  captureSentryException,
+  isSentryConfigured,
+} from "./sentryClient";
 
 type ErrorContext = Record<string, unknown>;
 
@@ -118,13 +121,11 @@ export const reportError = (
     timestamp: new Date().toISOString(),
   };
 
-  if (import.meta.env.DEV || !Sentry.isInitialized()) {
+  if (import.meta.env.DEV || !isSentryConfigured()) {
     console.error("[AppError]", payload);
   }
 
-  if (!Sentry.isInitialized()) return;
-
-  Sentry.captureException(normalizedError, {
+  void captureSentryException(normalizedError, {
     tags: getSentryTags(context),
     contexts: {
       app: getBrowserContext(),

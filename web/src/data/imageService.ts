@@ -1,5 +1,3 @@
-import { urlFor } from "./sanity/sanity.image";
-
 type ImageOptions = {
   width?: number;
   height?: number;
@@ -9,11 +7,55 @@ type ImageOptions = {
   autoFormat?: boolean;
 };
 
+type SanityImageAssetRef = {
+  assetId: string;
+  width: string;
+  height: string;
+  format: string;
+};
+
 const isSanityImageUrl = (value: string): boolean =>
   value.includes("cdn.sanity.io/images/");
 
-const isSanityImageAssetRef = (value: string): boolean =>
-  /^image-[a-zA-Z0-9]+-\d+x\d+-[a-z0-9]+$/.test(value);
+const parseSanityImageAssetRef = (
+  value: string
+): SanityImageAssetRef | null => {
+  const match = value.match(
+    /^image-([a-zA-Z0-9]+)-(\d+)x(\d+)-([a-z0-9]+)$/
+  );
+
+  if (!match) {
+    return null;
+  }
+
+  const [, assetId, width, height, format] = match;
+
+  if (!assetId || !width || !height || !format) {
+    return null;
+  }
+
+  return { assetId, width, height, format };
+};
+
+const getSanityImageAssetRef = (image: unknown): string | null => {
+  if (typeof image === "string") {
+    return image;
+  }
+
+  if (!image || typeof image !== "object") {
+    return null;
+  }
+
+  const asset = (image as { asset?: unknown }).asset;
+
+  if (!asset || typeof asset !== "object") {
+    return null;
+  }
+
+  const ref = (asset as { _ref?: unknown })._ref;
+
+  return typeof ref === "string" ? ref : null;
+};
 
 const buildSanityImageUrlFromString = (
   imageUrl: string,
@@ -35,24 +77,22 @@ const buildSanityImageUrlFromString = (
   }
 };
 
-const buildSanityImageUrl = (
+const buildSanityImageUrlFromAssetRef = (
   image: unknown,
   options: ImageOptions
 ): string => {
-  try {
-    let builder = urlFor(image);
+  const ref = getSanityImageAssetRef(image)?.trim();
+  const asset = ref ? parseSanityImageAssetRef(ref) : null;
+  const projectId = import.meta.env.VITE_SANITY_PROJECT_ID;
+  const dataset = import.meta.env.VITE_SANITY_DATASET;
 
-    if (options.width) builder = builder.width(options.width);
-    if (options.height) builder = builder.height(options.height);
-    if (options.fit) builder = builder.fit(options.fit);
-    if (options.quality) builder = builder.quality(options.quality);
-    if (options.autoFormat) builder = builder.auto("format");
-    if (options.format) builder = builder.format(options.format);
-
-    return builder.url();
-  } catch {
+  if (!asset || !projectId || !dataset) {
     return "";
   }
+
+  const url = `https://cdn.sanity.io/images/${projectId}/${dataset}/${asset.assetId}-${asset.width}x${asset.height}.${asset.format}`;
+
+  return buildSanityImageUrlFromString(url, options);
 };
 
 export const getImageUrl = (
@@ -74,14 +114,14 @@ export const getImageUrl = (
       return buildSanityImageUrlFromString(normalizedImage, options);
     }
 
-    if (isSanityImageAssetRef(normalizedImage)) {
-      return buildSanityImageUrl(normalizedImage, options);
+    if (parseSanityImageAssetRef(normalizedImage)) {
+      return buildSanityImageUrlFromAssetRef(normalizedImage, options);
     }
 
     return normalizedImage;
   }
 
-  return buildSanityImageUrl(image, options);
+  return buildSanityImageUrlFromAssetRef(image, options);
 };
 
 export const getImageSrcSet = (

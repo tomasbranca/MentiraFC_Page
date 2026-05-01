@@ -2,7 +2,6 @@ import { StrictMode, Suspense, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
-import * as Sentry from "@sentry/react";
 import "@fontsource/archivo/latin-700.css";
 import "@fontsource/archivo/latin-900.css";
 import "@fontsource/roboto/latin-400.css";
@@ -15,54 +14,20 @@ import {
   createBootstrapErrorPayload,
   createEmptyInitialData,
   type InitialDataPayload,
-} from "./data/getInitialData";
-import { getImageSrcSet, getImageUrl } from "./data/imageService";
+} from "./data/initialDataPayload";
 import { queryKeys } from "./data/queryKeys";
-import { getRouteInitialData } from "./data/getRouteInitialData";
 import { queryClient } from "./lib/queryClient";
 import { reportError } from "./lib/errors/errorLogger";
 import { sortNews } from "./presentation/utils/news.utils";
 import { startWebVitalsTracking } from "./lib/performance/reportWebVitals";
+import { initSentry } from "./lib/errors/sentryClient";
 import ScrollToTop from "./presentation/app/scrollToTop";
 import Loader from "./presentation/components/Loader/Loader";
 import ErrorBoundary from "./presentation/components/errors/ErrorBoundary";
 
 import "./index.css";
 
-const sanitizeSentryUrl = (url: string): string => {
-  try {
-    const parsedUrl = new URL(url);
-    return `${parsedUrl.origin}${parsedUrl.pathname}`;
-  } catch {
-    return url.split(/[?#]/)[0] ?? url;
-  }
-};
-
-const sentryDsn = import.meta.env.VITE_SENTRY_DSN?.trim();
-
-if (sentryDsn) {
-  Sentry.init({
-    dsn: sentryDsn,
-    environment: import.meta.env.MODE,
-    sendDefaultPii: false,
-    beforeSend(event) {
-      delete event.user;
-
-      if (event.request?.url) {
-        event.request.url = sanitizeSentryUrl(event.request.url);
-      }
-
-      if (event.request?.headers) {
-        delete event.request.headers.authorization;
-        delete event.request.headers.Authorization;
-        delete event.request.headers.cookie;
-        delete event.request.headers.Cookie;
-      }
-
-      return event;
-    },
-  });
-}
+void initSentry();
 
 const rootElement = document.getElementById("root");
 
@@ -105,6 +70,30 @@ const HOME_LCP_PRELOAD_ID = "home-lcp-image-preload";
 const HOME_LCP_IMAGE_WIDTHS = [640, 960, 1280] as const;
 const HOME_LCP_IMAGE_SIZES = "100vw";
 
+const buildHomeLcpImageUrl = (imageUrl: string, width: number): string => {
+  if (!imageUrl.includes("cdn.sanity.io/images/")) {
+    return imageUrl;
+  }
+
+  try {
+    const url = new URL(imageUrl);
+    url.searchParams.set("w", String(width));
+    url.searchParams.set("h", "720");
+    url.searchParams.set("fit", "crop");
+    url.searchParams.set("q", "70");
+    url.searchParams.set("auto", "format");
+
+    return url.toString();
+  } catch {
+    return imageUrl;
+  }
+};
+
+const buildHomeLcpImageSrcSet = (imageUrl: string): string =>
+  HOME_LCP_IMAGE_WIDTHS.map(
+    (width) => `${buildHomeLcpImageUrl(imageUrl, width)} ${width}w`
+  ).join(", ");
+
 const ensureHomeLcpPreload = (
   payload: InitialDataPayload,
   pathname: string
@@ -115,23 +104,8 @@ const ensureHomeLcpPreload = (
 
   if (!firstCarouselImage) return;
 
-  const optimizedLcpImage = getImageUrl(firstCarouselImage, {
-    width: 1280,
-    height: 720,
-    fit: "crop",
-    quality: 70,
-    autoFormat: true,
-  });
-  const optimizedLcpImageSrcSet = getImageSrcSet(
-    firstCarouselImage,
-    [...HOME_LCP_IMAGE_WIDTHS],
-    {
-      height: 720,
-      fit: "crop",
-      quality: 70,
-      autoFormat: true,
-    }
-  );
+  const optimizedLcpImage = buildHomeLcpImageUrl(firstCarouselImage, 1280);
+  const optimizedLcpImageSrcSet = buildHomeLcpImageSrcSet(firstCarouselImage);
 
   const existing = document.getElementById(HOME_LCP_PRELOAD_ID);
 
@@ -192,6 +166,7 @@ const bootstrap = async () => {
 
   try {
     const pathname = window.location.pathname;
+    const { getRouteInitialData } = await import("./data/getRouteInitialData");
     const initialData = await getRouteInitialData(pathname);
 
     ensureHomeLcpPreload(initialData, pathname);

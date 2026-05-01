@@ -1,4 +1,4 @@
-import { FiAlertTriangle } from "react-icons/fi";
+import { AlertTriangleIcon } from "../icons/InlineIcons";
 
 type ErrorFallbackProps = {
   title?: string;
@@ -17,7 +17,7 @@ const ErrorFallback = ({
     <main className="h-[80vh] flex items-center justify-center px-4 text-white">
       <div className="w-full max-w-xl rounded-xl border border-red-500/40 bg-red-950/40 p-6 text-center shadow-lg shadow-black/30">
         <div className="text-4xl mb-3 flex justify-center" aria-hidden="true">
-          <FiAlertTriangle />
+          <AlertTriangleIcon width={40} height={40} />
         </div>
         <h2 className="text-xl md:text-2xl font-bold mb-2">{title}</h2>
         <p className="text-red-100/90">{message}</p>

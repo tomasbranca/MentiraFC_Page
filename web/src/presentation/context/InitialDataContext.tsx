@@ -1,7 +1,6 @@
 import { type ReactNode, useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import type { InitialDataPayload } from "../../data/getInitialData";
-import { getRouteInitialData } from "../../data/getRouteInitialData";
+import type { InitialDataPayload } from "../../data/initialDataPayload";
 import { queryKeys } from "../../data/queryKeys";
 import { queryClient } from "../../lib/queryClient";
 import { reportError } from "../../lib/errors/errorLogger";
@@ -43,7 +42,13 @@ export const InitialDataProvider = ({
     queryClient
       .fetchQuery({
         queryKey: queryKeys.home.critical,
-        queryFn: () => getRouteInitialData(ROUTES.HOME),
+        queryFn: async () => {
+          const { getRouteInitialData } = await import(
+            "../../data/getRouteInitialData"
+          );
+
+          return getRouteInitialData(ROUTES.HOME);
+        },
         staleTime: HOME_CRITICAL_BACKGROUND_STALE_TIME,
       })
       .then((homeData) => {

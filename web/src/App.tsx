@@ -8,11 +8,8 @@ import { GameProvider } from "./presentation/context/GameProvider";
 import { InitialDataProvider } from "./presentation/context/InitialDataContext";
 import Footer from "./presentation/layout/Footer/Footer";
 import NavBar from "./presentation/layout/NavBar/NavBar";
-import Home from "./presentation/pages/Home/Home";
 import { ROUTES } from "./presentation/constants/routes.constants";
 
-import { Analytics } from "@vercel/analytics/react";
-import { SpeedInsights } from "@vercel/speed-insights/react";
 import { lazyWithReload } from "./lib/lazyWithReload";
 
 import "./App.css";
@@ -21,6 +18,7 @@ type AppProps = {
   initialData: InitialDataPayload;
 };
 
+const Home = lazyWithReload(() => import("./presentation/pages/Home/Home"));
 const News = lazyWithReload(() => import("./presentation/pages/News/News"));
 const Team = lazyWithReload(() => import("./presentation/pages/Team/Team"));
 const Table = lazyWithReload(() => import("./presentation/pages/Table/Table"));
@@ -31,6 +29,16 @@ const NewsDetail = lazyWithReload(
 );
 const PlayerDetail = lazyWithReload(
   () => import("./presentation/pages/PlayerDetail/PlayerDetail"),
+);
+const Analytics = lazyWithReload(() =>
+  import("@vercel/analytics/react").then(({ Analytics }) => ({
+    default: Analytics,
+  }))
+);
+const SpeedInsights = lazyWithReload(() =>
+  import("@vercel/speed-insights/react").then(({ SpeedInsights }) => ({
+    default: SpeedInsights,
+  }))
 );
 
 function App({ initialData }: AppProps) {
@@ -60,8 +68,12 @@ function App({ initialData }: AppProps) {
 
   return (
     <InitialDataProvider initialData={initialData}>
-      {enableAnalytics && <Analytics />}
-      {enableAnalytics && <SpeedInsights />}
+      {enableAnalytics && (
+        <Suspense fallback={null}>
+          <Analytics />
+          <SpeedInsights />
+        </Suspense>
+      )}
 
       <GameProvider>
         <NavBar />
