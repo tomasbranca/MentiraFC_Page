@@ -29,10 +29,40 @@ import ErrorBoundary from "./presentation/components/errors/ErrorBoundary";
 
 import "./index.css";
 
-Sentry.init({
-  dsn: import.meta.env.SENTRY_DSN,
-  sendDefaultPii: true,
-});
+const sanitizeSentryUrl = (url: string): string => {
+  try {
+    const parsedUrl = new URL(url);
+    return `${parsedUrl.origin}${parsedUrl.pathname}`;
+  } catch {
+    return url.split(/[?#]/)[0] ?? url;
+  }
+};
+
+const sentryDsn = import.meta.env.VITE_SENTRY_DSN?.trim();
+
+if (sentryDsn) {
+  Sentry.init({
+    dsn: sentryDsn,
+    environment: import.meta.env.MODE,
+    sendDefaultPii: false,
+    beforeSend(event) {
+      delete event.user;
+
+      if (event.request?.url) {
+        event.request.url = sanitizeSentryUrl(event.request.url);
+      }
+
+      if (event.request?.headers) {
+        delete event.request.headers.authorization;
+        delete event.request.headers.Authorization;
+        delete event.request.headers.cookie;
+        delete event.request.headers.Cookie;
+      }
+
+      return event;
+    },
+  });
+}
 
 const rootElement = document.getElementById("root");
 
