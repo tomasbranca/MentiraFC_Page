@@ -1,11 +1,15 @@
-// @ts-nocheck
 import { Link } from "react-router-dom";
 import { getImageSrcSet, getImageUrl } from "../../../../data/imageService";
 import ProgressiveMedia from "../../ProgressiveMedia/ProgressiveMedia";
 import { getNewsLink } from "../../../utils/navigation.utils";
 import { formatDate } from "../../../utils/date.utils";
+import type { NewsCardVariantProps } from "../NewsCard";
 
-const HeroCard = ({ item, imageLoading = "lazy", imagePriority = false }) => {
+const HeroCard = ({
+  item,
+  imageLoading = "lazy",
+  imagePriority = false,
+}: NewsCardVariantProps) => {
   return (
     <Link
       to={getNewsLink(item)}

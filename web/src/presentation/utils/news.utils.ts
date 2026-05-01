@@ -1,4 +1,3 @@
-// @ts-nocheck
 import type { NewsItem } from "../../types/models";
 
 export const sortNews = (news: NewsItem[] = []): NewsItem[] =>

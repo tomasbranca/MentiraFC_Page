@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const ROUTES = {
   HOME: "/",
   NEWS: "/noticias",
@@ -7,6 +6,6 @@ export const ROUTES = {
   RECORD: "/historial",
   ADMIN: "/admin",
 
-  NEWS_DETAIL: (slug) => `/noticias/${slug}`,
-  PLAYER_DETAIL: (slug) => `/plantel/${slug}`,
+  NEWS_DETAIL: (slug: string) => `/noticias/${slug}`,
+  PLAYER_DETAIL: (slug: string) => `/plantel/${slug}`,
 };

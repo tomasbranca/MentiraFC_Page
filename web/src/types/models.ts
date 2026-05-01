@@ -25,6 +25,8 @@ export interface Player {
   imageUrl?: string | null;
 }
 
+export type PlayerWithGoals = Player & { goals: number };
+
 export interface MatchEvent {
   id: string;
   type: string;

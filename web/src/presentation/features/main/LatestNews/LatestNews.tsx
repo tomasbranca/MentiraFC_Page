@@ -1,14 +1,18 @@
-// @ts-nocheck
 import { Suspense } from "react";
 import { lazyWithReload } from "../../../../lib/lazyWithReload";
 import { MoreNewsSkeleton } from "../../../components/Skeletons/SectionSkeletons";
 
 import Carousel from "./Carousel/Carousel";
 import { splitNews } from "./latestNews.utils";
+import type { NewsItem } from "../../../../types/models";
 
 const MoreNews = lazyWithReload(() => import("./MoreNews"));
 
-const LatestNews = ({ news = [] }) => {
+type LatestNewsProps = {
+  news?: NewsItem[];
+};
+
+const LatestNews = ({ news = [] }: LatestNewsProps) => {
   if (!news.length) return null;
 
   const { carouselNews, otherNews } = splitNews(news);

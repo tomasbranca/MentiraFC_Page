@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -8,8 +7,13 @@ import ProgressiveMedia from "../../../components/ProgressiveMedia/ProgressiveMe
 import { formatDate } from "../../../utils/date.utils";
 import { getNewsLink } from "../../../utils/navigation.utils";
 import { getNextVisibleCount, paginateList } from "./newsList.utils";
+import type { NewsItem } from "../../../../types/models";
 
-const NewsList = ({ items = [] }) => {
+type NewsListProps = {
+  items?: NewsItem[];
+};
+
+const NewsList = ({ items = [] }: NewsListProps) => {
   const [visibleCount, setVisibleCount] = useState(3);
 
   if (!items.length) return null;

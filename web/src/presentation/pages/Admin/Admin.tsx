@@ -1,4 +1,3 @@
-// @ts-nocheck
 import "./Admin.css";
 
 const Admin = () => {

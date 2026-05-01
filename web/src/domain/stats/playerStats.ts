@@ -1,4 +1,4 @@
-import type { Game, Player } from "../../types/models";
+import type { Game, MatchEvent, Player, PlayerWithGoals } from "../../types/models";
 
 type StatsOptions = { year?: number };
 type PlayerStats = {
@@ -6,12 +6,34 @@ type PlayerStats = {
   goals: number;
   matchesWithGoals: number;
 };
-type TopScorer = Player & { goals: number };
+type PlayerInput = Partial<Player> & Pick<Player, "id">;
+type EventInput =
+  | (Partial<MatchEvent> & {
+      player?: { id?: string | null } | null;
+    })
+  | null;
+type GameInput = Partial<Omit<Game, "events">> & {
+  events?: EventInput[] | null;
+};
 
-const normalizeGames = (games: Game[] = []): Game[] =>
+const normalizeGames = (games: GameInput[] | unknown = []): GameInput[] =>
   Array.isArray(games) ? games : [];
-const normalizePlayers = (players: Player[] = []): Player[] =>
-  Array.isArray(players) ? players : [];
+const normalizePlayers = (players: PlayerInput[] | unknown = []): Player[] =>
+  Array.isArray(players)
+    ? players
+        .filter((player): player is PlayerInput => Boolean(player?.id))
+        .map((player) => ({
+          id: player.id,
+          name: player.name ?? "",
+          lastName: player.lastName ?? "",
+          fullName: player.fullName ?? `${player.name ?? ""} ${player.lastName ?? ""}`.trim(),
+          slug: player.slug,
+          number: player.number,
+          position: player.position,
+          birthDate: player.birthDate,
+          imageUrl: player.imageUrl,
+        }))
+    : [];
 
 const isInYear = (date: string | undefined, year?: number): boolean => {
   if (!year) return true;
@@ -19,18 +41,21 @@ const isInYear = (date: string | undefined, year?: number): boolean => {
   return new Date(date).getFullYear() === year;
 };
 
-const getGoalEvents = (games: Game[] = [], year?: number) => {
+const getGoalEvents = (games: GameInput[] | unknown = [], year?: number) => {
   return normalizeGames(games)
     .filter((game) => isInYear(game.date, year))
     .flatMap((game) => game.events || [])
-    .filter((event) => event?.type === "goal" && event?.player?.id);
+    .filter(
+      (event): event is NonNullable<EventInput> =>
+        event !== null && event.type === "goal" && Boolean(event.player?.id)
+    );
 };
 
 export const getTopScorers = (
-  games: Game[] = [],
-  players: Player[] = [],
+  games: GameInput[] | unknown = [],
+  players: PlayerInput[] | unknown = [],
   options: StatsOptions = {}
-): TopScorer[] => {
+): PlayerWithGoals[] => {
   const { year } = options;
 
   const goalsByPlayer = getGoalEvents(games, year).reduce<
@@ -53,7 +78,7 @@ export const getTopScorers = (
 };
 
 export const getPlayerStats = (
-  games: Game[] = [],
+  games: GameInput[] | unknown = [],
   playerId?: string | null,
   options: StatsOptions = {}
 ): PlayerStats => {

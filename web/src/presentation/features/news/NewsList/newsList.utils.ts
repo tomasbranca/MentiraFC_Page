@@ -1,8 +1,7 @@
-// @ts-nocheck
-export const paginateList = (items = [], visibleCount = 3) => {
+export const paginateList = <T>(items: T[] = [], visibleCount = 3): T[] => {
   return items.slice(0, visibleCount);
 };
 
-export const getNextVisibleCount = (current, step = 3) => {
+export const getNextVisibleCount = (current: number, step = 3): number => {
   return current + step;
 };

@@ -1,14 +1,14 @@
-// @ts-nocheck
 import { useCallback, useEffect, useState } from "react";
 
 import { getAllGames } from "../../../../data/games";
 import { reportError } from "../../../../lib/errors/errorLogger";
 import { shouldLoadRecordInitially } from "../../../hooks/loading/loadingState.utils";
 import { useInitialData } from "../../../context/InitialDataContext";
+import type { Game } from "../../../../types/models";
 
 export const useRecordData = () => {
   const { initialData } = useInitialData();
-  const [overrideGames, setOverrideGames] = useState(null);
+  const [overrideGames, setOverrideGames] = useState<Game[] | null>(null);
   const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);
   const [error, setError] = useState(false);
 

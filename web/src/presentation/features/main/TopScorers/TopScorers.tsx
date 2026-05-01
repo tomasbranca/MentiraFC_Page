@@ -1,10 +1,14 @@
-// @ts-nocheck
 import { useState } from "react";
 import PlayerCard from "../../../components/PlayerCard/PlayerCard";
 import { filterPlayersWithGoals, paginate } from "./topScorers.utils";
 import { PLAYER_CARD_MODE } from "../../../components/PlayerCard/playerCard.utils";
+import type { PlayerWithGoals } from "../../../../types/models";
 
-const TopScorers = ({ players = [] }) => {
+type TopScorersProps = {
+  players?: PlayerWithGoals[];
+};
+
+const TopScorers = ({ players = [] }: TopScorersProps) => {
   const [page, setPage] = useState(0);
 
   const playersPerPage = 4;

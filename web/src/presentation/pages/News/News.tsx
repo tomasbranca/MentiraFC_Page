@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Suspense } from "react";
 import NewsBentoGrid from "../../features/news/NewsBentoGrid/NewsBentoGrid";
 import Loader from "../../components/Loader/Loader";

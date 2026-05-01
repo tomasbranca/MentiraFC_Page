@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState } from "react";
 import GameSkeleton from "./GameSkeleton/GameSkeleton";
 import GameEmpty from "./GameEmpty/GameEmpty";
@@ -11,10 +10,16 @@ import {
   SITE_LOGO_SIZES,
   SITE_LOGO_SRC_SET,
 } from "../../../constants/assets.constants";
+import type { Game as GameModel } from "../../../../types/models";
 
 import { formatDateTime } from "../../../utils/date.utils";
 
-const Game = ({ game, loading }) => {
+type GameProps = {
+  game: GameModel | null;
+  loading: boolean;
+};
+
+const Game = ({ game, loading }: GameProps) => {
   const [showScorers, setShowScorers] = useState(false);
 
   if (loading) return <GameSkeleton />;
@@ -24,7 +29,7 @@ const Game = ({ game, loading }) => {
   const isInProgress = isGameInProgress(game);
   const scorers = getScorers(game.events || []);
 
-  const renderFootballs = (goals) =>
+  const renderFootballs = (goals: number) =>
     Array.from({ length: goals }).map((_, i) => (
       <SoccerBallIcon
         key={i}

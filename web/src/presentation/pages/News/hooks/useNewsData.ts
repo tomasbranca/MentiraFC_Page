@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { getNews } from "../../../../data/news";
@@ -6,10 +5,11 @@ import { reportError } from "../../../../lib/errors/errorLogger";
 import { shouldLoadNewsInitially } from "../../../hooks/loading/loadingState.utils";
 import { useInitialData } from "../../../context/InitialDataContext";
 import { sortNews } from "../../../utils/news.utils";
+import type { NewsItem } from "../../../../types/models";
 
 export const useNewsData = () => {
   const { initialData } = useInitialData();
-  const [overrideNews, setOverrideNews] = useState(null);
+  const [overrideNews, setOverrideNews] = useState<NewsItem[] | null>(null);
   const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);
   const [error, setError] = useState(false);
 

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { SoccerBallIcon } from "../../../../components/icons/InlineIcons";
 
 const GameEmpty = () => {

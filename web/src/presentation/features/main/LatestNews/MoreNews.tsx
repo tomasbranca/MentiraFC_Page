@@ -1,10 +1,14 @@
-// @ts-nocheck
 import { Link } from "react-router-dom";
 
 import NewsCardHome from "../../../components/NewsCardHome/NewsCardHome";
 import { ROUTES } from "../../../constants/routes.constants";
+import type { NewsItem } from "../../../../types/models";
 
-const MoreNews = ({ news = [] }) => {
+type MoreNewsProps = {
+  news?: NewsItem[];
+};
+
+const MoreNews = ({ news = [] }: MoreNewsProps) => {
   if (!news.length) return null;
 
   return (

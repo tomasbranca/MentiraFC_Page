@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { getImageUrl } from "../../../data/imageService";
 import {
   SITE_LOGO_ASSETS,
@@ -11,15 +10,24 @@ import { useGame } from "../../context/useGame";
 import { useCountdown } from "../../hooks/useCountDown";
 import { getGameWidgetVisualState } from "./GameWidget.utils";
 
-const GameWidget = ({ compact = false }) => {
+type GameWidgetProps = {
+  compact?: boolean;
+};
+
+const getErrorMessage = (error: unknown): string =>
+  error instanceof Error ? error.message : "No se pudo cargar el partido";
+
+const GameWidget = ({ compact = false }: GameWidgetProps) => {
   const { game, loading, error } = useGame();
   const visualState = getGameWidgetVisualState({ game, loading });
 
   const now = new Date();
   const gameDate = game ? new Date(game.date) : null;
 
-  const isUpcoming = game?.state === "por_jugar" && gameDate > now;
-  const isInProgress = game?.state === "por_jugar" && gameDate <= now;
+  const isUpcoming =
+    game?.state === "por_jugar" && gameDate !== null && gameDate > now;
+  const isInProgress =
+    game?.state === "por_jugar" && gameDate !== null && gameDate <= now;
 
   const timeLeft = useCountdown(game?.date, isUpcoming);
 
@@ -28,10 +36,11 @@ const GameWidget = ({ compact = false }) => {
   }
 
   if (error) {
-    return <div className="text-red-500">Error: {error.message}</div>;
+    return <div className="text-red-500">Error: {getErrorMessage(error)}</div>;
   }
 
   if (visualState === "empty") return null;
+  if (!game) return null;
 
   return (
     <div

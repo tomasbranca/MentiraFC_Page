@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { ROUTES } from "../constants/routes.constants";
 
 export const getNewsLink = (item: { slug: string }): string => {

@@ -1,12 +1,14 @@
-// @ts-nocheck
 import { describe, expect, it } from "vitest";
 
 import {
   mergeHomeCriticalIntoInitialData,
   shouldLoadHomeCriticalData,
 } from "./initialDataContext.utils";
+import type { InitialDataPayload } from "../../data/getInitialData";
 
-const createPayload = (overrides = {}) => ({
+const createPayload = (
+  overrides: Partial<InitialDataPayload> = {}
+): InitialDataPayload => ({
   bootstrapScope: "empty",
   news: [],
   players: [],

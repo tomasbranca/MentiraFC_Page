@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState } from "react";
 import { getImageUrl } from "../../../data/imageService";
 import Loader from "../../components/Loader/Loader";
@@ -20,7 +19,7 @@ import "./Record.css";
 const Record = () => {
   const { games, loading, error, refetch } = useRecordData();
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
-  const [openGame, setOpenGame] = useState(null);
+  const [openGame, setOpenGame] = useState<string | null>(null);
 
   if (loading) return <Loader />;
 
@@ -93,7 +92,7 @@ const Record = () => {
                       <div className="flex justify-between items-center">
                         {/* IZQUIERDA */}
                         <div className="flex items-center gap-3">
-                          {game.rival?.imageUrl && (
+                          {Boolean(game.rival?.imageUrl) && (
                             <ProgressiveMedia
                               src={getImageUrl(game.rival.imageUrl, {
                                 width: 40,

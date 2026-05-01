@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useParams, Link } from "react-router-dom";
 import Loader from "../../components/Loader/Loader";
 import ErrorFallback from "../../components/errors/ErrorFallback";
@@ -6,7 +5,7 @@ import { FaArrowLeft } from "react-icons/fa";
 import ProgressiveMedia from "../../components/ProgressiveMedia/ProgressiveMedia";
 
 import { usePlayerDetail } from "./hooks/usePlayerDetail";
-import { POSITION_MAP } from "./playerDetail.constants";
+import { POSITION_MAP, type PlayerPositionId } from "./playerDetail.constants";
 import { formatLongDate, calculateAge } from "../../utils/date.utils";
 import { ROUTES } from "../../constants/routes.constants";
 
@@ -34,7 +33,10 @@ const PlayerDetail = () => {
     );
   }
 
-  const position = POSITION_MAP[player.position];
+  const position =
+    player.position && player.position in POSITION_MAP
+      ? POSITION_MAP[player.position as PlayerPositionId]
+      : null;
   const Icon = position?.icon;
 
   return (
@@ -52,7 +54,7 @@ const PlayerDetail = () => {
           {/* IMAGEN */}
           <div className="w-full aspect-3/4">
             <ProgressiveMedia
-              src={player.imageUrl}
+              src={player.imageUrl ?? undefined}
               alt={`${player.name} ${player.lastName}`}
               wrapperClassName="w-full h-full"
               className="w-full h-full object-cover border-b-2 border-violet-700 lg:border-0"

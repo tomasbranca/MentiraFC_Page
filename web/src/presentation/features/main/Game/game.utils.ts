@@ -1,5 +1,11 @@
-// @ts-nocheck
-export const isGameInProgress = (game) => {
+import type { Game, MatchEvent } from "../../../../types/models";
+
+type Scorer = {
+  player: NonNullable<MatchEvent["player"]>;
+  goals: number;
+};
+
+export const isGameInProgress = (game: Game | null): boolean => {
   if (!game) return false;
 
   const now = new Date();
@@ -8,9 +14,9 @@ export const isGameInProgress = (game) => {
   return game.state === "por_jugar" && gameDate <= now;
 };
 
-export const getScorers = (events = []) => {
+export const getScorers = (events: MatchEvent[] = []): Scorer[] => {
   return Object.values(
-    events.reduce((acc, event) => {
+    events.reduce<Record<string, Scorer>>((acc, event) => {
       const player = event.player;
 
       if (!player) return acc;
@@ -31,7 +37,10 @@ export const getScorers = (events = []) => {
   );
 };
 
-export const getShortName = (name, lastName) => {
+export const getShortName = (
+  name?: string,
+  lastName?: string
+): string => {
   if (!name || !lastName) return "";
   return `${name[0].toUpperCase()}. ${lastName}`;
 };

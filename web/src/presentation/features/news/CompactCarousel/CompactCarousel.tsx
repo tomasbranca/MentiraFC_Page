@@ -1,12 +1,16 @@
-// @ts-nocheck
 import { useRef } from "react";
 import NewsCard from "../../../components/NewsCard/NewsCard";
 import "./CompactCarousel.css";
 
 import { useScrollCarousel } from "./hooks/useScrollCarousel";
+import type { NewsItem } from "../../../../types/models";
 
-const CompactCarousel = ({ items = [] }) => {
-  const scrollRef = useRef(null);
+type CompactCarouselProps = {
+  items?: NewsItem[];
+};
+
+const CompactCarousel = ({ items = [] }: CompactCarouselProps) => {
+  const scrollRef = useRef<HTMLDivElement | null>(null);
   const { activeIndex, handleScroll } = useScrollCarousel();
 
   if (!items.length) return null;

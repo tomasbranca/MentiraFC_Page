@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { createContext } from "react";
 
 import type { Game } from "../../types/models";

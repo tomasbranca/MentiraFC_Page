@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEffect, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -15,6 +14,12 @@ import {
   hasCompleteDeferredHomeData,
   resolveHomeData,
 } from "./useHomeData.utils";
+
+type IdleWindow = Window &
+  typeof globalThis & {
+    requestIdleCallback?: (callback: IdleRequestCallback) => number;
+    cancelIdleCallback?: (handle: number) => void;
+  };
 
 export const useHomeData = () => {
   const { initialData } = useInitialData();
@@ -97,9 +102,11 @@ export const useHomeData = () => {
       });
     };
 
-    if ("requestIdleCallback" in window) {
-      const idleId = window.requestIdleCallback(prefetchNews);
-      return () => window.cancelIdleCallback(idleId);
+    const idleWindow = window as IdleWindow;
+
+    if (idleWindow.requestIdleCallback && idleWindow.cancelIdleCallback) {
+      const idleId = idleWindow.requestIdleCallback(prefetchNews);
+      return () => idleWindow.cancelIdleCallback?.(idleId);
     }
 
     const timeoutId = window.setTimeout(prefetchNews, 250);

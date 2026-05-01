@@ -1,4 +1,3 @@
-// @ts-nocheck
 const meses: Record<string, number> = {
   enero: 0,
   febrero: 1,

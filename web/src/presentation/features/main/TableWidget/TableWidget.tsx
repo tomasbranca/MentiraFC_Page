@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   getMainTeamIndex,
   getSurroundingTeams,
@@ -6,8 +5,13 @@ import {
 import { Link } from "react-router-dom";
 import { ROUTES } from "../../../constants/routes.constants";
 import { getImageUrl } from "../../../../data/imageService";
+import type { Tournament } from "../../../../types/models";
 
-const TableWidget = ({ table }) => {
+type TableWidgetProps = {
+  table: Tournament | null;
+};
+
+const TableWidget = ({ table }: TableWidgetProps) => {
   if (!table) return null;
 
   const standings = table.standings || [];

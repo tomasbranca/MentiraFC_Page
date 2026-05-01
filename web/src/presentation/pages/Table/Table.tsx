@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState } from "react";
 import { FiBarChart2 } from "react-icons/fi";
 import { urlFor } from "../../../data/sanity/sanity.image";
@@ -65,7 +64,7 @@ const Table = () => {
 
             <div
               className="w-16 h-0.75 mx-auto mt-2"
-              style={{ backgroundColor: tournament.primaryColor }}
+              style={{ backgroundColor: tournament.primaryColor ?? undefined }}
             />
 
             {lastUpdate && (
@@ -107,6 +106,7 @@ const Table = () => {
             {standings.map((row) => {
               const isChampion = row.type === "champion";
               const isPlayoff = row.type === "playoff";
+              const goalDiff = row.goalDiff ?? 0;
 
               return (
                 <div
@@ -177,14 +177,14 @@ const Table = () => {
                       DG:{" "}
                       <span
                         className={
-                          row.goalDiff > 0
+                          goalDiff > 0
                             ? "text-green-400"
-                            : row.goalDiff < 0
+                            : goalDiff < 0
                             ? "text-red-400"
                             : ""
                         }
                       >
-                        {row.goalDiff > 0 ? `+${row.goalDiff}` : row.goalDiff}
+                        {goalDiff > 0 ? `+${goalDiff}` : goalDiff}
                       </span>
                     </span>
                   </div>
@@ -237,7 +237,7 @@ const Table = () => {
                         isChampion
                           ? { borderLeftColor: "rgba(255, 193, 7, 0.8)" }
                           : isPlayoff
-                          ? { borderLeftColor: tournament.primaryColor }
+                          ? { borderLeftColor: tournament.primaryColor ?? undefined }
                           : {}
                       }
                     >
@@ -285,7 +285,9 @@ const Table = () => {
                       </td>
 
                       <td className="text-center text-neutral-400">
-                        {row.goalDiff > 0 ? `+${row.goalDiff}` : row.goalDiff}
+                        {(row.goalDiff ?? 0) > 0
+                          ? `+${row.goalDiff ?? 0}`
+                          : row.goalDiff ?? 0}
                       </td>
 
                       <td

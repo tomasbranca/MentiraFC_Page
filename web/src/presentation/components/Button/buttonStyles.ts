@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const baseStyles = `
   inline-flex items-center justify-center
   gap-2
@@ -92,9 +91,11 @@ export const variants = {
 
     border border-neutral-800
   `,
-};
+} as const;
 
 export const activeVariants = {
   filter: "bg-violet-600 text-white border-violet-400 shadow-md",
   toggle: "bg-violet-600 text-white border-violet-500 shadow-md",
-};
+} as const;
+
+export type ButtonVariant = keyof typeof variants;

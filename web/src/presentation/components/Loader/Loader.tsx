@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   SITE_LOGO_ASSETS,
   SITE_LOGO_SIZES,

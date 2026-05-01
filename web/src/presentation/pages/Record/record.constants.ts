@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const RESULT_STYLES = {
   win: {
     bar: "from-green-700/70 to-green-700/0",

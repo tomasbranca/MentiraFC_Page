@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { getTournament } from "../../../../data/tournament";
@@ -8,12 +7,14 @@ import { getHybridTournamentTable } from "../../../../domain/stats";
 import { reportError } from "../../../../lib/errors/errorLogger";
 import { shouldLoadTableInitially } from "../../../hooks/loading/loadingState.utils";
 import { useInitialData } from "../../../context/InitialDataContext";
+import type { Game, TeamRef, Tournament } from "../../../../types/models";
 
 export const useTableData = () => {
   const { initialData } = useInitialData();
-  const [overrideTournament, setOverrideTournament] = useState(null);
-  const [overrideTeams, setOverrideTeams] = useState(null);
-  const [overrideGames, setOverrideGames] = useState(null);
+  const [overrideTournament, setOverrideTournament] =
+    useState<Tournament | null>(null);
+  const [overrideTeams, setOverrideTeams] = useState<TeamRef[] | null>(null);
+  const [overrideGames, setOverrideGames] = useState<Game[] | null>(null);
   const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);
   const [error, setError] = useState(false);
 

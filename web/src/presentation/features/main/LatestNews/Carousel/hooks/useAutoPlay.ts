@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEffect, useState } from "react";
 
 export const useAutoplay = () => {
@@ -8,7 +7,7 @@ export const useAutoplay = () => {
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 1024px)");
 
-    const update = (e) => {
+    const update = (e: MediaQueryList | MediaQueryListEvent) => {
       setAutoplay(e.matches);
       setManual(!e.matches);
     };

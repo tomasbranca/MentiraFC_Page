@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { type ReactNode, useCallback, useEffect, useState } from "react";
 
 import { getLatestGame } from "../../data/games";

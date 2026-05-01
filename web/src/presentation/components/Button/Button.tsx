@@ -1,6 +1,18 @@
-// @ts-nocheck
-import React from "react";
-import { baseStyles, variants, activeVariants } from "./buttonStyles";
+import type { ButtonHTMLAttributes, ReactNode } from "react";
+import {
+  baseStyles,
+  variants,
+  activeVariants,
+  type ButtonVariant,
+} from "./buttonStyles";
+
+type ButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "type"> & {
+  children: ReactNode;
+  type?: "button" | "submit" | "reset";
+  variant?: ButtonVariant;
+  active?: boolean;
+  showArrow?: boolean;
+};
 
 const Button = ({
   children,
@@ -12,11 +24,13 @@ const Button = ({
   active = false,
   showArrow = false,
   ...props
-}) => {
+}: ButtonProps) => {
   const variantStyles = variants[variant] || variants.primary;
 
   const activeStyles =
-    active && activeVariants[variant] ? activeVariants[variant] : "";
+    active && variant in activeVariants
+      ? activeVariants[variant as keyof typeof activeVariants]
+      : "";
 
   return (
     <button

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { getAllGames } from "../../../../data/games";
@@ -7,12 +6,19 @@ import { getPlayerStats } from "../../../../domain/stats";
 import { reportError } from "../../../../lib/errors/errorLogger";
 import { shouldLoadPlayerDetailInitially } from "../../../hooks/loading/loadingState.utils";
 import { useInitialData } from "../../../context/InitialDataContext";
+import type { Player } from "../../../../types/models";
 
-export const usePlayerDetail = (slug) => {
+type PlayerDetailViewModel = Player & { goalsThisYear: number };
+
+export const usePlayerDetail = (slug: string | undefined) => {
   const { initialData } = useInitialData();
-  const [overridePlayer, setOverridePlayer] = useState(undefined);
-  const [overrideGoals, setOverrideGoals] = useState(undefined);
-  const [overrideYear, setOverrideYear] = useState(null);
+  const [overridePlayer, setOverridePlayer] = useState<
+    PlayerDetailViewModel | null | undefined
+  >(undefined);
+  const [overrideGoals, setOverrideGoals] = useState<number | undefined>(
+    undefined
+  );
+  const [overrideYear, setOverrideYear] = useState<number | null>(null);
   const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);
   const [error, setError] = useState(false);
 

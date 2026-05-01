@@ -1,12 +1,22 @@
-// @ts-nocheck
 import { Link } from "react-router-dom";
 import { getImageSrcSet, getImageUrl } from "../../../data/imageService";
 import ProgressiveMedia from "../ProgressiveMedia/ProgressiveMedia";
 import "./NewsCardHome.css";
 import { getFeaturedClasses } from "./newsCardHome.utils";
 import { getNewsLink } from "../../utils/navigation.utils";
+import type { NewsItem } from "../../../types/models";
 
-const NewsCardHome = ({ item, featured, priority = false }) => {
+type NewsCardHomeProps = {
+  item: NewsItem | null;
+  featured: boolean;
+  priority?: boolean;
+};
+
+const NewsCardHome = ({
+  item,
+  featured,
+  priority = false,
+}: NewsCardHomeProps) => {
   if (!item) return null;
 
   return (

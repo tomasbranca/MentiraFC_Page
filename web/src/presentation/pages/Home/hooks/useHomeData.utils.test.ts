@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { describe, expect, it } from "vitest";
 
 import {
@@ -7,8 +6,11 @@ import {
   hasCompleteDeferredHomeData,
   resolveHomeData,
 } from "./useHomeData.utils";
+import type { InitialDataPayload } from "../../../../data/getInitialData";
 
-const createInitialData = (overrides = {}) => ({
+const createInitialData = (
+  overrides: Partial<InitialDataPayload> = {}
+): InitialDataPayload => ({
   bootstrapScope: "home-critical",
   news: [
     { id: "news-old", title: "Vieja", date: "2025-01-01", slug: "vieja" },
@@ -23,7 +25,13 @@ const createInitialData = (overrides = {}) => ({
       tournamentId: "t-1",
       rival: { id: "r-1", name: "Rival 1" },
       result: { goalsFor: 1, goalsAgainst: 0 },
-      events: [{ type: "goal", player: { id: "p-1" } }],
+      events: [
+        {
+          id: "e-1",
+          type: "goal",
+          player: { id: "p-1", name: "Ana", lastName: "Gomez" },
+        },
+      ],
     },
   ],
   tournament: {
@@ -50,12 +58,18 @@ const createInitialData = (overrides = {}) => ({
       tournamentId: "t-1",
       rival: { id: "r-1", name: "Rival 1" },
       result: { goalsFor: 1, goalsAgainst: 0 },
-      events: [{ type: "goal", player: { id: "p-1" } }],
+      events: [
+        {
+          id: "te-1",
+          type: "goal",
+          player: { id: "p-1", name: "Ana", lastName: "Gomez" },
+        },
+      ],
     },
   ],
   latestGame: null,
   ...overrides,
-});
+} as InitialDataPayload);
 
 describe("useHomeData.utils", () => {
   it("detecta cuando la cache diferida de Home esta incompleta", () => {
@@ -124,7 +138,13 @@ describe("useHomeData.utils", () => {
           tournamentId: "t-2",
           rival: { id: "r-2", name: "Rival 2" },
           result: { goalsFor: 2, goalsAgainst: 0 },
-          events: [{ type: "goal", player: { id: "p-2" } }],
+          events: [
+            {
+              id: "e-2",
+              type: "goal",
+              player: { id: "p-2", name: "Belen", lastName: "Ruiz" },
+            },
+          ],
         },
       ],
       tournament: {
@@ -151,7 +171,13 @@ describe("useHomeData.utils", () => {
           tournamentId: "t-2",
           rival: { id: "r-2", name: "Rival 2" },
           result: { goalsFor: 2, goalsAgainst: 0 },
-          events: [{ type: "goal", player: { id: "p-2" } }],
+          events: [
+            {
+              id: "te-2",
+              type: "goal",
+              player: { id: "p-2", name: "Belen", lastName: "Ruiz" },
+            },
+          ],
         },
       ],
     };

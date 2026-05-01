@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 
@@ -8,20 +7,20 @@ import { reportError } from "../../../../lib/errors/errorLogger";
 import { useInitialData } from "../../../context/InitialDataContext";
 import { selectSuggestedNews } from "../newsDetail.utils";
 
-export const useNewsDetail = (slug) => {
+export const useNewsDetail = (slug: string | undefined) => {
   const { initialData } = useInitialData();
   const detailFromInitialData =
-    initialData.currentNewsDetail?.slug === slug
+    slug && initialData.currentNewsDetail?.slug === slug
       ? initialData.currentNewsDetail
       : null;
-  const canUseInitialData = Boolean(detailFromInitialData);
+  const canUseInitialData = detailFromInitialData !== null;
 
   const newsItemQuery = useQuery({
-    queryKey: queryKeys.news.bySlug(slug),
+    queryKey: queryKeys.news.bySlug(slug ?? ""),
     enabled: Boolean(slug) && !canUseInitialData,
     queryFn: async () => {
       try {
-        return await getNewsBySlug(slug);
+        return await getNewsBySlug(slug ?? "");
       } catch (error) {
         reportError(error, {
           page: "NewsDetail",
@@ -34,11 +33,11 @@ export const useNewsDetail = (slug) => {
   });
 
   const suggestedQuery = useQuery({
-    queryKey: queryKeys.news.suggested(slug),
+    queryKey: queryKeys.news.suggested(slug ?? ""),
     enabled: Boolean(slug) && !canUseInitialData,
     queryFn: async () => {
       try {
-        return await getSuggestedNews(slug);
+        return await getSuggestedNews(slug ?? "");
       } catch (error) {
         reportError(error, {
           page: "NewsDetail",

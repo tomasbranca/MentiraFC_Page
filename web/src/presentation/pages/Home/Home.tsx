@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Suspense, lazy } from "react";
 import Game from "../../features/main/Game/Game";
 import Loader from "../../components/Loader/Loader";

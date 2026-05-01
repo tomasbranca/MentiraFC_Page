@@ -1,10 +1,14 @@
-// @ts-nocheck
 import { Link } from "react-router-dom";
 import { getImageSrcSet, getImageUrl } from "../../../../data/imageService";
 import ProgressiveMedia from "../../ProgressiveMedia/ProgressiveMedia";
 import { getNewsLink } from "../../../utils/navigation.utils";
+import type { NewsCardVariantProps } from "../NewsCard";
 
-const CompactCard = ({ item, imageLoading = "lazy", imagePriority = false }) => {
+const CompactCard = ({
+  item,
+  imageLoading = "lazy",
+  imagePriority = false,
+}: NewsCardVariantProps) => {
   return (
     <Link to={getNewsLink(item)} className="news-card-compact block h-full">
       <article className="news-card-image animation-shadow h-full">

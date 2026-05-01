@@ -1,12 +1,18 @@
-// @ts-nocheck
 import { FiAlertTriangle } from "react-icons/fi";
+
+type ErrorFallbackProps = {
+  title?: string;
+  message?: string;
+  onRetry?: () => void | Promise<void>;
+  retryLabel?: string;
+};
 
 const ErrorFallback = ({
   title = "Ocurrió un error inesperado",
   message = "Intentá nuevamente en unos minutos.",
   onRetry,
   retryLabel = "Reintentar",
-}) => {
+}: ErrorFallbackProps) => {
   return (
     <main className="h-[80vh] flex items-center justify-center px-4 text-white">
       <div className="w-full max-w-xl rounded-xl border border-red-500/40 bg-red-950/40 p-6 text-center shadow-lg shadow-black/30">

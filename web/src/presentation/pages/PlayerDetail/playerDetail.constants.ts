@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { POSITION_ICONS } from "../../constants/positionIcons";
 
 export const POSITION_MAP = {
@@ -18,4 +17,6 @@ export const POSITION_MAP = {
     label: "DELANTERO",
     icon: POSITION_ICONS.del,
   },
-};
+} as const;
+
+export type PlayerPositionId = keyof typeof POSITION_MAP;

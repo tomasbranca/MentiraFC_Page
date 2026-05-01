@@ -1,5 +1,22 @@
 import type { Game, StandingsRow, TeamRef } from "../../types/models";
 
+type GameInput = Partial<Omit<Game, "result">> & {
+  result?: Partial<Record<keyof Game["result"], unknown>>;
+};
+
+type StandingsRowInput = Omit<
+  Partial<StandingsRow>,
+  "team" | "played" | "wins" | "draws" | "losses" | "goalsFor" | "goalsAgainst"
+> & {
+  team: TeamRef;
+  played?: unknown;
+  wins?: unknown;
+  draws?: unknown;
+  losses?: unknown;
+  goalsFor?: unknown;
+  goalsAgainst?: unknown;
+};
+
 const calculatePoints = (row: StandingsRow): number => row.wins * 3 + row.draws;
 const calculateGoalDiff = (row: StandingsRow): number =>
   row.goalsFor - row.goalsAgainst;
@@ -35,7 +52,7 @@ const sortAndDecorateTable = (rows: StandingsRow[] = []): StandingsRow[] => {
 };
 
 const calculateMainTeamStats = (
-  games: Game[] = []
+  games: GameInput[] = []
 ): Omit<StandingsRow, "team"> => {
   return games.reduce<Omit<StandingsRow, "team">>(
     (acc, game) => {
@@ -63,7 +80,7 @@ const calculateMainTeamStats = (
   );
 };
 
-const cloneManualRow = (row: StandingsRow): StandingsRow => ({
+const cloneManualRow = (row: StandingsRowInput): StandingsRow => ({
   ...row,
   team: {
     ...row.team,
@@ -81,8 +98,8 @@ export const getHybridTournamentTable = ({
   games = [],
   mainTeam = null,
 }: {
-  manualStandings?: StandingsRow[];
-  games?: Game[];
+  manualStandings?: StandingsRowInput[];
+  games?: GameInput[] | null;
   mainTeam?: TeamRef | null;
 }): StandingsRow[] => {
   if (!mainTeam && !manualStandings.length) return [];
@@ -116,7 +133,7 @@ export const getHybridTournamentTable = ({
 };
 
 export const getTournamentTable = (
-  games: Game[] = [],
+  games: GameInput[] = [],
   teams: TeamRef[] = []
 ): StandingsRow[] => {
   if (!Array.isArray(teams) || teams.length === 0) return [];

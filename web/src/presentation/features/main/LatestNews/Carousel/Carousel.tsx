@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import Button from "../../../../components/Button/Button";
@@ -9,8 +8,13 @@ import "./Carousel.css";
 import { useCarousel } from "../../../../hooks/useCarrousel";
 import { useAutoplay } from "./hooks/useAutoPlay";
 import { getNewsLink } from "../../../../utils/navigation.utils";
+import type { NewsItem } from "../../../../../types/models";
 
-const Carousel = ({ items }) => {
+type CarouselProps = {
+  items: NewsItem[];
+};
+
+const Carousel = ({ items }: CarouselProps) => {
   const { activeIndex, next, prev } = useCarousel(items?.length || 0);
   const { autoplay, manual } = useAutoplay();
 

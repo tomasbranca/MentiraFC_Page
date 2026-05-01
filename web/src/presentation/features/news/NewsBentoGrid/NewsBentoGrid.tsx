@@ -1,14 +1,18 @@
-// @ts-nocheck
 import { Suspense } from "react";
 import NewsCard from "../../../components/NewsCard/NewsCard";
 import { lazyWithReload } from "../../../../lib/lazyWithReload";
 import { mapBentoItems } from "./newsBentoGrid.utils";
+import type { NewsItem } from "../../../../types/models";
 
 const CompactCarousel = lazyWithReload(
   () => import("../CompactCarousel/CompactCarousel")
 );
 
-const NewsBentoGrid = ({ items = [] }) => {
+type NewsBentoGridProps = {
+  items?: NewsItem[];
+};
+
+const NewsBentoGrid = ({ items = [] }: NewsBentoGridProps) => {
   if (!items.length) return null;
 
   const { hero, featuredBox, featuredWide, compact } = mapBentoItems(items);

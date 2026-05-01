@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState, type Dispatch, type SetStateAction } from "react";
 
 type UseCarouselResult = {

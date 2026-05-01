@@ -1,4 +1,3 @@
-// @ts-nocheck
 import type { StandingsRow } from "../../types/models";
 
 export const calculatePoints = (row: StandingsRow): number => {

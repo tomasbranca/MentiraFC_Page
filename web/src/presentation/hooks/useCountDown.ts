@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEffect, useState } from "react";
 
 type Countdown = { hours: number; minutes: number };

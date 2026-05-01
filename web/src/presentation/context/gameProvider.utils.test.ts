@@ -1,9 +1,11 @@
-// @ts-nocheck
 import { describe, expect, it } from "vitest";
 
+import type { InitialDataPayload } from "../../data/getInitialData";
 import { getGameProviderSnapshot } from "./gameProvider.utils";
 
-const createPayload = (overrides = {}) => ({
+const createPayload = (
+  overrides: Partial<InitialDataPayload> = {}
+): InitialDataPayload => ({
   bootstrapScope: "empty",
   news: [],
   players: [],

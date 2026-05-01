@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { POSITION_ICONS } from "../../constants/positionIcons";
 
 export const POSITION_CONFIG = {
@@ -18,7 +17,10 @@ export const POSITION_CONFIG = {
     label: "Delanteros",
     icon: POSITION_ICONS.del,
   },
-};
+} as const;
+
+export type PositionId = keyof typeof POSITION_CONFIG;
+export type TeamFilter = PositionId | "all";
 
 export const FILTERS = [
   { id: "all", label: "Todos" },
@@ -26,4 +28,4 @@ export const FILTERS = [
   { id: "def", label: "Defensores" },
   { id: "med", label: "Mediocampistas" },
   { id: "del", label: "Delanteros" },
-];
+] satisfies Array<{ id: TeamFilter; label: string }>;

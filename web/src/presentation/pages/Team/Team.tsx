@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState } from "react";
 import PlayerCard from "../../components/PlayerCard/PlayerCard";
 import Button from "../../components/Button/Button";
@@ -7,12 +6,12 @@ import ErrorFallback from "../../components/errors/ErrorFallback";
 
 import { useTeamData } from "./hooks/useTeamdata";
 import { getFilteredSections } from "./team.utils";
-import { POSITION_CONFIG, FILTERS } from "./team.constants";
+import { POSITION_CONFIG, FILTERS, type PositionId, type TeamFilter } from "./team.constants";
 
 const Team = () => {
   const { players, grouped, loading, error, refetch } = useTeamData();
 
-  const [filter, setFilter] = useState("all");
+  const [filter, setFilter] = useState<TeamFilter>("all");
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   if (loading) return <Loader />;
@@ -95,7 +94,7 @@ const Team = () => {
             Object.entries(sections).map(([position, list]) => {
               if (!list?.length) return null;
 
-              const config = POSITION_CONFIG[position];
+              const config = POSITION_CONFIG[position as PositionId];
               const Icon = config.icon;
 
               return (

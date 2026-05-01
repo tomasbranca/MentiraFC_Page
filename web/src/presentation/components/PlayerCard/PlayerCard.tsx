@@ -1,14 +1,24 @@
-// @ts-nocheck
 import { Link } from "react-router-dom";
 import { getImageUrl } from "../../../data/imageService";
 import { SoccerBallIcon } from "../icons/InlineIcons";
 import ProgressiveMedia from "../ProgressiveMedia/ProgressiveMedia";
-import { getPlayerLink, PLAYER_CARD_MODE } from "./playerCard.utils";
+import {
+  getPlayerLink,
+  PLAYER_CARD_MODE,
+  type PlayerCardMode,
+} from "./playerCard.utils";
+import type { Player, PlayerWithGoals } from "../../../types/models";
 
-const PlayerCard = ({ player, mode = PLAYER_CARD_MODE.DEFAULT }) => {
+type PlayerCardProps = {
+  player: Player | PlayerWithGoals | null;
+  mode?: PlayerCardMode;
+};
+
+const PlayerCard = ({ player, mode = PLAYER_CARD_MODE.DEFAULT }: PlayerCardProps) => {
   if (!player) return null;
 
   const isGoalsMode = mode === PLAYER_CARD_MODE.GOALS;
+  const goals = "goals" in player ? player.goals : 0;
 
   return (
     <Link to={getPlayerLink(player)} className="group block no-underline">
@@ -35,7 +45,7 @@ const PlayerCard = ({ player, mode = PLAYER_CARD_MODE.DEFAULT }) => {
               `,
             }}
           >
-            {isGoalsMode ? player.goals : `#${player.number}`}
+            {isGoalsMode ? goals : `#${player.number ?? "-"}`}
           </span>
 
           {isGoalsMode && (
