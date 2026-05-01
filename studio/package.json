@@ -18,11 +18,16 @@
   ],
   "dependencies": {
     "@sanity/color-input": "^6.0.4",
-    "@sanity/vision": "^5.20.0",
+    "@sanity/vision": "^5.23.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
-    "sanity": "^5.20.0",
+    "sanity": "^5.23.0",
     "styled-components": "^6.3.12"
+  },
+  "overrides": {
+    "@vercel/frameworks": {
+      "js-yaml": "3.14.2"
+    }
   },
   "devDependencies": {
     "@sanity/eslint-config-studio": "^6.0.0",
