@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { Suspense, useMemo } from "react";
 import { useParams } from "react-router-dom";
 
 import { getImageUrl } from "../../../data/imageService";
@@ -8,6 +8,12 @@ import Loader from "../../components/Loader/Loader";
 import NewsCard from "../../components/NewsCard/NewsCard";
 import ProgressiveMedia from "../../components/ProgressiveMedia/ProgressiveMedia";
 import { formatDate } from "../../utils/date.utils";
+import {
+  buildMissingNewsHead,
+  buildNewsHead,
+  STATIC_PAGE_HEAD,
+} from "../../seo/metadata";
+import { usePageHead } from "../../seo/usePageHead";
 import { useNewsDetail } from "./hooks/useNewsDetail";
 
 const NewsRichContent = lazyWithReload(() => import("./NewsRichContent"));
@@ -16,6 +22,17 @@ const NewsDetail = () => {
   const { slug } = useParams();
 
   const { newsItem, suggested, loading, error, refetch } = useNewsDetail(slug);
+  const metadata = useMemo(
+    () =>
+      loading
+        ? STATIC_PAGE_HEAD.news
+        : newsItem
+          ? buildNewsHead(newsItem)
+          : buildMissingNewsHead(slug),
+    [loading, newsItem, slug]
+  );
+
+  usePageHead(metadata);
 
   if (loading) return <Loader />;
 

@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import Loader from "../../components/Loader/Loader";
 import ErrorFallback from "../../components/errors/ErrorFallback";
@@ -8,10 +9,31 @@ import { usePlayerDetail } from "./hooks/usePlayerDetail";
 import { POSITION_MAP, type PlayerPositionId } from "./playerDetail.constants";
 import { formatLongDate, calculateAge } from "../../utils/date.utils";
 import { ROUTES } from "../../constants/routes.constants";
+import {
+  buildMissingPlayerHead,
+  buildPlayerHead,
+  STATIC_PAGE_HEAD,
+} from "../../seo/metadata";
+import { usePageHead } from "../../seo/usePageHead";
 
 const PlayerDetail = () => {
   const { slug } = useParams();
   const { player, loading, error, year, refetch } = usePlayerDetail(slug);
+  const position =
+    player?.position && player.position in POSITION_MAP
+      ? POSITION_MAP[player.position as PlayerPositionId]
+      : null;
+  const metadata = useMemo(
+    () =>
+      loading
+        ? STATIC_PAGE_HEAD.team
+        : player
+          ? buildPlayerHead(player, position?.label)
+          : buildMissingPlayerHead(slug),
+    [loading, player, position?.label, slug]
+  );
+
+  usePageHead(metadata);
 
   if (loading) return <Loader />;
 
@@ -33,10 +55,6 @@ const PlayerDetail = () => {
     );
   }
 
-  const position =
-    player.position && player.position in POSITION_MAP
-      ? POSITION_MAP[player.position as PlayerPositionId]
-      : null;
   const Icon = position?.icon;
 
   return (

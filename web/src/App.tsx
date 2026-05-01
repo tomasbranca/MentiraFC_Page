@@ -9,6 +9,7 @@ import { InitialDataProvider } from "./presentation/context/InitialDataContext";
 import Footer from "./presentation/layout/Footer/Footer";
 import NavBar from "./presentation/layout/NavBar/NavBar";
 import { ROUTES } from "./presentation/constants/routes.constants";
+import RouteHead from "./presentation/seo/RouteHead";
 
 import { lazyWithReload } from "./lib/lazyWithReload";
 
@@ -76,6 +77,7 @@ function App({ initialData }: AppProps) {
       )}
 
       <GameProvider>
+        <RouteHead />
         <NavBar />
 
         <div className="border-t-96 border-t-violet-900 min-h-screen">
