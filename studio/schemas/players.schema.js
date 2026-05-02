@@ -1,3 +1,10 @@
+const POSITION_OPTIONS = [
+  {title: 'Arquero', value: 'arq'},
+  {title: 'Defensa', value: 'def'},
+  {title: 'Mediocampista', value: 'med'},
+  {title: 'Delantero', value: 'del'},
+]
+
 export default {
   name: 'players',
   title: 'Jugadores',
@@ -26,12 +33,7 @@ export default {
       title: 'Posición',
       type: 'string',
       options: {
-        list: [
-          {title: 'Arquero', value: 'arq'},
-          {title: 'Defensa', value: 'def'},
-          {title: 'Mediocampista', value: 'med'},
-          {title: 'Delantero', value: 'del'},
-        ],
+        list: POSITION_OPTIONS,
       },
       validation: (Rule) => Rule.required(),
     },
@@ -62,4 +64,22 @@ export default {
         ),
     },
   ],
+  preview: {
+    select: {
+      name: 'name',
+      lastName: 'lastName',
+      position: 'position',
+      media: 'photo',
+    },
+    prepare({name, lastName, position, media}) {
+      const positionTitle =
+        POSITION_OPTIONS.find((option) => option.value === position)?.title
+
+      return {
+        title: [name, lastName].filter(Boolean).join(' '),
+        subtitle: positionTitle ?? position,
+        media,
+      }
+    },
+  },
 }
