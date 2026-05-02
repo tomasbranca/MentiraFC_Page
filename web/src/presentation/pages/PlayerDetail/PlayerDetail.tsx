@@ -1,14 +1,20 @@
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import Loader from "../../components/Loader/Loader";
 import ErrorFallback from "../../components/errors/ErrorFallback";
 import { FaArrowLeft } from "react-icons/fa";
+import PlayerCard from "../../components/PlayerCard/PlayerCard";
 import ProgressiveMedia from "../../components/ProgressiveMedia/ProgressiveMedia";
+import RosterNavigation from "../../components/RosterNavigation/RosterNavigation";
+import { buildRosterNavigationItems } from "../../components/RosterNavigation/rosterNavigation.utils";
+import StaffCard from "../../components/StaffCard/StaffCard";
 
 import { getImageUrl } from "../../../data/imageService";
 import { usePlayerDetail } from "./hooks/usePlayerDetail";
 import { POSITION_MAP, type PlayerPositionId } from "./playerDetail.constants";
 import { formatLongDate, calculateAge } from "../../utils/date.utils";
+import { useElementHeight } from "../../hooks/useElementHeight";
+import { useRosterMembers } from "../../hooks/queries/useRosterMembers";
 import { ROUTES } from "../../constants/routes.constants";
 import {
   buildMissingPlayerHead,
@@ -19,7 +25,10 @@ import { usePageHead } from "../../seo/usePageHead";
 
 const PlayerDetail = () => {
   const { slug } = useParams();
+  const detailCardRef = useRef<HTMLDivElement | null>(null);
+  const detailCardHeight = useElementHeight(detailCardRef);
   const { player, loading, error, year, refetch } = usePlayerDetail(slug);
+  const { players, staffMembers } = useRosterMembers("PlayerDetail");
   const position =
     player?.position && player.position in POSITION_MAP
       ? POSITION_MAP[player.position as PlayerPositionId]
@@ -32,6 +41,15 @@ const PlayerDetail = () => {
           ? buildPlayerHead(player, position?.label)
           : buildMissingPlayerHead(slug),
     [loading, player, position?.label, slug]
+  );
+  const rosterItems = useMemo(
+    () =>
+      buildRosterNavigationItems({
+        activePlayer: player,
+        players,
+        staffMembers,
+      }),
+    [player, players, staffMembers]
   );
 
   usePageHead(metadata);
@@ -59,7 +77,7 @@ const PlayerDetail = () => {
   const Icon = position?.icon;
 
   return (
-    <div className="max-w-6xl mx-auto md:px-4 sm:px-6 lg:px-8 md:py-6 lg:py-8">
+    <div className="max-w-7xl mx-auto md:px-4 sm:px-6 lg:px-8 md:py-6 lg:py-8">
       {/* Volver */}
       <Link
         to={ROUTES.TEAM}
@@ -68,8 +86,10 @@ const PlayerDetail = () => {
         <FaArrowLeft /> Volver al plantel
       </Link>
 
-      <div className="border border-neutral-800 bg-neutral-900">
-        <div className="grid grid-cols-1 lg:grid-cols-2">
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start lg:gap-7">
+        <div className="min-w-0">
+          <div ref={detailCardRef} className="border border-neutral-800 bg-neutral-900">
+            <div className="grid grid-cols-1 lg:grid-cols-2">
           {/* IMAGEN */}
           <div className="w-full aspect-3/4">
             <ProgressiveMedia
@@ -138,7 +158,21 @@ const PlayerDetail = () => {
               </div>
             </div>
           </div>
+            </div>
+          </div>
         </div>
+
+        <RosterNavigation
+          desktopMaxHeight={detailCardHeight}
+          items={rosterItems}
+          renderCard={(item) =>
+            item.kind === "player" ? (
+              <PlayerCard player={item.member} />
+            ) : (
+              <StaffCard staffMember={item.member} />
+            )
+          }
+        />
       </div>
     </div>
   );
