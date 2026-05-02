@@ -5,6 +5,7 @@ import ErrorFallback from "../../components/errors/ErrorFallback";
 import { FaArrowLeft } from "react-icons/fa";
 import ProgressiveMedia from "../../components/ProgressiveMedia/ProgressiveMedia";
 
+import { getImageUrl } from "../../../data/imageService";
 import { usePlayerDetail } from "./hooks/usePlayerDetail";
 import { POSITION_MAP, type PlayerPositionId } from "./playerDetail.constants";
 import { formatLongDate, calculateAge } from "../../utils/date.utils";
@@ -72,7 +73,12 @@ const PlayerDetail = () => {
           {/* IMAGEN */}
           <div className="w-full aspect-3/4">
             <ProgressiveMedia
-              src={player.imageUrl ?? undefined}
+              src={getImageUrl(player.imageUrl, {
+                width: 720,
+                height: 960,
+                fit: "crop",
+                quality: 72,
+              })}
               alt={`${player.name} ${player.lastName}`}
               wrapperClassName="w-full h-full"
               className="w-full h-full object-cover border-b-2 border-violet-700 lg:border-0"

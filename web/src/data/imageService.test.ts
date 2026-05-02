@@ -15,6 +15,17 @@ describe("imageService", () => {
     );
   });
 
+  it("aplica transformaciones CDN por defecto a urls de Sanity", () => {
+    const imageUrl = getImageUrl(
+      "https://cdn.sanity.io/images/project/dataset/logo.png"
+    );
+    const url = new URL(imageUrl);
+
+    expect(url.searchParams.get("auto")).toBe("format");
+    expect(url.searchParams.get("q")).toBe("75");
+    expect(url.searchParams.has("fm")).toBe(false);
+  });
+
   it("agrega parametros de optimizacion a urls CDN de Sanity", () => {
     const imageUrl = getImageUrl(
       "https://cdn.sanity.io/images/project/dataset/logo.png",
@@ -22,8 +33,8 @@ describe("imageService", () => {
         width: 80,
         height: 80,
         fit: "max",
+        quality: 70,
         autoFormat: true,
-        format: "webp",
       }
     );
     const url = new URL(imageUrl);
@@ -31,8 +42,9 @@ describe("imageService", () => {
     expect(url.searchParams.get("w")).toBe("80");
     expect(url.searchParams.get("h")).toBe("80");
     expect(url.searchParams.get("fit")).toBe("max");
+    expect(url.searchParams.get("q")).toBe("70");
     expect(url.searchParams.get("auto")).toBe("format");
-    expect(url.searchParams.get("fm")).toBe("webp");
+    expect(url.searchParams.has("fm")).toBe(false);
   });
 
   it("construye urls para refs de asset de Sanity", () => {
@@ -49,7 +61,23 @@ describe("imageService", () => {
     expect(url.searchParams.get("w")).toBe("32");
     expect(url.searchParams.get("h")).toBe("32");
     expect(url.searchParams.get("fit")).toBe("max");
+    expect(url.searchParams.get("q")).toBe("75");
     expect(url.searchParams.get("auto")).toBe("format");
+  });
+
+  it("permite desactivar auto format cuando se necesita un formato fijo", () => {
+    const imageUrl = getImageUrl(
+      "https://cdn.sanity.io/images/project/dataset/logo.png",
+      {
+        autoFormat: false,
+        format: "png",
+      }
+    );
+    const url = new URL(imageUrl);
+
+    expect(url.searchParams.get("q")).toBe("75");
+    expect(url.searchParams.has("auto")).toBe(false);
+    expect(url.searchParams.get("fm")).toBe("png");
   });
 
   it("devuelve string vacio para refs invalidas de objeto", () => {

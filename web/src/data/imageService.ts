@@ -7,6 +7,8 @@ type ImageOptions = {
   autoFormat?: boolean;
 };
 
+const DEFAULT_SANITY_IMAGE_QUALITY = 75;
+
 type SanityImageAssetRef = {
   assetId: string;
   width: string;
@@ -16,6 +18,12 @@ type SanityImageAssetRef = {
 
 const isSanityImageUrl = (value: string): boolean =>
   value.includes("cdn.sanity.io/images/");
+
+const withDefaultSanityTransforms = (options: ImageOptions): ImageOptions => ({
+  ...options,
+  quality: options.quality ?? DEFAULT_SANITY_IMAGE_QUALITY,
+  autoFormat: options.autoFormat ?? true,
+});
 
 const parseSanityImageAssetRef = (
   value: string
@@ -67,7 +75,9 @@ const buildSanityImageUrlFromString = (
     if (options.width) url.searchParams.set("w", String(options.width));
     if (options.height) url.searchParams.set("h", String(options.height));
     if (options.fit) url.searchParams.set("fit", options.fit);
-    if (options.quality) url.searchParams.set("q", String(options.quality));
+    if (options.quality !== undefined) {
+      url.searchParams.set("q", String(options.quality));
+    }
     if (options.autoFormat) url.searchParams.set("auto", "format");
     if (options.format) url.searchParams.set("fm", options.format);
 
@@ -111,17 +121,26 @@ export const getImageUrl = (
     }
 
     if (isSanityImageUrl(normalizedImage)) {
-      return buildSanityImageUrlFromString(normalizedImage, options);
+      return buildSanityImageUrlFromString(
+        normalizedImage,
+        withDefaultSanityTransforms(options)
+      );
     }
 
     if (parseSanityImageAssetRef(normalizedImage)) {
-      return buildSanityImageUrlFromAssetRef(normalizedImage, options);
+      return buildSanityImageUrlFromAssetRef(
+        normalizedImage,
+        withDefaultSanityTransforms(options)
+      );
     }
 
     return normalizedImage;
   }
 
-  return buildSanityImageUrlFromAssetRef(image, options);
+  return buildSanityImageUrlFromAssetRef(
+    image,
+    withDefaultSanityTransforms(options)
+  );
 };
 
 export const getImageSrcSet = (
