@@ -28,6 +28,16 @@ const getImageUrl = (image: unknown): string | null => {
   return null;
 };
 
+const normalizeSlotCount = (value: unknown, fallback: number): number => {
+  if (value === undefined || value === null || value === "") return fallback;
+
+  const numberValue = Number(value);
+
+  return Number.isFinite(numberValue) && numberValue >= 0
+    ? Math.floor(numberValue)
+    : fallback;
+};
+
 export const adaptTournament = (data: unknown): Tournament | null => {
   if (!data) return null;
 
@@ -71,6 +81,8 @@ export const adaptTournament = (data: unknown): Tournament | null => {
       typeof validated.organization?.primaryColor === "string"
         ? validated.organization.primaryColor
         : validated.organization?.primaryColor?.hex || null,
+    primaryPrizeSlots: normalizeSlotCount(validated.primaryPrizeSlots, 1),
+    secondaryPrizeSlots: normalizeSlotCount(validated.secondaryPrizeSlots, 4),
     updatedAt: validated._updatedAt || undefined,
     standings,
   };

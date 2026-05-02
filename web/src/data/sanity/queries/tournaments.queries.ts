@@ -7,6 +7,8 @@ export const TOURNAMENT_QUERY = `
       primaryColor
     },
     name,
+    primaryPrizeSlots,
+    secondaryPrizeSlots,
     standings[]{
       played,
       wins,

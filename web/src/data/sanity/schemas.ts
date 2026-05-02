@@ -97,6 +97,12 @@ export const sanityTournamentSchema = z
     _id: z.string().nullable().optional(),
     _updatedAt: z.string().nullable().optional(),
     name: z.string().nullable().optional(),
+    primaryPrizeSlots: z
+      .union([z.number(), z.string(), z.null()])
+      .optional(),
+    secondaryPrizeSlots: z
+      .union([z.number(), z.string(), z.null()])
+      .optional(),
     organization: z
       .object({
         name: z.string().nullable().optional(),

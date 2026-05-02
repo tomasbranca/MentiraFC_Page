@@ -161,16 +161,16 @@ const Table = () => {
             } md:hidden px-4 pb-4 space-y-3 transition-all duration-300`}
           >
             {standings.map((row) => {
-              const isChampion = row.type === "champion";
-              const isPlayoff = row.type === "playoff";
+              const isPrimaryPrize = row.type === "primaryPrize";
+              const isSecondaryPrize = row.type === "secondaryPrize";
               const goalDiff = row.goalDiff ?? 0;
 
               return (
                 <div
                   key={row.team.id}
                   className={`border border-neutral-800 p-4
-                    ${isChampion ? "bg-yellow-500/10" : ""}
-                    ${isPlayoff ? "bg-white/2" : "bg-neutral-900"}
+                    ${isPrimaryPrize ? "bg-yellow-500/10" : ""}
+                    ${isSecondaryPrize ? "bg-white/2" : "bg-neutral-900"}
                   `}
                 >
                   <div className="flex justify-between items-center mb-3">
@@ -198,7 +198,7 @@ const Table = () => {
                       className={`text-lg font-extrabold ${
                         row.team.isMain
                           ? "text-violet-400"
-                          : isChampion
+                          : isPrimaryPrize
                           ? "text-yellow-300"
                           : "text-white"
                       }`}
@@ -275,22 +275,22 @@ const Table = () => {
 
               <tbody>
                 {standings.map((row, i) => {
-                  const isChampion = row.type === "champion";
-                  const isPlayoff = row.type === "playoff";
+                  const isPrimaryPrize = row.type === "primaryPrize";
+                  const isSecondaryPrize = row.type === "secondaryPrize";
 
                   return (
                     <tr
                       key={row.team.id}
                       className={`border-b border-neutral-800 transition
                         ${i % 2 === 0 ? "bg-neutral-900" : "bg-neutral-900/70"}
-                        ${isChampion ? "border-l-4 bg-yellow-500/10" : ""}
-                        ${isPlayoff ? "border-l-4 bg-white/2" : ""}
+                        ${isPrimaryPrize ? "border-l-4 bg-yellow-500/10" : ""}
+                        ${isSecondaryPrize ? "border-l-4 bg-white/2" : ""}
                         hover:bg-neutral-800
                       `}
                       style={
-                        isChampion
+                        isPrimaryPrize
                           ? { borderLeftColor: "rgba(255, 193, 7, 0.8)" }
-                          : isPlayoff
+                          : isSecondaryPrize
                           ? { borderLeftColor: tournament.primaryColor ?? undefined }
                           : {}
                       }
@@ -345,7 +345,7 @@ const Table = () => {
                         className={`text-center font-extrabold text-lg ${
                           row.team.isMain
                             ? "text-violet-400"
-                            : isChampion
+                            : isPrimaryPrize
                             ? "text-yellow-300"
                             : "text-white"
                         }`}

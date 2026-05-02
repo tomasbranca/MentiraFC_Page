@@ -128,6 +128,8 @@ export const useTableData = () => {
       manualStandings: tournamentSource.standings,
       games: gamesFromActiveTournament,
       mainTeam,
+      primaryPrizeSlots: tournamentSource.primaryPrizeSlots,
+      secondaryPrizeSlots: tournamentSource.secondaryPrizeSlots,
     });
 
     return {

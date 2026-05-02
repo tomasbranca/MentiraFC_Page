@@ -64,7 +64,7 @@ export interface StandingsRow {
   points?: number;
   goalDiff?: number;
   position?: number;
-  type?: "champion" | "playoff" | "normal";
+  type?: "primaryPrize" | "secondaryPrize" | "normal";
 }
 
 export interface Tournament {
@@ -72,6 +72,8 @@ export interface Tournament {
   name: string;
   imageUrl?: string | null;
   primaryColor?: string | null;
+  primaryPrizeSlots?: number;
+  secondaryPrizeSlots?: number;
   updatedAt?: string;
   standings: StandingsRow[];
 }

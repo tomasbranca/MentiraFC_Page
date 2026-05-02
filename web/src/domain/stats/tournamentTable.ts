@@ -1,5 +1,7 @@
 import type { Game, StandingsRow, TeamRef } from "../../types/models";
 
+type StandingsRowType = NonNullable<StandingsRow["type"]>;
+
 type GameInput = Partial<Omit<Game, "result">> & {
   result?: Partial<Record<keyof Game["result"], unknown>>;
 };
@@ -17,20 +19,54 @@ type StandingsRowInput = Omit<
   goalsAgainst?: unknown;
 };
 
+type PrizeSlotsInput = {
+  primaryPrizeSlots?: unknown;
+  secondaryPrizeSlots?: unknown;
+};
+
+const DEFAULT_PRIMARY_PRIZE_SLOTS = 1;
+const DEFAULT_SECONDARY_PRIZE_SLOTS = 4;
+
 const calculatePoints = (row: StandingsRow): number => row.wins * 3 + row.draws;
 const calculateGoalDiff = (row: StandingsRow): number =>
   row.goalsFor - row.goalsAgainst;
 
-const getRowType = (position: number): "champion" | "playoff" | "normal" => {
-  if (position === 1) return "champion";
-  if (position >= 2 && position <= 5) return "playoff";
+const normalizeSlotCount = (value: unknown, fallback: number): number => {
+  if (value === undefined || value === null || value === "") return fallback;
+
+  const numberValue = Number(value);
+
+  return Number.isFinite(numberValue) && numberValue >= 0
+    ? Math.floor(numberValue)
+    : fallback;
+};
+
+const getRowType = (
+  position: number,
+  { primaryPrizeSlots, secondaryPrizeSlots }: PrizeSlotsInput = {}
+): StandingsRowType => {
+  const primarySlots = normalizeSlotCount(
+    primaryPrizeSlots,
+    DEFAULT_PRIMARY_PRIZE_SLOTS
+  );
+  const secondarySlots = normalizeSlotCount(
+    secondaryPrizeSlots,
+    DEFAULT_SECONDARY_PRIZE_SLOTS
+  );
+
+  if (position < 1) return "normal";
+  if (position <= primarySlots) return "primaryPrize";
+  if (position <= primarySlots + secondarySlots) return "secondaryPrize";
   return "normal";
 };
 
 const normalizeNumber = (value: unknown): number =>
   Number.isFinite(value) ? Number(value) : 0;
 
-const sortAndDecorateTable = (rows: StandingsRow[] = []): StandingsRow[] => {
+const sortAndDecorateTable = (
+  rows: StandingsRow[] = [],
+  prizeSlots: PrizeSlotsInput = {}
+): StandingsRow[] => {
   return rows
     .map((row) => ({
       ...row,
@@ -47,7 +83,7 @@ const sortAndDecorateTable = (rows: StandingsRow[] = []): StandingsRow[] => {
     .map((row, index) => ({
       ...row,
       position: index + 1,
-      type: getRowType(index + 1),
+      type: getRowType(index + 1, prizeSlots),
     }));
 };
 
@@ -97,11 +133,13 @@ export const getHybridTournamentTable = ({
   manualStandings = [],
   games = [],
   mainTeam = null,
+  primaryPrizeSlots,
+  secondaryPrizeSlots,
 }: {
   manualStandings?: StandingsRowInput[];
   games?: GameInput[] | null;
   mainTeam?: TeamRef | null;
-}): StandingsRow[] => {
+} & PrizeSlotsInput): StandingsRow[] => {
   if (!mainTeam && !manualStandings.length) return [];
 
   const manualRows = (manualStandings || []).map(cloneManualRow);
@@ -117,7 +155,10 @@ export const getHybridTournamentTable = ({
     mainTeam || manualRows.find((row) => row.team.isMain)?.team || null;
 
   if (!resolvedMainTeam) {
-    return sortAndDecorateTable(manualRows);
+    return sortAndDecorateTable(manualRows, {
+      primaryPrizeSlots,
+      secondaryPrizeSlots,
+    });
   }
 
   const mainStats = calculateMainTeamStats(
@@ -129,12 +170,16 @@ export const getHybridTournamentTable = ({
     ...mainStats,
   };
 
-  return sortAndDecorateTable(Object.values(rowsByTeamId));
+  return sortAndDecorateTable(Object.values(rowsByTeamId), {
+    primaryPrizeSlots,
+    secondaryPrizeSlots,
+  });
 };
 
 export const getTournamentTable = (
   games: GameInput[] = [],
-  teams: TeamRef[] = []
+  teams: TeamRef[] = [],
+  prizeSlots: PrizeSlotsInput = {}
 ): StandingsRow[] => {
   if (!Array.isArray(teams) || teams.length === 0) return [];
 
@@ -159,7 +204,8 @@ export const getTournamentTable = (
   return sortAndDecorateTable(
     rows.map((row) =>
       row.team.id === mainTeam.id ? { ...row, ...mainStats } : row
-    )
+    ),
+    prizeSlots
   );
 };
 

@@ -37,6 +37,20 @@ export default {
       validation: (Rule) => Rule.required(),
     },
     {
+      name: 'primaryPrizeSlots',
+      title: 'Equipos que clasifican al primer premio',
+      type: 'number',
+      initialValue: 1,
+      validation: (Rule) => Rule.required().integer().min(0),
+    },
+    {
+      name: 'secondaryPrizeSlots',
+      title: 'Equipos que clasifican al segundo premio',
+      type: 'number',
+      initialValue: 4,
+      validation: (Rule) => Rule.required().integer().min(0),
+    },
+    {
       name: 'standings',
       title: 'Posiciones',
       type: 'array',

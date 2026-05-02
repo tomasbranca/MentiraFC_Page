@@ -72,7 +72,59 @@ describe("getHybridTournamentTable", () => {
 
     expect(table[0].team.id).toBe("a");
     expect(table[0].position).toBe(1);
-    expect(table[0].type).toBe("champion");
+    expect(table[0].type).toBe("primaryPrize");
+  });
+
+  it("clasifica filas con cupos configurables para primer y segundo premio", () => {
+    const table = getHybridTournamentTable({
+      primaryPrizeSlots: 2,
+      secondaryPrizeSlots: 1,
+      manualStandings: [
+        {
+          team: { id: "a", name: "Alpha FC" },
+          played: 1,
+          wins: 1,
+          draws: 0,
+          losses: 0,
+          goalsFor: 4,
+          goalsAgainst: 0,
+        },
+        {
+          team: { id: "b", name: "Beta FC" },
+          played: 1,
+          wins: 1,
+          draws: 0,
+          losses: 0,
+          goalsFor: 3,
+          goalsAgainst: 0,
+        },
+        {
+          team: { id: "c", name: "Celta FC" },
+          played: 1,
+          wins: 1,
+          draws: 0,
+          losses: 0,
+          goalsFor: 2,
+          goalsAgainst: 0,
+        },
+        {
+          team: { id: "d", name: "Delta FC" },
+          played: 1,
+          wins: 0,
+          draws: 0,
+          losses: 1,
+          goalsFor: 0,
+          goalsAgainst: 2,
+        },
+      ],
+    });
+
+    expect(table.map((row) => row.type)).toEqual([
+      "primaryPrize",
+      "primaryPrize",
+      "secondaryPrize",
+      "normal",
+    ]);
   });
 
   it("retorna arreglo vacío cuando no hay equipo principal ni tabla manual", () => {

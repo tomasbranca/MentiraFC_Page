@@ -69,6 +69,8 @@ export const resolveHomeData = (
           manualStandings: tournamentSource.standings,
           games: gamesFromActiveTournament,
           mainTeam,
+          primaryPrizeSlots: tournamentSource.primaryPrizeSlots,
+          secondaryPrizeSlots: tournamentSource.secondaryPrizeSlots,
         }),
       }
     : null;
