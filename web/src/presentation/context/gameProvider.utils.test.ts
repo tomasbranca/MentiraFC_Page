@@ -9,6 +9,7 @@ const createPayload = (
   bootstrapScope: "empty",
   news: [],
   players: [],
+  staff: [],
   games: [],
   tournament: null,
   teams: [],

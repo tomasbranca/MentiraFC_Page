@@ -2,14 +2,19 @@ import { useMemo, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { getPlayers } from "../../../../data/players";
+import { getStaff } from "../../../../data/staff";
 import { queryKeys } from "../../../../data/queryKeys";
 import { reportError } from "../../../../lib/errors/errorLogger";
-import { shouldLoadTeamInitially } from "../../../hooks/loading/loadingState.utils";
+import {
+  shouldLoadStaffInitially,
+  shouldLoadTeamInitially,
+} from "../../../hooks/loading/loadingState.utils";
 import { useInitialData } from "../../../context/useInitialData";
-import { groupPlayersByPosition } from "../team.utils";
-import type { Player } from "../../../../types/models";
+import { groupTeamMembers } from "../team.utils";
+import type { Player, StaffMember } from "../../../../types/models";
 
 const EMPTY_PLAYERS: Player[] = [];
+const EMPTY_STAFF: StaffMember[] = [];
 
 export const useTeamData = () => {
   const { initialData } = useInitialData();
@@ -20,10 +25,20 @@ export const useTeamData = () => {
   const cachedPlayers = hasCachedPlayers.current
     ? queryClient.getQueryData<Player[]>(queryKeys.players.all)
     : undefined;
+  const hasCachedStaff = useRef(
+    queryClient.getQueryState(queryKeys.staff.all)?.data !== undefined
+  );
+  const cachedStaff = hasCachedStaff.current
+    ? queryClient.getQueryData<StaffMember[]>(queryKeys.staff.all)
+    : undefined;
   const initialPlayers = cachedPlayers ?? initialData.players;
+  const initialStaff = cachedStaff ?? initialData.staff;
   const needsInitialFetch =
     !hasCachedPlayers.current &&
     shouldLoadTeamInitially(initialData.bootstrapScope, initialPlayers.length);
+  const needsInitialStaffFetch =
+    !hasCachedStaff.current &&
+    shouldLoadStaffInitially(initialData.bootstrapScope, initialStaff.length);
 
   const playersQuery = useQuery({
     queryKey: queryKeys.players.all,
@@ -44,18 +59,44 @@ export const useTeamData = () => {
     refetchOnMount: needsInitialFetch ? "always" : false,
   });
 
+  const staffQuery = useQuery({
+    queryKey: queryKeys.staff.all,
+    queryFn: async () => {
+      try {
+        return await getStaff();
+      } catch (error) {
+        reportError(error, {
+          page: "Team",
+          action: "refresh_team_staff",
+        });
+        throw error;
+      }
+    },
+    enabled: needsInitialStaffFetch,
+    initialData: needsInitialStaffFetch ? undefined : initialStaff,
+    placeholderData: needsInitialStaffFetch ? initialStaff : undefined,
+    refetchOnMount: needsInitialStaffFetch ? "always" : false,
+  });
+
   const players = playersQuery.data ?? EMPTY_PLAYERS;
-  const grouped = useMemo(() => groupPlayersByPosition(players), [players]);
-  const loading = needsInitialFetch && playersQuery.isFetching;
-  const error = Boolean(playersQuery.error);
+  const staff = staffQuery.data ?? EMPTY_STAFF;
+  const grouped = useMemo(
+    () => groupTeamMembers(players, staff),
+    [players, staff]
+  );
+  const loading =
+    (needsInitialFetch && playersQuery.isFetching) ||
+    (needsInitialStaffFetch && staffQuery.isFetching);
+  const error = Boolean(playersQuery.error || staffQuery.error);
 
   return {
     players,
+    staff,
     grouped,
     loading,
     error,
     refetch: async () => {
-      await playersQuery.refetch();
+      await Promise.all([playersQuery.refetch(), staffQuery.refetch()]);
     },
   };
 };

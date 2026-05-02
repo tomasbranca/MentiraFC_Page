@@ -132,6 +132,7 @@ const preloadQueryCache = (payload: InitialDataPayload) => {
     queryClient.setQueryData(queryKeys.games.latest, payload.latestGame);
     queryClient.setQueryData(queryKeys.news.all, payload.news);
     queryClient.setQueryData(queryKeys.players.all, payload.players);
+    queryClient.setQueryData(queryKeys.staff.all, payload.staff);
     queryClient.setQueryData(queryKeys.games.finished, payload.games);
     queryClient.setQueryData(queryKeys.tournaments.current, payload.tournament);
     queryClient.setQueryData(queryKeys.teams.all, payload.teams);
@@ -156,6 +157,13 @@ const preloadQueryCache = (payload: InitialDataPayload) => {
     queryClient.setQueryData(
       queryKeys.players.bySlug(payload.currentPlayerDetail.slug),
       payload.currentPlayerDetail.player
+    );
+  }
+
+  if (payload.currentStaffDetail) {
+    queryClient.setQueryData(
+      queryKeys.staff.bySlug(payload.currentStaffDetail.slug),
+      payload.currentStaffDetail.staffMember
     );
   }
 };

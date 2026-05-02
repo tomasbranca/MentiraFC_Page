@@ -1,5 +1,5 @@
 import { getImageUrl } from "../../data/imageService";
-import type { NewsItem, Player } from "../../types/models";
+import type { NewsItem, Player, StaffMember } from "../../types/models";
 import { ROUTES } from "../constants/routes.constants";
 import type { HeadMetadata } from "./head";
 
@@ -175,5 +175,33 @@ export const buildMissingPlayerHead = (slug?: string): HeadMetadata => ({
   ...STATIC_PAGE_HEAD.team,
   title: withSiteName("Jugador no encontrado"),
   canonicalUrl: canonicalUrl(slug ? ROUTES.PLAYER_DETAIL(slug) : ROUTES.TEAM),
+  robots: "noindex, follow",
+});
+
+export const buildStaffHead = (staffMember: StaffMember): HeadMetadata => {
+  const fullName = normalizeText(staffMember.fullName) ||
+    normalizeText(`${staffMember.name} ${staffMember.lastName}`);
+  const roleText = normalizeText(staffMember.role).toLowerCase();
+  const description = truncate(
+    `${fullName}${roleText ? `, ${roleText}` : ""} en el staff de Mentira FC.`
+  );
+
+  return {
+    ...DEFAULT_HEAD,
+    title: withSiteName(fullName),
+    description,
+    canonicalUrl: canonicalUrl(
+      ROUTES.STAFF_DETAIL(staffMember.slug ?? staffMember.id)
+    ),
+    imageUrl: resolveImageUrl(staffMember.imageUrl),
+    imageAlt: fullName,
+    openGraphType: "profile",
+  };
+};
+
+export const buildMissingStaffHead = (slug?: string): HeadMetadata => ({
+  ...STATIC_PAGE_HEAD.team,
+  title: withSiteName("Staff no encontrado"),
+  canonicalUrl: canonicalUrl(slug ? ROUTES.STAFF_DETAIL(slug) : ROUTES.TEAM),
   robots: "noindex, follow",
 });

@@ -7,6 +7,7 @@ import {
 } from "./getInitialData";
 import { getNewsBySlug, getSuggestedNews } from "./news";
 import { getPlayerBySlug } from "./players";
+import { getStaffMemberBySlug } from "./staff";
 
 import { getPlayerStats } from "../domain/stats";
 import { reportError } from "../lib/errors/errorLogger";
@@ -114,6 +115,35 @@ const getPlayerDetailInitialData = async (
   }
 };
 
+const getStaffDetailInitialData = async (
+  slug: string
+): Promise<InitialDataPayload> => {
+  try {
+    const [staffMember, latestGame] = await Promise.all([
+      getStaffMemberBySlug(slug),
+      getLatestGame(),
+    ]);
+
+    return {
+      ...createEmptyInitialData(),
+      bootstrapScope: "staff-detail",
+      latestGame,
+      currentStaffDetail: {
+        slug,
+        staffMember,
+      },
+    };
+  } catch (error) {
+    reportError(error, {
+      scope: "data:getRouteInitialData",
+      action: "load_staff_detail_initial_data",
+      slug,
+    });
+
+    throw error;
+  }
+};
+
 export const getRouteInitialData = async (
   pathname: string
 ): Promise<InitialDataPayload> => {
@@ -130,6 +160,15 @@ export const getRouteInitialData = async (
 
   if (newsSlug) {
     return getNewsDetailInitialData(newsSlug);
+  }
+
+  const staffSlug = extractSlugFromPathname(
+    pathname,
+    ROUTES.STAFF_DETAIL(":slug")
+  );
+
+  if (staffSlug) {
+    return getStaffDetailInitialData(staffSlug);
   }
 
   const playerSlug = extractSlugFromPathname(

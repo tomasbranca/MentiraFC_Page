@@ -11,6 +11,7 @@ describe("initial data payload factories", () => {
 
     expect(payload.bootstrapScope).toBe("empty");
     expect(payload.news).toEqual([]);
+    expect(payload.staff).toEqual([]);
     expect(payload.latestGame).toBeNull();
     expect(payload.bootstrapError).toBeUndefined();
   });

@@ -85,6 +85,16 @@ export const sanityPlayerSchema = z.object({
   imageUrl: z.string().nullable().optional(),
 });
 
+export const sanityStaffSchema = z.object({
+  _id: z.string(),
+  name: z.string(),
+  lastName: z.string(),
+  role: z.string().trim().min(1),
+  birthDate: z.string().nullable().optional(),
+  slug: sanitySlugSchema.optional(),
+  imageUrl: z.string().nullable().optional(),
+});
+
 export const sanityTeamSchema = z.object({
   _id: z.string(),
   name: z.string(),
@@ -154,6 +164,7 @@ export type SanityNews = z.infer<typeof sanityNewsSchema>;
 export type SanityGame = z.infer<typeof sanityGameSchema>;
 export type SanityEvent = z.infer<typeof sanityEventSchema>;
 export type SanityPlayer = z.infer<typeof sanityPlayerSchema>;
+export type SanityStaff = z.infer<typeof sanityStaffSchema>;
 export type SanityTeam = z.infer<typeof sanityTeamSchema>;
 export type SanityTournament = z.infer<typeof sanityTournamentSchema>;
 export type SanityStandingRow = z.infer<typeof sanityStandingRowSchema>;

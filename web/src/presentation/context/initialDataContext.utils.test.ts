@@ -12,6 +12,7 @@ const createPayload = (
   bootstrapScope: "empty",
   news: [],
   players: [],
+  staff: [],
   games: [],
   tournament: null,
   teams: [],
@@ -24,6 +25,7 @@ describe("initialDataContext.utils", () => {
   it("solo precarga Home en segundo plano cuando estamos fuera de Home y sin noticias", () => {
     expect(shouldLoadHomeCriticalData(0, "news-detail")).toBe(true);
     expect(shouldLoadHomeCriticalData(0, "player-detail")).toBe(true);
+    expect(shouldLoadHomeCriticalData(0, "staff-detail")).toBe(true);
     expect(shouldLoadHomeCriticalData(3, "news-detail")).toBe(false);
     expect(shouldLoadHomeCriticalData(0, "empty")).toBe(false);
     expect(shouldLoadHomeCriticalData(0, "bootstrap-error")).toBe(false);

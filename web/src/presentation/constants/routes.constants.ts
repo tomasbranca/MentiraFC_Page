@@ -8,4 +8,5 @@ export const ROUTES = {
 
   NEWS_DETAIL: (slug: string) => `/noticias/${slug}`,
   PLAYER_DETAIL: (slug: string) => `/plantel/${slug}`,
+  STAFF_DETAIL: (slug: string) => `/plantel/staff/${slug}`,
 };

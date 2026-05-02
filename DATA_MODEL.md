@@ -15,6 +15,7 @@ Hoy existen estos documentos de Sanity:
 | Documento | Descripcion | Estado |
 |---|---|---|
 | `players` | Jugadores del plantel | Activo |
+| `staff` | Staff y cuerpo tecnico del plantel | Activo |
 | `news` | Noticias y notas editoriales | Activo |
 | `games` | Partidos de Mentira FC | Activo |
 | `events` | Eventos asociados a partidos, hoy solo goles | Activo |
@@ -67,6 +68,39 @@ Relaciones faltantes/proximas:
 - Agregar redes sociales del jugador.
 - Contabilizar partidos jugados. La fuente deberia salir de la convocatoria de cada `game`, no cargarse manualmente en el jugador.
 - Agregar premios internos en cada jugador.
+
+## `staff`
+
+Representa integrantes del staff o cuerpo tecnico del plantel.
+
+Schema: `studio/schemas/staff.schema.js`
+
+Campos:
+
+| Campo | Tipo | Requerido | Descripcion |
+|---|---|---:|---|
+| `name` | `string` | Si | Nombre del integrante. |
+| `lastName` | `string` | Si | Apellido del integrante. |
+| `role` | `string` | Si | Rol que cumple en el equipo. |
+| `birthDate` | `date` | No | Fecha de nacimiento. |
+| `photo` | `image` | No | Foto del integrante, con hotspot. |
+| `slug` | `slug` | Si | Slug canonico para URL publica. Se genera desde nombre y apellido. |
+
+Uso en web:
+
+- Query principal: `STAFF_QUERY`
+- Query de detalle: `STAFF_BY_SLUG_OR_ID_QUERY`
+- Modelo de dominio: `StaffMember`
+- La web deriva `fullName` como `${name} ${lastName}`.
+- No se contabilizan goles y no tiene numero de camiseta.
+
+Relaciones actuales:
+
+- No tiene referencias a otros documentos.
+
+Relaciones faltantes/proximas:
+
+- Agregar redes sociales del integrante.
 
 ## `news`
 
@@ -309,9 +343,9 @@ Estas relaciones y modelos no existen hoy en Sanity. Quedan documentados como pe
 | `players` | Agregar atributos, mapa de posiciones, redes sociales y premios internos. | Enriquecer el perfil publico del jugador. |
 | `players` / `games` | Calcular partidos jugados desde la convocatoria del partido. | Evitar cargar partidos jugados manualmente y usar el partido como fuente real. |
 | `news` | Agregar mas bloques de contenido y permitir fotos/videos entre bloques. | Mejorar la experiencia editorial de las notas. |
-| `news` | Relacionar noticias con `players`, futuro `staff`, `games`, `tournaments`, etc. | Permitir contenido relacionado y contexto deportivo dentro de cada noticia. |
+| `news` | Relacionar noticias con `players`, `staff`, `games`, `tournaments`, etc. | Permitir contenido relacionado y contexto deportivo dentro de cada noticia. |
 | `news` / `usuarios` | Agregar votaciones y comentarios. | Habilitar participacion de usuarios en el sitio. |
-| `staff` | Crear modelo nuevo con nombre, apellido, rol, fecha de nacimiento/edad y redes sociales. | Representar cuerpo tecnico o staff del equipo. |
+| `staff` | Agregar redes sociales. | Enriquecer el perfil publico del staff. |
 | `games` | Agregar convocatoria al partido. | Permite mostrar convocados y contabilizar partidos jugados por jugador en el año. |
 | `events` | Agregar asistencia en eventos de gol (`assist -> players`). | Permite registrar quien asistio y calcular estadisticas de asistencias. |
 | `galleries` | Crear modelo nuevo con seccion propia en NavBar, relacion a partido, imagenes descargables e imagen hero. | Separar galerias de imagenes como contenido propio y asociarlas a partidos. |
@@ -328,6 +362,7 @@ La web adapta los documentos de Sanity a modelos propios:
 | Sanity | Dominio web | Archivo |
 |---|---|---|
 | `players` | `Player`, `PlayerWithGoals` | `web/src/types/models.ts` |
+| `staff` | `StaffMember` | `web/src/types/models.ts` |
 | `news` | `NewsItem` | `web/src/types/models.ts` |
 | `games` | `Game`, `GameResult` | `web/src/types/models.ts` |
 | `events` | `MatchEvent`, `GoalEvent` | `web/src/types/models.ts` |

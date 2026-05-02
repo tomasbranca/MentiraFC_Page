@@ -13,6 +13,10 @@ export const queryKeys = {
     all: ["players"] as const,
     bySlug: (slug: string) => ["players", "slug", slug] as const,
   },
+  staff: {
+    all: ["staff"] as const,
+    bySlug: (slug: string) => ["staff", "slug", slug] as const,
+  },
   news: {
     all: ["news"] as const,
     bySlug: (slug: string) => ["news", "slug", slug] as const,

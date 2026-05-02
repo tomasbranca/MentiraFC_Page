@@ -4,6 +4,7 @@ import {
   shouldLoadNewsInitially,
   shouldLoadPlayerDetailInitially,
   shouldLoadRecordInitially,
+  shouldLoadStaffInitially,
   shouldLoadTableInitially,
   shouldLoadTeamInitially,
 } from "./loadingState.utils";
@@ -20,6 +21,7 @@ describe("loadingState.utils", () => {
   it("detecta cuando historial y plantel faltan por bootstrap parcial", () => {
     expect(shouldLoadRecordInitially("news-detail", 0)).toBe(true);
     expect(shouldLoadTeamInitially("player-detail", 0)).toBe(true);
+    expect(shouldLoadStaffInitially("player-detail", 0)).toBe(true);
   });
 
   it("no fuerza tabla cuando el bootstrap full ya resolvio que no hay torneo activo", () => {

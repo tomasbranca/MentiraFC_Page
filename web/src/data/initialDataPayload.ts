@@ -3,6 +3,7 @@ import type {
   Game,
   NewsItem,
   Player,
+  StaffMember,
   TeamRef,
   Tournament,
 } from "../types/models";
@@ -11,6 +12,7 @@ export interface InitialDataPayload {
   bootstrapScope: BootstrapScope;
   news: NewsItem[];
   players: Player[];
+  staff: StaffMember[];
   games: Game[];
   tournament: Tournament | null;
   teams: TeamRef[];
@@ -27,6 +29,10 @@ export interface InitialDataPayload {
     goalsThisYear: number;
     year: number;
   };
+  currentStaffDetail?: {
+    slug: string;
+    staffMember: StaffMember | null;
+  };
   bootstrapError?: {
     message: string;
   };
@@ -36,6 +42,7 @@ export const createEmptyInitialData = (): InitialDataPayload => ({
   bootstrapScope: "empty",
   news: [],
   players: [],
+  staff: [],
   games: [],
   tournament: null,
   teams: [],

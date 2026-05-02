@@ -29,6 +29,11 @@ export const shouldLoadTeamInitially = (
   playersLength: number
 ) => bootstrapScope !== "full" && playersLength === 0;
 
+export const shouldLoadStaffInitially = (
+  bootstrapScope: BootstrapScope,
+  staffLength: number
+) => bootstrapScope !== "full" && staffLength === 0;
+
 export const shouldLoadTableInitially = ({
   bootstrapScope,
   tournament,

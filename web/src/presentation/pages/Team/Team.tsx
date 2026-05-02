@@ -1,15 +1,22 @@
 import { useState } from "react";
 import PlayerCard from "../../components/PlayerCard/PlayerCard";
+import StaffCard from "../../components/StaffCard/StaffCard";
 import Button from "../../components/Button/Button";
 import Loader from "../../components/Loader/Loader";
 import ErrorFallback from "../../components/errors/ErrorFallback";
 
 import { useTeamData } from "./hooks/useTeamdata";
 import { getFilteredSections } from "./team.utils";
-import { POSITION_CONFIG, FILTERS, type PositionId, type TeamFilter } from "./team.constants";
+import {
+  TEAM_SECTION_CONFIG,
+  FILTERS,
+  type TeamFilter,
+  type TeamSectionId,
+} from "./team.constants";
+import type { Player, StaffMember } from "../../../types/models";
 
 const Team = () => {
-  const { players, grouped, loading, error, refetch } = useTeamData();
+  const { players, staff, grouped, loading, error, refetch } = useTeamData();
 
   const [filter, setFilter] = useState<TeamFilter>("all");
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -20,7 +27,7 @@ const Team = () => {
     return (
       <ErrorFallback
         title="Error al cargar el plantel"
-        message="No se pudo obtener la información de los jugadores. Intentá recargar la página."
+        message="No se pudo obtener la informacion del plantel. Intenta recargar la pagina."
         onRetry={refetch}
       />
     );
@@ -47,7 +54,7 @@ const Team = () => {
               onClick={() => setFiltersOpen(!filtersOpen)}
               className="w-full bg-linear-to-r from-violet-700 to-violet-600 px-4 py-3 text-white font-semibold flex justify-between items-center rounded-lg shadow-md transition-all duration-300"
             >
-              <span>Filtrar posiciones</span>
+              <span>Filtrar plantel</span>
               <span className={`${filtersOpen ? "rotate-180" : ""}`}>▾</span>
             </button>
 
@@ -90,12 +97,15 @@ const Team = () => {
 
         {/* CONTENIDO */}
         <div className="p-5 md:p-8">
-          {players.length > 0 &&
+          {players.length + staff.length > 0 &&
             Object.entries(sections).map(([position, list]) => {
               if (!list?.length) return null;
 
-              const config = POSITION_CONFIG[position as PositionId];
+              const sectionId = position as TeamSectionId;
+              const config = TEAM_SECTION_CONFIG[sectionId];
               const Icon = config.icon;
+              const memberLabel =
+                list.length === 1 ? config.singularLabel : config.pluralLabel;
 
               return (
                 <section
@@ -114,15 +124,21 @@ const Team = () => {
                     </div>
 
                     <span className="text-sm font-semibold text-violet-200">
-                      {list.length}{" "}
-                      {list.length === 1 ? "jugador" : "jugadores"}
+                      {list.length} {memberLabel}
                     </span>
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5 md:gap-8">
-                    {list.map((player) => (
-                      <PlayerCard key={player.id} player={player} />
-                    ))}
+                    {sectionId === "staff"
+                      ? (list as StaffMember[]).map((staffMember) => (
+                          <StaffCard
+                            key={staffMember.id}
+                            staffMember={staffMember}
+                          />
+                        ))
+                      : (list as Player[]).map((player) => (
+                          <PlayerCard key={player.id} player={player} />
+                        ))}
                   </div>
                 </section>
               );

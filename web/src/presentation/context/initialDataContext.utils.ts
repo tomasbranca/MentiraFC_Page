@@ -8,7 +8,9 @@ export const shouldLoadHomeCriticalData = (
   bootstrapScope: BootstrapScope
 ): boolean =>
   newsCount === 0 &&
-  (bootstrapScope === "news-detail" || bootstrapScope === "player-detail");
+  (bootstrapScope === "news-detail" ||
+    bootstrapScope === "player-detail" ||
+    bootstrapScope === "staff-detail");
 
 export const mergeHomeCriticalIntoInitialData = (
   previousData: InitialDataPayload,
@@ -20,4 +22,5 @@ export const mergeHomeCriticalIntoInitialData = (
   // shared widgets used by detail pages.
   currentNewsDetail: previousData.currentNewsDetail,
   currentPlayerDetail: previousData.currentPlayerDetail,
+  currentStaffDetail: previousData.currentStaffDetail,
 });

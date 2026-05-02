@@ -5,7 +5,8 @@ export type BootstrapScope =
   | "full"
   | "home-critical"
   | "news-detail"
-  | "player-detail";
+  | "player-detail"
+  | "staff-detail";
 
 export interface TeamRef {
   id: string;
@@ -27,6 +28,17 @@ export interface Player {
 }
 
 export type PlayerWithGoals = Player & { goals: number };
+
+export interface StaffMember {
+  id: string;
+  name: string;
+  lastName: string;
+  fullName: string;
+  slug?: string;
+  role: string;
+  birthDate?: string | null;
+  imageUrl?: string | null;
+}
 
 export interface MatchEvent {
   id: string;

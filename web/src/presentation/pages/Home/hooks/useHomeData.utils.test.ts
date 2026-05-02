@@ -17,6 +17,7 @@ const createInitialData = (
     { id: "news-new", title: "Nueva", date: "2025-02-01", slug: "nueva" },
   ],
   players: [{ id: "p-1", fullName: "Ana Gomez", name: "Ana", lastName: "Gomez" }],
+  staff: [],
   games: [
     {
       id: "g-1",

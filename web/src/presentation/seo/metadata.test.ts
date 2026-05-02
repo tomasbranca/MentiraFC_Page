@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import type { NewsItem, Player } from "../../types/models";
+import type { NewsItem, Player, StaffMember } from "../../types/models";
 import {
   buildMissingNewsHead,
   buildNewsHead,
   buildPlayerHead,
+  buildStaffHead,
   DEFAULT_HEAD,
   getStaticPageHeadByPathname,
   STATIC_PAGE_HEAD,
@@ -54,6 +55,28 @@ describe("seo metadata", () => {
       "https://mentirafc.vercel.app/plantel/tomas-brancatisano"
     );
     expect(metadata.imageUrl).toBe(DEFAULT_HEAD.imageUrl);
+    expect(metadata.openGraphType).toBe("profile");
+  });
+
+  it("builds profile metadata for a staff detail without shirt number", () => {
+    const staffMember: StaffMember = {
+      id: "staff-1",
+      name: "Juan",
+      lastName: "Perez",
+      fullName: "Juan Perez",
+      slug: "juan-perez",
+      role: "Director tecnico",
+      imageUrl: null,
+    };
+
+    const metadata = buildStaffHead(staffMember);
+
+    expect(metadata.title).toBe("Juan Perez | Mentira FC");
+    expect(metadata.description).toContain("director tecnico");
+    expect(metadata.description).not.toContain("camiseta");
+    expect(metadata.canonicalUrl).toBe(
+      "https://mentirafc.vercel.app/plantel/staff/juan-perez"
+    );
     expect(metadata.openGraphType).toBe("profile");
   });
 
