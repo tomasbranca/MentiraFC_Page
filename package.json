@@ -9,6 +9,6 @@
     "install:web": "cd web && npm install",
     "install:studio": "cd studio && npm install",
     "install": "npm run install:web && npm run install:studio",
-    "deploy": "cd studio && npx run deploy" 
+    "deploy": "cd studio && npx sanity deploy"
   }
 }
