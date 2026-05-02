@@ -62,6 +62,8 @@ const sanitizeValue = (value: unknown, depth = 0): unknown => {
   }
 
   if (typeof value === "object") {
+    // Context is useful for debugging, but keys that look personal or secret
+    // are redacted before logging locally or sending data to Sentry.
     return Object.entries(value).reduce<ErrorContext>((acc, [key, item]) => {
       acc[key] = SENSITIVE_CONTEXT_KEY.test(key)
         ? redact()
@@ -108,6 +110,8 @@ export const reportError = (
   error: unknown,
   context: ErrorContext = {}
 ): void => {
+  // Accept unknown errors from async boundaries and normalize them once so all
+  // callers can report failures without shaping their own Error instances.
   const normalizedError =
     error instanceof Error
       ? error

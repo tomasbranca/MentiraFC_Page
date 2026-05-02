@@ -41,6 +41,8 @@ const normalizeSlotCount = (value: unknown, fallback: number): number => {
 export const adaptTournament = (data: unknown): Tournament | null => {
   if (!data) return null;
 
+  // The service may pass either a single tournament or an array from older
+  // call sites; normalize here so the rest of the app sees one shape.
   const rawData = Array.isArray(data) ? data[0] : data;
 
   const validated = validateSanityItem(
@@ -56,6 +58,8 @@ export const adaptTournament = (data: unknown): Tournament | null => {
     "tournaments.adapter:standings"
   );
 
+  // Standings are stored manually in Sanity, but numbers can arrive as strings
+  // from editorial input/imports; adapters coerce them before domain logic.
   const standings: StandingsRow[] = validatedStandings.map((row) => ({
     played: Number(row.played) || 0,
     wins: Number(row.wins) || 0,

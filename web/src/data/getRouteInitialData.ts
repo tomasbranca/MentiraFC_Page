@@ -19,6 +19,8 @@ const extractSlugFromPathname = (
   pathname: string,
   routePattern: string
 ): string | null => {
+  // Route constants generate concrete paths, so the dynamic slug segment is
+  // converted to a local regex instead of duplicating route strings by hand.
   const matcher = new RegExp(
     `^${escapeRegex(routePattern).replace(
       escapeRegex(":slug"),
@@ -115,6 +117,8 @@ const getPlayerDetailInitialData = async (
 export const getRouteInitialData = async (
   pathname: string
 ): Promise<InitialDataPayload> => {
+  // Each route gets the smallest useful bootstrap payload; generic pages fall
+  // back to the full dataset because they depend on shared widgets.
   if (pathname === ROUTES.HOME) {
     return getHomeCriticalData();
   }

@@ -16,6 +16,8 @@ export const mergeHomeCriticalIntoInitialData = (
 ): InitialDataPayload => ({
   ...previousData,
   ...homeData,
+  // Preserve route-specific payloads while background home data refreshes the
+  // shared widgets used by detail pages.
   currentNewsDetail: previousData.currentNewsDetail,
   currentPlayerDetail: previousData.currentPlayerDetail,
 });

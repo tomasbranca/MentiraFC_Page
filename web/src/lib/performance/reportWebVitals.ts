@@ -63,6 +63,8 @@ export function startWebVitalsTracking(): void {
     | PerformanceNavigationTiming
     | undefined;
   if (navigationEntry) {
+    // Navigation timing is emitted once at startup to complement observer-based
+    // metrics such as LCP, CLS and INP.
     emitMetric({
       name: "TTFB",
       value: navigationEntry.responseStart,
@@ -124,6 +126,8 @@ export function startWebVitalsTracking(): void {
           value: number;
           hadRecentInput?: boolean;
         };
+        // Ignore shifts triggered by user input; Core Web Vitals only count
+        // unexpected movement toward CLS.
         if (shift.hadRecentInput) {
           continue;
         }

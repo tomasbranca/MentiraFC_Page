@@ -39,6 +39,8 @@ export const adaptGame = (game: unknown): Game | null => {
   );
   if (!validated) return null;
 
+  // Upcoming matches do not have a result object yet; normalize to 0-0 so
+  // widgets can render one stable Game shape.
   return {
     id: validated._id,
     date: validated.date,

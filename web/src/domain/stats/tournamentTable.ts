@@ -45,6 +45,8 @@ const getRowType = (
   position: number,
   { primaryPrizeSlots, secondaryPrizeSlots }: PrizeSlotsInput = {}
 ): StandingsRowType => {
+  // Prize slots come from CMS content, so they are normalized here before
+  // decorating rows with presentation-specific states.
   const primarySlots = normalizeSlotCount(
     primaryPrizeSlots,
     DEFAULT_PRIMARY_PRIZE_SLOTS
@@ -67,6 +69,8 @@ const sortAndDecorateTable = (
   rows: StandingsRow[] = [],
   prizeSlots: PrizeSlotsInput = {}
 ): StandingsRow[] => {
+  // The table order is derived in the domain layer so every page/widget uses
+  // the same tie-breakers and prize-zone labels.
   return rows
     .map((row) => ({
       ...row,
@@ -90,6 +94,8 @@ const sortAndDecorateTable = (
 const calculateMainTeamStats = (
   games: GameInput[] = []
 ): Omit<StandingsRow, "team"> => {
+  // Only Mentira FC stats are calculated from our own match records; rival
+  // rows remain editorial because the app does not store every league match.
   return games.reduce<Omit<StandingsRow, "team">>(
     (acc, game) => {
       const goalsFor = normalizeNumber(game?.result?.goalsFor);
@@ -142,6 +148,8 @@ export const getHybridTournamentTable = ({
 } & PrizeSlotsInput): StandingsRow[] => {
   if (!mainTeam && !manualStandings.length) return [];
 
+  // Sanity keeps the full table editable, but the main-team row is replaced
+  // with calculated stats to avoid duplicated manual updates after each match.
   const manualRows = (manualStandings || []).map(cloneManualRow);
   const rowsByTeamId = manualRows.reduce<Record<string, StandingsRow>>(
     (acc, row) => {
@@ -201,6 +209,8 @@ export const getTournamentTable = (
     goalsAgainst: 0,
   }));
 
+  // Legacy fallback: build a table from team records when no manual standings
+  // are available from the active tournament.
   return sortAndDecorateTable(
     rows.map((row) =>
       row.team.id === mainTeam.id ? { ...row, ...mainStats } : row

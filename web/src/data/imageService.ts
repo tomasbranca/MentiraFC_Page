@@ -28,6 +28,8 @@ const withDefaultSanityTransforms = (options: ImageOptions): ImageOptions => ({
 const parseSanityImageAssetRef = (
   value: string
 ): SanityImageAssetRef | null => {
+  // Sanity asset refs encode the original dimensions and format:
+  // image-<assetId>-<width>x<height>-<format>.
   const match = value.match(
     /^image-([a-zA-Z0-9]+)-(\d+)x(\d+)-([a-z0-9]+)$/
   );
@@ -100,6 +102,8 @@ const buildSanityImageUrlFromAssetRef = (
     return "";
   }
 
+  // Some queries return raw asset refs instead of resolved URLs; rebuilding the
+  // CDN URL here keeps components independent from the exact GROQ projection.
   const url = `https://cdn.sanity.io/images/${projectId}/${dataset}/${asset.assetId}-${asset.width}x${asset.height}.${asset.format}`;
 
   return buildSanityImageUrlFromString(url, options);
@@ -121,6 +125,7 @@ export const getImageUrl = (
     }
 
     if (isSanityImageUrl(normalizedImage)) {
+      // Resolved Sanity URLs still receive app defaults for quality/format.
       return buildSanityImageUrlFromString(
         normalizedImage,
         withDefaultSanityTransforms(options)

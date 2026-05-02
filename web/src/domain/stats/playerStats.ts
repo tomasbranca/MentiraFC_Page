@@ -42,6 +42,8 @@ const isInYear = (date: string | undefined, year?: number): boolean => {
 };
 
 const getGoalEvents = (games: GameInput[] | unknown = [], year?: number) => {
+  // Goal stats are event-driven: players do not store counters, so historical
+  // numbers can be recalculated when events or year filters change.
   return normalizeGames(games)
     .filter((game) => isInYear(game.date, year))
     .flatMap((game) => game.events || [])
