@@ -4,7 +4,13 @@ export const HOME_CRITICAL_QUERY = `
       _id,
       title,
       description,
-      content,
+      content[]{
+        ...,
+        "imageUrl": asset->url,
+        "fileUrl": file.asset->url,
+        "mimeType": file.asset->mimeType,
+        "originalFilename": file.asset->originalFilename
+      },
       date,
       slug,
       "imageUrl": image.asset->url

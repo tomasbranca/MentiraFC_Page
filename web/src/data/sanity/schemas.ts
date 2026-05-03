@@ -55,7 +55,7 @@ export const sanityNewsSchema = z.object({
   _id: z.string(),
   title: z.string(),
   description: z.string().optional(),
-  content: z.unknown().optional(),
+  content: z.array(z.unknown()).nullish(),
   date: z.string(),
   slug: sanitySlugSchema.optional(),
   imageUrl: z.string().nullable().optional(),

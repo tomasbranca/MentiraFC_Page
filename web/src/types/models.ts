@@ -1,3 +1,5 @@
+import type { PortableTextBlock, TypedObject } from "@portabletext/types";
+
 export type GameState = "por_jugar" | "finalizado" | string;
 export type BootstrapScope =
   | "empty"
@@ -114,11 +116,34 @@ export interface Tournament {
   standings: StandingsRow[];
 }
 
+export interface NewsImageContentBlock extends TypedObject {
+  _type: "image";
+  alt?: string;
+  caption?: string;
+  imageUrl?: string | null;
+  asset?: unknown;
+}
+
+export interface NewsVideoContentBlock extends TypedObject {
+  _type: "video";
+  url?: string | null;
+  fileUrl?: string | null;
+  mimeType?: string | null;
+  originalFilename?: string | null;
+  title?: string | null;
+  caption?: string | null;
+}
+
+export type NewsContentBlock =
+  | PortableTextBlock
+  | NewsImageContentBlock
+  | NewsVideoContentBlock;
+
 export interface NewsItem {
   id: string;
   title: string;
   description?: string;
-  content?: unknown;
+  content?: NewsContentBlock[];
   date: string;
   slug: string;
   imageUrl?: string | null;

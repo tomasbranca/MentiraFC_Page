@@ -1,4 +1,4 @@
-import type { NewsItem } from "../../../types/models";
+import type { NewsContentBlock, NewsItem } from "../../../types/models";
 import {
   getSanitySlugValue,
   sanityNewsSchema,
@@ -14,11 +14,13 @@ export const adaptSingleNews = (item: unknown): NewsItem | null => {
   );
   if (!validated) return null;
 
+  const content = validated.content as NewsContentBlock[] | null | undefined;
+
   return {
     id: validated._id,
     title: validated.title,
     description: validated.description,
-    content: validated.content,
+    content: content ?? undefined,
     date: validated.date,
     slug: getSanitySlugValue(validated.slug) ?? "",
     imageUrl: validated.imageUrl,
