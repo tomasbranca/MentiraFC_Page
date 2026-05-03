@@ -23,6 +23,34 @@ export const sanityPlayerRefSchema = z.object({
   slug: sanitySlugSchema.optional(),
 });
 
+const sanityRatingValueSchema = z
+  .union([z.number(), z.string(), z.null()])
+  .optional();
+
+const sanityFieldPlayerRatingsSchema = z
+  .object({
+    speed: sanityRatingValueSchema,
+    shooting: sanityRatingValueSchema,
+    passing: sanityRatingValueSchema,
+    dribbling: sanityRatingValueSchema,
+    defense: sanityRatingValueSchema,
+    physical: sanityRatingValueSchema,
+  })
+  .nullable()
+  .optional();
+
+const sanityGoalkeeperRatingsSchema = z
+  .object({
+    jumping: sanityRatingValueSchema,
+    saving: sanityRatingValueSchema,
+    kicking: sanityRatingValueSchema,
+    reflexes: sanityRatingValueSchema,
+    speed: sanityRatingValueSchema,
+    positioning: sanityRatingValueSchema,
+  })
+  .nullable()
+  .optional();
+
 export const sanityNewsSchema = z.object({
   _id: z.string(),
   title: z.string(),
@@ -82,6 +110,8 @@ export const sanityPlayerSchema = z.object({
   number: z.number().nullable().optional(),
   position: z.string().nullable().optional(),
   dominantFoot: z.enum(["left", "right"]).nullable().optional(),
+  fieldRatings: sanityFieldPlayerRatingsSchema,
+  goalkeeperRatings: sanityGoalkeeperRatingsSchema,
   birthDate: z.string().nullable().optional(),
   slug: sanitySlugSchema.optional(),
   imageUrl: z.string().nullable().optional(),

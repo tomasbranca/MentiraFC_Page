@@ -17,6 +17,24 @@ export interface TeamRef {
 
 export type DominantFoot = "left" | "right";
 
+export interface FieldPlayerRatings {
+  speed?: number | null;
+  shooting?: number | null;
+  passing?: number | null;
+  dribbling?: number | null;
+  defense?: number | null;
+  physical?: number | null;
+}
+
+export interface GoalkeeperRatings {
+  jumping?: number | null;
+  saving?: number | null;
+  kicking?: number | null;
+  reflexes?: number | null;
+  speed?: number | null;
+  positioning?: number | null;
+}
+
 export interface Player {
   id: string;
   name: string;
@@ -26,6 +44,8 @@ export interface Player {
   number?: number | null;
   position?: string | null;
   dominantFoot?: DominantFoot | null;
+  fieldRatings?: FieldPlayerRatings;
+  goalkeeperRatings?: GoalkeeperRatings;
   birthDate?: string | null;
   imageUrl?: string | null;
 }

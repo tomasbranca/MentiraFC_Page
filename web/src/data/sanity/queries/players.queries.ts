@@ -6,6 +6,8 @@ export const PLAYERS_QUERY = `
     number,
     position,
     dominantFoot,
+    fieldRatings,
+    goalkeeperRatings,
     birthDate,
     slug,
     "imageUrl": photo.asset->url
@@ -23,6 +25,8 @@ export const PLAYER_BY_SLUG_OR_ID_QUERY = `
     number,
     position,
     dominantFoot,
+    fieldRatings,
+    goalkeeperRatings,
     birthDate,
     slug,
     "imageUrl": photo.asset->url

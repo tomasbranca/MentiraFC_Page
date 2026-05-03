@@ -10,6 +10,33 @@ const DOMINANT_FOOT_OPTIONS = [
   {title: 'Zurdo', value: 'left'},
 ]
 
+const ratingValidation = (Rule) => Rule.integer().min(1).max(10)
+
+const fieldRatingFields = [
+  {name: 'speed', title: 'Velocidad'},
+  {name: 'shooting', title: 'Tiro'},
+  {name: 'passing', title: 'Pase'},
+  {name: 'dribbling', title: 'Regate'},
+  {name: 'defense', title: 'Defensa'},
+  {name: 'physical', title: 'Fisico'},
+]
+
+const goalkeeperRatingFields = [
+  {name: 'jumping', title: 'Salto'},
+  {name: 'saving', title: 'Parada'},
+  {name: 'kicking', title: 'Saque'},
+  {name: 'reflexes', title: 'Reflejos'},
+  {name: 'speed', title: 'Velocidad'},
+  {name: 'positioning', title: 'Posicionamiento'},
+]
+
+const createRatingField = ({name, title}) => ({
+  name,
+  title,
+  type: 'number',
+  validation: ratingValidation,
+})
+
 export default {
   name: 'players',
   title: 'Jugadores',
@@ -49,6 +76,26 @@ export default {
       options: {
         list: DOMINANT_FOOT_OPTIONS,
         layout: 'radio',
+      },
+    },
+    {
+      name: 'fieldRatings',
+      title: 'Valoraciones jugador de campo',
+      type: 'object',
+      hidden: ({document}) => document?.position === 'arq',
+      fields: fieldRatingFields.map(createRatingField),
+      options: {
+        columns: 2,
+      },
+    },
+    {
+      name: 'goalkeeperRatings',
+      title: 'Valoraciones arquero',
+      type: 'object',
+      hidden: ({document}) => document?.position !== 'arq',
+      fields: goalkeeperRatingFields.map(createRatingField),
+      options: {
+        columns: 2,
       },
     },
     {

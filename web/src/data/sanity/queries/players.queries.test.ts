@@ -19,4 +19,11 @@ describe("players queries", () => {
     expect(PLAYERS_QUERY).toContain("dominantFoot");
     expect(PLAYER_BY_SLUG_OR_ID_QUERY).toContain("dominantFoot");
   });
+
+  it("proyecta las valoraciones del jugador en listado y detalle", () => {
+    expect(PLAYERS_QUERY).toContain("fieldRatings");
+    expect(PLAYERS_QUERY).toContain("goalkeeperRatings");
+    expect(PLAYER_BY_SLUG_OR_ID_QUERY).toContain("fieldRatings");
+    expect(PLAYER_BY_SLUG_OR_ID_QUERY).toContain("goalkeeperRatings");
+  });
 });

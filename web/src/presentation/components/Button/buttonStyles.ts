@@ -76,7 +76,7 @@ export const variants = {
   toggle: `
     bg-transparent
     text-neutral-300
-    border border-neutral-700
+    border border-violet-700
 
     hover:bg-neutral-800
   `,

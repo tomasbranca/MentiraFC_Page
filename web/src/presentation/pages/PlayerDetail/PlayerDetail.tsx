@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import Loader from "../../components/Loader/Loader";
 import ErrorFallback from "../../components/errors/ErrorFallback";
@@ -8,6 +8,7 @@ import ProgressiveMedia from "../../components/ProgressiveMedia/ProgressiveMedia
 import RosterNavigation from "../../components/RosterNavigation/RosterNavigation";
 import { buildRosterNavigationItems } from "../../components/RosterNavigation/rosterNavigation.utils";
 import StaffCard from "../../components/StaffCard/StaffCard";
+import Button from "../../components/Button/Button";
 
 import { getImageUrl } from "../../../data/imageService";
 import { usePlayerDetail } from "./hooks/usePlayerDetail";
@@ -23,6 +24,8 @@ import {
 } from "../../seo/metadata";
 import { usePageHead } from "../../seo/usePageHead";
 import { DominantFootIndicator } from "./DominantFootIndicator";
+import PlayerRatingsHexagon from "./PlayerRatingsHexagon";
+import { getPlayerRatingHexagonPoints } from "./playerRatingsHexagon.utils";
 
 const PlayerDetail = () => {
   const { slug } = useParams();
@@ -30,6 +33,7 @@ const PlayerDetail = () => {
     useElementHeight<HTMLDivElement>();
   const { player, loading, error, year, refetch } = usePlayerDetail(slug);
   const { players, staffMembers } = useRosterMembers("PlayerDetail");
+  const [showRatingsHexagon, setShowRatingsHexagon] = useState(false);
   const position =
     player?.position && player.position in POSITION_MAP
       ? POSITION_MAP[player.position as PlayerPositionId]
@@ -76,6 +80,7 @@ const PlayerDetail = () => {
   }
 
   const Icon = position?.icon;
+  const ratingHexagonPoints = getPlayerRatingHexagonPoints(player);
 
   return (
     <div className="max-w-7xl mx-auto md:px-4 sm:px-6 lg:px-8 md:py-6 lg:py-8">
@@ -112,7 +117,47 @@ const PlayerDetail = () => {
           {/* DERECHA */}
           <div className="flex flex-col">
             {/* INFO */}
-            <div className="bg-violet-900 text-violet-50 p-5 sm:p-6 lg:p-6 flex flex-1 flex-col justify-center">
+            <div className="relative bg-violet-900 text-violet-50 p-5 sm:p-6 lg:p-6 flex flex-1 flex-col justify-center">
+              {ratingHexagonPoints && (
+                <div className="absolute right-3 top-3 z-10 flex w-28 flex-col items-center gap-2 sm:right-5 sm:top-5 sm:w-32 lg:w-27 xl:w-33">
+                  <Button
+                    variant="toggle"
+                    active={showRatingsHexagon}
+                    aria-pressed={showRatingsHexagon}
+                    aria-label={
+                      showRatingsHexagon
+                        ? "Ocultar valoraciones"
+                        : "Mostrar valoraciones"
+                    }
+                    className="px-2.5 py-1 text-[0.65rem] sm:px-3 sm:text-xs"
+                    onClick={() =>
+                      setShowRatingsHexagon((currentValue) => !currentValue)
+                    }
+                  >
+                    <span>
+                      {showRatingsHexagon ? "Ocultar stats" : "Mostrar stats"}
+                    </span>
+                    <span
+                      aria-hidden="true"
+                      className={`h-0 w-0 border-l-4 border-r-4 border-t-[5px] border-l-transparent border-r-transparent border-t-current transition-transform duration-300 ${
+                        showRatingsHexagon ? "rotate-180" : ""
+                      }`}
+                    />
+                  </Button>
+
+                  <div
+                    aria-hidden={!showRatingsHexagon}
+                    className={`overflow-hidden transition-all duration-300 ease-out ${
+                      showRatingsHexagon
+                        ? "max-h-36 opacity-100 translate-y-0 scale-100 sm:max-h-40"
+                        : "max-h-0 opacity-0 -translate-y-1 scale-95"
+                    }`}
+                  >
+                    <PlayerRatingsHexagon points={ratingHexagonPoints} />
+                  </div>
+                </div>
+              )}
+
               <span className="text-4xl sm:text-5xl lg:text-6xl font-bold opacity-30">
                 #{player.number}
               </span>

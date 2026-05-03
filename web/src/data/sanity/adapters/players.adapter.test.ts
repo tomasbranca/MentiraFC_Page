@@ -46,4 +46,52 @@ describe("players.adapter", () => {
       dominantFoot: "left",
     });
   });
+
+  it("normaliza ratings completos de jugador de campo", () => {
+    expect(
+      adaptPlayer(
+        createSanityPlayer({
+          fieldRatings: {
+            speed: 8,
+            shooting: "7",
+            passing: 6,
+            dribbling: 5,
+            defense: 9,
+            physical: 10,
+          },
+        })
+      )
+    ).toMatchObject({
+      fieldRatings: {
+        speed: 8,
+        shooting: 7,
+        passing: 6,
+        dribbling: 5,
+        defense: 9,
+        physical: 10,
+      },
+    });
+  });
+
+  it("conserva ratings parciales sin bloquear el jugador", () => {
+    expect(
+      adaptPlayer(
+        createSanityPlayer({
+          fieldRatings: {
+            speed: 8,
+            shooting: 11,
+          },
+        })
+      )
+    ).toMatchObject({
+      fieldRatings: {
+        speed: 8,
+        shooting: null,
+        passing: null,
+        dribbling: null,
+        defense: null,
+        physical: null,
+      },
+    });
+  });
 });
