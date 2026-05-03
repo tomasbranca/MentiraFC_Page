@@ -30,10 +30,9 @@ const getListLinkClassName = (isActive: boolean) =>
 
 const getMobileCardWrapperClassName = (isActive: boolean) =>
   [
+    "relative",
     "transition-transform duration-300",
-    isActive
-      ? "ring-2 ring-violet-600 ring-offset-2 ring-offset-neutral-900"
-      : "hover:-translate-y-1",
+    isActive ? undefined : "hover:-translate-y-1",
   ].join(" ");
 
 const RosterNavigation = ({
@@ -46,55 +45,62 @@ const RosterNavigation = ({
   const desktopStyle = desktopMaxHeight
     ? { height: `${desktopMaxHeight}px`, maxHeight: `${desktopMaxHeight}px` }
     : undefined;
+  const shouldRenderDesktopList =
+    typeof desktopMaxHeight === "number" && desktopMaxHeight > 0;
 
   if (!items.length) return null;
 
   return (
     <>
-      <aside
-        className="hidden min-h-0 overflow-hidden border-l border-neutral-300 pl-6 lg:flex lg:h-[42rem] lg:flex-col"
-        aria-labelledby={`${id}-desktop-title`}
-        style={desktopStyle}
-      >
-        <div className="flex min-h-0 flex-1 flex-col">
-          <h2
-            id={`${id}-desktop-title`}
-            className="text-lg font-black tracking-tight text-neutral-900"
-          >
-            {title}
-          </h2>
-
-          <nav className="mt-3 min-h-0 flex-1 overflow-hidden" aria-label={title}>
-            <ul
-              className={`${SCROLLBAR_CLASS_NAME} h-full space-y-0.5 overflow-y-auto pr-2`}
+      {shouldRenderDesktopList && (
+        <aside
+          className="hidden min-h-0 overflow-hidden border-l border-neutral-300 pl-6 lg:flex lg:flex-col"
+          aria-labelledby={`${id}-desktop-title`}
+          style={desktopStyle}
+        >
+          <div className="flex min-h-0 flex-1 flex-col">
+            <h2
+              id={`${id}-desktop-title`}
+              className="text-lg font-black tracking-tight text-violet-900"
             >
-              {items.map((item) => (
-                <li key={item.id}>
-                  <Link
-                    to={item.href}
-                    aria-current={item.isActive ? "page" : undefined}
-                    className={getListLinkClassName(item.isActive)}
-                    title={item.label}
-                  >
-                    {item.isActive && (
-                      <span
-                        aria-hidden="true"
-                        className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 bg-violet-700"
-                      />
-                    )}
-                    <span className="w-14 shrink-0 truncate text-[10px] font-black uppercase leading-none text-violet-700">
-                      {item.eyebrow}
-                    </span>
-                    <span className="min-w-0 flex-1 truncate font-medium">
-                      {item.label}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        </div>
-      </aside>
+              {title}
+            </h2>
+
+            <nav
+              className="mt-3 min-h-0 flex-1 overflow-hidden"
+              aria-label={title}
+            >
+              <ul
+                className={`${SCROLLBAR_CLASS_NAME} h-full space-y-0.5 overflow-y-auto pr-2`}
+              >
+                {items.map((item) => (
+                  <li key={item.id}>
+                    <Link
+                      to={item.href}
+                      aria-current={item.isActive ? "page" : undefined}
+                      className={getListLinkClassName(item.isActive)}
+                      title={item.label}
+                    >
+                      {item.isActive && (
+                        <span
+                          aria-hidden="true"
+                          className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 bg-violet-700"
+                        />
+                      )}
+                      <span className="w-14 shrink-0 truncate text-[10px] font-black uppercase leading-none text-violet-700">
+                        {item.eyebrow}
+                      </span>
+                      <span className="min-w-0 flex-1 truncate font-medium">
+                        {item.label}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          </div>
+        </aside>
+      )}
 
       <section
         className="bg-neutral-900 px-4 py-5 sm:px-6 lg:hidden"
@@ -121,6 +127,12 @@ const RosterNavigation = ({
                   className={getMobileCardWrapperClassName(item.isActive)}
                 >
                   {renderCard(item)}
+                  {item.isActive && (
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-0 z-40 border-2 border-violet-600"
+                    />
+                  )}
                 </div>
               </li>
             ))}

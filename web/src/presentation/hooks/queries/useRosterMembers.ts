@@ -11,22 +11,26 @@ import type { Player, StaffMember } from "../../../types/models";
 const EMPTY_PLAYERS: Player[] = [];
 const EMPTY_STAFF: StaffMember[] = [];
 
+const hasLoadedMembers = <TMember,>(
+  members: TMember[] | undefined
+): members is TMember[] => Array.isArray(members) && members.length > 0;
+
 export const useRosterMembers = (source: string) => {
   const { initialData } = useInitialData();
   const queryClient = useQueryClient();
   const cacheSnapshot = useMemo(() => {
-    const hasPlayerList =
-      queryClient.getQueryState(queryKeys.players.all)?.data !== undefined;
-    const hasStaffList =
-      queryClient.getQueryState(queryKeys.staff.all)?.data !== undefined;
+    const cachedPlayers = queryClient.getQueryData<Player[]>(
+      queryKeys.players.all
+    );
+    const cachedStaffMembers = queryClient.getQueryData<StaffMember[]>(
+      queryKeys.staff.all
+    );
+    const hasPlayerList = hasLoadedMembers(cachedPlayers);
+    const hasStaffList = hasLoadedMembers(cachedStaffMembers);
 
     return {
-      cachedPlayers: hasPlayerList
-        ? queryClient.getQueryData<Player[]>(queryKeys.players.all)
-        : undefined,
-      cachedStaffMembers: hasStaffList
-        ? queryClient.getQueryData<StaffMember[]>(queryKeys.staff.all)
-        : undefined,
+      cachedPlayers,
+      cachedStaffMembers,
       hasPlayerList,
       hasStaffList,
     };
@@ -42,9 +46,9 @@ export const useRosterMembers = (source: string) => {
       ? initialData.staff
       : undefined;
   const shouldLoadPlayers =
-    !cacheSnapshot.hasPlayerList && initialData.players.length === 0;
+    !cacheSnapshot.hasPlayerList && initialPlayers === undefined;
   const shouldLoadStaff =
-    !cacheSnapshot.hasStaffList && initialData.staff.length === 0;
+    !cacheSnapshot.hasStaffList && initialStaffMembers === undefined;
 
   const playersQuery = useQuery({
     queryKey: queryKeys.players.all,

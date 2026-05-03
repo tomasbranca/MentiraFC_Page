@@ -5,6 +5,7 @@ import {
   buildPlayerRosterNavigationItems,
   buildRosterNavigationItems,
   buildStaffRosterNavigationItems,
+  getStaffRoleAbbreviation,
 } from "./rosterNavigation.utils";
 
 const createPlayer = (overrides: Partial<Player>): Player => ({
@@ -103,7 +104,7 @@ describe("rosterNavigation.utils", () => {
     ]);
     expect(items[0]).toMatchObject({
       href: "/plantel/staff/martin-alvarez",
-      eyebrow: "PREPARADOR FISICO",
+      eyebrow: "PF",
       kind: "staff",
       label: "Martin Alvarez",
       isActive: true,
@@ -128,5 +129,11 @@ describe("rosterNavigation.utils", () => {
       "player:arq-1",
       "staff:staff-1",
     ]);
+  });
+
+  it("abrevia roles de staff usando la primera letra de cada palabra", () => {
+    expect(getStaffRoleAbbreviation("Director tecnico")).toBe("DT");
+    expect(getStaffRoleAbbreviation("Preparador Fisico")).toBe("PF");
+    expect(getStaffRoleAbbreviation("")).toBe("STAFF");
   });
 });

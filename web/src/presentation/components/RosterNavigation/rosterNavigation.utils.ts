@@ -58,6 +58,18 @@ const comparePlayers = (first: Player, second: Player) =>
 const compareStaffMembers = (first: StaffMember, second: StaffMember) =>
   compareByName(first, second);
 
+export const getStaffRoleAbbreviation = (role: string): string => {
+  const abbreviation = role
+    .trim()
+    .split(/\s+/)
+    .map((word) => word[0])
+    .filter(Boolean)
+    .join("")
+    .toUpperCase();
+
+  return abbreviation || "STAFF";
+};
+
 export const buildPlayerRosterNavigationItems = (
   players: Player[],
   activePlayer: Player | null
@@ -80,7 +92,7 @@ export const buildStaffRosterNavigationItems = (
     id: `staff:${staffMember.id}`,
     kind: "staff",
     href: getStaffLink(staffMember),
-    eyebrow: staffMember.role.trim().toUpperCase() || "STAFF",
+    eyebrow: getStaffRoleAbbreviation(staffMember.role),
     label: getFullName(staffMember),
     isActive: activeStaffMember?.id === staffMember.id,
     member: staffMember,
