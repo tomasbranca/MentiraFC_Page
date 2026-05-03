@@ -36,8 +36,8 @@ const Team = () => {
   const sections = getFilteredSections(grouped, filter);
 
   return (
-    <div className="w-full md:max-w-7xl md:mx-auto md:px-4 md:py-12">
-      <div className="bg-neutral-900 md:border border-gray-200 shadow-sm">
+    <div className="min-h-screen w-full bg-neutral-900 md:min-h-0 md:max-w-7xl md:mx-auto md:bg-transparent md:px-4 md:py-12">
+      <div className="min-h-screen bg-neutral-900 md:min-h-0 md:border border-gray-200 shadow-sm">
         {/* HEADER */}
         <header className="w-full p-5 md:p-8 md:border-b border-gray-200 bg-violet-900">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-violet-50 tracking-tight">

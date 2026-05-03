@@ -61,8 +61,8 @@ a {
 }
 
 p {
-  font-size: clamp(1rem, 1.2vw, 1rem);
-  line-height: 1.6;
+  font-size: clamp(0.8rem, 1.2vw, 1rem);
+  line-height: 1.4;
 }
 
 li {

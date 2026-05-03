@@ -104,6 +104,8 @@ export const variants = {
 export const activeVariants = {
   filter: "bg-violet-600 text-white border-violet-400 shadow-md",
   toggle: "bg-violet-600 text-white border-violet-500 shadow-md",
+  toggle1: "bg-violet-600 text-white border-violet-500 shadow-md",
+  toggle2: "bg-violet-600 text-white border-violet-500 shadow-md",
 } as const;
 
 export type ButtonVariant = keyof typeof variants;

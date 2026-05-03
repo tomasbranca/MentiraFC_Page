@@ -67,7 +67,7 @@ const LogoImage = ({ image, name, size, className = "" }: LogoImageProps) => {
 
 const Table = () => {
   const { tournament, loading, error, refetch } = useTableData();
-  const [mode, setMode] = useState("compact");
+  const [mode, setMode] = useState<"full" | "summary">("full");
   if (loading) return <Loader />;
 
   if (error) {
@@ -136,20 +136,20 @@ const Table = () => {
             <div className="flex bg-neutral-900 border border-neutral-700 rounded-lg p-1">
               <Button
                 variant="toggle1"
-                active={mode === "compact"}
-                onClick={() => setMode("compact")}
+                active={mode === "full"}
+                onClick={() => setMode("full")}
                 className="flex-1 rounded-l-md"
               >
-                Resumen
+                Completa
               </Button>
 
               <Button
                 variant="toggle1"
-                active={mode === "full"}
-                onClick={() => setMode("full")}
+                active={mode === "summary"}
+                onClick={() => setMode("summary")}
                 className="flex-1 rounded-r-md"
               >
-                Completa
+                Resumen
               </Button>
             </div>
           </div>
@@ -157,7 +157,7 @@ const Table = () => {
           {/* MOBILE */}
           <div
             className={`${
-              mode === "compact" ? "block" : "hidden"
+              mode === "full" ? "block" : "hidden"
             } md:hidden px-4 pb-4 space-y-3 transition-all duration-300`}
           >
             {standings.map((row) => {
@@ -250,7 +250,7 @@ const Table = () => {
           {/* DESKTOP - INTACTO */}
           <div
             className={`${
-              mode === "full" ? "block" : "hidden"
+              mode === "summary" ? "block" : "hidden"
             } md:block overflow-x-auto`}
           >
             <table className="w-full text-sm">
