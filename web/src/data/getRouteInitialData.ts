@@ -1,4 +1,5 @@
 import { getAllGames, getLatestGame } from "./games";
+import { getGoalEvents } from "./events";
 import {
   createEmptyInitialData,
   getHomeCriticalData,
@@ -71,9 +72,10 @@ const getPlayerDetailInitialData = async (
 ): Promise<InitialDataPayload> => {
   try {
     const year = new Date().getFullYear();
-    const [player, latestGame] = await Promise.all([
+    const [player, latestGame, goalEvents] = await Promise.all([
       getPlayerBySlug(slug),
       getLatestGame(),
+      getGoalEvents({ year }),
     ]);
 
     if (!player) {
@@ -85,13 +87,14 @@ const getPlayerDetailInitialData = async (
           slug,
           player: null,
           goalsThisYear: 0,
+          matchesPlayedThisYear: 0,
           year,
         },
       };
     }
 
     const games = await getAllGames();
-    const stats = getPlayerStats(games, player.id, { year });
+    const stats = getPlayerStats(games, player.id, { year, goalEvents });
 
     return {
       ...createEmptyInitialData(),
@@ -101,6 +104,7 @@ const getPlayerDetailInitialData = async (
         slug,
         player,
         goalsThisYear: stats.goals,
+        matchesPlayedThisYear: stats.matchesPlayed,
         year,
       },
     };

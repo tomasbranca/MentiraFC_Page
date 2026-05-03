@@ -107,5 +107,20 @@ export default {
         },
       ],
     },
+
+    {
+      name: 'playedPlayers',
+      title: 'Jugadores que jugaron',
+      type: 'array',
+      of: [
+        {
+          type: 'reference',
+          to: [{type: 'players'}],
+        },
+      ],
+      hidden: ({parent}) => parent?.state !== 'finalizado',
+      validation: (Rule) => Rule.unique(),
+      description: 'Usalo para contar partidos jugados por jugador en la web.',
+    },
   ],
 }

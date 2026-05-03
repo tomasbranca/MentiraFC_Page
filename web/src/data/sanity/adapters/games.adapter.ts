@@ -1,12 +1,31 @@
-import type { Game, MatchEvent } from "../../../types/models";
+import type { Game, MatchEvent, Player } from "../../../types/models";
 import {
   sanityEventSchema,
   sanityGameSchema,
+  sanityPlayerRefSchema,
   getSanitySlugValue,
   type SanityEvent,
   type SanityGame,
 } from "../schemas";
 import { validateSanityArray, validateSanityItem } from "../validation";
+
+type GamePlayerRef = Pick<Player, "id" | "name" | "lastName" | "slug">;
+
+const adaptPlayerRef = (player: unknown): GamePlayerRef | null => {
+  const validated = validateSanityItem(
+    sanityPlayerRefSchema,
+    player,
+    "games.adapter:adaptPlayerRef"
+  );
+  if (!validated) return null;
+
+  return {
+    id: validated._id,
+    name: validated.name,
+    lastName: validated.lastName,
+    slug: getSanitySlugValue(validated.slug),
+  };
+};
 
 const adaptEvent = (event: unknown): MatchEvent | null => {
   const validated = validateSanityItem(
@@ -20,14 +39,7 @@ const adaptEvent = (event: unknown): MatchEvent | null => {
     id: validated._id,
     type: validated.type,
     order: validated.order,
-    player: validated.player
-      ? {
-          id: validated.player._id,
-          name: validated.player.name,
-          lastName: validated.player.lastName,
-          slug: getSanitySlugValue(validated.player.slug),
-        }
-      : null,
+    player: validated.player ? adaptPlayerRef(validated.player) : null,
   };
 };
 
@@ -63,6 +75,9 @@ export const adaptGame = (game: unknown): Game | null => {
     events: (validated.events || [])
       .map(adaptEvent)
       .filter((event): event is MatchEvent => Boolean(event)),
+    playedPlayers: (validated.playedPlayers || [])
+      .map(adaptPlayerRef)
+      .filter((player): player is GamePlayerRef => Boolean(player)),
   };
 };
 

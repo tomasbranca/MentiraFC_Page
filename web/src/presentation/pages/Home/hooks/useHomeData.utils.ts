@@ -1,7 +1,7 @@
 import type { InitialDataPayload } from "../../../../data/getInitialData";
 import {
   getHybridTournamentTable,
-  getTopScorers,
+  getTopScorersFromGoalEvents,
 } from "../../../../domain/stats";
 import { sortNews } from "../../../utils/news.utils";
 
@@ -9,7 +9,7 @@ export const DEFERRED_HOME_STALE_TIME = 1000 * 60 * 5;
 
 export type DeferredHomeData = Pick<
   InitialDataPayload,
-  "players" | "games" | "tournament" | "teams" | "tournamentGames"
+  "players" | "goalEvents" | "tournament" | "teams" | "tournamentGames"
 >;
 
 export const hasCompleteDeferredHomeData = (
@@ -23,7 +23,7 @@ export const hasCompleteDeferredHomeData = (
 
   return (
     Array.isArray(candidate.players) &&
-    Array.isArray(candidate.games) &&
+    Array.isArray(candidate.goalEvents) &&
     Array.isArray(candidate.teams) &&
     Array.isArray(candidate.tournamentGames) &&
     Object.prototype.hasOwnProperty.call(candidate, "tournament")
@@ -46,13 +46,13 @@ export const resolveHomeData = (
   year: number
 ) => {
   const players = deferredData?.players ?? initialData.players;
-  const games = deferredData?.games ?? initialData.games;
+  const goalEvents = deferredData?.goalEvents ?? initialData.goalEvents;
   const tournamentSource = deferredData?.tournament ?? initialData.tournament;
   const teams = deferredData?.teams ?? initialData.teams;
   const tournamentGames =
     deferredData?.tournamentGames ?? initialData.tournamentGames;
 
-  const topScorers = getTopScorers(games, players, {
+  const topScorers = getTopScorersFromGoalEvents(goalEvents, players, {
     year,
   });
 

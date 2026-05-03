@@ -72,6 +72,7 @@ export const sanityGameSchema = z.object({
     .nullable()
     .optional(),
   events: z.array(sanityEventSchema).optional(),
+  playedPlayers: z.array(sanityPlayerRefSchema).nullish(),
 });
 
 export const sanityPlayerSchema = z.object({

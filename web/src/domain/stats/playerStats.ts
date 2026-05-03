@@ -1,10 +1,20 @@
-import type { Game, MatchEvent, Player, PlayerWithGoals } from "../../types/models";
+import type {
+  Game,
+  GoalEvent,
+  MatchEvent,
+  Player,
+  PlayerWithGoals,
+} from "../../types/models";
 
 type StatsOptions = { year?: number };
+type PlayerStatsOptions = StatsOptions & {
+  goalEvents?: GoalEventInput[] | unknown;
+};
 type PlayerStats = {
   playerId: string | null;
   goals: number;
   matchesWithGoals: number;
+  matchesPlayed: number;
 };
 type PlayerInput = Partial<Player> & Pick<Player, "id">;
 type EventInput =
@@ -12,8 +22,15 @@ type EventInput =
       player?: { id?: string | null } | null;
     })
   | null;
+type GoalEventInput =
+  | (Partial<GoalEvent> & {
+      game?: { id?: string | null; date?: string | null } | null;
+      player?: { id?: string | null } | null;
+    })
+  | null;
 type GameInput = Partial<Omit<Game, "events">> & {
   events?: EventInput[] | null;
+  playedPlayers?: Array<{ id?: string | null } | null> | null;
 };
 
 const normalizeGames = (games: GameInput[] | unknown = []): GameInput[] =>
@@ -34,6 +51,9 @@ const normalizePlayers = (players: PlayerInput[] | unknown = []): Player[] =>
           imageUrl: player.imageUrl,
         }))
     : [];
+const normalizeGoalEvents = (
+  events: GoalEventInput[] | unknown = []
+): GoalEventInput[] => (Array.isArray(events) ? events : []);
 
 const isInYear = (date: string | undefined, year?: number): boolean => {
   if (!year) return true;
@@ -41,7 +61,10 @@ const isInYear = (date: string | undefined, year?: number): boolean => {
   return new Date(date).getFullYear() === year;
 };
 
-const getGoalEvents = (games: GameInput[] | unknown = [], year?: number) => {
+const getGoalEventsFromGames = (
+  games: GameInput[] | unknown = [],
+  year?: number
+) => {
   // Goal stats are event-driven: players do not store counters, so historical
   // numbers can be recalculated when events or year filters change.
   return normalizeGames(games)
@@ -53,6 +76,18 @@ const getGoalEvents = (games: GameInput[] | unknown = [], year?: number) => {
     );
 };
 
+const getGoalEventsInYear = (
+  events: GoalEventInput[] | unknown = [],
+  year?: number
+) =>
+  normalizeGoalEvents(events).filter(
+    (event): event is NonNullable<GoalEventInput> =>
+      event !== null &&
+      event.type === "goal" &&
+      Boolean(event.player?.id) &&
+      isInYear(event.game?.date ?? undefined, year)
+  );
+
 export const getTopScorers = (
   games: GameInput[] | unknown = [],
   players: PlayerInput[] | unknown = [],
@@ -60,7 +95,7 @@ export const getTopScorers = (
 ): PlayerWithGoals[] => {
   const { year } = options;
 
-  const goalsByPlayer = getGoalEvents(games, year).reduce<
+  const goalsByPlayer = getGoalEventsFromGames(games, year).reduce<
     Record<string, number>
   >((acc, event) => {
     const playerId = event.player!.id;
@@ -79,37 +114,98 @@ export const getTopScorers = (
     });
 };
 
+export const getTopScorersFromGoalEvents = (
+  goalEvents: GoalEventInput[] | unknown = [],
+  players: PlayerInput[] | unknown = [],
+  options: StatsOptions = {}
+): PlayerWithGoals[] => {
+  const { year } = options;
+
+  const goalsByPlayer = getGoalEventsInYear(goalEvents, year).reduce<
+    Record<string, number>
+  >((acc, event) => {
+    const playerId = event.player!.id!;
+    acc[playerId] = (acc[playerId] ?? 0) + 1;
+    return acc;
+  }, {});
+
+  return normalizePlayers(players)
+    .map((player) => ({
+      ...player,
+      goals: goalsByPlayer[player.id] ?? 0,
+    }))
+    .sort((a, b) => {
+      if (b.goals !== a.goals) return b.goals - a.goals;
+      return a.fullName.localeCompare(b.fullName, "es");
+    });
+};
+
 export const getPlayerStats = (
   games: GameInput[] | unknown = [],
   playerId?: string | null,
-  options: StatsOptions = {}
+  options: PlayerStatsOptions = {}
 ): PlayerStats => {
-  const { year } = options;
+  const { year, goalEvents } = options;
 
   if (!playerId) {
     return {
       playerId: null,
       goals: 0,
       matchesWithGoals: 0,
+      matchesPlayed: 0,
     };
   }
 
   const scopedGames = normalizeGames(games).filter((game) =>
     isInYear(game.date, year)
   );
+  const playerGoalEvents = getGoalEventsInYear(goalEvents, year).filter(
+    (event) => event.player?.id === playerId
+  );
+  const shouldUseGoalEvents = Array.isArray(goalEvents);
+  const goalGameIds = new Set(
+    playerGoalEvents
+      .map((event) => event.game?.id)
+      .filter((id): id is string => Boolean(id))
+  );
 
-  let goals = 0;
-  let matchesWithGoals = 0;
+  let goals = shouldUseGoalEvents ? playerGoalEvents.length : 0;
+  let matchesWithGoals = shouldUseGoalEvents ? goalGameIds.size : 0;
+  const playedGameIds = new Set(shouldUseGoalEvents ? goalGameIds : []);
 
   scopedGames.forEach((game) => {
-    const matchGoals = (game.events || []).filter(
-      (event) => event?.type === "goal" && event?.player?.id === playerId
-    ).length;
+    const matchGoalEvents = shouldUseGoalEvents
+      ? []
+      : (game.events || []).filter(
+          (event) => event?.type === "goal" && event?.player?.id === playerId
+        );
+    const matchGoals = matchGoalEvents.length;
+    const playerIdsInGame = new Set(
+      (game.playedPlayers || [])
+        .map((player) => player?.id)
+        .filter((id): id is string => Boolean(id))
+    );
 
-    goals += matchGoals;
+    if (!shouldUseGoalEvents) {
+      // Scorers necessarily played; this keeps existing goal data coherent while
+      // older matches are backfilled with explicit appearance lists.
+      (game.events || []).forEach((event) => {
+        if (event?.type === "goal" && event?.player?.id) {
+          playerIdsInGame.add(event.player.id);
+        }
+      });
+    }
+
+    if (!shouldUseGoalEvents) {
+      goals += matchGoals;
+    }
 
     if (matchGoals > 0) {
       matchesWithGoals += 1;
+    }
+
+    if (playerIdsInGame.has(playerId)) {
+      playedGameIds.add(game.id ?? game.date ?? "");
     }
   });
 
@@ -117,5 +213,6 @@ export const getPlayerStats = (
     playerId,
     goals,
     matchesWithGoals,
+    matchesPlayed: playedGameIds.size,
   };
 };

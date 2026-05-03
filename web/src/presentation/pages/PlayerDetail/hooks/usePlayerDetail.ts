@@ -2,14 +2,18 @@ import { useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { getAllGames } from "../../../../data/games";
+import { getGoalEvents } from "../../../../data/events";
 import { getPlayerBySlug } from "../../../../data/players";
 import { queryKeys } from "../../../../data/queryKeys";
 import { getPlayerStats } from "../../../../domain/stats";
 import { reportError } from "../../../../lib/errors/errorLogger";
 import { useInitialData } from "../../../context/useInitialData";
-import type { Game, Player } from "../../../../types/models";
+import type { Game, GoalEvent, Player } from "../../../../types/models";
 
-type PlayerDetailViewModel = Player & { goalsThisYear: number };
+type PlayerDetailViewModel = Player & {
+  goalsThisYear: number;
+  matchesPlayedThisYear: number;
+};
 
 export const usePlayerDetail = (slug: string | undefined) => {
   const { initialData } = useInitialData();
@@ -28,6 +32,9 @@ export const usePlayerDetail = (slug: string | undefined) => {
       queryClient.getQueryState(playerQueryKey)?.data !== undefined;
     const hasGames =
       queryClient.getQueryState(queryKeys.games.finished)?.data !== undefined;
+    const hasGoalEvents =
+      queryClient.getQueryState(queryKeys.events.goals(currentYear))?.data !==
+      undefined;
 
     return {
       cachedPlayer: hasPlayer
@@ -36,16 +43,23 @@ export const usePlayerDetail = (slug: string | undefined) => {
       cachedGames: hasGames
         ? queryClient.getQueryData<Game[]>(queryKeys.games.finished)
         : undefined,
+      cachedGoalEvents: hasGoalEvents
+        ? queryClient.getQueryData<GoalEvent[]>(queryKeys.events.goals(currentYear))
+        : undefined,
       hasGames,
+      hasGoalEvents,
       hasPlayer,
     };
-  }, [playerQueryKey, queryClient]);
+  }, [currentYear, playerQueryKey, queryClient]);
   const initialPlayer = cacheSnapshot.hasPlayer
     ? cacheSnapshot.cachedPlayer ?? null
     : detailFromInitialData?.player ?? undefined;
   const initialGames =
     cacheSnapshot.cachedGames ??
     (initialData.bootstrapScope === "full" ? initialData.games : undefined);
+  const initialGoalEvents =
+    cacheSnapshot.cachedGoalEvents ??
+    (initialData.bootstrapScope === "full" ? initialData.goalEvents : undefined);
   const hasResolvedMissingPlayer =
     (cacheSnapshot.hasPlayer && cacheSnapshot.cachedPlayer === null) ||
     detailFromInitialData?.player === null;
@@ -55,6 +69,11 @@ export const usePlayerDetail = (slug: string | undefined) => {
     Boolean(slug) &&
     !detailFromInitialData &&
     !cacheSnapshot.hasGames &&
+    !hasResolvedMissingPlayer;
+  const shouldLoadGoalEvents =
+    Boolean(slug) &&
+    !detailFromInitialData &&
+    !cacheSnapshot.hasGoalEvents &&
     !hasResolvedMissingPlayer;
 
   const playerQuery = useQuery({
@@ -97,6 +116,30 @@ export const usePlayerDetail = (slug: string | undefined) => {
     refetchOnMount: shouldLoadGames ? "always" : false,
   });
 
+  const goalEventsQuery = useQuery({
+    queryKey: queryKeys.events.goals(currentYear),
+    queryFn: async () => {
+      try {
+        return await getGoalEvents({ year: currentYear });
+      } catch (error) {
+        reportError(error, {
+          page: "PlayerDetail",
+          action: "refresh_player_detail_goal_events",
+          slug,
+        });
+        throw error;
+      }
+    },
+    enabled: shouldLoadGoalEvents,
+    initialData: shouldLoadGoalEvents
+      ? undefined
+      : initialGoalEvents,
+    placeholderData: shouldLoadGoalEvents
+      ? initialGoalEvents
+      : undefined,
+    refetchOnMount: shouldLoadGoalEvents ? "always" : false,
+  });
+
   const player = useMemo<PlayerDetailViewModel | null>(() => {
     const playerSource = playerQuery.data ?? null;
 
@@ -105,29 +148,42 @@ export const usePlayerDetail = (slug: string | undefined) => {
     }
 
     const gamesSource = gamesQuery.data;
+    const goalEventsSource = goalEventsQuery.data;
 
-    if (gamesSource) {
+    if (gamesSource && goalEventsSource) {
       const stats = getPlayerStats(gamesSource, playerSource.id, {
         year: currentYear,
+        goalEvents: goalEventsSource,
       });
 
       return {
         ...playerSource,
         goalsThisYear: stats.goals,
+        matchesPlayedThisYear: stats.matchesPlayed,
       };
     }
 
     return {
       ...playerSource,
       goalsThisYear: detailFromInitialData?.goalsThisYear ?? 0,
+      matchesPlayedThisYear: detailFromInitialData?.matchesPlayedThisYear ?? 0,
     };
-  }, [currentYear, detailFromInitialData, gamesQuery.data, playerQuery.data]);
+  }, [
+    currentYear,
+    detailFromInitialData,
+    gamesQuery.data,
+    goalEventsQuery.data,
+    playerQuery.data,
+  ]);
 
   const hasGamesForStats = gamesQuery.data !== undefined;
   const loading =
     (shouldLoadPlayer && playerQuery.isFetching) ||
-    (shouldLoadGames && gamesQuery.isFetching);
-  const error = Boolean(playerQuery.error || gamesQuery.error);
+    (shouldLoadGames && gamesQuery.isFetching) ||
+    (shouldLoadGoalEvents && goalEventsQuery.isFetching);
+  const error = Boolean(
+    playerQuery.error || gamesQuery.error || goalEventsQuery.error
+  );
 
   return {
     player,
@@ -137,7 +193,11 @@ export const usePlayerDetail = (slug: string | undefined) => {
       ? currentYear
       : detailFromInitialData?.year ?? currentYear,
     refetch: async () => {
-      await Promise.all([playerQuery.refetch(), gamesQuery.refetch()]);
+      await Promise.all([
+        playerQuery.refetch(),
+        gamesQuery.refetch(),
+        goalEventsQuery.refetch(),
+      ]);
     },
   };
 };

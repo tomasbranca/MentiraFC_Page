@@ -1,10 +1,28 @@
 import { client } from "../sanity.client";
-import { GOAL_EVENTS_QUERY } from "../queries/events.queries";
+import {
+  GOAL_EVENTS_BY_YEAR_QUERY,
+  GOAL_EVENTS_QUERY,
+} from "../queries/events.queries";
 import { adaptGoalEvents } from "../adapters/events.adapter";
 
 import type { GoalEvent } from "../../../types/models";
 
-export const getGoalEvents = async (): Promise<GoalEvent[]> => {
-  const data = await client.fetch(GOAL_EVENTS_QUERY);
+type GoalEventsOptions = {
+  year?: number;
+};
+
+const getYearRange = (year: number) => ({
+  from: `${year}-01-01T00:00:00.000Z`,
+  to: `${year + 1}-01-01T00:00:00.000Z`,
+});
+
+export const getGoalEvents = async (
+  options: GoalEventsOptions = {}
+): Promise<GoalEvent[]> => {
+  const { year } = options;
+  const data = year
+    ? await client.fetch(GOAL_EVENTS_BY_YEAR_QUERY, getYearRange(year))
+    : await client.fetch(GOAL_EVENTS_QUERY);
+
   return adaptGoalEvents(data);
 };

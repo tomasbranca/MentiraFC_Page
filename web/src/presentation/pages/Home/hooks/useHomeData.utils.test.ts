@@ -26,6 +26,7 @@ const createInitialData = (
       tournamentId: "t-1",
       rival: { id: "r-1", name: "Rival 1" },
       result: { goalsFor: 1, goalsAgainst: 0 },
+      playedPlayers: [],
       events: [
         {
           id: "e-1",
@@ -33,6 +34,14 @@ const createInitialData = (
           player: { id: "p-1", name: "Ana", lastName: "Gomez" },
         },
       ],
+    },
+  ],
+  goalEvents: [
+    {
+      id: "e-1",
+      type: "goal",
+      game: { id: "g-1", date: "2025-02-15" },
+      player: { id: "p-1", name: "Ana", lastName: "Gomez" },
     },
   ],
   tournament: {
@@ -59,6 +68,7 @@ const createInitialData = (
       tournamentId: "t-1",
       rival: { id: "r-1", name: "Rival 1" },
       result: { goalsFor: 1, goalsAgainst: 0 },
+      playedPlayers: [],
       events: [
         {
           id: "te-1",
@@ -76,7 +86,7 @@ describe("useHomeData.utils", () => {
   it("detecta cuando la cache diferida de Home esta incompleta", () => {
     const partialCache = {
       players: [],
-      games: [],
+      goalEvents: [],
       teams: [],
     };
 
@@ -91,7 +101,7 @@ describe("useHomeData.utils", () => {
   it("mantiene la cache completa como reutilizable sin refetch forzado", () => {
     const completeCache = {
       players: [],
-      games: [],
+      goalEvents: [],
       tournament: null,
       teams: [],
       tournamentGames: [],
@@ -109,7 +119,7 @@ describe("useHomeData.utils", () => {
     const initialData = createInitialData();
     const partialDeferredData = {
       players: [{ id: "p-2", fullName: "Belen Ruiz", name: "Belen", lastName: "Ruiz" }],
-      games: [],
+      goalEvents: [],
       teams: [],
     };
 
@@ -131,6 +141,14 @@ describe("useHomeData.utils", () => {
     const initialData = createInitialData();
     const deferredData = {
       players: [{ id: "p-2", fullName: "Belen Ruiz", name: "Belen", lastName: "Ruiz" }],
+      goalEvents: [
+        {
+          id: "e-2",
+          type: "goal",
+          game: { id: "g-2", date: "2025-03-20" },
+          player: { id: "p-2", name: "Belen", lastName: "Ruiz" },
+        },
+      ],
       games: [
         {
           id: "g-2",
@@ -139,6 +157,7 @@ describe("useHomeData.utils", () => {
           tournamentId: "t-2",
           rival: { id: "r-2", name: "Rival 2" },
           result: { goalsFor: 2, goalsAgainst: 0 },
+          playedPlayers: [],
           events: [
             {
               id: "e-2",
@@ -172,6 +191,7 @@ describe("useHomeData.utils", () => {
           tournamentId: "t-2",
           rival: { id: "r-2", name: "Rival 2" },
           result: { goalsFor: 2, goalsAgainst: 0 },
+          playedPlayers: [],
           events: [
             {
               id: "te-2",

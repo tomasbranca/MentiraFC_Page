@@ -63,6 +63,7 @@ export interface Game {
   rival: TeamRef;
   result: GameResult;
   events: MatchEvent[];
+  playedPlayers: Pick<Player, "id" | "name" | "lastName" | "slug">[];
 }
 
 export interface StandingsRow {
@@ -117,5 +118,6 @@ export interface SanityGameSource {
   date?: string;
   state?: string;
   events?: unknown[];
+  playedPlayers?: unknown[];
   [key: string]: unknown;
 }

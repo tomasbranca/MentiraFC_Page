@@ -14,6 +14,7 @@ const createPayload = (
   players: [],
   staff: [],
   games: [],
+  goalEvents: [],
   tournament: null,
   teams: [],
   tournamentGames: [],
@@ -43,7 +44,7 @@ describe("initialDataContext.utils", () => {
     const homeData = createPayload({
       bootstrapScope: "home-critical",
       news: [{ id: "n-2", title: "Home", date: "2025-01-03", slug: "home" }],
-      latestGame: { id: "g-1", date: "2025-01-05", state: "por_jugar", rival: { id: "r-1", name: "Rival" }, result: { goalsFor: 0, goalsAgainst: 0 }, events: [] },
+      latestGame: { id: "g-1", date: "2025-01-05", state: "por_jugar", rival: { id: "r-1", name: "Rival" }, result: { goalsFor: 0, goalsAgainst: 0 }, events: [], playedPlayers: [] },
     });
 
     const mergedData = mergeHomeCriticalIntoInitialData(previousData, homeData);

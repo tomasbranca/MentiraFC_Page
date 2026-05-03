@@ -9,6 +9,10 @@ export const queryKeys = {
     finished: ["games", "finished"] as const,
     tournamentFinished: ["games", "tournament-finished"] as const,
   },
+  events: {
+    goals: (year?: number) =>
+      year ? (["events", "goals", year] as const) : (["events", "goals"] as const),
+  },
   players: {
     all: ["players"] as const,
     bySlug: (slug: string) => ["players", "slug", slug] as const,

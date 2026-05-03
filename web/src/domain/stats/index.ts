@@ -1,4 +1,8 @@
-export { getTopScorers, getPlayerStats } from "./playerStats";
+export {
+  getTopScorers,
+  getTopScorersFromGoalEvents,
+  getPlayerStats,
+} from "./playerStats";
 
 export {
   getHybridTournamentTable,

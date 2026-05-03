@@ -1,4 +1,5 @@
 import { getAllGames, getLatestGame, getTournamentGames } from "./games";
+import { getGoalEvents } from "./events";
 import { getHomeCriticalData as fetchHomeCriticalData } from "./sanity/services/home.service";
 import { getNews } from "./news";
 import { getPlayers } from "./players";
@@ -26,6 +27,7 @@ export const getHomeCriticalData = async (): Promise<InitialDataPayload> => {
       players: [],
       staff: [],
       games: [],
+      goalEvents: [],
       tournament: null,
       teams: [],
       tournamentGames: [],
@@ -50,6 +52,7 @@ export const getInitialData = async (): Promise<InitialDataPayload> => {
       players,
       staff,
       games,
+      goalEvents,
       tournament,
       teams,
       tournamentGames,
@@ -59,6 +62,7 @@ export const getInitialData = async (): Promise<InitialDataPayload> => {
       getPlayers(),
       getStaff(),
       getAllGames(),
+      getGoalEvents({ year: new Date().getFullYear() }),
       getTournament(),
       getTeams(),
       getTournamentGames(),
@@ -71,6 +75,7 @@ export const getInitialData = async (): Promise<InitialDataPayload> => {
       players,
       staff,
       games,
+      goalEvents,
       tournament,
       teams,
       tournamentGames,

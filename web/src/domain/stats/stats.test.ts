@@ -4,6 +4,7 @@ import {
   getHybridTournamentTable,
   getPlayerStats,
   getTopScorers,
+  getTopScorersFromGoalEvents,
 } from "./index";
 
 describe("getHybridTournamentTable", () => {
@@ -332,6 +333,7 @@ describe("getPlayerStats", () => {
       playerId: "p1",
       goals: 3,
       matchesWithGoals: 2,
+      matchesPlayed: 2,
     });
   });
 
@@ -340,6 +342,7 @@ describe("getPlayerStats", () => {
       playerId: "p1",
       goals: 0,
       matchesWithGoals: 0,
+      matchesPlayed: 0,
     });
   });
 
@@ -348,6 +351,7 @@ describe("getPlayerStats", () => {
       playerId: null,
       goals: 0,
       matchesWithGoals: 0,
+      matchesPlayed: 0,
     });
   });
 
@@ -356,6 +360,7 @@ describe("getPlayerStats", () => {
       playerId: "p1",
       goals: 0,
       matchesWithGoals: 0,
+      matchesPlayed: 0,
     });
 
     const malformedGames = [
@@ -373,6 +378,117 @@ describe("getPlayerStats", () => {
       playerId: "p1",
       goals: 0,
       matchesWithGoals: 0,
+      matchesPlayed: 0,
     });
+  });
+
+  it("calcula partidos jugados desde la lista del partido aunque no haya goles", () => {
+    const stats = getPlayerStats(
+      [
+        {
+          date: "2025-01-10",
+          playedPlayers: [{ id: "p1" }, { id: "p2" }],
+          events: [{ type: "goal", player: { id: "p2" } }],
+        },
+        {
+          date: "2025-02-10",
+          playedPlayers: [{ id: "p3" }],
+          events: [],
+        },
+        {
+          date: "2024-02-10",
+          playedPlayers: [{ id: "p1" }],
+          events: [],
+        },
+      ],
+      "p1",
+      { year: 2025 }
+    );
+
+    expect(stats).toEqual({
+      playerId: "p1",
+      goals: 0,
+      matchesWithGoals: 0,
+      matchesPlayed: 1,
+    });
+  });
+
+  it("usa eventos de gol planos para no recorrer eventos anidados cuando estan disponibles", () => {
+    const stats = getPlayerStats(
+      [
+        {
+          id: "g1",
+          date: "2025-01-10",
+          playedPlayers: [{ id: "p1" }],
+          events: [{ type: "goal", player: { id: "p2" } }],
+        },
+        {
+          id: "g2",
+          date: "2025-02-10",
+          playedPlayers: [],
+          events: [],
+        },
+      ],
+      "p1",
+      {
+        year: 2025,
+        goalEvents: [
+          {
+            id: "e1",
+            type: "goal",
+            game: { id: "g2", date: "2025-02-10" },
+            player: { id: "p1" },
+          },
+        ],
+      }
+    );
+
+    expect(stats).toEqual({
+      playerId: "p1",
+      goals: 1,
+      matchesWithGoals: 1,
+      matchesPlayed: 2,
+    });
+  });
+});
+
+describe("getTopScorersFromGoalEvents", () => {
+  const players = [
+    { id: "p1", fullName: "Ana Gomez" },
+    { id: "p2", fullName: "Bruno Perez" },
+    { id: "p3", fullName: "Carlos Ruiz" },
+  ];
+
+  it("calcula goleadores desde eventos planos filtrados por año", () => {
+    const goalEvents = [
+      {
+        id: "e1",
+        type: "goal",
+        game: { id: "g1", date: "2025-02-10" },
+        player: { id: "p2" },
+      },
+      {
+        id: "e2",
+        type: "goal",
+        game: { id: "g2", date: "2025-03-10" },
+        player: { id: "p1" },
+      },
+      {
+        id: "e3",
+        type: "goal",
+        game: { id: "g3", date: "2024-03-10" },
+        player: { id: "p1" },
+      },
+    ];
+
+    const topScorers = getTopScorersFromGoalEvents(goalEvents, players, {
+      year: 2025,
+    });
+
+    expect(topScorers.map((player) => [player.id, player.goals])).toEqual([
+      ["p1", 1],
+      ["p2", 1],
+      ["p3", 0],
+    ]);
   });
 });

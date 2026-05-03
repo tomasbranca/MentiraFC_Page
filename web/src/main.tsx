@@ -134,6 +134,10 @@ const preloadQueryCache = (payload: InitialDataPayload) => {
     queryClient.setQueryData(queryKeys.players.all, payload.players);
     queryClient.setQueryData(queryKeys.staff.all, payload.staff);
     queryClient.setQueryData(queryKeys.games.finished, payload.games);
+    queryClient.setQueryData(
+      queryKeys.events.goals(new Date().getFullYear()),
+      payload.goalEvents
+    );
     queryClient.setQueryData(queryKeys.tournaments.current, payload.tournament);
     queryClient.setQueryData(queryKeys.teams.all, payload.teams);
     queryClient.setQueryData(

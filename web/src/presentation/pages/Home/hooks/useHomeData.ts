@@ -1,7 +1,8 @@
 import { useEffect, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { getAllGames, getTournamentGames } from "../../../../data/games";
+import { getTournamentGames } from "../../../../data/games";
+import { getGoalEvents } from "../../../../data/events";
 import { getNews } from "../../../../data/news";
 import { getPlayers } from "../../../../data/players";
 import { queryKeys } from "../../../../data/queryKeys";
@@ -37,10 +38,10 @@ export const useHomeData = () => {
     enabled: shouldHydrateDeferredData,
     queryFn: async () => {
       try {
-        const [players, games, tournament, teams, tournamentGames] =
+        const [players, goalEvents, tournament, teams, tournamentGames] =
           await Promise.all([
             getPlayers(),
-            getAllGames(),
+            getGoalEvents({ year }),
             getTournament(),
             getTeams(),
             getTournamentGames(),
@@ -48,7 +49,7 @@ export const useHomeData = () => {
 
         return {
           players,
-          games,
+          goalEvents,
           tournament,
           teams,
           tournamentGames,
@@ -77,7 +78,7 @@ export const useHomeData = () => {
     }
 
     queryClient.setQueryData(queryKeys.players.all, deferredHomeData.players);
-    queryClient.setQueryData(queryKeys.games.finished, deferredHomeData.games);
+    queryClient.setQueryData(queryKeys.events.goals(year), deferredHomeData.goalEvents);
     queryClient.setQueryData(
       queryKeys.tournaments.current,
       deferredHomeData.tournament
@@ -87,7 +88,7 @@ export const useHomeData = () => {
       queryKeys.games.tournamentFinished,
       deferredHomeData.tournamentGames
     );
-  }, [deferredHomeData, queryClient]);
+  }, [deferredHomeData, queryClient, year]);
 
   useEffect(() => {
     if (initialData.bootstrapScope !== "home-critical") {

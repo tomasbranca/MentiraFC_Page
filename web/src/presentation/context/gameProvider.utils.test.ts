@@ -11,6 +11,7 @@ const createPayload = (
   players: [],
   staff: [],
   games: [],
+  goalEvents: [],
   tournament: null,
   teams: [],
   tournamentGames: [],
@@ -54,6 +55,7 @@ describe("gameProvider.utils", () => {
           rival: { id: "r-2", name: "Rival" },
           result: { goalsFor: 2, goalsAgainst: 1 },
           events: [],
+          playedPlayers: [],
         },
       })
     );

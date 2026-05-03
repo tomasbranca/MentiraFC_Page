@@ -39,6 +39,13 @@ export const LATEST_GAMES_QUERY = `
         lastName,
         slug
       }
+    },
+
+    playedPlayers[]->{
+      _id,
+      name,
+      lastName,
+      slug
     }
   }
 `;
@@ -84,6 +91,13 @@ export const FINISHED_GAMES_QUERY = `
         lastName,
         slug
       }
+    },
+
+    playedPlayers[]->{
+      _id,
+      name,
+      lastName,
+      slug
     }
   }
 `;
@@ -129,6 +143,13 @@ export const FINISHED_TOURNAMENT_GAMES_QUERY = `
         lastName,
         slug
       }
+    },
+
+    playedPlayers[]->{
+      _id,
+      name,
+      lastName,
+      slug
     }
   }
 `;

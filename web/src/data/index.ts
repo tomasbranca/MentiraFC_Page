@@ -1,4 +1,5 @@
 export * from "./games";
+export * from "./events";
 export * from "./players";
 export * from "./staff";
 export * from "./news";

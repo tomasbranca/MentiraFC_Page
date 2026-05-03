@@ -141,19 +141,28 @@ const PlayerDetail = () => {
 
               <div>
                 <p className="text-xs sm:text-sm text-neutral-400">
-                  GOLES ({year})
+                  PARTIDOS ({year})
                 </p>
                 <p className="font-semibold text-sm sm:text-lg lg:text-base">
-                  {player.goalsThisYear ?? 0}
+                  {player.matchesPlayedThisYear ?? 0}
                 </p>
               </div>
 
-              <div className="col-span-2">
+              <div>
                 <p className="text-xs sm:text-sm text-neutral-400">
                   FECHA DE NACIMIENTO
                 </p>
                 <p className="font-semibold text-sm sm:text-lg lg:text-base">
                   {formatLongDate(player.birthDate)}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs sm:text-sm text-neutral-400">
+                  GOLES ({year})
+                </p>
+                <p className="font-semibold text-sm sm:text-lg lg:text-base">
+                  {player.goalsThisYear ?? 0}
                 </p>
               </div>
             </div>
