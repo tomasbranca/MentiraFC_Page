@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+import { useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { FaArrowLeft, FaUserTie } from "react-icons/fa";
 
@@ -24,8 +24,8 @@ import { useStaffDetail } from "./hooks/useStaffDetail";
 
 const StaffDetail = () => {
   const { slug } = useParams();
-  const detailCardRef = useRef<HTMLDivElement | null>(null);
-  const detailCardHeight = useElementHeight(detailCardRef);
+  const { height: detailCardHeight, ref: detailCardRef } =
+    useElementHeight<HTMLDivElement>();
   const { staffMember, loading, error, refetch } = useStaffDetail(slug);
   const { players, staffMembers } = useRosterMembers("StaffDetail");
   const metadata = useMemo(

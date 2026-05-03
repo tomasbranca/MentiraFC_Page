@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+import { useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import Loader from "../../components/Loader/Loader";
 import ErrorFallback from "../../components/errors/ErrorFallback";
@@ -25,8 +25,8 @@ import { usePageHead } from "../../seo/usePageHead";
 
 const PlayerDetail = () => {
   const { slug } = useParams();
-  const detailCardRef = useRef<HTMLDivElement | null>(null);
-  const detailCardHeight = useElementHeight(detailCardRef);
+  const { height: detailCardHeight, ref: detailCardRef } =
+    useElementHeight<HTMLDivElement>();
   const { player, loading, error, year, refetch } = usePlayerDetail(slug);
   const { players, staffMembers } = useRosterMembers("PlayerDetail");
   const position =

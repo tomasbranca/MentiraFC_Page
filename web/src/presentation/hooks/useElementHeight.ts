@@ -1,14 +1,17 @@
-import { useEffect, useState, type RefObject } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-export const useElementHeight = <TElement extends HTMLElement>(
-  ref: RefObject<TElement | null>
-) => {
+export const useElementHeight = <TElement extends HTMLElement>() => {
+  const cleanupRef = useRef<(() => void) | null>(null);
   const [height, setHeight] = useState<number | null>(null);
 
-  useEffect(() => {
-    const element = ref.current;
+  const ref = useCallback((element: TElement | null) => {
+    cleanupRef.current?.();
+    cleanupRef.current = null;
 
-    if (!element) return;
+    if (!element) {
+      setHeight(null);
+      return;
+    }
 
     const updateHeight = () => {
       setHeight(element.getBoundingClientRect().height);
@@ -18,19 +21,28 @@ export const useElementHeight = <TElement extends HTMLElement>(
 
     if (typeof ResizeObserver === "undefined") {
       window.addEventListener("resize", updateHeight);
+      cleanupRef.current = () =>
+        window.removeEventListener("resize", updateHeight);
 
-      return () => window.removeEventListener("resize", updateHeight);
+      return;
     }
 
     const observer = new ResizeObserver(updateHeight);
     observer.observe(element);
     window.addEventListener("resize", updateHeight);
 
-    return () => {
+    cleanupRef.current = () => {
       observer.disconnect();
       window.removeEventListener("resize", updateHeight);
     };
-  }, [ref]);
+  }, []);
 
-  return height;
+  useEffect(
+    () => () => {
+      cleanupRef.current?.();
+    },
+    []
+  );
+
+  return { height, ref };
 };
