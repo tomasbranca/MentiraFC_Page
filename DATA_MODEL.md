@@ -45,6 +45,7 @@ Campos:
 | `lastName` | `string` | Si | Apellido del jugador. |
 | `number` | `number` | Si | Numero de camiseta. Minimo `0`. |
 | `position` | `string` | Si | Posicion principal. Valores: `arq`, `def`, `med`, `del`. |
+| `dominantFoot` | `string` | No | Pie habil. Valores: `right`, `left`. |
 | `birthDate` | `date` | No | Fecha de nacimiento. |
 | `photo` | `image` | No | Foto del jugador, con hotspot. |
 | `slug` | `slug` | Si | Slug canonico para URL publica. Se genera desde nombre y apellido. |

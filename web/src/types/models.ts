@@ -15,6 +15,8 @@ export interface TeamRef {
   imageUrl?: unknown;
 }
 
+export type DominantFoot = "left" | "right";
+
 export interface Player {
   id: string;
   name: string;
@@ -23,6 +25,7 @@ export interface Player {
   slug?: string;
   number?: number | null;
   position?: string | null;
+  dominantFoot?: DominantFoot | null;
   birthDate?: string | null;
   imageUrl?: string | null;
 }

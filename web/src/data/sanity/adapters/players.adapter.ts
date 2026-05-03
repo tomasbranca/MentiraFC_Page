@@ -21,6 +21,7 @@ export const adaptPlayer = (p: unknown): Player | null => {
     fullName: `${validated.name} ${validated.lastName}`,
     number: validated.number,
     position: validated.position,
+    dominantFoot: validated.dominantFoot,
     birthDate: validated.birthDate,
     slug: getSanitySlugValue(validated.slug),
     imageUrl: validated.imageUrl,

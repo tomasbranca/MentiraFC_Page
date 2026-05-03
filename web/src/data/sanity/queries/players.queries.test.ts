@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { PLAYER_BY_SLUG_OR_ID_QUERY } from "./players.queries";
+import { PLAYER_BY_SLUG_OR_ID_QUERY, PLAYERS_QUERY } from "./players.queries";
 
 describe("players queries", () => {
   it("busca el detalle por slug canonico o por id de documento", () => {
@@ -13,5 +13,10 @@ describe("players queries", () => {
     expect(PLAYER_BY_SLUG_OR_ID_QUERY.indexOf("slug.current == $slug")).toBeLessThan(
       PLAYER_BY_SLUG_OR_ID_QUERY.indexOf("_id == $slug")
     );
+  });
+
+  it("proyecta la pierna habil en listado y detalle", () => {
+    expect(PLAYERS_QUERY).toContain("dominantFoot");
+    expect(PLAYER_BY_SLUG_OR_ID_QUERY).toContain("dominantFoot");
   });
 });

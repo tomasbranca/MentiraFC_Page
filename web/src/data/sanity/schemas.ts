@@ -81,6 +81,7 @@ export const sanityPlayerSchema = z.object({
   lastName: z.string(),
   number: z.number().nullable().optional(),
   position: z.string().nullable().optional(),
+  dominantFoot: z.enum(["left", "right"]).nullable().optional(),
   birthDate: z.string().nullable().optional(),
   slug: sanitySlugSchema.optional(),
   imageUrl: z.string().nullable().optional(),

@@ -5,6 +5,11 @@ const POSITION_OPTIONS = [
   {title: 'Delantero', value: 'del'},
 ]
 
+const DOMINANT_FOOT_OPTIONS = [
+  {title: 'Derecho', value: 'right'},
+  {title: 'Zurdo', value: 'left'},
+]
+
 export default {
   name: 'players',
   title: 'Jugadores',
@@ -36,6 +41,15 @@ export default {
         list: POSITION_OPTIONS,
       },
       validation: (Rule) => Rule.required(),
+    },
+    {
+      name: 'dominantFoot',
+      title: 'Pie habil',
+      type: 'string',
+      options: {
+        list: DOMINANT_FOOT_OPTIONS,
+        layout: 'radio',
+      },
     },
     {
       name: 'birthDate',

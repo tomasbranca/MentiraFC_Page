@@ -5,6 +5,7 @@ export const PLAYERS_QUERY = `
     lastName,
     number,
     position,
+    dominantFoot,
     birthDate,
     slug,
     "imageUrl": photo.asset->url
@@ -21,6 +22,7 @@ export const PLAYER_BY_SLUG_OR_ID_QUERY = `
     lastName,
     number,
     position,
+    dominantFoot,
     birthDate,
     slug,
     "imageUrl": photo.asset->url

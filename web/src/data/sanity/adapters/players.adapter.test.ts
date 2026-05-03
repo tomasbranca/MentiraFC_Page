@@ -37,4 +37,13 @@ describe("players.adapter", () => {
       slug: undefined,
     });
   });
+
+  it("propaga la pierna habil del jugador", () => {
+    expect(
+      adaptPlayer(createSanityPlayer({ dominantFoot: "left" }))
+    ).toMatchObject({
+      id: "player-1",
+      dominantFoot: "left",
+    });
+  });
 });

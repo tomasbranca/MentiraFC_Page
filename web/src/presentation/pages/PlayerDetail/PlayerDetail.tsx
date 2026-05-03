@@ -22,6 +22,7 @@ import {
   STATIC_PAGE_HEAD,
 } from "../../seo/metadata";
 import { usePageHead } from "../../seo/usePageHead";
+import { DominantFootIndicator } from "./DominantFootIndicator";
 
 const PlayerDetail = () => {
   const { slug } = useParams();
@@ -111,7 +112,7 @@ const PlayerDetail = () => {
           {/* DERECHA */}
           <div className="flex flex-col">
             {/* INFO */}
-            <div className="bg-violet-900 text-violet-50 p-5 sm:p-6 lg:p-8 flex flex-1 flex-col justify-center">
+            <div className="bg-violet-900 text-violet-50 p-5 sm:p-6 lg:p-6 flex flex-1 flex-col justify-center">
               <span className="text-4xl sm:text-5xl lg:text-6xl font-bold opacity-30">
                 #{player.number}
               </span>
@@ -128,6 +129,8 @@ const PlayerDetail = () => {
                 {Icon && <Icon className="text-sm" />}
                 {position?.label || "POSICIÓN"}
               </p>
+
+              <DominantFootIndicator dominantFoot={player.dominantFoot} />
             </div>
 
             {/* STATS */}
