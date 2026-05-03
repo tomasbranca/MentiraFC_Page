@@ -135,7 +135,7 @@ const Table = () => {
           <div className="md:hidden p-4">
             <div className="flex bg-neutral-900 border border-neutral-700 rounded-lg p-1">
               <Button
-                variant="toggle"
+                variant="toggle1"
                 active={mode === "compact"}
                 onClick={() => setMode("compact")}
                 className="flex-1 rounded-l-md"
@@ -144,7 +144,7 @@ const Table = () => {
               </Button>
 
               <Button
-                variant="toggle"
+                variant="toggle1"
                 active={mode === "full"}
                 onClick={() => setMode("full")}
                 className="flex-1 rounded-r-md"

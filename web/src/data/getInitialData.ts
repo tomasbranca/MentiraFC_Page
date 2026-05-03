@@ -1,5 +1,6 @@
 import { getAllGames, getLatestGame, getTournamentGames } from "./games";
 import { getGoalEvents } from "./events";
+import { getGalleries } from "./galleries";
 import { getHomeCriticalData as fetchHomeCriticalData } from "./sanity/services/home.service";
 import { getNews } from "./news";
 import { getPlayers } from "./players";
@@ -24,6 +25,7 @@ export const getHomeCriticalData = async (): Promise<InitialDataPayload> => {
     return {
       bootstrapScope: "home-critical",
       news,
+      galleries: [],
       players: [],
       staff: [],
       games: [],
@@ -49,6 +51,7 @@ export const getInitialData = async (): Promise<InitialDataPayload> => {
     // independent so one slow endpoint does not serialize the whole page load.
     const [
       news,
+      galleries,
       players,
       staff,
       games,
@@ -59,6 +62,7 @@ export const getInitialData = async (): Promise<InitialDataPayload> => {
       latestGame,
     ] = await Promise.all([
       getNews(),
+      getGalleries(),
       getPlayers(),
       getStaff(),
       getAllGames(),
@@ -72,6 +76,7 @@ export const getInitialData = async (): Promise<InitialDataPayload> => {
     return {
       bootstrapScope: "full",
       news,
+      galleries,
       players,
       staff,
       games,

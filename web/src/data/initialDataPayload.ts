@@ -1,5 +1,6 @@
 import type {
   BootstrapScope,
+  GalleryItem,
   Game,
   GoalEvent,
   NewsItem,
@@ -12,6 +13,7 @@ import type {
 export interface InitialDataPayload {
   bootstrapScope: BootstrapScope;
   news: NewsItem[];
+  galleries: GalleryItem[];
   players: Player[];
   staff: StaffMember[];
   games: Game[];
@@ -24,6 +26,10 @@ export interface InitialDataPayload {
     slug: string;
     newsItem: NewsItem | null;
     suggestedNews: NewsItem[];
+  };
+  currentGalleryDetail?: {
+    slug: string;
+    gallery: GalleryItem | null;
   };
   currentPlayerDetail?: {
     slug: string;
@@ -44,6 +50,7 @@ export interface InitialDataPayload {
 export const createEmptyInitialData = (): InitialDataPayload => ({
   bootstrapScope: "empty",
   news: [],
+  galleries: [],
   players: [],
   staff: [],
   games: [],

@@ -1,5 +1,6 @@
 import { getAllGames, getLatestGame } from "./games";
 import { getGoalEvents } from "./events";
+import { getGalleryBySlug } from "./galleries";
 import {
   createEmptyInitialData,
   getHomeCriticalData,
@@ -60,6 +61,35 @@ const getNewsDetailInitialData = async (
     reportError(error, {
       scope: "data:getRouteInitialData",
       action: "load_news_detail_initial_data",
+      slug,
+    });
+
+    throw error;
+  }
+};
+
+const getGalleryDetailInitialData = async (
+  slug: string
+): Promise<InitialDataPayload> => {
+  try {
+    const [gallery, latestGame] = await Promise.all([
+      getGalleryBySlug(slug),
+      getLatestGame(),
+    ]);
+
+    return {
+      ...createEmptyInitialData(),
+      bootstrapScope: "gallery-detail",
+      latestGame,
+      currentGalleryDetail: {
+        slug,
+        gallery,
+      },
+    };
+  } catch (error) {
+    reportError(error, {
+      scope: "data:getRouteInitialData",
+      action: "load_gallery_detail_initial_data",
       slug,
     });
 
@@ -164,6 +194,15 @@ export const getRouteInitialData = async (
 
   if (newsSlug) {
     return getNewsDetailInitialData(newsSlug);
+  }
+
+  const gallerySlug = extractSlugFromPathname(
+    pathname,
+    ROUTES.GALLERY_DETAIL(":slug")
+  );
+
+  if (gallerySlug) {
+    return getGalleryDetailInitialData(gallerySlug);
   }
 
   const staffSlug = extractSlugFromPathname(

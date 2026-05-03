@@ -19,6 +19,11 @@ export const shouldLoadNewsInitially = (
   bootstrapScope === "home-critical" ||
   (bootstrapScope !== "full" && newsLength === 0);
 
+export const shouldLoadGalleryInitially = (
+  bootstrapScope: BootstrapScope,
+  galleriesLength: number
+) => bootstrapScope !== "full" && galleriesLength === 0;
+
 export const shouldLoadRecordInitially = (
   bootstrapScope: BootstrapScope,
   gamesLength: number

@@ -73,7 +73,15 @@ export const variants = {
   hover:border-violet-400
 `,
 
-  toggle: `
+  toggle1: `
+    bg-transparent
+    text-neutral-300
+    border border-neutral-500
+
+    hover:bg-neutral-800
+  `,
+
+  toggle2: `
     bg-transparent
     text-neutral-300
     border border-violet-700

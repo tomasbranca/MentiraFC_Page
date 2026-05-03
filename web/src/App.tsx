@@ -21,12 +21,16 @@ type AppProps = {
 
 const Home = lazyWithReload(() => import("./presentation/pages/Home/Home"));
 const News = lazyWithReload(() => import("./presentation/pages/News/News"));
+const Gallery = lazyWithReload(() => import("./presentation/pages/Gallery/Gallery"));
 const Team = lazyWithReload(() => import("./presentation/pages/Team/Team"));
 const Table = lazyWithReload(() => import("./presentation/pages/Table/Table"));
 const Record = lazyWithReload(() => import("./presentation/pages/Record/Record"));
 const Admin = lazyWithReload(() => import("./presentation/pages/Admin/Admin"));
 const NewsDetail = lazyWithReload(
   () => import("./presentation/pages/NewsDetail/NewsDetail"),
+);
+const GalleryDetail = lazyWithReload(
+  () => import("./presentation/pages/GalleryDetail/GalleryDetail"),
 );
 const PlayerDetail = lazyWithReload(
   () => import("./presentation/pages/PlayerDetail/PlayerDetail"),
@@ -96,6 +100,7 @@ function App({ initialData }: AppProps) {
               <Routes>
                 <Route path={ROUTES.HOME} element={<Home />} />
                 <Route path={ROUTES.NEWS} element={<News />} />
+                <Route path={ROUTES.GALLERY} element={<Gallery />} />
                 <Route path={ROUTES.TEAM} element={<Team />} />
                 <Route path={ROUTES.TABLE} element={<Table />} />
                 <Route path={ROUTES.RECORD} element={<Record />} />
@@ -103,6 +108,10 @@ function App({ initialData }: AppProps) {
                 <Route
                   path={ROUTES.NEWS_DETAIL(":slug")}
                   element={<NewsDetail />}
+                />
+                <Route
+                  path={ROUTES.GALLERY_DETAIL(":slug")}
+                  element={<GalleryDetail />}
                 />
                 <Route
                   path={ROUTES.STAFF_DETAIL(":slug")}

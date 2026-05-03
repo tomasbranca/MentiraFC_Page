@@ -48,7 +48,7 @@ h1 {
 }
 
 h2 {
-  font-size: clamp(1.5rem, 3.2vw, 2.6rem);
+  font-size: clamp(1.5rem, 3.2vw, 2.4rem);
   line-height: 1.15;
 }
 
@@ -61,7 +61,7 @@ a {
 }
 
 p {
-  font-size: clamp(0.85rem, 1.2vw, 1rem);
+  font-size: clamp(1rem, 1.2vw, 1rem);
   line-height: 1.6;
 }
 

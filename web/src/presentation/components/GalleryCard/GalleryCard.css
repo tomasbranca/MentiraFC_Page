@@ -1,0 +1,29 @@
+.gallery-card-shade {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.04) 0%,
+    rgba(0, 0, 0, 0.16) 50%,
+    rgba(0, 0, 0, 0.76) 100%
+  );
+}
+
+.gallery-card-count {
+  font-family: var(--font-body);
+}
+
+.gallery-card-count::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 0.6rem;
+  height: 1.5rem;
+  background: rgb(77, 23, 154);
+}
+
+.gallery-card-title {
+  font-family: var(--font-body);
+  text-transform: none;
+}

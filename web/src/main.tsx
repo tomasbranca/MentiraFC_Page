@@ -131,6 +131,7 @@ const preloadQueryCache = (payload: InitialDataPayload) => {
   if (payload.bootstrapScope === "full") {
     queryClient.setQueryData(queryKeys.games.latest, payload.latestGame);
     queryClient.setQueryData(queryKeys.news.all, payload.news);
+    queryClient.setQueryData(queryKeys.galleries.all, payload.galleries);
     queryClient.setQueryData(queryKeys.players.all, payload.players);
     queryClient.setQueryData(queryKeys.staff.all, payload.staff);
     queryClient.setQueryData(queryKeys.games.finished, payload.games);
@@ -154,6 +155,13 @@ const preloadQueryCache = (payload: InitialDataPayload) => {
     queryClient.setQueryData(
       queryKeys.news.suggested(payload.currentNewsDetail.slug),
       payload.currentNewsDetail.suggestedNews
+    );
+  }
+
+  if (payload.currentGalleryDetail) {
+    queryClient.setQueryData(
+      queryKeys.galleries.bySlug(payload.currentGalleryDetail.slug),
+      payload.currentGalleryDetail.gallery
     );
   }
 

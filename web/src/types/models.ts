@@ -6,6 +6,7 @@ export type BootstrapScope =
   | "bootstrap-error"
   | "full"
   | "home-critical"
+  | "gallery-detail"
   | "news-detail"
   | "player-detail"
   | "staff-detail";
@@ -147,6 +148,32 @@ export interface NewsItem {
   date: string;
   slug: string;
   imageUrl?: string | null;
+}
+
+export interface GalleryImageDimensions {
+  width?: number | null;
+  height?: number | null;
+  aspectRatio?: number | null;
+}
+
+export interface GalleryImage {
+  id: string;
+  imageUrl: string;
+  alt: string;
+  caption?: string | null;
+  isHero?: boolean;
+  originalFilename?: string | null;
+  dimensions?: GalleryImageDimensions | null;
+}
+
+export interface GalleryItem {
+  id: string;
+  slug: string;
+  date: string;
+  game: Game;
+  heroImage: GalleryImage;
+  images: GalleryImage[];
+  photoCount: number;
 }
 
 export interface GoalEvent {

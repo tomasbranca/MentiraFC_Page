@@ -121,7 +121,7 @@ const PlayerDetail = () => {
               {ratingHexagonPoints && (
                 <div className="absolute right-3 top-3 z-10 flex w-28 flex-col items-center gap-2 sm:right-5 sm:top-5 sm:w-32 lg:w-27 xl:w-33">
                   <Button
-                    variant="toggle"
+                    variant="toggle2"
                     active={showRatingsHexagon}
                     aria-pressed={showRatingsHexagon}
                     aria-label={

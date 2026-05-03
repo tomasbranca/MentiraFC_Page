@@ -8,6 +8,7 @@ const createPayload = (
 ): InitialDataPayload => ({
   bootstrapScope: "empty",
   news: [],
+  galleries: [],
   players: [],
   staff: [],
   games: [],

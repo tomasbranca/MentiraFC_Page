@@ -1,4 +1,5 @@
 import events from './events.schema.js'
+import galleries from './galleries.schema.js'
 import games from './games.schema.js'
 import news from './news.schema.js'
 import players from './players.schema.js'
@@ -7,4 +8,14 @@ import tournaments from './tournaments.schema.js'
 import teams from './teams.schema.js'
 import organizations from './organizations.schema.js'
 
-export const schemas = [news, players, staff, games, events, organizations, tournaments, teams]
+export const schemas = [
+  news,
+  galleries,
+  players,
+  staff,
+  games,
+  events,
+  organizations,
+  tournaments,
+  teams,
+]

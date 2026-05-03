@@ -17,6 +17,7 @@ Hoy existen estos documentos de Sanity:
 | `players` | Jugadores del plantel | Activo |
 | `staff` | Staff y cuerpo tecnico del plantel | Activo |
 | `news` | Noticias y notas editoriales | Activo |
+| `galleries` | Galerias de fotos asociadas a partidos finalizados | Activo |
 | `games` | Partidos de Mentira FC | Activo |
 | `events` | Eventos asociados a partidos, hoy solo goles | Activo |
 | `teams` | Equipos, rivales y equipo principal | Activo |
@@ -138,6 +139,37 @@ Relaciones faltantes/proximas:
 - Relacionar noticias con datos del sitio: `players`, futuro `staff`, `games`, `tournaments`, etc.
 - Agregar votaciones dentro o asociadas a noticias.
 - Agregar comentarios en noticias, probablemente vinculados al futuro modelo de `usuarios`.
+
+## `galleries`
+
+Representa una galeria de fotos asociada a un partido finalizado.
+
+Schema: `studio/schemas/galleries.schema.js`
+
+Campos:
+
+| Campo | Tipo | Requerido | Descripcion |
+|---|---|---:|---|
+| `game` | `reference -> games` | Si | Partido finalizado al que pertenece la galeria. |
+| `slug` | `slug` | Si | Slug para URL publica. |
+| `photos` | `array` de fotos | Si | Fotos de la galeria. Debe tener al menos una foto. |
+| `photos[].image` | `image` | Si | Imagen de la galeria, con hotspot. |
+| `photos[].isHero` | `boolean` | No | Marca la foto usada como hero en la card. Debe haber exactamente una. |
+| `photos[].alt` | `string` | Si | Texto alternativo de la foto. |
+| `photos[].caption` | `string` | No | Epigrafe opcional. |
+
+Uso en web:
+
+- Query principal: `GALLERIES_QUERY`
+- Query de detalle: `GALLERY_BY_SLUG_QUERY`
+- Modelo de dominio: `GalleryItem`, `GalleryImage`
+- El listado se ordena por fecha del partido, de mas reciente a mas vieja.
+- El titulo publico se deriva del partido: torneo, Mentira FC, goles, rival y goles del rival.
+- El detalle muestra todas las fotos en un bento grid basado en la dimension de cada imagen y cada foto tiene descarga.
+
+Relaciones actuales:
+
+- `galleries.game -> games`
 
 ## `games`
 
@@ -322,6 +354,7 @@ Relaciones faltantes/proximas:
 erDiagram
   PLAYERS ||--o{ EVENTS : "player"
   GAMES ||--o{ EVENTS : "game"
+  GAMES ||--o{ GALLERIES : "gallery"
   TEAMS ||--o{ GAMES : "rival"
   TOURNAMENTS ||--o{ GAMES : "tournament"
   ORGANIZATIONS ||--o{ TOURNAMENTS : "organization"
@@ -349,7 +382,6 @@ Estas relaciones y modelos no existen hoy en Sanity. Quedan documentados como pe
 | `staff` | Agregar redes sociales. | Enriquecer el perfil publico del staff. |
 | `games` | Agregar convocatoria al partido. | Permite mostrar convocados y contabilizar partidos jugados por jugador en el año. |
 | `events` | Agregar asistencia en eventos de gol (`assist -> players`). | Permite registrar quien asistio y calcular estadisticas de asistencias. |
-| `galleries` | Crear modelo nuevo con seccion propia en NavBar, relacion a partido, imagenes descargables e imagen hero. | Separar galerias de imagenes como contenido propio y asociarlas a partidos. |
 | `teams` | Sin cambios previstos. | El modelo actual esta bien como esta. |
 | `tournaments` | Agregar memoria de tabla o snapshots en modelo aparte. | Medir ascensos/descensos de posiciones desde la ultima actualizacion. |
 | `organizations` | Sin cambios previstos. | El modelo actual queda tal cual. |
@@ -365,6 +397,7 @@ La web adapta los documentos de Sanity a modelos propios:
 | `players` | `Player`, `PlayerWithGoals` | `web/src/types/models.ts` |
 | `staff` | `StaffMember` | `web/src/types/models.ts` |
 | `news` | `NewsItem` | `web/src/types/models.ts` |
+| `galleries` | `GalleryItem`, `GalleryImage` | `web/src/types/models.ts` |
 | `games` | `Game`, `GameResult` | `web/src/types/models.ts` |
 | `events` | `MatchEvent`, `GoalEvent` | `web/src/types/models.ts` |
 | `teams` | `TeamRef` | `web/src/types/models.ts` |

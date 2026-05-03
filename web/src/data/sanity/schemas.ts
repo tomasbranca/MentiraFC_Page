@@ -61,6 +61,25 @@ export const sanityNewsSchema = z.object({
   imageUrl: z.string().nullable().optional(),
 });
 
+const sanityImageDimensionsSchema = z
+  .object({
+    width: z.number().nullable().optional(),
+    height: z.number().nullable().optional(),
+    aspectRatio: z.number().nullable().optional(),
+  })
+  .nullable()
+  .optional();
+
+export const sanityGalleryImageSchema = z.object({
+  _key: z.string().optional(),
+  alt: z.string().nullable().optional(),
+  caption: z.string().nullable().optional(),
+  isHero: z.boolean().optional(),
+  imageUrl: z.string().nullable().optional(),
+  originalFilename: z.string().nullable().optional(),
+  dimensions: sanityImageDimensionsSchema,
+});
+
 export const sanityEventSchema = z.object({
   _id: z.string(),
   type: z.string(),
@@ -101,6 +120,13 @@ export const sanityGameSchema = z.object({
     .optional(),
   events: z.array(sanityEventSchema).optional(),
   playedPlayers: z.array(sanityPlayerRefSchema).nullish(),
+});
+
+export const sanityGallerySchema = z.object({
+  _id: z.string(),
+  slug: sanitySlugSchema.optional(),
+  game: sanityGameSchema.optional(),
+  photos: z.array(sanityGalleryImageSchema).nullish(),
 });
 
 export const sanityPlayerSchema = z.object({
@@ -193,6 +219,8 @@ export const sanityGoalEventSchema = z.object({
 });
 
 export type SanityNews = z.infer<typeof sanityNewsSchema>;
+export type SanityGallery = z.infer<typeof sanityGallerySchema>;
+export type SanityGalleryImage = z.infer<typeof sanityGalleryImageSchema>;
 export type SanityGame = z.infer<typeof sanityGameSchema>;
 export type SanityEvent = z.infer<typeof sanityEventSchema>;
 export type SanityPlayer = z.infer<typeof sanityPlayerSchema>;

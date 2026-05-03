@@ -1,6 +1,12 @@
 import { getImageUrl } from "../../data/imageService";
-import type { NewsItem, Player, StaffMember } from "../../types/models";
+import type {
+  GalleryItem,
+  NewsItem,
+  Player,
+  StaffMember,
+} from "../../types/models";
 import { ROUTES } from "../constants/routes.constants";
+import { buildGalleryMatchTitle } from "../utils/gallery.utils";
 import type { HeadMetadata } from "./head";
 
 const SITE_NAME = "Mentira FC";
@@ -66,6 +72,13 @@ export const STATIC_PAGE_HEAD = {
     description: "Noticias, novedades y crónicas recientes de Mentira FC.",
     canonicalUrl: canonicalUrl(ROUTES.NEWS),
   },
+  gallery: {
+    ...DEFAULT_HEAD,
+    title: withSiteName("Galerias"),
+    description:
+      "Galerias de fotos de los partidos finalizados de Mentira FC.",
+    canonicalUrl: canonicalUrl(ROUTES.GALLERY),
+  },
   team: {
     ...DEFAULT_HEAD,
     title: withSiteName("Plantel"),
@@ -111,6 +124,8 @@ export const getStaticPageHeadByPathname = (
       return STATIC_PAGE_HEAD.home;
     case ROUTES.NEWS:
       return STATIC_PAGE_HEAD.news;
+    case ROUTES.GALLERY:
+      return STATIC_PAGE_HEAD.gallery;
     case ROUTES.TEAM:
       return STATIC_PAGE_HEAD.team;
     case ROUTES.TABLE:
@@ -143,6 +158,33 @@ export const buildMissingNewsHead = (slug?: string): HeadMetadata => ({
   ...STATIC_PAGE_HEAD.news,
   title: withSiteName("Noticia no encontrada"),
   canonicalUrl: canonicalUrl(slug ? ROUTES.NEWS_DETAIL(slug) : ROUTES.NEWS),
+  robots: "noindex, follow",
+});
+
+export const buildGalleryHead = (gallery: GalleryItem): HeadMetadata => {
+  const title = buildGalleryMatchTitle(gallery.game);
+  const description = truncate(
+    `${gallery.photoCount} fotos del partido ${title}.`
+  );
+
+  return {
+    ...DEFAULT_HEAD,
+    title: withSiteName(title),
+    description,
+    canonicalUrl: canonicalUrl(ROUTES.GALLERY_DETAIL(gallery.slug)),
+    imageUrl: resolveImageUrl(gallery.heroImage.imageUrl),
+    imageAlt: gallery.heroImage.alt || title,
+    openGraphType: "article",
+    publishedTime: gallery.date,
+  };
+};
+
+export const buildMissingGalleryHead = (slug?: string): HeadMetadata => ({
+  ...STATIC_PAGE_HEAD.gallery,
+  title: withSiteName("Galeria no encontrada"),
+  canonicalUrl: canonicalUrl(
+    slug ? ROUTES.GALLERY_DETAIL(slug) : ROUTES.GALLERY
+  ),
   robots: "noindex, follow",
 });
 
