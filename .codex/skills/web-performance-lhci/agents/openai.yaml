@@ -1,0 +1,4 @@
+interface:
+  display_name: "Web Performance LHCI"
+  short_description: "Tune web performance and LHCI"
+  default_prompt: "Use $web-performance-lhci for this Mentira FC performance or Lighthouse task."

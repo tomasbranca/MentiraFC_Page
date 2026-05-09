@@ -1,0 +1,4 @@
+interface:
+  display_name: "Sanity Model Rollout"
+  short_description: "Propagate Sanity models safely"
+  default_prompt: "Use $sanity-model-rollout for this Sanity-backed Mentira FC change."

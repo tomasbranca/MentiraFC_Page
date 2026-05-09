@@ -1,0 +1,4 @@
+interface:
+  display_name: "Repo Audit Architecture"
+  short_description: "Audit repo structure and risks"
+  default_prompt: "Use $repo-audit-architecture to review Mentira FC structure, risks, and technical debt."

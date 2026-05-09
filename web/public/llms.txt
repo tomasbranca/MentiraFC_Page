@@ -1,0 +1,40 @@
+# Mentira FC
+
+> Mentira FC is the public website for an amateur football club, with news, roster, staff, matches, standings, galleries and institutional content.
+
+This site is a React and Vite single-page app backed by Sanity as a headless CMS. Sanity content is normalized through typed web data services before it reaches the UI.
+
+Use this file as a concise map for AI assistants. It complements `robots.txt` and any sitemap, but it is not a replacement for either.
+
+## Public Sections
+
+- [/](./): Home page with the main club presentation, featured content and key sports widgets.
+- [/noticias](./noticias): Club news and editorial updates.
+- [/plantel](./plantel): Players and staff profiles.
+- [/tabla](./tabla): Standings and tournament context.
+- [/historial](./historial): Match history and results.
+- [/galeria](./galeria): Club image galleries.
+
+## Content Model
+
+- News: editorial posts and rich content.
+- Players: roster profiles and player attributes.
+- Staff: technical staff and collaborators.
+- Teams: rival teams and club references.
+- Games: fixtures, results, rivals and tournament links.
+- Events: match events such as goals and related player data.
+- Tournaments: competitions, standings and prize slot rules.
+- Organizations: tournament organizers.
+- Galleries: image collections.
+
+## Technical Context
+
+- Web app: React, Vite, TypeScript, Tailwind CSS and TanStack React Query.
+- CMS: Sanity Studio.
+- Quality checks: ESLint, TypeScript, Vitest, production build and Lighthouse CI.
+- Public metadata: dynamic document title, meta description, Open Graph and Twitter tags are handled in the SPA where browser-side metadata is available.
+
+## Optional
+
+- [AI agent setup](https://github.com/tomasbranca/MentiraFC_Page/blob/main/docs/AI_AGENT_SETUP.md): Repo-specific MCP, skill and agent workflow notes for developers.
+- [Data model](https://github.com/tomasbranca/MentiraFC_Page/blob/main/DATA_MODEL.md): Current Sanity documents, relationships and roadmap notes.

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Public Copy SEO"
+  short_description: "Polish public copy and SEO tags"
+  default_prompt: "Use $public-copy-seo for this Mentira FC copy or SEO task."
