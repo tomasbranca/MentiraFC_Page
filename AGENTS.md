@@ -14,11 +14,12 @@ The long-term product direction is to replace Sanity Studio with an in-site cust
 ## Default Workflow
 
 1. Inspect the relevant files before editing.
-2. Propose a short plan before changing files, especially when the task touches architecture, Sanity data, UI, dependencies, deploy or CI.
-3. Keep edits scoped to the requested behavior.
-4. Preserve existing public behavior unless the task asks for a UI or API change.
-5. Add or update focused tests when behavior changes.
-6. Use `npm.cmd` in PowerShell. Plain `npm` can fail because of script execution policy.
+2. Before modifying the repo, ask the necessary clarification questions to capture the user's required level of detail, preferences and constraints, unless the task is simple, mechanical and low-risk.
+3. Propose a short plan before changing files, especially when the task touches architecture, Sanity data, UI, dependencies, deploy or CI.
+4. Keep edits scoped to the requested behavior.
+5. Preserve existing public behavior unless the task asks for a UI or API change.
+6. Add or update focused tests when behavior changes.
+7. Use `npm.cmd` in PowerShell. Plain `npm` can fail because of script execution policy.
 
 ## Autonomy And Delivery
 
@@ -33,6 +34,8 @@ docs: document mcp setup
 ```
 
 When a task is broad or risky, explain the plan first and then implement after the user agrees.
+
+When a requested modification is not simple, ask first for missing preferences such as scope, UI behavior, source of truth, validation depth, copy tone, data migration expectations or deployment constraints. Do not guess those choices when they materially affect the result.
 
 Avoid autonomous full-repo rewrites. Do not run broad "refactor entire repo", "upgrade architecture", "migrate framework" or "rewrite module" tasks without a staged, user-approved plan. Prefer small, reviewable steps that preserve the repo's existing patterns.
 

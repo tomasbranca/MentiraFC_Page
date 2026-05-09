@@ -64,7 +64,11 @@ Use these roles when splitting work:
 
 ## Work Style
 
+Agents should ask the necessary clarification questions before modifying the repo, unless the task is simple, mechanical and low-risk. The goal is to capture the user's required level of detail, preferences and constraints before implementation.
+
 Agents should propose a short plan before editing files. For small documentation or mechanical changes, the plan can be brief; for data, dependency, deployment, UI or architecture changes, the plan should be explicit before implementation.
+
+When details are missing and the decision materially affects the result, ask about scope, UI behavior, source of truth, validation depth, copy tone, data migration expectations or deployment constraints instead of guessing.
 
 Leave the repo commit-ready rather than committing automatically when there are repo changes. Final responses should include a suggested conventional commit message only when the agent changed files or `git status --short` shows repo changes. Do not suggest a commit message for analysis-only, review-only, or no-op turns. Examples:
 
