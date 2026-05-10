@@ -15,6 +15,7 @@ import { reportError } from "./lib/errors/errorLogger";
 import { sortNews } from "./presentation/utils/news.utils";
 import { startWebVitalsTracking } from "./lib/performance/reportWebVitals";
 import { initSentry } from "./lib/errors/sentryClient";
+import { installTrustedTypesPolicy } from "./lib/security/trustedTypes";
 import ScrollToTop from "./presentation/app/scrollToTop";
 import Loader from "./presentation/components/Loader/Loader";
 import ErrorBoundary from "./presentation/components/errors/ErrorBoundary";
@@ -31,6 +32,8 @@ const root = createRoot(rootElement);
 
 const EMPTY_INITIAL_DATA: InitialDataPayload = createEmptyInitialData();
 const SENTRY_IDLE_DELAY_MS = 5000;
+
+installTrustedTypesPolicy();
 
 const isSentryConfigured = (): boolean =>
   Boolean(import.meta.env.VITE_SENTRY_DSN?.trim());
@@ -118,6 +121,15 @@ const buildHomeLcpImageSrcSet = (imageUrl: string): string =>
     (width) => `${buildHomeLcpImageUrl(imageUrl, width)} ${width}w`
   ).join(", ");
 
+const getHomeLcpPreloadWidth = (): number => {
+  const targetWidth = Math.ceil(window.innerWidth * window.devicePixelRatio);
+
+  return (
+    HOME_LCP_IMAGE_WIDTHS.find((width) => width >= targetWidth) ??
+    HOME_LCP_IMAGE_WIDTHS[HOME_LCP_IMAGE_WIDTHS.length - 1]
+  );
+};
+
 const ensureHomeLcpPreload = (
   payload: InitialDataPayload,
   pathname: string
@@ -128,7 +140,10 @@ const ensureHomeLcpPreload = (
 
   if (!firstCarouselImage) return;
 
-  const optimizedLcpImage = buildHomeLcpImageUrl(firstCarouselImage, 1280);
+  const optimizedLcpImage = buildHomeLcpImageUrl(
+    firstCarouselImage,
+    getHomeLcpPreloadWidth()
+  );
   const optimizedLcpImageSrcSet = buildHomeLcpImageSrcSet(firstCarouselImage);
 
   const existing = document.getElementById(HOME_LCP_PRELOAD_ID);

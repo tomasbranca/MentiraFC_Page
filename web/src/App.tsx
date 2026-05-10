@@ -1,4 +1,4 @@
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { Route, Routes } from "react-router-dom";
 
 import type { InitialDataPayload } from "./data/getInitialData";
@@ -10,6 +10,7 @@ import Footer from "./presentation/layout/Footer/Footer";
 import NavBar from "./presentation/layout/NavBar/NavBar";
 import { ROUTES } from "./presentation/constants/routes.constants";
 import RouteHead from "./presentation/seo/RouteHead";
+import Home from "./presentation/pages/Home/Home";
 
 import { lazyWithReload } from "./lib/lazyWithReload";
 
@@ -19,7 +20,6 @@ type AppProps = {
   initialData: InitialDataPayload;
 };
 
-const Home = lazyWithReload(() => import("./presentation/pages/Home/Home"));
 const News = lazyWithReload(() => import("./presentation/pages/News/News"));
 const Gallery = lazyWithReload(() => import("./presentation/pages/Gallery/Gallery"));
 const Team = lazyWithReload(() => import("./presentation/pages/Team/Team"));
@@ -52,6 +52,7 @@ const SpeedInsights = lazyWithReload(() =>
 function App({ initialData }: AppProps) {
   const enableAnalytics =
     import.meta.env.VITE_ENABLE_ANALYTICS === "true";
+  const [shouldLoadAnalytics, setShouldLoadAnalytics] = useState(false);
   const hasBootstrapError = initialData.bootstrapScope === "bootstrap-error";
 
   useEffect(() => {
@@ -70,13 +71,31 @@ function App({ initialData }: AppProps) {
     return () => clearTimeout(timeoutId);
   }, []);
 
+  useEffect(() => {
+    if (!enableAnalytics) return;
+
+    const loadAnalytics = () => setShouldLoadAnalytics(true);
+
+    if ("requestIdleCallback" in window) {
+      const idleId = window.requestIdleCallback(loadAnalytics, {
+        timeout: 3000,
+      });
+
+      return () => window.cancelIdleCallback(idleId);
+    }
+
+    const timeoutId = setTimeout(loadAnalytics, 3000);
+
+    return () => clearTimeout(timeoutId);
+  }, [enableAnalytics]);
+
   const handleBootstrapRetry = () => {
     window.location.reload();
   };
 
   return (
     <InitialDataProvider initialData={initialData}>
-      {enableAnalytics && (
+      {shouldLoadAnalytics && (
         <Suspense fallback={null}>
           <Analytics />
           <SpeedInsights />
