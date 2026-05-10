@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { getImageUrl } from "../../../data/imageService";
+import { getImageSrcSet, getImageUrl } from "../../../data/imageService";
 import { SoccerBallIcon } from "../icons/InlineIcons";
 import ProgressiveMedia from "../ProgressiveMedia/ProgressiveMedia";
 import {
@@ -67,6 +67,13 @@ const PlayerCard = ({ player, mode = PLAYER_CARD_MODE.DEFAULT }: PlayerCardProps
             quality: 68,
             autoFormat: true,
           })}
+          srcSet={getImageSrcSet(player.imageUrl, [220, 280, 340, 420], {
+            height: (width) => Math.round(width * 4 / 3),
+            fit: "crop",
+            quality: 68,
+            autoFormat: true,
+          })}
+          sizes="(max-width: 640px) 75vw, (max-width: 1024px) 33vw, 250px"
           alt={`${player.name} ${player.lastName}`}
           wrapperClassName="absolute inset-0 z-10"
           className="

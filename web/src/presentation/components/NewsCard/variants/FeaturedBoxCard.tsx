@@ -23,12 +23,12 @@ const FeaturedBoxCard = ({
           autoFormat: true,
         })}
         srcSet={getImageSrcSet(item.imageUrl, [360, 540, 720], {
-          height: 480,
+          height: (width) => Math.round(width * 2 / 3),
           fit: "crop",
           quality: 70,
           autoFormat: true,
         })}
-        sizes="(max-width: 768px) 100vw, 33vw"
+        sizes="(max-width: 768px) calc(100vw - 48px), calc(33vw - 32px)"
         alt={item.title}
         wrapperClassName="row-span-3"
         className="row-span-3 w-full h-full object-cover"

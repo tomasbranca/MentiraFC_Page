@@ -87,4 +87,20 @@ describe("imageService", () => {
   it("omite entradas vacias en srcset", () => {
     expect(getImageSrcSet(null, [320, 640])).toBe("");
   });
+
+  it("permite calcular la altura de cada entrada del srcset", () => {
+    const srcSet = getImageSrcSet(
+      "https://cdn.sanity.io/images/project/dataset/photo.jpg",
+      [320, 640],
+      {
+        height: (width) => Math.round(width * 0.75),
+        fit: "crop",
+      }
+    );
+
+    expect(srcSet).toContain("w=320");
+    expect(srcSet).toContain("h=240");
+    expect(srcSet).toContain("w=640");
+    expect(srcSet).toContain("h=480");
+  });
 });

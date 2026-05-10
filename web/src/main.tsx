@@ -102,7 +102,7 @@ const buildHomeLcpImageUrl = (imageUrl: string, width: number): string => {
   try {
     const url = new URL(imageUrl);
     url.searchParams.set("w", String(width));
-    url.searchParams.set("h", "720");
+    url.searchParams.set("h", String(Math.round(width * 0.75)));
     url.searchParams.set("fit", "crop");
     url.searchParams.set("q", "70");
     url.searchParams.set("auto", "format");

@@ -41,13 +41,17 @@ const NewsCardHome = ({
             quality: 70,
             autoFormat: true,
           })}
-          srcSet={getImageSrcSet(item.imageUrl, [360, 540, 720], {
-            height: 540,
+          srcSet={getImageSrcSet(item.imageUrl, [320, 420, 540], {
+            height: (width) => Math.round(width * 0.75),
             fit: "crop",
             quality: 70,
             autoFormat: true,
           })}
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          sizes={
+            featured
+              ? "(max-width: 640px) calc(100vw - 48px), (max-width: 1024px) calc(100vw - 48px), calc(33vw - 32px)"
+              : "(max-width: 640px) calc(100vw - 48px), (max-width: 1024px) calc(50vw - 36px), calc(33vw - 32px)"
+          }
           alt=""
           wrapperClassName="news-card-image"
           className="news-card-media"

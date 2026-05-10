@@ -7,6 +7,10 @@ type ImageOptions = {
   autoFormat?: boolean;
 };
 
+type SrcSetImageOptions = Omit<ImageOptions, "width" | "height"> & {
+  height?: number | ((width: number) => number);
+};
+
 const DEFAULT_SANITY_IMAGE_QUALITY = 75;
 
 type SanityImageAssetRef = {
@@ -151,11 +155,15 @@ export const getImageUrl = (
 export const getImageSrcSet = (
   image: unknown,
   widths: number[],
-  options: Omit<ImageOptions, "width"> = {}
+  options: SrcSetImageOptions = {}
 ): string =>
   widths
     .map((width) => {
-      const url = getImageUrl(image, { ...options, width });
+      const height =
+        typeof options.height === "function"
+          ? options.height(width)
+          : options.height;
+      const url = getImageUrl(image, { ...options, width, height });
 
       return url ? `${url} ${width}w` : "";
     })

@@ -20,13 +20,13 @@ const CompactCard = ({
             quality: 70,
             autoFormat: true,
           })}
-          srcSet={getImageSrcSet(item.imageUrl, [360, 540, 720], {
-            height: 540,
+          srcSet={getImageSrcSet(item.imageUrl, [320, 420, 540], {
+            height: (width) => Math.round(width * 0.75),
             fit: "crop",
             quality: 70,
             autoFormat: true,
           })}
-          sizes="(max-width: 768px) 100vw, 33vw"
+          sizes="(max-width: 768px) calc(100vw - 48px), calc(33vw - 32px)"
           alt={item.title}
           wrapperClassName="news-card-image h-full"
           className="news-card-media"

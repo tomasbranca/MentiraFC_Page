@@ -46,7 +46,7 @@ const Carousel = ({ items }: CarouselProps) => {
               autoFormat: true,
             })}
             srcSet={getImageSrcSet(item.imageUrl, [640, 960, 1280], {
-              height: 720,
+              height: (width) => Math.round(width * 0.75),
               fit: "crop",
               quality: 70,
               autoFormat: true,

@@ -23,12 +23,12 @@ const FeaturedWideCard = ({
           autoFormat: true,
         })}
         srcSet={getImageSrcSet(item.imageUrl, [640, 960, 1200], {
-          height: 675,
+          height: (width) => Math.round(width * 9 / 16),
           fit: "crop",
           quality: 70,
           autoFormat: true,
         })}
-        sizes="(max-width: 768px) 100vw, 66vw"
+        sizes="(max-width: 768px) calc(100vw - 48px), 66vw"
         alt={item.title}
         wrapperClassName="w-full h-55 md:absolute md:inset-0 md:h-full"
         className="w-full h-55 md:absolute md:inset-0 md:h-full object-cover"
