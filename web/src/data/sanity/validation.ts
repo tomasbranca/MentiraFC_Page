@@ -1,4 +1,4 @@
-import { type ZodType } from "zod";
+import { type ZodType } from "zod/v3";
 import { reportError } from "../../lib/errors/errorLogger";
 
 const buildError = (origin: string): string =>
