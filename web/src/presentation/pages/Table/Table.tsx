@@ -83,7 +83,7 @@ const Table = () => {
 
   if (!tournament) {
     return (
-      <main className="min-h-screen flex items-center justify-center px-4 text-white">
+      <div className="min-h-screen flex items-center justify-center px-4 text-white">
         <div className="text-center max-w-md">
           <div className="text-5xl mb-4 flex justify-center" aria-hidden="true">
             <FiBarChart2 />
@@ -91,7 +91,7 @@ const Table = () => {
           <h2 className="text-xl font-bold mb-2">Sin tabla activa</h2>
           <p className="text-neutral-400">Aún no hay datos disponibles.</p>
         </div>
-      </main>
+      </div>
     );
   }
 

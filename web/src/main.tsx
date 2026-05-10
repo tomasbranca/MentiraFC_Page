@@ -2,12 +2,6 @@ import { StrictMode, Suspense, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
-import "@fontsource/archivo/latin-700.css";
-import "@fontsource/archivo/latin-900.css";
-import "@fontsource/roboto/latin-400.css";
-import "@fontsource/roboto/latin-500.css";
-import "@fontsource/roboto/latin-700.css";
-import "@fontsource/roboto/latin-900.css";
 
 import App from "./App";
 import {
@@ -27,8 +21,6 @@ import ErrorBoundary from "./presentation/components/errors/ErrorBoundary";
 
 import "./index.css";
 
-void initSentry();
-
 const rootElement = document.getElementById("root");
 
 if (!rootElement) {
@@ -38,6 +30,38 @@ if (!rootElement) {
 const root = createRoot(rootElement);
 
 const EMPTY_INITIAL_DATA: InitialDataPayload = createEmptyInitialData();
+const SENTRY_IDLE_DELAY_MS = 5000;
+
+const isSentryConfigured = (): boolean =>
+  Boolean(import.meta.env.VITE_SENTRY_DSN?.trim());
+
+const initializeSentry = () => {
+  void initSentry().catch((error: unknown) => {
+    console.error("[Sentry]", error);
+  });
+};
+
+const scheduleSentryInit = () => {
+  if (!isSentryConfigured()) return;
+
+  const scheduleIdleInit = () => {
+    window.setTimeout(() => {
+      if ("requestIdleCallback" in window) {
+        window.requestIdleCallback(initializeSentry, { timeout: 5000 });
+        return;
+      }
+
+      initializeSentry();
+    }, SENTRY_IDLE_DELAY_MS);
+  };
+
+  if (document.readyState === "complete") {
+    scheduleIdleInit();
+    return;
+  }
+
+  window.addEventListener("load", scheduleIdleInit, { once: true });
+};
 
 const renderShell = (node: ReactNode) => {
   root.render(
@@ -182,6 +206,7 @@ const preloadQueryCache = (payload: InitialDataPayload) => {
 
 const bootstrap = async () => {
   startWebVitalsTracking();
+  scheduleSentryInit();
   renderAppShell(EMPTY_INITIAL_DATA, "shell");
 
   try {

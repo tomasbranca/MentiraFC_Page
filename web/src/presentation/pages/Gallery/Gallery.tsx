@@ -19,7 +19,7 @@ const Gallery = () => {
   }
 
   return (
-    <main className="min-h-screen w-full bg-neutral-900 md:min-h-0 md:max-w-7xl md:mx-auto md:bg-transparent md:px-4 md:py-12">
+    <div className="min-h-screen w-full bg-neutral-900 md:min-h-0 md:max-w-7xl md:mx-auto md:bg-transparent md:px-4 md:py-12">
       <section className="min-h-screen bg-neutral-900 md:min-h-0 md:border border-gray-200 shadow-sm">
         <header className="w-full bg-violet-900 p-5 md:p-8 md:border-b border-gray-200">
           <p className="mb-2 text-base font-bold leading-tight text-violet-200">
@@ -48,7 +48,7 @@ const Gallery = () => {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 };
 

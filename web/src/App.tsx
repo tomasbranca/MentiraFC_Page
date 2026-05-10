@@ -87,7 +87,7 @@ function App({ initialData }: AppProps) {
         <RouteHead />
         <NavBar />
 
-        <div className="border-t-96 border-t-violet-900 min-h-screen">
+        <main className="border-t-96 border-t-violet-900 min-h-screen">
           {hasBootstrapError ? (
             <ErrorFallback
               title="No pudimos cargar la pagina"
@@ -124,7 +124,7 @@ function App({ initialData }: AppProps) {
               </Routes>
             </Suspense>
           )}
-        </div>
+        </main>
 
         <Footer />
       </GameProvider>

@@ -28,7 +28,7 @@ const News = () => {
   const { featured, list } = splitNewsForPage(news);
 
   return (
-    <main className="news-page">
+    <div className="news-page">
       {/* HERO */}
       <section className="bento-wrapper bg-neutral-900 shadow-lg shadow-black/30 pt-8 pb-16 md:pt-10 md:pb-20 lg:pt-12 lg:pb-24">
         <div className="background"></div>
@@ -53,7 +53,7 @@ const News = () => {
           </Suspense>
         </div>
       </section>
-    </main>
+    </div>
   );
 };
 

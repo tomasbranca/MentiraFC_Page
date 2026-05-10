@@ -58,12 +58,27 @@ export default defineConfig(({ mode }) => {
             if (!id.includes("node_modules")) return;
 
             if (id.includes("@sentry")) return "sentry";
-            if (id.includes("@sanity")) return "sanity";
+            if (
+              id.includes("@sanity") ||
+              id.includes("event-source-polyfill") ||
+              id.includes("eventsource") ||
+              id.includes("get-it") ||
+              id.includes("rxjs")
+            ) {
+              return "sanity";
+            }
+            if (id.includes("zod")) return "validation-vendor";
             if (id.includes("react-icons")) return "icons";
             if (id.includes("@vercel/analytics") || id.includes("@vercel/speed-insights")) {
               return "analytics";
             }
-            if (id.includes("@tanstack/react-query")) return "query";
+            if (
+              id.includes("@tanstack/react-query") ||
+              id.includes("@tanstack/query-core")
+            ) {
+              return "query";
+            }
+            if (id.includes("react-router")) return "router";
             if (id.includes("react") || id.includes("react-dom")) {
               return "react-vendor";
             }
