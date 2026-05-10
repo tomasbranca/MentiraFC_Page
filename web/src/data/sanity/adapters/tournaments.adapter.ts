@@ -1,8 +1,15 @@
-import type { StandingsRow, Tournament } from "../../../types/models";
+import type {
+  StandingsRow,
+  StandingsSnapshot,
+  TeamRef,
+  Tournament,
+} from "../../../types/models";
 import {
   sanityStandingRowSchema,
+  sanityStandingsSnapshotSchema,
   sanityTournamentSchema,
   type SanityStandingRow,
+  type SanityStandingsSnapshot,
 } from "../schemas";
 import { validateSanityArray, validateSanityItem } from "../validation";
 
@@ -38,6 +45,108 @@ const normalizeSlotCount = (value: unknown, fallback: number): number => {
     : fallback;
 };
 
+const normalizeNumber = (value: unknown): number => {
+  const numberValue = Number(value);
+
+  return Number.isFinite(numberValue) ? numberValue : 0;
+};
+
+const normalizeOptionalNumber = (value: unknown): number | null => {
+  if (value === undefined || value === null || value === "") return null;
+
+  const numberValue = Number(value);
+
+  return Number.isFinite(numberValue) ? numberValue : null;
+};
+
+const normalizePositiveInteger = (value: unknown): number => {
+  const numberValue = Number(value);
+
+  return Number.isFinite(numberValue) && numberValue > 0
+    ? Math.floor(numberValue)
+    : 0;
+};
+
+const adaptStandingRows = (
+  rows: unknown[] | null | undefined,
+  context: string
+): StandingsRow[] => {
+  const validatedRows: SanityStandingRow[] = validateSanityArray(
+    sanityStandingRowSchema,
+    rows || [],
+    context
+  );
+
+  return validatedRows.map((row) => {
+    const wins = normalizeNumber(row.wins);
+    const draws = normalizeNumber(row.draws);
+    const losses = normalizeNumber(row.losses);
+    const played = normalizeOptionalNumber(row.played) ?? wins + draws + losses;
+    const goalsFor = normalizeNumber(row.goalsFor);
+    const goalsAgainst = normalizeNumber(row.goalsAgainst);
+    const points = normalizeOptionalNumber(row.points) ?? wins * 3 + draws;
+    const goalDiff =
+      normalizeOptionalNumber(row.goalDiff) ?? goalsFor - goalsAgainst;
+    const position = normalizePositiveInteger(row.position);
+    const previousPosition = normalizePositiveInteger(row.previousPosition);
+
+    return {
+      played,
+      wins,
+      draws,
+      losses,
+      goalsFor,
+      goalsAgainst,
+      points,
+      goalDiff,
+      position: position || undefined,
+      previousPosition: previousPosition || null,
+      positionChange: normalizeOptionalNumber(row.positionChange),
+      team: {
+        id: row.team._id,
+        name: row.team.name,
+        imageUrl: row.team.logo,
+        isMain: row.team.isMain,
+      },
+    };
+  });
+};
+
+const adaptTeamRef = (
+  team:
+    | {
+        _id: string;
+        name: string;
+        logo?: unknown;
+        isMain?: boolean;
+      }
+    | null
+    | undefined
+): TeamRef | null => {
+  if (!team) return null;
+
+  return {
+    id: team._id,
+    name: team.name,
+    imageUrl: team.logo,
+    isMain: team.isMain,
+  };
+};
+
+const adaptStandingsSnapshot = (
+  snapshot: SanityStandingsSnapshot
+): StandingsSnapshot => ({
+  id: snapshot._id || "unknown-standings-snapshot",
+  matchdayNumber: normalizePositiveInteger(snapshot.matchdayNumber),
+  label: snapshot.label || null,
+  snapshotDate: snapshot.snapshotDate || null,
+  gamesThroughDate: snapshot.gamesThroughDate || null,
+  standings: adaptStandingRows(
+    snapshot.rows,
+    "tournaments.adapter:standingsSnapshots.rows"
+  ),
+});
+
 export const adaptTournament = (data: unknown): Tournament | null => {
   if (!data) return null;
 
@@ -52,28 +161,15 @@ export const adaptTournament = (data: unknown): Tournament | null => {
   );
   if (!validated) return null;
 
-  const validatedStandings: SanityStandingRow[] = validateSanityArray(
-    sanityStandingRowSchema,
-    validated.standings || [],
-    "tournaments.adapter:standings"
+  const validatedSnapshots: SanityStandingsSnapshot[] = validateSanityArray(
+    sanityStandingsSnapshotSchema,
+    validated.standingsSnapshots || [],
+    "tournaments.adapter:standingsSnapshots"
   );
-
-  // Standings are stored manually in Sanity, but numbers can arrive as strings
-  // from editorial input/imports; adapters coerce them before domain logic.
-  const standings: StandingsRow[] = validatedStandings.map((row) => ({
-    played: Number(row.played) || 0,
-    wins: Number(row.wins) || 0,
-    draws: Number(row.draws) || 0,
-    losses: Number(row.losses) || 0,
-    goalsFor: Number(row.goalsFor) || 0,
-    goalsAgainst: Number(row.goalsAgainst) || 0,
-    team: {
-      id: row.team._id,
-      name: row.team.name,
-      imageUrl: row.team.logo,
-      isMain: row.team.isMain,
-    },
-  }));
+  const standingsSnapshots = validatedSnapshots.map(adaptStandingsSnapshot);
+  const currentSnapshot = standingsSnapshots[0] || null;
+  const previousSnapshot = standingsSnapshots[1] || null;
+  const standings = currentSnapshot?.standings ?? [];
 
   return {
     id: validated._id || "unknown-tournament",
@@ -85,9 +181,14 @@ export const adaptTournament = (data: unknown): Tournament | null => {
       typeof validated.organization?.primaryColor === "string"
         ? validated.organization.primaryColor
         : validated.organization?.primaryColor?.hex || null,
+    mainTeam: adaptTeamRef(validated.mainTeam),
     primaryPrizeSlots: normalizeSlotCount(validated.primaryPrizeSlots, 1),
     secondaryPrizeSlots: normalizeSlotCount(validated.secondaryPrizeSlots, 4),
-    updatedAt: validated._updatedAt || undefined,
+    updatedAt:
+      currentSnapshot?.snapshotDate || validated._updatedAt || undefined,
+    currentSnapshot,
+    previousSnapshot,
+    standingsSnapshots,
     standings,
   };
 };

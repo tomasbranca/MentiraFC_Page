@@ -3,7 +3,6 @@ import type { BootstrapScope } from "../../../types/models";
 type FullTableState = {
   bootstrapScope: BootstrapScope;
   tournament: unknown;
-  teamsLength: number;
   gamesLength: number;
 };
 
@@ -42,11 +41,10 @@ export const shouldLoadStaffInitially = (
 export const shouldLoadTableInitially = ({
   bootstrapScope,
   tournament,
-  teamsLength,
   gamesLength,
 }: FullTableState) =>
   bootstrapScope !== "full" &&
-  (!tournament || teamsLength === 0 || gamesLength === 0);
+  (!tournament || gamesLength === 0);
 
 export const shouldLoadPlayerDetailInitially = ({
   hasInitialDetail,

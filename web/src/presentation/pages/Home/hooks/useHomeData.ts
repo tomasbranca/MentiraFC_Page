@@ -6,7 +6,6 @@ import { getGoalEvents } from "../../../../data/events";
 import { getNews } from "../../../../data/news";
 import { getPlayers } from "../../../../data/players";
 import { queryKeys } from "../../../../data/queryKeys";
-import { getTeams } from "../../../../data/teams";
 import { getTournament } from "../../../../data/tournament";
 import { reportError } from "../../../../lib/errors/errorLogger";
 import { useInitialData } from "../../../context/useInitialData";
@@ -38,12 +37,11 @@ export const useHomeData = () => {
     enabled: shouldHydrateDeferredData,
     queryFn: async () => {
       try {
-        const [players, goalEvents, tournament, teams, tournamentGames] =
+        const [players, goalEvents, tournament, tournamentGames] =
           await Promise.all([
             getPlayers(),
             getGoalEvents({ year }),
             getTournament(),
-            getTeams(),
             getTournamentGames(),
           ]);
 
@@ -51,7 +49,6 @@ export const useHomeData = () => {
           players,
           goalEvents,
           tournament,
-          teams,
           tournamentGames,
         };
       } catch (error) {
@@ -83,7 +80,6 @@ export const useHomeData = () => {
       queryKeys.tournaments.current,
       deferredHomeData.tournament
     );
-    queryClient.setQueryData(queryKeys.teams.all, deferredHomeData.teams);
     queryClient.setQueryData(
       queryKeys.games.tournamentFinished,
       deferredHomeData.tournamentGames

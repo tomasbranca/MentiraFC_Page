@@ -47,9 +47,10 @@ const createInitialData = (
   tournament: {
     id: "t-1",
     name: "Torneo 1",
+    mainTeam: { id: "main", name: "Mentira FC", isMain: true },
     standings: [
       {
-        team: { id: "main", name: "Mentira FC", isMain: true },
+        team: { id: "r-1", name: "Rival 1" },
         played: 0,
         wins: 0,
         draws: 0,
@@ -87,7 +88,6 @@ describe("useHomeData.utils", () => {
     const partialCache = {
       players: [],
       goalEvents: [],
-      teams: [],
     };
 
     expect(hasCompleteDeferredHomeData(partialCache)).toBe(false);
@@ -103,7 +103,6 @@ describe("useHomeData.utils", () => {
       players: [],
       goalEvents: [],
       tournament: null,
-      teams: [],
       tournamentGames: [],
     };
 
@@ -120,7 +119,6 @@ describe("useHomeData.utils", () => {
     const partialDeferredData = {
       players: [{ id: "p-2", fullName: "Belen Ruiz", name: "Belen", lastName: "Ruiz" }],
       goalEvents: [],
-      teams: [],
     };
 
     const resolvedData = resolveHomeData(initialData, null, 2025);
@@ -170,9 +168,10 @@ describe("useHomeData.utils", () => {
       tournament: {
         id: "t-2",
         name: "Torneo 2",
+        mainTeam: { id: "main", name: "Mentira FC", isMain: true },
         standings: [
           {
-            team: { id: "main", name: "Mentira FC", isMain: true },
+            team: { id: "r-2", name: "Rival 2" },
             played: 0,
             wins: 0,
             draws: 0,
@@ -182,7 +181,6 @@ describe("useHomeData.utils", () => {
           },
         ],
       },
-      teams: [{ id: "main", name: "Mentira FC", isMain: true }],
       tournamentGames: [
         {
           id: "tg-2",

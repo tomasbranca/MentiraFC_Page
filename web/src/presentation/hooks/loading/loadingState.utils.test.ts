@@ -29,7 +29,6 @@ describe("loadingState.utils", () => {
       shouldLoadTableInitially({
         bootstrapScope: "full",
         tournament: null,
-        teamsLength: 0,
         gamesLength: 0,
       })
     ).toBe(false);

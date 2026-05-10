@@ -103,7 +103,18 @@ export interface StandingsRow {
   points?: number;
   goalDiff?: number;
   position?: number;
+  previousPosition?: number | null;
+  positionChange?: number | null;
   type?: "primaryPrize" | "secondaryPrize" | "normal";
+}
+
+export interface StandingsSnapshot {
+  id: string;
+  matchdayNumber: number;
+  label?: string | null;
+  snapshotDate?: string | null;
+  gamesThroughDate?: string | null;
+  standings: StandingsRow[];
 }
 
 export interface Tournament {
@@ -111,9 +122,13 @@ export interface Tournament {
   name: string;
   imageUrl?: string | null;
   primaryColor?: string | null;
+  mainTeam?: TeamRef | null;
   primaryPrizeSlots?: number;
   secondaryPrizeSlots?: number;
   updatedAt?: string;
+  currentSnapshot?: StandingsSnapshot | null;
+  previousSnapshot?: StandingsSnapshot | null;
+  standingsSnapshots?: StandingsSnapshot[];
   standings: StandingsRow[];
 }
 

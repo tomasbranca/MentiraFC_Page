@@ -23,7 +23,9 @@ Use this file as a concise map for AI assistants. It complements `robots.txt` an
 - Teams: rival teams and club references.
 - Games: fixtures, results, rivals and tournament links.
 - Events: match events such as goals and related player data.
-- Tournaments: competitions, standings and prize slot rules.
+- Tournaments: competitions, prize slot rules, active tournament context and official standings participants.
+- Standings state: the editable current table per tournament.
+- Standings snapshots: generated tournament tables by matchday, used to compare position movement across dates.
 - Organizations: tournament organizers.
 - Galleries: image collections.
 
@@ -33,6 +35,7 @@ Use this file as a concise map for AI assistants. It complements `robots.txt` an
 - CMS: Sanity Studio.
 - Quality checks: ESLint, TypeScript, Vitest, production build and Lighthouse CI.
 - Public metadata: dynamic document title, meta description, Open Graph and Twitter tags are handled in the SPA where browser-side metadata is available.
+- Standings: editors update one standings state with aggregate stats for official tournament participants, then Sanity Functions validate the rows, generate snapshots and insert Mentira FC automatically from finished tournament matches.
 
 ## Optional
 

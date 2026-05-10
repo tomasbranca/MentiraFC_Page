@@ -4,6 +4,7 @@ import { getImageUrl } from "../../../data/imageService";
 import Loader from "../../components/Loader/Loader";
 import Button from "../../components/Button/Button";
 import ErrorFallback from "../../components/errors/ErrorFallback";
+import PositionMovementIndicator from "../../components/standings/PositionMovementIndicator";
 import { useTableData } from "./hooks/useTableData";
 import { formatLongDate } from "../../utils/date.utils";
 
@@ -174,8 +175,8 @@ const Table = () => {
                   `}
                 >
                   <div className="flex justify-between items-center mb-3">
-                    <div className="flex items-center gap-3">
-                      <span className="font-bold text-base text-neutral-300">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span className="w-7 text-center font-bold text-base text-neutral-300 tabular-nums">
                         {row.position}
                       </span>
 
@@ -185,12 +186,17 @@ const Table = () => {
                         size="sm"
                       />
 
-                      <span
-                        className={`font-semibold ${
-                          row.team.isMain ? "text-violet-400" : "text-white"
-                        }`}
-                      >
-                        {row.team.name}
+                      <span className="flex min-w-0 items-center gap-2">
+                        <span
+                          className={`truncate font-semibold ${
+                            row.team.isMain ? "text-violet-400" : "text-white"
+                          }`}
+                        >
+                          {row.team.name}
+                        </span>
+                        <PositionMovementIndicator
+                          positionChange={row.positionChange}
+                        />
                       </span>
                     </div>
 
@@ -295,8 +301,17 @@ const Table = () => {
                           : {}
                       }
                     >
-                      <td className="py-3 px-3 font-bold text-lg text-neutral-300">
-                        {row.position}
+                      <td className="py-3 px-3">
+                        <div className="grid grid-cols-[2rem] items-center md:grid-cols-[2rem_1.75rem]">
+                          <span className="text-center font-bold text-lg text-neutral-300 tabular-nums">
+                            {row.position}
+                          </span>
+                          <span className="hidden justify-center md:inline-flex">
+                            <PositionMovementIndicator
+                              positionChange={row.positionChange}
+                            />
+                          </span>
+                        </div>
                       </td>
 
                       <td className="py-3 px-3">

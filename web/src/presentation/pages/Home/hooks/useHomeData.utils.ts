@@ -9,7 +9,7 @@ export const DEFERRED_HOME_STALE_TIME = 1000 * 60 * 5;
 
 export type DeferredHomeData = Pick<
   InitialDataPayload,
-  "players" | "goalEvents" | "tournament" | "teams" | "tournamentGames"
+  "players" | "goalEvents" | "tournament" | "tournamentGames"
 >;
 
 export const hasCompleteDeferredHomeData = (
@@ -24,7 +24,6 @@ export const hasCompleteDeferredHomeData = (
   return (
     Array.isArray(candidate.players) &&
     Array.isArray(candidate.goalEvents) &&
-    Array.isArray(candidate.teams) &&
     Array.isArray(candidate.tournamentGames) &&
     Object.prototype.hasOwnProperty.call(candidate, "tournament")
   );
@@ -48,7 +47,6 @@ export const resolveHomeData = (
   const players = deferredData?.players ?? initialData.players;
   const goalEvents = deferredData?.goalEvents ?? initialData.goalEvents;
   const tournamentSource = deferredData?.tournament ?? initialData.tournament;
-  const teams = deferredData?.teams ?? initialData.teams;
   const tournamentGames =
     deferredData?.tournamentGames ?? initialData.tournamentGames;
 
@@ -56,7 +54,7 @@ export const resolveHomeData = (
     year,
   });
 
-  const mainTeam = teams.find((team) => team.isMain) || null;
+  const mainTeam = tournamentSource?.mainTeam ?? null;
 
   const gamesFromActiveTournament = tournamentGames.filter(
     (nextGame) => nextGame.tournamentId === tournamentSource?.id
@@ -66,11 +64,16 @@ export const resolveHomeData = (
     ? {
         ...tournamentSource,
         standings: getHybridTournamentTable({
-          manualStandings: tournamentSource.standings,
+          manualStandings: tournamentSource.currentSnapshot?.standings ?? [],
+          previousManualStandings:
+            tournamentSource.previousSnapshot?.standings,
           games: gamesFromActiveTournament,
           mainTeam,
           primaryPrizeSlots: tournamentSource.primaryPrizeSlots,
           secondaryPrizeSlots: tournamentSource.secondaryPrizeSlots,
+          gamesThroughDate: tournamentSource.currentSnapshot?.gamesThroughDate,
+          previousGamesThroughDate:
+            tournamentSource.previousSnapshot?.gamesThroughDate,
         }),
       }
     : null;

@@ -18,7 +18,6 @@ describe("getHybridTournamentTable", () => {
     const manualStandings = [
       {
         team: mainTeam,
-        played: 99,
         wins: 99,
         draws: 0,
         losses: 0,
@@ -27,7 +26,6 @@ describe("getHybridTournamentTable", () => {
       },
       {
         team: rivals[0],
-        played: 3,
         wins: 2,
         draws: 1,
         losses: 0,
@@ -36,7 +34,6 @@ describe("getHybridTournamentTable", () => {
       },
       {
         team: rivals[1],
-        played: 3,
         wins: 1,
         draws: 1,
         losses: 1,
@@ -60,6 +57,7 @@ describe("getHybridTournamentTable", () => {
     expect(table).toHaveLength(3);
 
     const mainRow = table.find((row) => row.team.id === "main");
+    const alphaRow = table.find((row) => row.team.id === "a");
     expect(mainRow).toMatchObject({
       played: 2,
       wins: 1,
@@ -69,6 +67,12 @@ describe("getHybridTournamentTable", () => {
       goalsAgainst: 1,
       points: 4,
       goalDiff: 1,
+    });
+    expect(alphaRow).toMatchObject({
+      played: 3,
+      wins: 2,
+      draws: 1,
+      losses: 0,
     });
 
     expect(table[0].team.id).toBe("a");
@@ -83,7 +87,6 @@ describe("getHybridTournamentTable", () => {
       manualStandings: [
         {
           team: { id: "a", name: "Alpha FC" },
-          played: 1,
           wins: 1,
           draws: 0,
           losses: 0,
@@ -92,7 +95,6 @@ describe("getHybridTournamentTable", () => {
         },
         {
           team: { id: "b", name: "Beta FC" },
-          played: 1,
           wins: 1,
           draws: 0,
           losses: 0,
@@ -101,7 +103,6 @@ describe("getHybridTournamentTable", () => {
         },
         {
           team: { id: "c", name: "Celta FC" },
-          played: 1,
           wins: 1,
           draws: 0,
           losses: 0,
@@ -110,7 +111,6 @@ describe("getHybridTournamentTable", () => {
         },
         {
           team: { id: "d", name: "Delta FC" },
-          played: 1,
           wins: 0,
           draws: 0,
           losses: 1,
@@ -139,7 +139,6 @@ describe("getHybridTournamentTable", () => {
       manualStandings: [
         {
           team: { id: "z", name: "Zeta FC" },
-          played: 2,
           wins: 1,
           draws: 0,
           losses: 1,
@@ -148,7 +147,6 @@ describe("getHybridTournamentTable", () => {
         },
         {
           team: { id: "a", name: "Alfa FC" },
-          played: 2,
           wins: 1,
           draws: 0,
           losses: 1,
@@ -157,7 +155,6 @@ describe("getHybridTournamentTable", () => {
         },
         {
           team: { id: "b", name: "Beta FC" },
-          played: 2,
           wins: 1,
           draws: 0,
           losses: 1,
@@ -177,7 +174,6 @@ describe("getHybridTournamentTable", () => {
       manualStandings: [
         {
           team: mainTeam,
-          played: "x",
           wins: undefined,
           draws: null,
           losses: NaN,
@@ -186,7 +182,6 @@ describe("getHybridTournamentTable", () => {
         },
         {
           team: { id: "r", name: "Rival" },
-          played: "x",
           wins: undefined,
           draws: null,
           losses: NaN,
@@ -219,6 +214,106 @@ describe("getHybridTournamentTable", () => {
       losses: 0,
       goalsFor: 0,
       goalsAgainst: 0,
+    });
+  });
+  it("calcula posiciones y movimientos contra la tabla guardada de la fecha anterior", () => {
+    const table = getHybridTournamentTable({
+      manualStandings: [
+        {
+          team: { id: "a", name: "Alpha FC" },
+          wins: 2,
+          draws: 0,
+          losses: 0,
+          goalsFor: 5,
+          goalsAgainst: 1,
+        },
+        {
+          team: { id: "b", name: "Beta FC" },
+          wins: 1,
+          draws: 0,
+          losses: 1,
+          goalsFor: 4,
+          goalsAgainst: 2,
+        },
+      ],
+      previousManualStandings: [
+        {
+          team: { id: "b", name: "Beta FC" },
+          wins: 1,
+          draws: 0,
+          losses: 0,
+          goalsFor: 2,
+          goalsAgainst: 0,
+        },
+        {
+          team: { id: "a", name: "Alpha FC" },
+          wins: 0,
+          draws: 0,
+          losses: 1,
+          goalsFor: 0,
+          goalsAgainst: 1,
+        },
+      ],
+    });
+
+    expect(table.find((row) => row.team.id === "a")).toMatchObject({
+      position: 1,
+      previousPosition: 2,
+      positionChange: 1,
+    });
+    expect(table.find((row) => row.team.id === "b")).toMatchObject({
+      position: 2,
+      previousPosition: 1,
+      positionChange: -1,
+    });
+  });
+
+  it("agrega Mentira FC automaticamente y compara su posicion con el corte de cada snapshot", () => {
+    const mainTeam = { id: "main", name: "Mentira FC", isMain: true };
+    const table = getHybridTournamentTable({
+      mainTeam,
+      gamesThroughDate: "2025-03-20T23:59:59Z",
+      previousGamesThroughDate: "2025-03-10T23:59:59Z",
+      games: [
+        {
+          date: "2025-03-05T12:00:00Z",
+          state: "finalizado",
+          result: { goalsFor: 1, goalsAgainst: 1 },
+        },
+        {
+          date: "2025-03-18T12:00:00Z",
+          state: "finalizado",
+          result: { goalsFor: 2, goalsAgainst: 0 },
+        },
+      ],
+      manualStandings: [
+        {
+          team: { id: "a", name: "Alpha FC" },
+          wins: 1,
+          draws: 0,
+          losses: 1,
+          goalsFor: 2,
+          goalsAgainst: 2,
+        },
+      ],
+      previousManualStandings: [
+        {
+          team: { id: "a", name: "Alpha FC" },
+          wins: 1,
+          draws: 0,
+          losses: 0,
+          goalsFor: 2,
+          goalsAgainst: 0,
+        },
+      ],
+    });
+
+    expect(table.find((row) => row.team.id === "main")).toMatchObject({
+      played: 2,
+      points: 4,
+      position: 1,
+      previousPosition: 2,
+      positionChange: 1,
     });
   });
 });

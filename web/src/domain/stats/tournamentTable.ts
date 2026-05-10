@@ -11,7 +11,6 @@ type StandingsRowInput = Omit<
   "team" | "played" | "wins" | "draws" | "losses" | "goalsFor" | "goalsAgainst"
 > & {
   team: TeamRef;
-  played?: unknown;
   wins?: unknown;
   draws?: unknown;
   losses?: unknown;
@@ -22,6 +21,12 @@ type StandingsRowInput = Omit<
 type PrizeSlotsInput = {
   primaryPrizeSlots?: unknown;
   secondaryPrizeSlots?: unknown;
+};
+
+type MovementInput = {
+  previousManualStandings?: StandingsRowInput[];
+  gamesThroughDate?: string | null;
+  previousGamesThroughDate?: string | null;
 };
 
 const DEFAULT_PRIMARY_PRIZE_SLOTS = 1;
@@ -64,6 +69,29 @@ const getRowType = (
 
 const normalizeNumber = (value: unknown): number =>
   Number.isFinite(value) ? Number(value) : 0;
+
+const isGameBeforeOrAt = (
+  game: GameInput,
+  cutoffDate?: string | null
+): boolean => {
+  if (!cutoffDate) return true;
+
+  const gameDate = typeof game.date === "string" ? Date.parse(game.date) : NaN;
+  const cutoff = Date.parse(cutoffDate);
+
+  if (!Number.isFinite(gameDate) || !Number.isFinite(cutoff)) return false;
+
+  return gameDate <= cutoff;
+};
+
+const getFinishedGamesThroughDate = (
+  games: GameInput[] | null = [],
+  cutoffDate?: string | null
+): GameInput[] => {
+  return (games || []).filter(
+    (game) => game?.state === "finalizado" && isGameBeforeOrAt(game, cutoffDate)
+  );
+};
 
 const sortAndDecorateTable = (
   rows: StandingsRow[] = [],
@@ -122,34 +150,38 @@ const calculateMainTeamStats = (
   );
 };
 
-const cloneManualRow = (row: StandingsRowInput): StandingsRow => ({
-  ...row,
-  team: {
-    ...row.team,
-  },
-  played: normalizeNumber(row.played),
-  wins: normalizeNumber(row.wins),
-  draws: normalizeNumber(row.draws),
-  losses: normalizeNumber(row.losses),
-  goalsFor: normalizeNumber(row.goalsFor),
-  goalsAgainst: normalizeNumber(row.goalsAgainst),
-});
+const cloneManualRow = (row: StandingsRowInput): StandingsRow => {
+  const wins = normalizeNumber(row.wins);
+  const draws = normalizeNumber(row.draws);
+  const losses = normalizeNumber(row.losses);
 
-export const getHybridTournamentTable = ({
+  return {
+    ...row,
+    team: {
+      ...row.team,
+    },
+    played: wins + draws + losses,
+    wins,
+    draws,
+    losses,
+    goalsFor: normalizeNumber(row.goalsFor),
+    goalsAgainst: normalizeNumber(row.goalsAgainst),
+  };
+};
+
+const createDecoratedTable = ({
   manualStandings = [],
   games = [],
   mainTeam = null,
   primaryPrizeSlots,
   secondaryPrizeSlots,
+  gamesThroughDate,
 }: {
   manualStandings?: StandingsRowInput[];
   games?: GameInput[] | null;
   mainTeam?: TeamRef | null;
+  gamesThroughDate?: string | null;
 } & PrizeSlotsInput): StandingsRow[] => {
-  if (!mainTeam && !manualStandings.length) return [];
-
-  // Sanity keeps the full table editable, but the main-team row is replaced
-  // with calculated stats to avoid duplicated manual updates after each match.
   const manualRows = (manualStandings || []).map(cloneManualRow);
   const rowsByTeamId = manualRows.reduce<Record<string, StandingsRow>>(
     (acc, row) => {
@@ -162,21 +194,16 @@ export const getHybridTournamentTable = ({
   const resolvedMainTeam =
     mainTeam || manualRows.find((row) => row.team.isMain)?.team || null;
 
-  if (!resolvedMainTeam) {
-    return sortAndDecorateTable(manualRows, {
-      primaryPrizeSlots,
-      secondaryPrizeSlots,
-    });
+  if (resolvedMainTeam) {
+    const mainStats = calculateMainTeamStats(
+      getFinishedGamesThroughDate(games, gamesThroughDate)
+    );
+
+    rowsByTeamId[resolvedMainTeam.id] = {
+      team: resolvedMainTeam,
+      ...mainStats,
+    };
   }
-
-  const mainStats = calculateMainTeamStats(
-    (games || []).filter((game) => game?.state === "finalizado")
-  );
-
-  rowsByTeamId[resolvedMainTeam.id] = {
-    team: resolvedMainTeam,
-    ...mainStats,
-  };
 
   return sortAndDecorateTable(Object.values(rowsByTeamId), {
     primaryPrizeSlots,
@@ -184,39 +211,81 @@ export const getHybridTournamentTable = ({
   });
 };
 
-export const getTournamentTable = (
-  games: GameInput[] = [],
-  teams: TeamRef[] = [],
-  prizeSlots: PrizeSlotsInput = {}
+const addPositionMovement = (
+  currentTable: StandingsRow[],
+  previousTable: StandingsRow[]
 ): StandingsRow[] => {
-  if (!Array.isArray(teams) || teams.length === 0) return [];
+  if (!previousTable.length) {
+    return currentTable.map((row) => ({
+      ...row,
+      previousPosition: null,
+      positionChange: null,
+    }));
+  }
 
-  const mainTeam = teams.find((team) => team.isMain);
-
-  if (!mainTeam) return [];
-
-  const mainStats = calculateMainTeamStats(
-    (games || []).filter((game) => game?.state === "finalizado")
+  const previousPositions = previousTable.reduce<Record<string, number>>(
+    (acc, row) => {
+      if (row.position) acc[row.team.id] = row.position;
+      return acc;
+    },
+    {}
   );
 
-  const rows: StandingsRow[] = teams.map((team) => ({
-    team,
-    played: 0,
-    wins: 0,
-    draws: 0,
-    losses: 0,
-    goalsFor: 0,
-    goalsAgainst: 0,
-  }));
+  return currentTable.map((row) => {
+    const previousPosition = previousPositions[row.team.id] ?? null;
+    const currentPosition = row.position ?? null;
 
-  // Legacy fallback: build a table from team records when no manual standings
-  // are available from the active tournament.
-  return sortAndDecorateTable(
-    rows.map((row) =>
-      row.team.id === mainTeam.id ? { ...row, ...mainStats } : row
-    ),
-    prizeSlots
-  );
+    return {
+      ...row,
+      previousPosition,
+      positionChange:
+        previousPosition && currentPosition
+          ? previousPosition - currentPosition
+          : null,
+    };
+  });
+};
+
+export const getHybridTournamentTable = ({
+  manualStandings = [],
+  games = [],
+  mainTeam = null,
+  primaryPrizeSlots,
+  secondaryPrizeSlots,
+  previousManualStandings,
+  gamesThroughDate,
+  previousGamesThroughDate,
+}: {
+  manualStandings?: StandingsRowInput[];
+  games?: GameInput[] | null;
+  mainTeam?: TeamRef | null;
+} & PrizeSlotsInput &
+  MovementInput): StandingsRow[] => {
+  if (!mainTeam && !manualStandings.length) return [];
+
+  // Snapshots store rival rows manually. The main-team row is rebuilt from
+  // finished matches for each snapshot cutoff so Mentira FC is always present.
+  const currentTable = createDecoratedTable({
+    manualStandings,
+    games,
+    mainTeam,
+    primaryPrizeSlots,
+    secondaryPrizeSlots,
+    gamesThroughDate,
+  });
+
+  if (!previousManualStandings) return currentTable;
+
+  const previousTable = createDecoratedTable({
+    manualStandings: previousManualStandings,
+    games,
+    mainTeam,
+    primaryPrizeSlots,
+    secondaryPrizeSlots,
+    gamesThroughDate: previousGamesThroughDate,
+  });
+
+  return addPositionMovement(currentTable, previousTable);
 };
 
 export const getMainTeamIndex = (standings: StandingsRow[] = []): number => {

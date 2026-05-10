@@ -10,7 +10,7 @@ export default {
     },
     prepare({name, organization, logo}) {
       return {
-        title: `${organization} · ${name}`,
+        title: `${organization} - ${name}`,
         media: logo,
       }
     },
@@ -51,76 +51,121 @@ export default {
       validation: (Rule) => Rule.required().integer().min(0),
     },
     {
-      name: 'standings',
-      title: 'Posiciones',
+      name: 'participants',
+      title: 'Equipos participantes de tabla',
       type: 'array',
+      description:
+        'Lista oficial de equipos que pueden cargarse manualmente en Tabla actual. No incluir Mentira FC: se calcula automaticamente desde partidos.',
       of: [
         {
           type: 'object',
-          name: 'standing',
-          title: 'Fila de tabla',
+          name: 'tournamentParticipant',
+          title: 'Participante',
           fields: [
             {
               name: 'team',
               title: 'Equipo',
               type: 'reference',
               to: [{type: 'teams'}],
+              options: {
+                filter: '!defined(isMain) || isMain != true',
+              },
               validation: (Rule) => Rule.required(),
             },
             {
-              name: 'played',
-              title: 'Partidos jugados',
-              type: 'number',
-              validation: (Rule) => Rule.required().min(0),
+              name: 'status',
+              title: 'Estado',
+              type: 'string',
+              initialValue: 'active',
+              options: {
+                layout: 'radio',
+                list: [
+                  {title: 'Activo', value: 'active'},
+                  {title: 'Reemplazado', value: 'replaced'},
+                  {title: 'Retirado', value: 'withdrawn'},
+                ],
+              },
+              validation: (Rule) => Rule.required(),
             },
             {
-              name: 'wins',
-              title: 'Ganados',
+              name: 'activeFromMatchday',
+              title: 'Activo desde fecha',
               type: 'number',
-              validation: (Rule) => Rule.required().min(0),
+              description: 'Opcional. Si queda vacio, cuenta desde el inicio del torneo.',
+              validation: (Rule) => Rule.integer().min(1),
             },
             {
-              name: 'draws',
-              title: 'Empatados',
+              name: 'activeUntilMatchday',
+              title: 'Activo hasta fecha',
               type: 'number',
-              validation: (Rule) => Rule.required().min(0),
+              description:
+                'Usar cuando un equipo se retira o es reemplazado. La fecha indicada sigue contando como activa.',
+              validation: (Rule) => Rule.integer().min(1),
             },
             {
-              name: 'losses',
-              title: 'Perdidos',
-              type: 'number',
-              validation: (Rule) => Rule.required().min(0),
-            },
-            {
-              name: 'goalsFor',
-              title: 'Goles a favor',
-              type: 'number',
-              validation: (Rule) => Rule.required().min(0),
-            },
-            {
-              name: 'goalsAgainst',
-              title: 'Goles en contra',
-              type: 'number',
-              validation: (Rule) => Rule.required().min(0),
+              name: 'notes',
+              title: 'Notas',
+              type: 'text',
+              rows: 2,
             },
           ],
           preview: {
             select: {
               team: 'team.name',
               logo: 'team.logo',
-              wins: 'wins',
-              draws: 'draws',
-              losses: 'losses',
+              status: 'status',
+              from: 'activeFromMatchday',
+              until: 'activeUntilMatchday',
             },
-            prepare({team, logo, wins, draws, losses}) {
+            prepare({team, logo, status, from, until}) {
+              const range = [from ? `desde F${from}` : null, until ? `hasta F${until}` : null]
+                .filter(Boolean)
+                .join(' - ')
+
               return {
-                title: `${team} (${wins} - ${draws} - ${losses})`,
+                title: team || 'Equipo',
+                subtitle: [status || 'active', range].filter(Boolean).join(' - '),
                 media: logo,
               }
             },
           },
         },
       ],
+      validation: (Rule) =>
+        Rule.required()
+          .min(1)
+          .custom((participants = []) => {
+            const teamRefs = participants
+              .map((participant) => participant?.team?._ref)
+              .filter(Boolean)
+            const duplicateTeam = teamRefs.find((teamRef, index) => teamRefs.indexOf(teamRef) !== index)
+
+            if (duplicateTeam) return 'No se puede repetir un equipo participante.'
+
+            const invalidRange = participants.find((participant) => {
+              const from = Number(participant?.activeFromMatchday)
+              const until = Number(participant?.activeUntilMatchday)
+
+              return Number.isFinite(from) && Number.isFinite(until) && from > until
+            })
+
+            if (invalidRange) {
+              return 'La fecha "activo desde" no puede ser mayor que "activo hasta".'
+            }
+
+            const inactiveWithoutEnd = participants.find(
+              (participant) =>
+                participant?.status &&
+                participant.status !== 'active' &&
+                !participant.activeUntilMatchday,
+            )
+
+            if (inactiveWithoutEnd) {
+              return 'Los equipos reemplazados o retirados deben tener "Activo hasta fecha".'
+            }
+
+            return true
+          }),
     },
   ],
 }

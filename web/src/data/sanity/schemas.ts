@@ -165,6 +165,15 @@ export const sanityTournamentSchema = z
     _id: z.string().nullable().optional(),
     _updatedAt: z.string().nullable().optional(),
     name: z.string().nullable().optional(),
+    mainTeam: z
+      .object({
+        _id: z.string(),
+        name: z.string(),
+        logo: z.unknown().optional(),
+        isMain: z.boolean().optional(),
+      })
+      .nullable()
+      .optional(),
     primaryPrizeSlots: z
       .union([z.number(), z.string(), z.null()])
       .optional(),
@@ -186,9 +195,9 @@ export const sanityTournamentSchema = z
           .optional(),
       })
       .optional(),
-    standings: z.array(z.unknown()).nullish(),
-  })
-  .passthrough();
+      standingsSnapshots: z.array(z.unknown()).nullish(),
+    })
+    .passthrough();
 
 export const sanityStandingRowSchema = z.object({
   played: z.union([z.number(), z.string(), z.null()]).optional(),
@@ -197,12 +206,26 @@ export const sanityStandingRowSchema = z.object({
   losses: z.union([z.number(), z.string(), z.null()]).optional(),
   goalsFor: z.union([z.number(), z.string(), z.null()]).optional(),
   goalsAgainst: z.union([z.number(), z.string(), z.null()]).optional(),
+  points: z.union([z.number(), z.string(), z.null()]).optional(),
+  goalDiff: z.union([z.number(), z.string(), z.null()]).optional(),
+  position: z.union([z.number(), z.string(), z.null()]).optional(),
+  previousPosition: z.union([z.number(), z.string(), z.null()]).optional(),
+  positionChange: z.union([z.number(), z.string(), z.null()]).optional(),
   team: z.object({
     _id: z.string(),
     name: z.string(),
     logo: z.unknown().optional(),
     isMain: z.boolean().optional(),
   }),
+});
+
+export const sanityStandingsSnapshotSchema = z.object({
+  _id: z.string().nullable().optional(),
+  matchdayNumber: z.union([z.number(), z.string(), z.null()]).optional(),
+  label: z.string().nullable().optional(),
+  snapshotDate: z.string().nullable().optional(),
+  gamesThroughDate: z.string().nullable().optional(),
+  rows: z.array(z.unknown()).nullish(),
 });
 
 export const sanityGoalEventSchema = z.object({
@@ -228,4 +251,7 @@ export type SanityStaff = z.infer<typeof sanityStaffSchema>;
 export type SanityTeam = z.infer<typeof sanityTeamSchema>;
 export type SanityTournament = z.infer<typeof sanityTournamentSchema>;
 export type SanityStandingRow = z.infer<typeof sanityStandingRowSchema>;
+export type SanityStandingsSnapshot = z.infer<
+  typeof sanityStandingsSnapshotSchema
+>;
 export type SanityGoalEvent = z.infer<typeof sanityGoalEventSchema>;

@@ -6,7 +6,6 @@ export {
 
 export {
   getHybridTournamentTable,
-  getTournamentTable,
   getMainTeamIndex,
   getSurroundingTeams,
 } from "./tournamentTable";

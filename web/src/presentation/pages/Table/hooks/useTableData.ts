@@ -3,13 +3,12 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { getTournamentGames } from "../../../../data/games";
 import { queryKeys } from "../../../../data/queryKeys";
-import { getTeams } from "../../../../data/teams";
 import { getTournament } from "../../../../data/tournament";
 import { getHybridTournamentTable } from "../../../../domain/stats";
 import { reportError } from "../../../../lib/errors/errorLogger";
 import { shouldLoadTableInitially } from "../../../hooks/loading/loadingState.utils";
 import { useInitialData } from "../../../context/useInitialData";
-import type { Game, TeamRef, Tournament } from "../../../../types/models";
+import type { Game, Tournament } from "../../../../types/models";
 
 export const useTableData = () => {
   const { initialData } = useInitialData();
@@ -17,9 +16,6 @@ export const useTableData = () => {
   const hasCachedTournament = useRef(
     queryClient.getQueryState(queryKeys.tournaments.current)?.data !==
       undefined
-  );
-  const hasCachedTeams = useRef(
-    queryClient.getQueryState(queryKeys.teams.all)?.data !== undefined
   );
   const hasCachedGames = useRef(
     queryClient.getQueryState(queryKeys.games.tournamentFinished)?.data !==
@@ -30,27 +26,20 @@ export const useTableData = () => {
         queryKeys.tournaments.current
       )
     : undefined;
-  const cachedTeams = hasCachedTeams.current
-    ? queryClient.getQueryData<TeamRef[]>(queryKeys.teams.all)
-    : undefined;
   const cachedGames = hasCachedGames.current
     ? queryClient.getQueryData<Game[]>(queryKeys.games.tournamentFinished)
     : undefined;
   const hasCompleteCachedTableData =
-    hasCachedTournament.current &&
-    hasCachedTeams.current &&
-    hasCachedGames.current;
+    hasCachedTournament.current && hasCachedGames.current;
   const initialTournament = hasCachedTournament.current
     ? cachedTournament ?? null
     : initialData.tournament;
-  const initialTeams = cachedTeams ?? initialData.teams;
   const initialGames = cachedGames ?? initialData.tournamentGames;
   const needsInitialFetch =
     !hasCompleteCachedTableData &&
     shouldLoadTableInitially({
       bootstrapScope: initialData.bootstrapScope,
       tournament: initialTournament,
-      teamsLength: initialTeams.length,
       gamesLength: initialGames.length,
     });
 
@@ -67,29 +56,10 @@ export const useTableData = () => {
         throw error;
       }
     },
-    enabled: needsInitialFetch,
+    enabled: true,
     initialData: needsInitialFetch ? undefined : initialTournament,
     placeholderData: needsInitialFetch ? initialTournament : undefined,
-    refetchOnMount: needsInitialFetch ? "always" : false,
-  });
-
-  const teamsQuery = useQuery({
-    queryKey: queryKeys.teams.all,
-    queryFn: async () => {
-      try {
-        return await getTeams();
-      } catch (error) {
-        reportError(error, {
-          page: "Table",
-          action: "refresh_table_teams",
-        });
-        throw error;
-      }
-    },
-    enabled: needsInitialFetch,
-    initialData: needsInitialFetch ? undefined : initialTeams,
-    placeholderData: needsInitialFetch ? initialTeams : undefined,
-    refetchOnMount: needsInitialFetch ? "always" : false,
+    refetchOnMount: "always",
   });
 
   const gamesQuery = useQuery({
@@ -105,10 +75,10 @@ export const useTableData = () => {
         throw error;
       }
     },
-    enabled: needsInitialFetch,
+    enabled: true,
     initialData: needsInitialFetch ? undefined : initialGames,
     placeholderData: needsInitialFetch ? initialGames : undefined,
-    refetchOnMount: needsInitialFetch ? "always" : false,
+    refetchOnMount: "always",
   });
 
   const tournament = useMemo(() => {
@@ -118,31 +88,35 @@ export const useTableData = () => {
       return null;
     }
 
-    const teamsSource = teamsQuery.data ?? [];
     const gamesSource = gamesQuery.data ?? [];
-    const mainTeam = teamsSource.find((team) => team.isMain) || null;
+    const mainTeam = tournamentSource.mainTeam ?? null;
     const gamesFromActiveTournament = gamesSource.filter(
       (game) => game.tournamentId === tournamentSource.id
     );
+    const currentSnapshot = tournamentSource.currentSnapshot;
+    const previousSnapshot = tournamentSource.previousSnapshot;
     const standings = getHybridTournamentTable({
-      manualStandings: tournamentSource.standings,
+      manualStandings: currentSnapshot?.standings ?? [],
+      previousManualStandings: previousSnapshot?.standings,
       games: gamesFromActiveTournament,
       mainTeam,
       primaryPrizeSlots: tournamentSource.primaryPrizeSlots,
       secondaryPrizeSlots: tournamentSource.secondaryPrizeSlots,
+      gamesThroughDate: currentSnapshot?.gamesThroughDate,
+      previousGamesThroughDate: previousSnapshot?.gamesThroughDate,
     });
 
     return {
       ...tournamentSource,
       standings,
     };
-  }, [gamesQuery.data, teamsQuery.data, tournamentQuery.data]);
+  }, [gamesQuery.data, tournamentQuery.data]);
 
   const loading =
     needsInitialFetch &&
-    (tournamentQuery.isFetching || teamsQuery.isFetching || gamesQuery.isFetching);
+    (tournamentQuery.isFetching || gamesQuery.isFetching);
   const error = Boolean(
-    tournamentQuery.error || teamsQuery.error || gamesQuery.error
+    tournamentQuery.error || gamesQuery.error
   );
 
   return {
@@ -152,7 +126,6 @@ export const useTableData = () => {
     refetch: async () => {
       await Promise.all([
         tournamentQuery.refetch(),
-        teamsQuery.refetch(),
         gamesQuery.refetch(),
       ]);
     },
