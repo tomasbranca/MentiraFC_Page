@@ -1,4 +1,3 @@
-import { client } from "../sanity.client";
 import {
   LATEST_GAMES_QUERY,
   FINISHED_GAMES_QUERY,
@@ -6,10 +5,11 @@ import {
 } from "../queries/games.queries";
 
 import { adaptGame, adaptGames } from "../adapters/games.adapter";
+import { fetchSanityQuery } from "../sanityFetch";
 import type { Game } from "../../../types/models";
 
 export const getLatestGame = async (): Promise<Game | null> => {
-  const data = await client.fetch(LATEST_GAMES_QUERY);
+  const data = await fetchSanityQuery(LATEST_GAMES_QUERY);
 
   if (!Array.isArray(data)) {
     return adaptGame(data);
@@ -24,11 +24,11 @@ export const getLatestGame = async (): Promise<Game | null> => {
 };
 
 export const getFinishedGames = async (): Promise<Game[]> => {
-  const data = await client.fetch(FINISHED_GAMES_QUERY);
+  const data = await fetchSanityQuery(FINISHED_GAMES_QUERY);
   return adaptGames(data);
 };
 
 export const getFinishedTournamentGames = async (): Promise<Game[]> => {
-  const data = await client.fetch(FINISHED_TOURNAMENT_GAMES_QUERY);
+  const data = await fetchSanityQuery(FINISHED_TOURNAMENT_GAMES_QUERY);
   return adaptGames(data);
 };

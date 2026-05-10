@@ -1,18 +1,20 @@
-import { client } from "../sanity.client";
 import {
   PLAYERS_QUERY,
   PLAYER_BY_SLUG_OR_ID_QUERY,
 } from "../queries/players.queries";
 
 import { adaptPlayers, adaptPlayer } from "../adapters/players.adapter";
+import { fetchSanityQuery } from "../sanityFetch";
 import type { Player } from "../../../types/models";
 
 export const getPlayers = async (): Promise<Player[]> => {
-  const data = await client.fetch(PLAYERS_QUERY);
+  const data = await fetchSanityQuery(PLAYERS_QUERY);
   return adaptPlayers(data);
 };
 
 export const getPlayerBySlug = async (slug: string): Promise<Player | null> => {
-  const data = await client.fetch(PLAYER_BY_SLUG_OR_ID_QUERY, { slug });
+  const data = await fetchSanityQuery(PLAYER_BY_SLUG_OR_ID_QUERY, {
+    params: { slug },
+  });
   return adaptPlayer(data);
 };

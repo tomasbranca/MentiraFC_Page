@@ -79,7 +79,10 @@ const Carousel = ({ items }: CarouselProps) => {
                   {item.description}
                 </p>
 
-                <Link to={getNewsLink(item)}>
+                <Link
+                  to={getNewsLink(item)}
+                  aria-label={`Leer mas sobre ${item.title}`}
+                >
                   <Button
                     variant="primary"
                     className="

@@ -1,12 +1,10 @@
-import { client } from "../sanity.client";
 import { TOURNAMENT_QUERY } from "../queries/tournaments.queries";
 import { adaptTournament } from "../adapters/tournaments.adapter";
+import { fetchSanityQuery } from "../sanityFetch";
 
 import type { Tournament } from "../../../types/models";
 
 export const getTournament = async (): Promise<Tournament | null> => {
-  const data = await client
-    .withConfig({ useCdn: false })
-    .fetch(TOURNAMENT_QUERY);
+  const data = await fetchSanityQuery(TOURNAMENT_QUERY, { useCdn: false });
   return adaptTournament(data);
 };
