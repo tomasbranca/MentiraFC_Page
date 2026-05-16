@@ -14,7 +14,6 @@ import {
 } from "../../constants/assets.constants";
 import { ROUTES } from "../../constants/routes.constants";
 import { useAuth } from "../../context/useAuth";
-import { supabase } from "../../../utils/supabase";
 
 import {
   ACCOUNT_MENU_ITEMS,
@@ -42,7 +41,7 @@ const getDisplayName = (user: ReturnType<typeof useAuth>["user"]): string => {
 const NavBar = () => {
   const isScrolled = useNavBarScroll();
   const navigate = useNavigate();
-  const { user, isLoading: isAuthLoading } = useAuth();
+  const { user, isLoading: isAuthLoading, signOut } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const accountMenuRef = useRef<HTMLDivElement | null>(null);
@@ -78,7 +77,7 @@ const NavBar = () => {
   }, [accountMenuOpen]);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await signOut();
     setAccountMenuOpen(false);
     setMenuOpen(false);
     navigate(ROUTES.HOME);

@@ -15,6 +15,7 @@ describe("App", () => {
             session: null,
             user: null,
             isLoading: false,
+            signOut: async () => undefined,
           }}
         >
           <App initialData={createBootstrapErrorPayload()} />

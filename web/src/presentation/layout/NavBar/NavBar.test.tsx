@@ -1,19 +1,11 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router-dom";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import type { User } from "@supabase/supabase-js";
 
 import { AuthContext } from "../../context/AuthContext";
 import { GameContext } from "../../context/GameContext";
 import NavBar from "./NavBar";
-
-vi.mock("../../../utils/supabase", () => ({
-  supabase: {
-    auth: {
-      signOut: vi.fn(),
-    },
-  },
-}));
 
 const createUser = (): User =>
   ({
@@ -40,6 +32,7 @@ const renderNavBar = ({
           session: null,
           user,
           isLoading,
+          signOut: async () => undefined,
         }}
       >
         <GameContext.Provider

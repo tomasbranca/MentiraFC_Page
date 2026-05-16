@@ -22,6 +22,7 @@ const renderLogin = (initialMode?: "signIn" | "signUp" | "resetPassword") =>
           session: null,
           user: null,
           isLoading: false,
+          signOut: async () => undefined,
         }}
       >
         <Login initialMode={initialMode} />
