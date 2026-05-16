@@ -4,12 +4,21 @@ import { describe, expect, it } from "vitest";
 
 import App from "./App";
 import { createBootstrapErrorPayload } from "./data/getInitialData";
+import { AuthContext } from "./presentation/context/AuthContext";
 
 describe("App", () => {
   it("renderiza un fallback usable cuando falla el bootstrap inicial", () => {
     const markup = renderToStaticMarkup(
       <MemoryRouter>
-        <App initialData={createBootstrapErrorPayload()} />
+        <AuthContext.Provider
+          value={{
+            session: null,
+            user: null,
+            isLoading: false,
+          }}
+        >
+          <App initialData={createBootstrapErrorPayload()} />
+        </AuthContext.Provider>
       </MemoryRouter>
     );
 

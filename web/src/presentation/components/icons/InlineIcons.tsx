@@ -26,6 +26,12 @@ export const CloseIcon = (props: IconProps) => (
   </svg>
 );
 
+export const ChevronDownIcon = (props: IconProps) => (
+  <svg aria-hidden="true" {...baseProps} {...props}>
+    <path d="m6 9 6 6 6-6" />
+  </svg>
+);
+
 export const MailIcon = (props: IconProps) => (
   <svg aria-hidden="true" {...baseProps} {...props}>
     <path d="M4 6h16v12H4z" />

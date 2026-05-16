@@ -12,3 +12,7 @@ export const AUTH_LINK = {
   label: "INGRESAR",
   to: ROUTES.LOGIN,
 };
+
+export const ACCOUNT_MENU_ITEMS = [
+  { label: "Mi cuenta", enabled: false },
+] as const;
