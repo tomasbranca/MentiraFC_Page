@@ -1,12 +1,30 @@
-import { type FormEvent, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import {
+  type ChangeEvent,
+  type FormEvent,
+  useEffect,
+  useState,
+} from "react";
+import { Link, useNavigate } from "react-router-dom";
 
+import { reportError } from "../../../lib/errors/errorLogger";
+import { supabase } from "../../../utils/supabase";
 import Button from "../../components/Button/Button";
 import { SITE_LOGO_ASSETS } from "../../constants/assets.constants";
 import { ROUTES } from "../../constants/routes.constants";
+import { useAuth } from "../../context/useAuth";
+import {
+  type AuthFormErrors,
+  type AuthFormValues,
+  type AuthMode,
+  createEmptyAuthFormValues,
+  validateAuthForm,
+} from "./login.utils";
 import "./Login.css";
 
-type AuthMode = "signIn" | "signUp" | "resetPassword";
+type FormStatus = {
+  tone: "success" | "error" | "info";
+  message: string;
+};
 
 const PANEL_CONTENT: Record<
   AuthMode,
@@ -17,15 +35,15 @@ const PANEL_CONTENT: Record<
 > = {
   signIn: {
     title: "Bienvenido de nuevo",
-    description: "Ingresá para acceder con tu cuenta existente.",
+    description: "Ingresá para acceder a tu cuenta del club.",
   },
   signUp: {
     title: "Sumate al club",
-    description: "Creá tu cuenta para empezar a usar tu espacio personal.",
+    description: "Creá tu cuenta para participar de la comunidad de Mentira FC.",
   },
   resetPassword: {
     title: "Recuperá tu acceso",
-    description: "Te ayudamos a volver a entrar en pocos pasos.",
+    description: "La recuperación de contraseña se conectará en una próxima etapa.",
   },
 };
 
@@ -53,40 +71,157 @@ const FORM_CONTENT: Record<
   resetPassword: {
     eyebrow: "Recuperar acceso",
     title: "Restablecer contraseña",
-    description: "Te enviaremos un enlace para volver a ingresar.",
-    submitLabel: "Enviar enlace",
+    description: "Este flujo quedará disponible en una próxima etapa.",
+    submitLabel: "Continuar",
   },
 };
+
+const SIGN_IN_ERROR_MESSAGE =
+  "No pudimos iniciar sesión. Revisá tu correo y contraseña e intentá de nuevo.";
+const SIGN_UP_ERROR_MESSAGE =
+  "No pudimos crear tu cuenta. Revisá los datos e intentá de nuevo.";
+const SIGN_UP_CONFIRMATION_MESSAGE =
+  "Te enviamos un mail para confirmar tu cuenta. Revisá tu bandeja de entrada antes de ingresar.";
 
 type LoginProps = {
   initialMode?: AuthMode;
 };
 
 const Login = ({ initialMode = "signIn" }: LoginProps) => {
+  const navigate = useNavigate();
+  const { user, isLoading: isAuthLoading } = useAuth();
   const [mode, setMode] = useState<AuthMode>(initialMode);
   const [showPassword, setShowPassword] = useState(false);
-  const [submittedMode, setSubmittedMode] = useState<AuthMode | null>(null);
+  const [values, setValues] = useState<AuthFormValues>(
+    createEmptyAuthFormValues
+  );
+  const [errors, setErrors] = useState<AuthFormErrors>({});
+  const [status, setStatus] = useState<FormStatus | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const panelContent = PANEL_CONTENT[mode];
   const formContent = FORM_CONTENT[mode];
-  const statusMessage = useMemo(() => {
-    if (!submittedMode) return null;
+  const isFormDisabled = isSubmitting || isAuthLoading;
 
-    if (submittedMode === "resetPassword") {
-      return "Formulario listo para conectar con el envío de recuperación.";
+  useEffect(() => {
+    if (!isAuthLoading && user) {
+      navigate(ROUTES.HOME, { replace: true });
+    }
+  }, [isAuthLoading, navigate, user]);
+
+  const handleFieldChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const fieldName = event.target.name as keyof AuthFormValues;
+    const { value } = event.target;
+
+    setValues((currentValues) => ({
+      ...currentValues,
+      [fieldName]: value,
+    }));
+    setErrors((currentErrors) => ({
+      ...currentErrors,
+      [fieldName]: undefined,
+    }));
+    setStatus(null);
+  };
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const nextErrors = validateAuthForm(mode, values);
+    setErrors(nextErrors);
+    setStatus(null);
+
+    if (Object.keys(nextErrors).length > 0) {
+      return;
     }
 
-    return "Formulario listo para conectar con Supabase Auth.";
-  }, [submittedMode]);
+    if (mode === "resetPassword") {
+      setStatus({
+        tone: "info",
+        message:
+          "La recuperación de contraseña se conectará en una próxima etapa.",
+      });
+      return;
+    }
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setSubmittedMode(mode);
+    setIsSubmitting(true);
+
+    try {
+      if (mode === "signIn") {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: values.email.trim(),
+          password: values.password,
+        });
+
+        if (error) {
+          setStatus({
+            tone: "error",
+            message: SIGN_IN_ERROR_MESSAGE,
+          });
+          return;
+        }
+
+        navigate(ROUTES.HOME, { replace: true });
+        return;
+      }
+
+      const { data, error } = await supabase.auth.signUp({
+        email: values.email.trim(),
+        password: values.password,
+        options: {
+          data: {
+            first_name: values.firstName.trim(),
+            last_name: values.lastName.trim(),
+          },
+        },
+      });
+
+      if (error) {
+        setStatus({
+          tone: "error",
+          message: SIGN_UP_ERROR_MESSAGE,
+        });
+        return;
+      }
+
+      if (data.session) {
+        navigate(ROUTES.HOME, { replace: true });
+        return;
+      }
+
+      setValues((currentValues) => ({
+        ...currentValues,
+        password: "",
+        confirmPassword: "",
+      }));
+      setStatus({
+        tone: "success",
+        message: SIGN_UP_CONFIRMATION_MESSAGE,
+      });
+    } catch (error) {
+      reportError(error, {
+        scope: "Login",
+        action: mode === "signIn" ? "sign_in" : "sign_up",
+      });
+      setStatus({
+        tone: "error",
+        message:
+          mode === "signIn" ? SIGN_IN_ERROR_MESSAGE : SIGN_UP_ERROR_MESSAGE,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const changeMode = (nextMode: AuthMode) => {
     setMode(nextMode);
     setShowPassword(false);
-    setSubmittedMode(null);
+    setErrors({});
+    setStatus(null);
+    setIsSubmitting(false);
+    setValues((currentValues) => ({
+      ...createEmptyAuthFormValues(),
+      email: currentValues.email,
+    }));
   };
 
   return (
@@ -172,132 +307,165 @@ const Login = ({ initialMode = "signIn" }: LoginProps) => {
                   </p>
                 </div>
 
-              <form className="space-y-5" onSubmit={handleSubmit}>
-                {mode === "signUp" && (
-                  <div className="grid gap-5 sm:grid-cols-2">
-                    <AuthField
-                      id="first-name"
-                      label="Nombre"
-                      type="text"
-                      placeholder="Nombre"
-                      autoComplete="given-name"
-                    />
-                    <AuthField
-                      id="last-name"
-                      label="Apellido"
-                      type="text"
-                      placeholder="Apellido"
-                      autoComplete="family-name"
-                    />
-                  </div>
-                )}
-
-                <AuthField
-                  id="email"
-                  label="Correo electrónico"
-                  type="email"
-                  placeholder="ejemplo@correo.com"
-                  autoComplete="email"
-                />
-
-                {mode !== "resetPassword" && (
-                  <PasswordField
-                    showPassword={showPassword}
-                    onToggleVisibility={() =>
-                      setShowPassword((currentValue) => !currentValue)
-                    }
-                    autoComplete={
-                      mode === "signIn" ? "current-password" : "new-password"
-                    }
-                  />
-                )}
-
-                {mode === "signUp" && (
-                  <AuthField
-                    id="confirm-password"
-                    label="Confirmar contraseña"
-                    type="password"
-                    placeholder="••••••••"
-                    autoComplete="new-password"
-                  />
-                )}
-
-                {mode === "signIn" && (
-                  <div className="flex flex-col gap-3 text-sm text-neutral-500 sm:flex-row sm:items-center sm:justify-between">
-                    <label className="inline-flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        className="h-4 w-4 border-neutral-300 text-violet-700 focus:ring-violet-500"
+                <form className="space-y-5" onSubmit={handleSubmit} noValidate>
+                  {mode === "signUp" && (
+                    <div className="grid gap-5 sm:grid-cols-2">
+                      <AuthField
+                        id="first-name"
+                        name="firstName"
+                        label="Nombre"
+                        type="text"
+                        placeholder="Nombre"
+                        autoComplete="given-name"
+                        value={values.firstName}
+                        error={errors.firstName}
+                        disabled={isFormDisabled}
+                        onChange={handleFieldChange}
                       />
-                      <span>Recordarme</span>
-                    </label>
+                      <AuthField
+                        id="last-name"
+                        name="lastName"
+                        label="Apellido"
+                        type="text"
+                        placeholder="Apellido"
+                        autoComplete="family-name"
+                        value={values.lastName}
+                        error={errors.lastName}
+                        disabled={isFormDisabled}
+                        onChange={handleFieldChange}
+                      />
+                    </div>
+                  )}
 
-                    <button
-                      type="button"
-                      onClick={() => changeMode("resetPassword")}
-                      className="w-fit font-medium text-violet-700 transition hover:text-violet-900"
-                    >
-                      ¿Olvidaste tu contraseña?
-                    </button>
-                  </div>
-                )}
+                  <AuthField
+                    id="email"
+                    name="email"
+                    label="Correo electrónico"
+                    type="email"
+                    placeholder="ejemplo@correo.com"
+                    autoComplete="email"
+                    value={values.email}
+                    error={errors.email}
+                    disabled={isFormDisabled}
+                    onChange={handleFieldChange}
+                  />
 
-                <Button
-                  type="submit"
-                  variant="cta"
-                  className="mt-2 w-full py-3 text-sm font-semibold"
+                  {mode !== "resetPassword" && (
+                    <PasswordField
+                      showPassword={showPassword}
+                      onToggleVisibility={() =>
+                        setShowPassword((currentValue) => !currentValue)
+                      }
+                      autoComplete={
+                        mode === "signIn" ? "current-password" : "new-password"
+                      }
+                      value={values.password}
+                      error={errors.password}
+                      disabled={isFormDisabled}
+                      onChange={handleFieldChange}
+                    />
+                  )}
+
+                  {mode === "signUp" && (
+                    <AuthField
+                      id="confirm-password"
+                      name="confirmPassword"
+                      label="Confirmar contraseña"
+                      type="password"
+                      placeholder="••••••••"
+                      autoComplete="new-password"
+                      value={values.confirmPassword}
+                      error={errors.confirmPassword}
+                      disabled={isFormDisabled}
+                      onChange={handleFieldChange}
+                    />
+                  )}
+
+                  {mode === "signIn" && (
+                    <div className="flex flex-col gap-3 text-sm text-neutral-500 sm:flex-row sm:items-center sm:justify-between">
+                      <label className="inline-flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          disabled
+                          className="h-4 w-4 border-neutral-300 text-violet-700 focus:ring-violet-500"
+                        />
+                        <span>Recordarme</span>
+                      </label>
+
+                      <button
+                        type="button"
+                        onClick={() => changeMode("resetPassword")}
+                        className="w-fit font-medium text-violet-700 transition hover:text-violet-900"
+                      >
+                        ¿Olvidaste tu contraseña?
+                      </button>
+                    </div>
+                  )}
+
+                  <Button
+                    type="submit"
+                    variant="cta"
+                    disabled={isFormDisabled}
+                    className="mt-2 w-full py-3 text-sm font-semibold"
+                  >
+                    {isSubmitting ? "Procesando..." : formContent.submitLabel}
+                  </Button>
+                </form>
+
+                <div
+                  className={`mt-5 min-h-6 text-sm ${
+                    status?.tone === "error"
+                      ? "text-red-700"
+                      : status?.tone === "success"
+                        ? "text-emerald-700"
+                        : "text-violet-700"
+                  }`}
+                  aria-live="polite"
+                  role={status?.tone === "error" ? "alert" : "status"}
                 >
-                  {formContent.submitLabel}
-                </Button>
-              </form>
+                  {status?.message}
+                </div>
 
-              <div
-                className="mt-5 min-h-6 text-sm text-violet-700"
-                aria-live="polite"
-              >
-                {statusMessage}
-              </div>
+                <div className="mt-8 text-center text-sm text-neutral-500">
+                  {mode === "signIn" && (
+                    <p>
+                      ¿Sos nuevo?{" "}
+                      <button
+                        type="button"
+                        onClick={() => changeMode("signUp")}
+                        className="font-semibold text-violet-700 transition hover:text-violet-900"
+                      >
+                        Crear cuenta
+                      </button>
+                    </p>
+                  )}
 
-              <div className="mt-8 text-center text-sm text-neutral-500">
-                {mode === "signIn" && (
-                  <p>
-                    ¿Sos nuevo?{" "}
-                    <button
-                      type="button"
-                      onClick={() => changeMode("signUp")}
-                      className="font-semibold text-violet-700 transition hover:text-violet-900"
-                    >
-                      Crear cuenta
-                    </button>
-                  </p>
-                )}
+                  {mode === "signUp" && (
+                    <p>
+                      ¿Ya tenés cuenta?{" "}
+                      <button
+                        type="button"
+                        onClick={() => changeMode("signIn")}
+                        className="font-semibold text-violet-700 transition hover:text-violet-900"
+                      >
+                        Ingresá
+                      </button>
+                    </p>
+                  )}
 
-                {mode === "signUp" && (
-                  <p>
-                    ¿Ya tenés cuenta?{" "}
-                    <button
-                      type="button"
-                      onClick={() => changeMode("signIn")}
-                      className="font-semibold text-violet-700 transition hover:text-violet-900"
-                    >
-                      Ingresá
-                    </button>
-                  </p>
-                )}
-
-                {mode === "resetPassword" && (
-                  <p>
-                    ¿Recordaste la contraseña?{" "}
-                    <button
-                      type="button"
-                      onClick={() => changeMode("signIn")}
-                      className="font-semibold text-violet-700 transition hover:text-violet-900"
-                    >
-                      Volvé a ingresar
-                    </button>
-                  </p>
-                )}
-              </div>
+                  {mode === "resetPassword" && (
+                    <p>
+                      ¿Recordaste la contraseña?{" "}
+                      <button
+                        type="button"
+                        onClick={() => changeMode("signIn")}
+                        className="font-semibold text-violet-700 transition hover:text-violet-900"
+                      >
+                        Volvé a ingresar
+                      </button>
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -309,67 +477,114 @@ const Login = ({ initialMode = "signIn" }: LoginProps) => {
 
 type AuthFieldProps = {
   id: string;
+  name: keyof AuthFormValues;
   label: string;
   type: "email" | "password" | "text";
   placeholder: string;
   autoComplete: string;
+  value: string;
+  error?: string;
+  disabled?: boolean;
+  onChange: (event: ChangeEvent<HTMLInputElement>) => void;
 };
 
 const AuthField = ({
   id,
+  name,
   label,
   type,
   placeholder,
   autoComplete,
-}: AuthFieldProps) => (
-  <label className="block" htmlFor={id}>
-    <span className="mb-2 block text-sm font-medium text-neutral-700">
-      {label}
-    </span>
-    <input
-      id={id}
-      name={id}
-      type={type}
-      autoComplete={autoComplete}
-      placeholder={placeholder}
-      className="w-full border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-900 outline-none transition placeholder:text-neutral-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
-    />
-  </label>
-);
+  value,
+  error,
+  disabled = false,
+  onChange,
+}: AuthFieldProps) => {
+  const errorId = error ? `${id}-error` : undefined;
+
+  return (
+    <label className="block" htmlFor={id}>
+      <span className="mb-2 block text-sm font-medium text-neutral-700">
+        {label}
+      </span>
+      <input
+        id={id}
+        name={name}
+        type={type}
+        autoComplete={autoComplete}
+        placeholder={placeholder}
+        value={value}
+        disabled={disabled}
+        onChange={onChange}
+        aria-invalid={Boolean(error)}
+        aria-describedby={errorId}
+        className="w-full border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-900 outline-none transition placeholder:text-neutral-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
+      />
+      {error && (
+        <span id={errorId} className="mt-2 block text-sm text-red-700">
+          {error}
+        </span>
+      )}
+    </label>
+  );
+};
 
 type PasswordFieldProps = {
   showPassword: boolean;
   onToggleVisibility: () => void;
   autoComplete: string;
+  value: string;
+  error?: string;
+  disabled?: boolean;
+  onChange: (event: ChangeEvent<HTMLInputElement>) => void;
 };
 
 const PasswordField = ({
   showPassword,
   onToggleVisibility,
   autoComplete,
-}: PasswordFieldProps) => (
-  <label className="block" htmlFor="password">
-    <span className="mb-2 block text-sm font-medium text-neutral-700">
-      Contraseña
-    </span>
-    <span className="relative block">
-      <input
-        id="password"
-        name="password"
-        type={showPassword ? "text" : "password"}
-        autoComplete={autoComplete}
-        placeholder="••••••••"
-        className="w-full border border-neutral-300 bg-white px-4 py-3 pr-20 text-sm text-neutral-900 outline-none transition placeholder:text-neutral-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
-      />
-      <button
-        type="button"
-        onClick={onToggleVisibility}
-        className="absolute inset-y-0 right-4 my-auto h-fit text-sm font-medium text-violet-700 transition hover:text-violet-900"
-      >
-        {showPassword ? "Ocultar" : "Mostrar"}
-      </button>
-    </span>
-  </label>
-);
+  value,
+  error,
+  disabled = false,
+  onChange,
+}: PasswordFieldProps) => {
+  const errorId = error ? "password-error" : undefined;
+
+  return (
+    <label className="block" htmlFor="password">
+      <span className="mb-2 block text-sm font-medium text-neutral-700">
+        Contraseña
+      </span>
+      <span className="relative block">
+        <input
+          id="password"
+          name="password"
+          type={showPassword ? "text" : "password"}
+          autoComplete={autoComplete}
+          placeholder="••••••••"
+          value={value}
+          disabled={disabled}
+          onChange={onChange}
+          aria-invalid={Boolean(error)}
+          aria-describedby={errorId}
+          className="w-full border border-neutral-300 bg-white px-4 py-3 pr-20 text-sm text-neutral-900 outline-none transition placeholder:text-neutral-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
+        />
+        <button
+          type="button"
+          onClick={onToggleVisibility}
+          disabled={disabled}
+          className="absolute inset-y-0 right-4 my-auto h-fit text-sm font-medium text-violet-700 transition hover:text-violet-900 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {showPassword ? "Ocultar" : "Mostrar"}
+        </button>
+      </span>
+      {error && (
+        <span id={errorId} className="mt-2 block text-sm text-red-700">
+          {error}
+        </span>
+      )}
+    </label>
+  );
+};
 
 export default Login;

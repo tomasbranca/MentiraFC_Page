@@ -2,15 +2,27 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it } from "vitest";
 
+import { AuthContext } from "../../context/AuthContext";
 import Login from "./Login";
+
+const renderLogin = (initialMode?: "signIn" | "signUp" | "resetPassword") =>
+  renderToStaticMarkup(
+    <MemoryRouter>
+      <AuthContext.Provider
+        value={{
+          session: null,
+          user: null,
+          isLoading: false,
+        }}
+      >
+        <Login initialMode={initialMode} />
+      </AuthContext.Provider>
+    </MemoryRouter>
+  );
 
 describe("Login", () => {
   it("renderiza el estado inicial de ingreso con accesos secundarios", () => {
-    const markup = renderToStaticMarkup(
-      <MemoryRouter>
-        <Login />
-      </MemoryRouter>
-    );
+    const markup = renderLogin();
 
     expect(markup).toContain("Acceso institucional");
     expect(markup).toContain("Bienvenido de nuevo");
@@ -24,11 +36,7 @@ describe("Login", () => {
   });
 
   it("incluye nombre y apellido al crear una cuenta", () => {
-    const markup = renderToStaticMarkup(
-      <MemoryRouter>
-        <Login initialMode="signUp" />
-      </MemoryRouter>
-    );
+    const markup = renderLogin("signUp");
 
     expect(markup).toContain("Nombre");
     expect(markup).toContain("Apellido");

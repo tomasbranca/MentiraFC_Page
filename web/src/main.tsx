@@ -19,6 +19,7 @@ import { installTrustedTypesPolicy } from "./lib/security/trustedTypes";
 import ScrollToTop from "./presentation/app/scrollToTop";
 import Loader from "./presentation/components/Loader/Loader";
 import ErrorBoundary from "./presentation/components/errors/ErrorBoundary";
+import { AuthProvider } from "./presentation/context/AuthProvider";
 
 import "./index.css";
 
@@ -73,7 +74,9 @@ const renderShell = (node: ReactNode) => {
         <ScrollToTop />
         <StrictMode>
           <ErrorBoundary>
-            <Suspense fallback={<Loader />}>{node}</Suspense>
+            <AuthProvider>
+              <Suspense fallback={<Loader />}>{node}</Suspense>
+            </AuthProvider>
           </ErrorBoundary>
         </StrictMode>
       </QueryClientProvider>
