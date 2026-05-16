@@ -2,7 +2,7 @@ import { type ReactNode, useEffect, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 
 import { reportError } from "../../lib/errors/errorLogger";
-import { supabase } from "../../utils/supabase";
+import { getSupabaseClient } from "../../utils/supabase";
 import { AuthContext } from "./AuthContext";
 
 type AuthProviderProps = {
@@ -16,6 +16,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   useEffect(() => {
     let isMounted = true;
+    const supabase = getSupabaseClient();
+
+    if (!supabase) {
+      setIsLoading(false);
+      return;
+    }
 
     void supabase.auth
       .getSession()
@@ -60,6 +66,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   }, []);
 
   const signOut = async () => {
+    const supabase = getSupabaseClient();
+
+    if (!supabase) {
+      setSession(null);
+      setUser(null);
+      return;
+    }
+
     const { error } = await supabase.auth.signOut();
 
     if (error) {

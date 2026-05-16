@@ -7,7 +7,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 
 import { reportError } from "../../../lib/errors/errorLogger";
-import { supabase } from "../../../utils/supabase";
+import { getSupabaseClient } from "../../../utils/supabase";
 import Button from "../../components/Button/Button";
 import { SITE_LOGO_ASSETS } from "../../constants/assets.constants";
 import { ROUTES } from "../../constants/routes.constants";
@@ -146,6 +146,17 @@ const Login = ({ initialMode = "signIn" }: LoginProps) => {
     setIsSubmitting(true);
 
     try {
+      const supabase = getSupabaseClient();
+
+      if (!supabase) {
+        setStatus({
+          tone: "error",
+          message:
+            mode === "signIn" ? SIGN_IN_ERROR_MESSAGE : SIGN_UP_ERROR_MESSAGE,
+        });
+        return;
+      }
+
       if (mode === "signIn") {
         const { error } = await supabase.auth.signInWithPassword({
           email: values.email.trim(),
