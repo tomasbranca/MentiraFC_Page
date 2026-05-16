@@ -1,9 +1,18 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router-dom";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { AuthContext } from "../../context/AuthContext";
 import Login from "./Login";
+
+vi.mock("../../../utils/supabase", () => ({
+  supabase: {
+    auth: {
+      signInWithPassword: vi.fn(),
+      signUp: vi.fn(),
+    },
+  },
+}));
 
 const renderLogin = (initialMode?: "signIn" | "signUp" | "resetPassword") =>
   renderToStaticMarkup(
