@@ -8,7 +8,7 @@ import {
   SITE_LOGO_SRC_SET,
 } from "../../constants/assets.constants";
 
-import { NAV_LINKS } from "./navbar.constants";
+import { AUTH_LINK, NAV_LINKS } from "./navbar.constants";
 import { useNavBarScroll } from "./hooks/useNavBarScroll";
 
 import "./NavBar.css";
@@ -61,6 +61,10 @@ const NavBar = () => {
               <GameWidget />
             </div>
 
+            <Link to={AUTH_LINK.to} className="login-link desktop-only">
+              {AUTH_LINK.label}
+            </Link>
+
             <button
               className="burger-button mobile-only"
               onClick={() => setMenuOpen(true)}
@@ -94,6 +98,14 @@ const NavBar = () => {
             </Link>
           ))}
         </nav>
+
+        <Link
+          to={AUTH_LINK.to}
+          className="mobile-login-link"
+          onClick={() => setMenuOpen(false)}
+        >
+          {AUTH_LINK.label}
+        </Link>
       </aside>
     </>
   );

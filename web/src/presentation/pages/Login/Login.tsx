@@ -1,7 +1,9 @@
 import { type FormEvent, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 
 import Button from "../../components/Button/Button";
 import { SITE_LOGO_ASSETS } from "../../constants/assets.constants";
+import { ROUTES } from "../../constants/routes.constants";
 import "./Login.css";
 
 type AuthMode = "signIn" | "signUp" | "resetPassword";
@@ -98,64 +100,77 @@ const Login = ({ initialMode = "signIn" }: LoginProps) => {
         className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.28),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(76,29,149,0.3),transparent_38%)]"
       />
 
-      <div className="relative w-full max-w-5xl overflow-hidden border border-violet-200 bg-white shadow-2xl shadow-black/35">
-        <div className="grid lg:min-h-148 lg:grid-cols-[minmax(0,0.96fr)_minmax(24rem,1.04fr)]">
-          <div className="relative overflow-hidden bg-violet-900 p-5 text-violet-50 sm:p-8 lg:flex lg:flex-col lg:justify-between lg:p-10">
-            <div
-              aria-hidden="true"
-              className="absolute -left-12 top-10 h-52 w-52 rounded-full bg-violet-400/20 blur-3xl"
-            />
-            <div
-              aria-hidden="true"
-              className="absolute -bottom-12 right-0 h-56 w-56 rounded-full bg-violet-950/40 blur-2xl"
-            />
+      <div className="relative w-full max-w-5xl">
+        <Link
+          to={ROUTES.HOME}
+          className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-violet-100 transition hover:text-white"
+        >
+          <span aria-hidden="true">←</span>
+          Volver al sitio
+        </Link>
 
-            <div
-              key={`panel-${mode}`}
-              className="relative login-mode-panel flex items-center gap-5 lg:block"
-            >
-              <img
-                src={SITE_LOGO_ASSETS.large}
-                alt="Logo de Mentira FC"
-                width={160}
-                height={160}
-                className="h-17 w-17 shrink-0 object-contain sm:h-20 sm:w-20 lg:h-24 lg:w-24"
+        <div className="overflow-hidden border border-violet-200 bg-white shadow-2xl shadow-black/35">
+          <div className="grid lg:min-h-148 lg:grid-cols-[minmax(0,0.96fr)_minmax(24rem,1.04fr)]">
+            <div className="relative overflow-hidden bg-violet-900 p-5 text-violet-50 sm:p-8 lg:flex lg:flex-col lg:justify-between lg:p-10">
+              <div
+                aria-hidden="true"
+                className="absolute -left-12 top-10 h-52 w-52 rounded-full bg-violet-400/20 blur-3xl"
+              />
+              <div
+                aria-hidden="true"
+                className="absolute -bottom-12 right-0 h-56 w-56 rounded-full bg-violet-950/40 blur-2xl"
               />
 
-              <div>
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-violet-200 sm:text-xs lg:mt-8">
-                  Mentira FC
-                </p>
+              <div
+                key={`panel-${mode}`}
+                className="relative login-mode-panel flex items-center gap-5 lg:block"
+              >
+                <Link to={ROUTES.HOME} aria-label="Volver al inicio">
+                  <img
+                    src={SITE_LOGO_ASSETS.large}
+                    alt="Logo de Mentira FC"
+                    width={160}
+                    height={160}
+                    className="h-17 w-17 shrink-0 object-contain sm:h-20 sm:w-20 lg:h-24 lg:w-24"
+                  />
+                </Link>
 
-                <h1 className="mt-2 max-w-sm text-xl font-black leading-tight text-white sm:text-3xl lg:mt-4 lg:text-4xl">
-                  Tu acceso al club, con la identidad de siempre
-                </h1>
+                <div>
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-violet-200 sm:text-xs lg:mt-8">
+                    Mentira FC
+                  </p>
 
-                <p className="mt-2 hidden text-sm font-semibold text-violet-100 sm:mt-4 sm:block sm:text-base">
-                  {panelContent.title}
-                </p>
+                  <h1 className="mt-2 max-w-sm text-xl font-black leading-tight text-white sm:text-3xl lg:mt-4 lg:text-4xl">
+                    Tu acceso al club, con la identidad de siempre
+                  </h1>
 
-                <p className="mt-1 hidden max-w-xs text-sm leading-relaxed text-violet-100/80 sm:mt-2 sm:block sm:text-base">
-                  {panelContent.description}
-                </p>
+                  <p className="mt-2 hidden text-sm font-semibold text-violet-100 sm:mt-4 sm:block sm:text-base">
+                    {panelContent.title}
+                  </p>
+
+                  <p className="mt-1 hidden max-w-xs text-sm leading-relaxed text-violet-100/80 sm:mt-2 sm:block sm:text-base">
+                    {panelContent.description}
+                  </p>
+                </div>
               </div>
             </div>
 
-          </div>
-
-          <div className="flex flex-col justify-center bg-white p-5 text-neutral-900 sm:p-8 lg:p-10">
-            <div key={`form-${mode}`} className="login-mode-form mx-auto w-full max-w-md">
-              <div className="mb-6 text-center sm:mb-8 lg:text-left">
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-violet-600">
-                  {formContent.eyebrow}
-                </p>
-                <h2 className="mt-3 text-3xl font-black text-neutral-900">
-                  {formContent.title}
-                </h2>
-                <p className="mt-3 text-sm text-neutral-500 sm:text-base">
-                  {formContent.description}
-                </p>
-              </div>
+            <div className="flex flex-col justify-center bg-white p-5 text-neutral-900 sm:p-8 lg:p-10">
+              <div
+                key={`form-${mode}`}
+                className="login-mode-form mx-auto w-full max-w-md"
+              >
+                <div className="mb-6 text-center sm:mb-8 lg:text-left">
+                  <p className="text-xs font-semibold uppercase tracking-[0.28em] text-violet-600">
+                    {formContent.eyebrow}
+                  </p>
+                  <h2 className="mt-3 text-3xl font-black text-neutral-900">
+                    {formContent.title}
+                  </h2>
+                  <p className="mt-3 text-sm text-neutral-500 sm:text-base">
+                    {formContent.description}
+                  </p>
+                </div>
 
               <form className="space-y-5" onSubmit={handleSubmit}>
                 {mode === "signUp" && (
@@ -282,6 +297,7 @@ const Login = ({ initialMode = "signIn" }: LoginProps) => {
                     </button>
                   </p>
                 )}
+              </div>
               </div>
             </div>
           </div>

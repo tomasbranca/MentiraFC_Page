@@ -108,6 +108,62 @@
   gap: 1rem;
 }
 
+.login-link {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(221, 214, 254, 0.32);
+  border-radius: 0.65rem;
+  background: rgba(47, 13, 104, 1);
+  color: #fff;
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  font-weight: bold;
+  letter-spacing: 0.08em;
+  padding: 0.72rem 1.15rem;
+  box-shadow:
+    0 10px 24px rgba(31, 11, 67, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    color 0.2s ease;
+}
+
+.login-link:hover {
+  border-color: rgba(221, 214, 254, 0.7);
+  background-color: rgba(61, 20, 127, 1);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow:
+    0 14px 30px rgba(31, 11, 67, 0.35),
+    0 0 18px rgba(167, 139, 250, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.login-link:active {
+  transform: translateY(0);
+}
+
+.login-link::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.18) 45%,
+    transparent 70%
+  );
+  transform: translateX(-120%);
+  transition: transform 0.45s ease;
+}
+
+.login-link:hover::before {
+  transform: translateX(120%);
+}
+
 /* MOBILE GAME CENTER */
 .mobile-game-center {
   position: absolute;
@@ -190,4 +246,15 @@
   font-size: 1.1rem;
   font-weight: bold;
   text-decoration: none;
+}
+
+.mobile-login-link {
+  margin-top: auto;
+  border-top: 1px solid rgba(221, 214, 254, 0.25);
+  color: white;
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: bold;
+  letter-spacing: 0.08em;
+  padding-top: 1.5rem;
 }

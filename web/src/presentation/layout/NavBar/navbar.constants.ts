@@ -7,3 +7,8 @@ export const NAV_LINKS = [
   { label: "TABLA", to: ROUTES.TABLE },
   { label: "HISTORIAL", to: ROUTES.RECORD },
 ];
+
+export const AUTH_LINK = {
+  label: "INGRESAR",
+  to: ROUTES.LOGIN,
+};
