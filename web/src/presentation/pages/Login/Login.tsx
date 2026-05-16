@@ -56,8 +56,12 @@ const FORM_CONTENT: Record<
   },
 };
 
-const Login = () => {
-  const [mode, setMode] = useState<AuthMode>("signIn");
+type LoginProps = {
+  initialMode?: AuthMode;
+};
+
+const Login = ({ initialMode = "signIn" }: LoginProps) => {
+  const [mode, setMode] = useState<AuthMode>(initialMode);
   const [showPassword, setShowPassword] = useState(false);
   const [submittedMode, setSubmittedMode] = useState<AuthMode | null>(null);
   const panelContent = PANEL_CONTENT[mode];
@@ -154,11 +158,30 @@ const Login = () => {
               </div>
 
               <form className="space-y-5" onSubmit={handleSubmit}>
+                {mode === "signUp" && (
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <AuthField
+                      id="first-name"
+                      label="Nombre"
+                      type="text"
+                      placeholder="Nombre"
+                      autoComplete="given-name"
+                    />
+                    <AuthField
+                      id="last-name"
+                      label="Apellido"
+                      type="text"
+                      placeholder="Apellido"
+                      autoComplete="family-name"
+                    />
+                  </div>
+                )}
+
                 <AuthField
                   id="email"
                   label="Correo electrónico"
                   type="email"
-                  placeholder="vos@correo.com"
+                  placeholder="ejemplo@correo.com"
                   autoComplete="email"
                 />
 
@@ -271,7 +294,7 @@ const Login = () => {
 type AuthFieldProps = {
   id: string;
   label: string;
-  type: "email" | "password";
+  type: "email" | "password" | "text";
   placeholder: string;
   autoComplete: string;
 };

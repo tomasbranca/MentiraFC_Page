@@ -16,4 +16,13 @@ describe("Login", () => {
     expect(markup).toContain("Correo electrónico");
     expect(markup).toContain("Contraseña");
   });
+
+  it("incluye nombre y apellido al crear una cuenta", () => {
+    const markup = renderToStaticMarkup(<Login initialMode="signUp" />);
+
+    expect(markup).toContain("Nombre");
+    expect(markup).toContain("Apellido");
+    expect(markup).toContain('autoComplete="given-name"');
+    expect(markup).toContain('autoComplete="family-name"');
+  });
 });
