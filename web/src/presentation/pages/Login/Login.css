@@ -1,0 +1,38 @@
+.login-mode-panel {
+  animation: login-panel-enter 280ms ease-out both;
+}
+
+.login-mode-form {
+  animation: login-form-enter 240ms ease-out both;
+}
+
+@keyframes login-panel-enter {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes login-form-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-mode-panel,
+  .login-mode-form {
+    animation: none;
+  }
+}

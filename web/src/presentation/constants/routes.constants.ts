@@ -5,7 +5,7 @@ export const ROUTES = {
   TEAM: "/plantel",
   TABLE: "/tabla",
   RECORD: "/historial",
-  ADMIN: "/admin",
+  LOGIN: "/ingresar",
 
   NEWS_DETAIL: (slug: string) => `/noticias/${slug}`,
   GALLERY_DETAIL: (slug: string) => `/galeria/${slug}`,

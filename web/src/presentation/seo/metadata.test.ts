@@ -82,7 +82,7 @@ describe("seo metadata", () => {
 
   it("marks missing dynamic pages as noindex", () => {
     expect(buildMissingNewsHead("no-existe").robots).toBe("noindex, follow");
-    expect(STATIC_PAGE_HEAD.admin.robots).toBe("noindex, nofollow");
+    expect(STATIC_PAGE_HEAD.login.robots).toBe("noindex, nofollow");
   });
 
   it("resolves static route metadata and ignores dynamic routes", () => {

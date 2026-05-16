@@ -183,6 +183,10 @@ export const getRouteInitialData = async (
 ): Promise<InitialDataPayload> => {
   // Each route gets the smallest useful bootstrap payload; generic pages fall
   // back to the full dataset because they depend on shared widgets.
+  if (pathname === ROUTES.LOGIN) {
+    return createEmptyInitialData();
+  }
+
   if (pathname === ROUTES.HOME) {
     return getHomeCriticalData();
   }

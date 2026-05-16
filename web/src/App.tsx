@@ -1,5 +1,5 @@
 import { Suspense, useEffect, useState } from "react";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useLocation } from "react-router-dom";
 
 import type { InitialDataPayload } from "./data/getInitialData";
 import ErrorFallback from "./presentation/components/errors/ErrorFallback";
@@ -25,7 +25,7 @@ const Gallery = lazyWithReload(() => import("./presentation/pages/Gallery/Galler
 const Team = lazyWithReload(() => import("./presentation/pages/Team/Team"));
 const Table = lazyWithReload(() => import("./presentation/pages/Table/Table"));
 const Record = lazyWithReload(() => import("./presentation/pages/Record/Record"));
-const Admin = lazyWithReload(() => import("./presentation/pages/Admin/Admin"));
+const Login = lazyWithReload(() => import("./presentation/pages/Login/Login"));
 const NewsDetail = lazyWithReload(
   () => import("./presentation/pages/NewsDetail/NewsDetail"),
 );
@@ -50,10 +50,12 @@ const SpeedInsights = lazyWithReload(() =>
 );
 
 function App({ initialData }: AppProps) {
+  const { pathname } = useLocation();
   const enableAnalytics =
     import.meta.env.VITE_ENABLE_ANALYTICS === "true";
   const [shouldLoadAnalytics, setShouldLoadAnalytics] = useState(false);
   const hasBootstrapError = initialData.bootstrapScope === "bootstrap-error";
+  const isAuthRoute = pathname === ROUTES.LOGIN;
 
   useEffect(() => {
     const loadDeferredStyles = () => {
@@ -104,9 +106,15 @@ function App({ initialData }: AppProps) {
 
       <GameProvider>
         <RouteHead />
-        <NavBar />
+        {!isAuthRoute && <NavBar />}
 
-        <main className="border-t-96 border-t-violet-900 min-h-screen">
+        <main
+          className={
+            isAuthRoute
+              ? "min-h-screen"
+              : "border-t-96 border-t-violet-900 min-h-screen"
+          }
+        >
           {hasBootstrapError ? (
             <ErrorFallback
               title="No pudimos cargar la pagina"
@@ -123,7 +131,7 @@ function App({ initialData }: AppProps) {
                 <Route path={ROUTES.TEAM} element={<Team />} />
                 <Route path={ROUTES.TABLE} element={<Table />} />
                 <Route path={ROUTES.RECORD} element={<Record />} />
-                <Route path={ROUTES.ADMIN} element={<Admin />} />
+                <Route path={ROUTES.LOGIN} element={<Login />} />
                 <Route
                   path={ROUTES.NEWS_DETAIL(":slug")}
                   element={<NewsDetail />}
@@ -145,7 +153,7 @@ function App({ initialData }: AppProps) {
           )}
         </main>
 
-        <Footer />
+        {!isAuthRoute && <Footer />}
       </GameProvider>
     </InitialDataProvider>
   );

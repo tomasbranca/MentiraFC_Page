@@ -97,11 +97,11 @@ export const STATIC_PAGE_HEAD = {
     description: "Historial de partidos, resultados y estadísticas de Mentira FC.",
     canonicalUrl: canonicalUrl(ROUTES.RECORD),
   },
-  admin: {
+  login: {
     ...DEFAULT_HEAD,
-    title: withSiteName("Admin"),
-    description: "Panel administrativo de Mentira FC.",
-    canonicalUrl: canonicalUrl(ROUTES.ADMIN),
+    title: withSiteName("Ingresar"),
+    description: "Acceso a la cuenta de Mentira FC.",
+    canonicalUrl: canonicalUrl(ROUTES.LOGIN),
     robots: "noindex, nofollow",
   },
 } satisfies Record<string, HeadMetadata>;
@@ -132,8 +132,8 @@ export const getStaticPageHeadByPathname = (
       return STATIC_PAGE_HEAD.table;
     case ROUTES.RECORD:
       return STATIC_PAGE_HEAD.record;
-    case ROUTES.ADMIN:
-      return STATIC_PAGE_HEAD.admin;
+    case ROUTES.LOGIN:
+      return STATIC_PAGE_HEAD.login;
     default:
       return null;
   }
