@@ -1,6 +1,9 @@
-import { type ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
-import type { InitialDataPayload } from "../../data/initialDataPayload";
+import {
+  createBootstrapErrorPayload,
+  type InitialDataPayload,
+} from "../../data/initialDataPayload";
 import { queryKeys } from "../../data/queryKeys";
 import { queryClient } from "../../lib/queryClient";
 import { reportError } from "../../lib/errors/errorLogger";
@@ -24,6 +27,7 @@ export const InitialDataProvider = ({
   const { pathname } = useLocation();
   const [data, setData] = useState<InitialDataPayload>(initialData);
   const [isHomeCriticalLoading, setIsHomeCriticalLoading] = useState(false);
+  const previousPathnameRef = useRef<string | null>(pathname);
 
   useEffect(() => {
     setData(initialData);
@@ -31,7 +35,17 @@ export const InitialDataProvider = ({
   }, [initialData]);
 
   useEffect(() => {
-    if (!shouldLoadHomeCriticalData(data.news.length, data.bootstrapScope)) {
+    const previousPathname = previousPathnameRef.current;
+    previousPathnameRef.current = pathname;
+
+    if (
+      !shouldLoadHomeCriticalData({
+        newsCount: data.news.length,
+        bootstrapScope: data.bootstrapScope,
+        pathname,
+        previousPathname,
+      })
+    ) {
       setIsHomeCriticalLoading(false);
       return;
     }
@@ -66,6 +80,7 @@ export const InitialDataProvider = ({
           return;
         }
 
+        setData(createBootstrapErrorPayload());
         setIsHomeCriticalLoading(false);
 
         reportError(error, {

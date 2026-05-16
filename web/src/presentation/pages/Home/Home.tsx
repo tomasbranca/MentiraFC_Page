@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Game from "../../features/main/Game/Game";
 import LatestNews from "../../features/main/LatestNews/LatestNews";
+import ErrorFallback from "../../components/errors/ErrorFallback";
 import Loader from "../../components/Loader/Loader";
 import { useGame } from "../../context/useGame";
 import { useInitialData } from "../../context/useInitialData";
@@ -25,6 +26,17 @@ const Home = () => {
 
   const isHomeLoading =
     initialData.bootstrapScope === "empty" || isHomeCriticalLoading;
+
+  if (initialData.bootstrapScope === "bootstrap-error") {
+    return (
+      <ErrorFallback
+        title="No pudimos cargar la pagina"
+        message={initialData.bootstrapError?.message}
+        onRetry={() => window.location.reload()}
+        retryLabel="Volver a intentar"
+      />
+    );
+  }
 
   if (isHomeLoading) {
     return <Loader />;

@@ -25,12 +25,65 @@ const createPayload = (
 
 describe("initialDataContext.utils", () => {
   it("solo precarga Home en segundo plano cuando estamos fuera de Home y sin noticias", () => {
-    expect(shouldLoadHomeCriticalData(0, "news-detail")).toBe(true);
-    expect(shouldLoadHomeCriticalData(0, "player-detail")).toBe(true);
-    expect(shouldLoadHomeCriticalData(0, "staff-detail")).toBe(true);
-    expect(shouldLoadHomeCriticalData(3, "news-detail")).toBe(false);
-    expect(shouldLoadHomeCriticalData(0, "empty")).toBe(false);
-    expect(shouldLoadHomeCriticalData(0, "bootstrap-error")).toBe(false);
+    expect(
+      shouldLoadHomeCriticalData({
+        newsCount: 0,
+        bootstrapScope: "news-detail",
+        pathname: "/noticias/una-noticia",
+        previousPathname: "/noticias/una-noticia",
+      })
+    ).toBe(true);
+    expect(
+      shouldLoadHomeCriticalData({
+        newsCount: 0,
+        bootstrapScope: "player-detail",
+        pathname: "/plantel/un-jugador",
+        previousPathname: "/plantel/un-jugador",
+      })
+    ).toBe(true);
+    expect(
+      shouldLoadHomeCriticalData({
+        newsCount: 0,
+        bootstrapScope: "staff-detail",
+        pathname: "/plantel/staff/un-integrante",
+        previousPathname: "/plantel/staff/un-integrante",
+      })
+    ).toBe(true);
+    expect(
+      shouldLoadHomeCriticalData({
+        newsCount: 3,
+        bootstrapScope: "news-detail",
+        pathname: "/noticias/una-noticia",
+        previousPathname: "/noticias/una-noticia",
+      })
+    ).toBe(false);
+    expect(
+      shouldLoadHomeCriticalData({
+        newsCount: 0,
+        bootstrapScope: "empty",
+        pathname: "/",
+        previousPathname: "/",
+      })
+    ).toBe(false);
+    expect(
+      shouldLoadHomeCriticalData({
+        newsCount: 0,
+        bootstrapScope: "bootstrap-error",
+        pathname: "/",
+        previousPathname: "/ingresar",
+      })
+    ).toBe(false);
+  });
+
+  it("hidrata Home al volver desde Login con bootstrap vacio", () => {
+    expect(
+      shouldLoadHomeCriticalData({
+        newsCount: 0,
+        bootstrapScope: "empty",
+        pathname: "/",
+        previousPathname: "/ingresar",
+      })
+    ).toBe(true);
   });
 
   it("mezcla Home critico sin perder el detalle actual de noticia o jugador", () => {

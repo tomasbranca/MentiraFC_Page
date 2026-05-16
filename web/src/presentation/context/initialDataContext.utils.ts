@@ -1,16 +1,35 @@
 import type { InitialDataPayload } from "../../data/getInitialData";
 import type { BootstrapScope } from "../../types/models";
+import { ROUTES } from "../constants/routes.constants";
 
 export const HOME_CRITICAL_BACKGROUND_STALE_TIME = 1000 * 60;
 
-export const shouldLoadHomeCriticalData = (
-  newsCount: number,
-  bootstrapScope: BootstrapScope
-): boolean =>
-  newsCount === 0 &&
-  (bootstrapScope === "news-detail" ||
+type HomeCriticalLoadState = {
+  newsCount: number;
+  bootstrapScope: BootstrapScope;
+  pathname: string;
+  previousPathname: string | null;
+};
+
+export const shouldLoadHomeCriticalData = ({
+  newsCount,
+  bootstrapScope,
+  pathname,
+  previousPathname,
+}: HomeCriticalLoadState): boolean => {
+  const isDetailRouteWithoutHomeData =
+    bootstrapScope === "news-detail" ||
     bootstrapScope === "player-detail" ||
-    bootstrapScope === "staff-detail");
+    bootstrapScope === "staff-detail";
+  const isReturningHomeFromLogin =
+    bootstrapScope === "empty" &&
+    previousPathname === ROUTES.LOGIN &&
+    pathname === ROUTES.HOME;
+
+  return (
+    newsCount === 0 && (isDetailRouteWithoutHomeData || isReturningHomeFromLogin)
+  );
+};
 
 export const mergeHomeCriticalIntoInitialData = (
   previousData: InitialDataPayload,
