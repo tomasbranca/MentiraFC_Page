@@ -26,6 +26,12 @@ export const queryKeys = {
     bySlug: (slug: string) => ["news", "slug", slug] as const,
     suggested: (slug: string) => ["news", "suggested", slug] as const,
   },
+  dashboard: {
+    news: {
+      all: ["dashboard", "news"] as const,
+      byId: (id: string) => ["dashboard", "news", id] as const,
+    },
+  },
   galleries: {
     all: ["galleries"] as const,
     bySlug: (slug: string) => ["galleries", "slug", slug] as const,

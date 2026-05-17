@@ -12,6 +12,7 @@ import { ROUTES } from "./presentation/constants/routes.constants";
 import RouteHead from "./presentation/seo/RouteHead";
 import Home from "./presentation/pages/Home/Home";
 import RequireAuth from "./presentation/routing/RequireAuth";
+import RequirePermission from "./presentation/routing/RequirePermission";
 
 import { lazyWithReload } from "./lib/lazyWithReload";
 
@@ -29,6 +30,18 @@ const Record = lazyWithReload(() => import("./presentation/pages/Record/Record")
 const Login = lazyWithReload(() => import("./presentation/pages/Login/Login"));
 const Account = lazyWithReload(
   () => import("./presentation/pages/Account/Account")
+);
+const DashboardLayout = lazyWithReload(
+  () => import("./presentation/layout/DashboardLayout/DashboardLayout")
+);
+const DashboardHome = lazyWithReload(
+  () => import("./presentation/pages/Dashboard/DashboardHome")
+);
+const DashboardNewsList = lazyWithReload(
+  () => import("./presentation/pages/DashboardNews/DashboardNewsList")
+);
+const DashboardNewsForm = lazyWithReload(
+  () => import("./presentation/pages/DashboardNews/DashboardNewsForm")
 );
 const NewsDetail = lazyWithReload(
   () => import("./presentation/pages/NewsDetail/NewsDetail"),
@@ -144,6 +157,40 @@ function App({ initialData }: AppProps) {
                     </RequireAuth>
                   }
                 />
+                <Route
+                  path={ROUTES.DASHBOARD}
+                  element={
+                    <RequirePermission permission="view_dashboard">
+                      <DashboardLayout />
+                    </RequirePermission>
+                  }
+                >
+                  <Route index element={<DashboardHome />} />
+                  <Route
+                    path="noticias"
+                    element={
+                      <RequirePermission permission="manage_news">
+                        <DashboardNewsList />
+                      </RequirePermission>
+                    }
+                  />
+                  <Route
+                    path="noticias/nueva"
+                    element={
+                      <RequirePermission permission="manage_news">
+                        <DashboardNewsForm />
+                      </RequirePermission>
+                    }
+                  />
+                  <Route
+                    path="noticias/:id"
+                    element={
+                      <RequirePermission permission="manage_news">
+                        <DashboardNewsForm />
+                      </RequirePermission>
+                    }
+                  />
+                </Route>
                 <Route
                   path={ROUTES.NEWS_DETAIL(":slug")}
                   element={<NewsDetail />}

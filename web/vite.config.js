@@ -1,10 +1,88 @@
 import { sentryVitePlugin } from "@sentry/vite-plugin";
+import { Buffer } from "node:buffer";
 import { cwd } from "node:process";
+import process from "node:process";
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 const isEnabled = (value) => /^(1|true|yes)$/i.test(value ?? "");
+
+const createNodeRequestBody = async (request) => {
+  if (request.method === "GET" || request.method === "HEAD") {
+    return undefined;
+  }
+
+  const chunks = [];
+
+  for await (const chunk of request) {
+    chunks.push(chunk);
+  }
+
+  return Buffer.concat(chunks);
+};
+
+const writeWebResponse = async (response, nodeResponse) => {
+  nodeResponse.statusCode = response.status;
+
+  response.headers.forEach((value, key) => {
+    nodeResponse.setHeader(key, value);
+  });
+
+  const body = Buffer.from(await response.arrayBuffer());
+  nodeResponse.end(body);
+};
+
+const createDashboardApiDevPlugin = (env) => ({
+  name: "dashboard-api-dev",
+  configureServer(server) {
+    Object.assign(process.env, env);
+
+    server.middlewares.use("/api/dashboard/news", async (request, response) => {
+      try {
+        const relativePath = request.url ?? "/";
+        const requestUrl = new URL(
+          `/api/dashboard/news${relativePath === "/" ? "" : relativePath}`,
+          "http://localhost"
+        );
+        const routeModulePath =
+          relativePath === "/"
+            ? "/api/dashboard/news/index.ts"
+            : "/api/dashboard/news/[id].ts";
+        const routeModule = await server.ssrLoadModule(routeModulePath);
+        const body = await createNodeRequestBody(request);
+        const headers = new Headers();
+
+        Object.entries(request.headers).forEach(([key, value]) => {
+          if (Array.isArray(value)) {
+            value.forEach((item) => headers.append(key, item));
+            return;
+          }
+
+          if (typeof value === "string") {
+            headers.set(key, value);
+          }
+        });
+        const webRequest = new Request(requestUrl, {
+          method: request.method,
+          headers,
+          body,
+        });
+        const webResponse = await routeModule.default(webRequest);
+
+        await writeWebResponse(webResponse, response);
+      } catch {
+        response.statusCode = 500;
+        response.setHeader("Content-Type", "application/json");
+        response.end(
+          JSON.stringify({
+            error: "No pudimos ejecutar la API local del dashboard.",
+          })
+        );
+      }
+    });
+  },
+});
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
@@ -25,6 +103,7 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react(),
       tailwindcss(),
+      createDashboardApiDevPlugin(env),
       ...(shouldUploadSentrySourcemaps
         ? [
             sentryVitePlugin({

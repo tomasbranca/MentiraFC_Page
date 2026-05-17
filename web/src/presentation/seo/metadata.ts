@@ -111,6 +111,13 @@ export const STATIC_PAGE_HEAD = {
     canonicalUrl: canonicalUrl(ROUTES.ACCOUNT),
     robots: "noindex, nofollow",
   },
+  dashboard: {
+    ...DEFAULT_HEAD,
+    title: withSiteName("Dashboard"),
+    description: "Panel interno de gestion de Mentira FC.",
+    canonicalUrl: canonicalUrl(ROUTES.DASHBOARD),
+    robots: "noindex, nofollow",
+  },
 } satisfies Record<string, HeadMetadata>;
 
 const normalizePathname = (pathname: string): string => {
@@ -125,6 +132,13 @@ export const getStaticPageHeadByPathname = (
   pathname: string
 ): HeadMetadata | null => {
   const normalizedPathname = normalizePathname(pathname);
+
+  if (
+    normalizedPathname === ROUTES.DASHBOARD ||
+    normalizedPathname.startsWith(`${ROUTES.DASHBOARD}/`)
+  ) {
+    return STATIC_PAGE_HEAD.dashboard;
+  }
 
   switch (normalizedPathname) {
     case ROUTES.HOME:

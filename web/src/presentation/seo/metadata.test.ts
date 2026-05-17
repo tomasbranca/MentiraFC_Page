@@ -84,11 +84,15 @@ describe("seo metadata", () => {
     expect(buildMissingNewsHead("no-existe").robots).toBe("noindex, follow");
     expect(STATIC_PAGE_HEAD.login.robots).toBe("noindex, nofollow");
     expect(STATIC_PAGE_HEAD.account.robots).toBe("noindex, nofollow");
+    expect(STATIC_PAGE_HEAD.dashboard.robots).toBe("noindex, nofollow");
   });
 
   it("resolves static route metadata and ignores dynamic routes", () => {
     expect(getStaticPageHeadByPathname("/noticias/")).toBe(
       STATIC_PAGE_HEAD.news
+    );
+    expect(getStaticPageHeadByPathname("/dashboard/noticias/123")).toBe(
+      STATIC_PAGE_HEAD.dashboard
     );
     expect(getStaticPageHeadByPathname("/plantel/tomas-brancatisano")).toBeNull();
   });

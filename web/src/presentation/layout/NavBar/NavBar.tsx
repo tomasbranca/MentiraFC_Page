@@ -63,7 +63,7 @@ const NavBar = () => {
   const accountMenuItems = [
     ...ACCOUNT_MENU_ITEMS,
     ...(canAccessDashboard(account?.role)
-      ? [{ label: "Dashboard", enabled: false as const }]
+      ? [{ label: "Dashboard", to: ROUTES.DASHBOARD, enabled: true as const }]
       : []),
     ...(canAccessAdminPanel(account?.role)
       ? [{ label: "Panel admin", enabled: false as const }]
