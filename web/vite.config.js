@@ -50,6 +50,13 @@ const createDashboardApiDevPlugin = (env) => ({
             ? "/api/dashboard/news/index.ts"
             : "/api/dashboard/news/[id].ts";
         const routeModule = await server.ssrLoadModule(routeModulePath);
+        const routeHandler =
+          routeModule.default?.fetch ?? routeModule.default;
+
+        if (typeof routeHandler !== "function") {
+          throw new Error("Invalid dashboard API route handler.");
+        }
+
         const body = await createNodeRequestBody(request);
         const headers = new Headers();
 
@@ -68,7 +75,7 @@ const createDashboardApiDevPlugin = (env) => ({
           headers,
           body,
         });
-        const webResponse = await routeModule.default(webRequest);
+        const webResponse = await routeHandler(webRequest);
 
         await writeWebResponse(webResponse, response);
       } catch {

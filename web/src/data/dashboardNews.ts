@@ -45,10 +45,17 @@ const fetchDashboardApi = async <T>(
       ...init?.headers,
     },
   });
-  const payload = (await response.json()) as {
-    data?: T;
-    error?: string;
-  };
+  const contentType = response.headers.get("content-type") ?? "";
+  const payload = contentType.includes("application/json")
+    ? ((await response.json()) as {
+        data?: T;
+        error?: string;
+      })
+    : {
+        error:
+          (await response.text()) ||
+          `Dashboard request failed with status ${response.status}.`,
+      };
 
   if (!response.ok || payload.error) {
     throw new Error(payload.error ?? "Dashboard request failed.");

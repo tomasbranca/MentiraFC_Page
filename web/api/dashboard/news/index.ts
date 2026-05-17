@@ -6,14 +6,14 @@ import {
 import { authorizeDashboardUser } from "../../_lib/auth";
 import { errorJson, json } from "../../_lib/responses";
 
-export default async function handler(request: Request): Promise<Response> {
-  const authorization = await authorizeDashboardUser(request);
-
-  if (authorization instanceof Response) {
-    return authorization;
-  }
-
+const dashboardNewsHandler = async (request: Request): Promise<Response> => {
   try {
+    const authorization = await authorizeDashboardUser(request);
+
+    if (authorization instanceof Response) {
+      return authorization;
+    }
+
     if (request.method === "GET") {
       return json(await listDashboardNews());
     }
@@ -45,4 +45,8 @@ export default async function handler(request: Request): Promise<Response> {
       500
     );
   }
-}
+};
+
+export default {
+  fetch: dashboardNewsHandler,
+};

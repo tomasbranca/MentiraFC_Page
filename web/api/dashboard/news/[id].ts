@@ -14,20 +14,20 @@ const getIdFromRequest = (request: Request): string | null => {
   return id ?? null;
 };
 
-export default async function handler(request: Request): Promise<Response> {
-  const authorization = await authorizeDashboardUser(request);
-
-  if (authorization instanceof Response) {
-    return authorization;
-  }
-
-  const id = getIdFromRequest(request);
-
-  if (!id) {
-    return errorJson("Falta el identificador de la noticia.", 400);
-  }
-
+const dashboardNewsByIdHandler = async (request: Request): Promise<Response> => {
   try {
+    const authorization = await authorizeDashboardUser(request);
+
+    if (authorization instanceof Response) {
+      return authorization;
+    }
+
+    const id = getIdFromRequest(request);
+
+    if (!id) {
+      return errorJson("Falta el identificador de la noticia.", 400);
+    }
+
     if (request.method === "GET") {
       const news = await getDashboardNewsById(id);
       return news ? json(news) : errorJson("Noticia no encontrada.", 404);
@@ -65,4 +65,8 @@ export default async function handler(request: Request): Promise<Response> {
       500
     );
   }
-}
+};
+
+export default {
+  fetch: dashboardNewsByIdHandler,
+};
