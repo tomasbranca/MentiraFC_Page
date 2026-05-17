@@ -3,7 +3,7 @@ import {
   getSurroundingTeams,
 } from "../../../utils/table.utils";
 import { Link } from "react-router-dom";
-import { ROUTES } from "../../../constants/routes.constants";
+import { ROUTES } from "../../../../shared/routing";
 import { getImageUrl } from "../../../../data/imageService";
 import type { Tournament } from "../../../../types/models";
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { ROUTES } from "../presentation/constants/routes.constants";
+import { ROUTES } from "../shared/routing";
 import { getRouteInitialData } from "./getRouteInitialData";
 
 describe("getRouteInitialData", () => {

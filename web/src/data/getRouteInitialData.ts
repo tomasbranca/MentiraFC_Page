@@ -13,7 +13,7 @@ import { getStaffMemberBySlug } from "./staff";
 
 import { getPlayerStats } from "../domain/stats";
 import { reportError } from "../lib/errors/errorLogger";
-import { ROUTES } from "../presentation/constants/routes.constants";
+import { ROUTES } from "../shared/routing";
 
 const escapeRegex = (value: string): string =>
   value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

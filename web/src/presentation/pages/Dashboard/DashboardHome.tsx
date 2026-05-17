@@ -1,6 +1,6 @@
 import { Navigate } from "react-router-dom";
 
-import { ROUTES } from "../../constants/routes.constants";
+import { ROUTES } from "../../../shared/routing";
 
 const DashboardHome = () => <Navigate to={ROUTES.DASHBOARD_NEWS} replace />;
 

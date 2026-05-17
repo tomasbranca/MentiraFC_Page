@@ -1,4 +1,4 @@
-import { ROUTES } from "../constants/routes.constants";
+import { ROUTES } from "../../shared/routing";
 
 export const getNewsLink = (item: { slug: string }): string => {
   return ROUTES.NEWS_DETAIL(item.slug);

@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 
 import NewsCardHome from "../../../components/NewsCardHome/NewsCardHome";
-import { ROUTES } from "../../../constants/routes.constants";
+import { ROUTES } from "../../../../shared/routing";
 import type { NewsItem } from "../../../../types/models";
 
 type MoreNewsProps = {

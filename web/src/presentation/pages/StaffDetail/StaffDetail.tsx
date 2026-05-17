@@ -10,7 +10,7 @@ import ProgressiveMedia from "../../components/ProgressiveMedia/ProgressiveMedia
 import RosterNavigation from "../../components/RosterNavigation/RosterNavigation";
 import { buildRosterNavigationItems } from "../../components/RosterNavigation/rosterNavigation.utils";
 import StaffCard from "../../components/StaffCard/StaffCard";
-import { ROUTES } from "../../constants/routes.constants";
+import { ROUTES } from "../../../shared/routing";
 import {
   buildMissingStaffHead,
   buildStaffHead,

@@ -1,6 +1,6 @@
 import type { InitialDataPayload } from "../../data/getInitialData";
 import type { BootstrapScope } from "../../types/models";
-import { ROUTES } from "../constants/routes.constants";
+import { ROUTES } from "../../shared/routing";
 
 export const HOME_CRITICAL_BACKGROUND_STALE_TIME = 1000 * 60;
 

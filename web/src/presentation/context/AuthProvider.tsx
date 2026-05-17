@@ -7,9 +7,14 @@ import {
 import type { Session, User } from "@supabase/supabase-js";
 
 import { fetchCurrentAccount } from "../../data/account";
+import {
+  getCurrentAuthSession,
+  onAuthSessionChange,
+  signOutFromAuth,
+  subscribeToCurrentAccountChanges,
+} from "../../data/auth";
 import { reportError } from "../../lib/errors/errorLogger";
 import type { AuthNotice, CurrentAccount } from "../../types/auth";
-import { getSupabaseClient } from "../../utils/supabase";
 import { AuthContext } from "./AuthContext";
 
 type AuthProviderProps = {
@@ -33,18 +38,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const performSignOut = useCallback(
     async (notice: AuthNotice = null) => {
-      const supabase = getSupabaseClient();
-
       setAuthNotice(notice);
 
-      if (!supabase) {
-        setSession(null);
-        setUser(null);
-        resetAccountState();
-        return;
-      }
-
-      const { error } = await supabase.auth.signOut();
+      const { error } = await signOutFromAuth();
 
       if (error) {
         reportError(error, {
@@ -62,16 +58,18 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   useEffect(() => {
     let isMounted = true;
-    const supabase = getSupabaseClient();
-
-    if (!supabase) {
+    const unsubscribe = onAuthSessionChange((_event, nextSession) => {
+      setSession(nextSession);
+      setUser(nextSession?.user ?? null);
       setIsLoading(false);
-      return;
-    }
 
-    void supabase.auth
-      .getSession()
-      .then(({ data, error }) => {
+      if (nextSession) {
+        setAuthNotice(null);
+      }
+    });
+
+    void getCurrentAuthSession()
+      .then(({ session: currentSession, error }) => {
         if (!isMounted) return;
 
         if (error) {
@@ -81,8 +79,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           });
         }
 
-        setSession(data.session);
-        setUser(data.session?.user ?? null);
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
         setIsLoading(false);
       })
       .catch((error: unknown) => {
@@ -97,21 +95,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         setIsLoading(false);
       });
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
-      setSession(nextSession);
-      setUser(nextSession?.user ?? null);
+    if (!unsubscribe) {
       setIsLoading(false);
-
-      if (nextSession) {
-        setAuthNotice(null);
-      }
-    });
+    }
 
     return () => {
       isMounted = false;
-      subscription.unsubscribe();
+      unsubscribe?.();
     };
   }, []);
 
@@ -160,38 +150,18 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   }, [refreshAccount, resetAccountState, user]);
 
   useEffect(() => {
-    const supabase = getSupabaseClient();
-
-    if (!supabase || !user) {
+    if (!user) {
       return;
     }
 
-    const channel = supabase
-      .channel(`user-account-${user.id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "private",
-          table: "user_accounts",
-          filter: `user_id=eq.${user.id}`,
-        },
-        (payload) => {
-          const isActive = (payload.new as { is_active?: unknown }).is_active;
+    return subscribeToCurrentAccountChanges(user.id, (isActive) => {
+      if (isActive === false) {
+        void performSignOut("banned");
+        return;
+      }
 
-          if (isActive === false) {
-            void performSignOut("banned");
-            return;
-          }
-
-          void refreshAccount();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      void supabase.removeChannel(channel);
-    };
+      void refreshAccount();
+    }) ?? undefined;
   }, [performSignOut, refreshAccount, user]);
 
   const signOut = useCallback(async () => {

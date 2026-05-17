@@ -5,8 +5,9 @@ import { describe, expect, it, vi } from "vitest";
 import { AuthContext } from "../../context/AuthContext";
 import Login from "./Login";
 
-vi.mock("../../../utils/supabase", () => ({
-  getSupabaseClient: vi.fn(() => null),
+vi.mock("../../../data/auth", () => ({
+  signInWithEmailPassword: vi.fn(),
+  signUpWithEmailPassword: vi.fn(),
 }));
 
 const renderLogin = ({

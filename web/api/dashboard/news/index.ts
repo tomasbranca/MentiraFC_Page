@@ -3,53 +3,15 @@ import {
   deleteDashboardNews,
   getDashboardNewsById,
   listDashboardNews,
-  parseDashboardNewsRequestInput,
   updateDashboardNews,
-  validateDashboardNewsContent,
-  validateDashboardNewsImageFile,
 } from "../../_lib/news.js";
 import { authorizeDashboardUser } from "../../_lib/auth.js";
 import { errorJson, json } from "../../_lib/responses.js";
+import { validateDashboardNewsMutation } from "./_shared.js";
 
 const getIdFromRequest = (request: Request): string | null => {
   const id = new URL(request.url).searchParams.get("id")?.trim();
   return id || null;
-};
-
-const validateDashboardNewsMutation = async (
-  request: Request
-): Promise<
-  | { ok: true; input: NonNullable<Awaited<ReturnType<typeof parseDashboardNewsRequestInput>>> }
-  | { ok: false; response: Response }
-> => {
-  const input = await parseDashboardNewsRequestInput(request);
-
-  if (!input) {
-    return {
-      ok: false,
-      response: errorJson("Los datos de la noticia no son válidos.", 400),
-    };
-  }
-
-  const imageError = validateDashboardNewsImageFile(input.coverImage);
-
-  if (imageError) {
-    return {
-      ok: false,
-      response: errorJson(imageError, 400),
-    };
-  }
-
-  const contentError = validateDashboardNewsContent(input);
-
-  if (contentError) {
-    return {
-      ok: false,
-      response: errorJson(contentError, 400),
-    };
-  }
-
-  return { ok: true, input };
 };
 
 const dashboardNewsHandler = async (request: Request): Promise<Response> => {

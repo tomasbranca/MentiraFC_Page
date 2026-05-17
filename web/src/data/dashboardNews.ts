@@ -1,4 +1,4 @@
-import { getSupabaseClient } from "../utils/supabase";
+import { getCurrentAccessToken } from "./auth";
 import type {
   DashboardNewsItem,
   DashboardNewsMutationInput,
@@ -24,29 +24,11 @@ const DASHBOARD_NEWS_API_PATH = "/api/dashboard/news";
 export const buildDashboardNewsItemApiPath = (id: string): string =>
   `${DASHBOARD_NEWS_API_PATH}?id=${encodeURIComponent(id)}`;
 
-const getAccessToken = async (): Promise<string> => {
-  const supabase = getSupabaseClient();
-
-  if (!supabase) {
-    throw new Error("Supabase is not configured.");
-  }
-
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (!session?.access_token) {
-    throw new Error("Missing auth session.");
-  }
-
-  return session.access_token;
-};
-
 const fetchDashboardApi = async <T>(
   path: string,
   init?: RequestInit
 ): Promise<T> => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getCurrentAccessToken();
   const headers = new Headers(init?.headers);
 
   headers.set("Authorization", `Bearer ${accessToken}`);

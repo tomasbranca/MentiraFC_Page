@@ -1,4 +1,4 @@
-import { ROUTES } from "../../constants/routes.constants";
+import { ROUTES } from "../../../shared/routing";
 import type { StaffMember } from "../../../types/models";
 
 export const getStaffLink = (staffMember: StaffMember): string => {

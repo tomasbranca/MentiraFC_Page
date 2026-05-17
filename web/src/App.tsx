@@ -8,7 +8,7 @@ import { GameProvider } from "./presentation/context/GameProvider";
 import { InitialDataProvider } from "./presentation/context/InitialDataContext";
 import Footer from "./presentation/layout/Footer/Footer";
 import NavBar from "./presentation/layout/NavBar/NavBar";
-import { ROUTES } from "./presentation/constants/routes.constants";
+import { ROUTES } from "./shared/routing";
 import RouteHead from "./presentation/seo/RouteHead";
 import Home from "./presentation/pages/Home/Home";
 import RequireAuth from "./presentation/routing/RequireAuth";

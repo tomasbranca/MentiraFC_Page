@@ -3,7 +3,7 @@ import { Navigate, useLocation } from "react-router-dom";
 
 import Loader from "../components/Loader/Loader";
 import ErrorFallback from "../components/errors/ErrorFallback";
-import { ROUTES } from "../constants/routes.constants";
+import { ROUTES } from "../../shared/routing";
 import { useAuth } from "../context/useAuth";
 
 type RequireAuthProps = {

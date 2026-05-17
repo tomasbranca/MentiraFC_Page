@@ -150,7 +150,13 @@ npm run dev:studio
 - `npm run dev:studio` → inicia sólo Sanity Studio.
 - `npm run install` → instala dependencias de ambos proyectos.
 
-### 9.2 Scripts en `web/`
+### 9.2 Scripts de calidad desde la raíz
+
+- `npm run check:web` → pipeline completo de `web`.
+- `npm run check:studio` → pipeline completo de `studio`.
+- `npm run check` → ejecuta ambos checks en orden.
+
+### 9.3 Scripts en `web/`
 
 - `npm run dev` → servidor local Vite.
 - `npm run lint` → ESLint.
@@ -159,14 +165,14 @@ npm run dev:studio
 - `npm run build` → build de producción.
 - `npm run check` → pipeline completo (`lint + typecheck + test + build`).
 
-### 9.3 Scripts en `studio/`
+### 9.4 Scripts en `studio/`
 
 - `npm run dev` → Sanity Studio en desarrollo.
 - `npm run lint` → ESLint.
 - `npm run build` → build de Studio.
 - `npm run deploy` → despliegue de Studio.
 - `npm run deploy-graphql` → despliegue del esquema GraphQL.
-- `npm run check` → lint + build.
+- `npm run check` → lint + tests unitarios de Functions + build.
 
 ---
 

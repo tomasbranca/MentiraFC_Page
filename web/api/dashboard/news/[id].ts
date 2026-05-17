@@ -1,13 +1,11 @@
 import {
   deleteDashboardNews,
   getDashboardNewsById,
-  parseDashboardNewsRequestInput,
   updateDashboardNews,
-  validateDashboardNewsContent,
-  validateDashboardNewsImageFile,
 } from "../../_lib/news.js";
 import { authorizeDashboardUser } from "../../_lib/auth.js";
 import { errorJson, json } from "../../_lib/responses.js";
+import { validateDashboardNewsMutation } from "./_shared.js";
 
 const getIdFromRequest = (request: Request): string | null => {
   const pathname = new URL(request.url).pathname;
@@ -36,25 +34,13 @@ const dashboardNewsByIdHandler = async (request: Request): Promise<Response> => 
     }
 
     if (request.method === "PUT") {
-      const input = await parseDashboardNewsRequestInput(request);
+      const validation = await validateDashboardNewsMutation(request);
 
-      if (!input) {
-        return errorJson("Los datos de la noticia no son válidos.", 400);
+      if (!validation.ok) {
+        return validation.response;
       }
 
-      const imageError = validateDashboardNewsImageFile(input.coverImage);
-
-      if (imageError) {
-        return errorJson(imageError, 400);
-      }
-
-      const contentError = validateDashboardNewsContent(input);
-
-      if (contentError) {
-        return errorJson(contentError, 400);
-      }
-
-      return json(await updateDashboardNews(id, input));
+      return json(await updateDashboardNews(id, validation.input));
     }
 
     if (request.method === "DELETE") {

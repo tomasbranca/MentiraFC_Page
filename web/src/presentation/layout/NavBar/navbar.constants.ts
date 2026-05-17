@@ -1,4 +1,4 @@
-import { ROUTES } from "../../constants/routes.constants";
+import { ROUTES } from "../../../shared/routing";
 
 export const NAV_LINKS = [
   { label: "NOTICIAS", to: ROUTES.NEWS },

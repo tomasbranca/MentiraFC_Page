@@ -6,11 +6,14 @@ import {
 } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
+import {
+  signInWithEmailPassword,
+  signUpWithEmailPassword,
+} from "../../../data/auth";
 import { reportError } from "../../../lib/errors/errorLogger";
-import { getSupabaseClient } from "../../../utils/supabase";
 import Button from "../../components/Button/Button";
 import { SITE_LOGO_ASSETS } from "../../constants/assets.constants";
-import { ROUTES } from "../../constants/routes.constants";
+import { ROUTES } from "../../../shared/routing";
 import { useAuth } from "../../context/useAuth";
 import {
   type AuthFormErrors,
@@ -19,6 +22,7 @@ import {
   createEmptyAuthFormValues,
   validateAuthForm,
 } from "./login.utils";
+import { AuthField, PasswordField } from "./LoginFields";
 import "./Login.css";
 
 type FormStatus = {
@@ -165,28 +169,22 @@ const Login = ({ initialMode = "signIn" }: LoginProps) => {
     setIsSubmitting(true);
 
     try {
-      const supabase = getSupabaseClient();
-
-      if (!supabase) {
-        setStatus({
-          tone: "error",
-          message:
-            mode === "signIn" ? SIGN_IN_ERROR_MESSAGE : SIGN_UP_ERROR_MESSAGE,
-        });
-        return;
-      }
-
       if (mode === "signIn") {
-        const { error } = await supabase.auth.signInWithPassword({
-          email: values.email.trim(),
-          password: values.password,
-        });
+        const { error } = await signInWithEmailPassword(
+          values.email.trim(),
+          values.password
+        );
 
         if (error) {
+          const errorCode =
+            "code" in error && typeof error.code === "string"
+              ? error.code
+              : null;
+
           setStatus({
             tone: "error",
             message:
-              error.code === "user_banned"
+              errorCode === "user_banned"
                 ? BANNED_ACCOUNT_MESSAGE
                 : SIGN_IN_ERROR_MESSAGE,
           });
@@ -197,15 +195,11 @@ const Login = ({ initialMode = "signIn" }: LoginProps) => {
         return;
       }
 
-      const { data, error } = await supabase.auth.signUp({
+      const { session, error } = await signUpWithEmailPassword({
         email: values.email.trim(),
         password: values.password,
-        options: {
-          data: {
-            first_name: values.firstName.trim(),
-            last_name: values.lastName.trim(),
-          },
-        },
+        firstName: values.firstName.trim(),
+        lastName: values.lastName.trim(),
       });
 
       if (error) {
@@ -216,7 +210,7 @@ const Login = ({ initialMode = "signIn" }: LoginProps) => {
         return;
       }
 
-      if (data.session) {
+      if (session) {
         navigate(ROUTES.HOME, { replace: true });
         return;
       }
@@ -505,118 +499,6 @@ const Login = ({ initialMode = "signIn" }: LoginProps) => {
         </div>
       </div>
     </section>
-  );
-};
-
-type AuthFieldProps = {
-  id: string;
-  name: keyof AuthFormValues;
-  label: string;
-  type: "email" | "password" | "text";
-  placeholder: string;
-  autoComplete: string;
-  value: string;
-  error?: string;
-  disabled?: boolean;
-  onChange: (event: ChangeEvent<HTMLInputElement>) => void;
-};
-
-const AuthField = ({
-  id,
-  name,
-  label,
-  type,
-  placeholder,
-  autoComplete,
-  value,
-  error,
-  disabled = false,
-  onChange,
-}: AuthFieldProps) => {
-  const errorId = error ? `${id}-error` : undefined;
-
-  return (
-    <label className="block" htmlFor={id}>
-      <span className="mb-2 block text-sm font-medium text-neutral-700">
-        {label}
-      </span>
-      <input
-        id={id}
-        name={name}
-        type={type}
-        autoComplete={autoComplete}
-        placeholder={placeholder}
-        value={value}
-        disabled={disabled}
-        onChange={onChange}
-        aria-invalid={Boolean(error)}
-        aria-describedby={errorId}
-        className="w-full border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-900 outline-none transition placeholder:text-neutral-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
-      />
-      {error && (
-        <span id={errorId} className="mt-2 block text-sm text-red-700">
-          {error}
-        </span>
-      )}
-    </label>
-  );
-};
-
-type PasswordFieldProps = {
-  showPassword: boolean;
-  onToggleVisibility: () => void;
-  autoComplete: string;
-  value: string;
-  error?: string;
-  disabled?: boolean;
-  onChange: (event: ChangeEvent<HTMLInputElement>) => void;
-};
-
-const PasswordField = ({
-  showPassword,
-  onToggleVisibility,
-  autoComplete,
-  value,
-  error,
-  disabled = false,
-  onChange,
-}: PasswordFieldProps) => {
-  const errorId = error ? "password-error" : undefined;
-
-  return (
-    <label className="block" htmlFor="password">
-      <span className="mb-2 block text-sm font-medium text-neutral-700">
-        Contraseña
-      </span>
-      <span className="relative block">
-        <input
-          id="password"
-          name="password"
-          type={showPassword ? "text" : "password"}
-          autoComplete={autoComplete}
-          placeholder="••••••••"
-          value={value}
-          disabled={disabled}
-          onChange={onChange}
-          aria-invalid={Boolean(error)}
-          aria-describedby={errorId}
-          className="w-full border border-neutral-300 bg-white px-4 py-3 pr-20 text-sm text-neutral-900 outline-none transition placeholder:text-neutral-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
-        />
-        <button
-          type="button"
-          onClick={onToggleVisibility}
-          disabled={disabled}
-          className="absolute inset-y-0 right-4 my-auto h-fit text-sm font-medium text-violet-700 transition hover:text-violet-900 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {showPassword ? "Ocultar" : "Mostrar"}
-        </button>
-      </span>
-      {error && (
-        <span id={errorId} className="mt-2 block text-sm text-red-700">
-          {error}
-        </span>
-      )}
-    </label>
   );
 };
 

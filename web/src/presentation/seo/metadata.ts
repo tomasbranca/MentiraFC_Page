@@ -5,7 +5,7 @@ import type {
   Player,
   StaffMember,
 } from "../../types/models";
-import { ROUTES } from "../constants/routes.constants";
+import { ROUTES } from "../../shared/routing";
 import { buildGalleryMatchTitle } from "../utils/gallery.utils";
 import type { HeadMetadata } from "./head";
 

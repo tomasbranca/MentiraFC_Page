@@ -16,7 +16,7 @@ import { POSITION_MAP, type PlayerPositionId } from "./playerDetail.constants";
 import { formatLongDate, calculateAge } from "../../utils/date.utils";
 import { useElementHeight } from "../../hooks/useElementHeight";
 import { useRosterMembers } from "../../hooks/queries/useRosterMembers";
-import { ROUTES } from "../../constants/routes.constants";
+import { ROUTES } from "../../../shared/routing";
 import {
   buildMissingPlayerHead,
   buildPlayerHead,

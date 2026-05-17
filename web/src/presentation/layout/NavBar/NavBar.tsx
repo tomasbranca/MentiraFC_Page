@@ -12,7 +12,7 @@ import {
   SITE_LOGO_SIZES,
   SITE_LOGO_SRC_SET,
 } from "../../constants/assets.constants";
-import { ROUTES } from "../../constants/routes.constants";
+import { ROUTES } from "../../../shared/routing";
 import { useAuth } from "../../context/useAuth";
 import {
   canAccessAdminPanel,

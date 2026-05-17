@@ -1,4 +1,4 @@
-import { getSupabaseClient } from "../utils/supabase";
+import { getSupabaseClient } from "../lib/supabase";
 import type { CurrentAccount } from "../types/auth";
 import { z, zodParseOptions } from "./zodRuntime";
 

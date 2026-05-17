@@ -7,7 +7,7 @@ import {
 import { queryKeys } from "../../data/queryKeys";
 import { queryClient } from "../../lib/queryClient";
 import { reportError } from "../../lib/errors/errorLogger";
-import { ROUTES } from "../constants/routes.constants";
+import { ROUTES } from "../../shared/routing";
 import {
   HOME_CRITICAL_BACKGROUND_STALE_TIME,
   mergeHomeCriticalIntoInitialData,

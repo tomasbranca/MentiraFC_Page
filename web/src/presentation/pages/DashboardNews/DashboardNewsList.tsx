@@ -12,7 +12,7 @@ import type { DashboardNewsItem } from "../../../types/dashboard";
 import Button from "../../components/Button/Button";
 import ErrorFallback from "../../components/errors/ErrorFallback";
 import Loader from "../../components/Loader/Loader";
-import { ROUTES } from "../../constants/routes.constants";
+import { ROUTES } from "../../../shared/routing";
 import { formatDateTime } from "../../utils/date.utils";
 
 const NewsThumbnail = ({ item }: { item: DashboardNewsItem }) => {
