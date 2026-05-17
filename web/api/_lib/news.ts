@@ -4,7 +4,7 @@ import type {
   DashboardNewsInput,
   DashboardNewsItem,
 } from "../../src/types/dashboard";
-import { mutateSanity, querySanity } from "./sanity";
+import { mutateSanity, querySanity } from "./sanity.js";
 
 const DEFAULT_NEWS_IMAGE_ASSET_ID =
   "image-1edafb056eb32eef08e521cabc7b50470d48f74b-809x809-webp";

@@ -3,9 +3,9 @@ import {
   getDashboardNewsById,
   parseDashboardNewsInput,
   updateDashboardNews,
-} from "../../_lib/news";
-import { authorizeDashboardUser } from "../../_lib/auth";
-import { errorJson, json } from "../../_lib/responses";
+} from "../../_lib/news.js";
+import { authorizeDashboardUser } from "../../_lib/auth.js";
+import { errorJson, json } from "../../_lib/responses.js";
 
 const getIdFromRequest = (request: Request): string | null => {
   const pathname = new URL(request.url).pathname;

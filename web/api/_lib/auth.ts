@@ -2,7 +2,7 @@ import process from "node:process";
 import { createClient } from "@supabase/supabase-js";
 
 import type { AppRole } from "../../src/types/auth";
-import { errorJson } from "./responses";
+import { errorJson } from "./responses.js";
 
 type AuthorizedDashboardUser = {
   userId: string;

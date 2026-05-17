@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import dashboardNewsRoute from "./index";
-import dashboardNewsByIdRoute from "./[id]";
+import dashboardNewsRoute from "./index.js";
+import dashboardNewsByIdRoute from "./[id].js";
 
 describe("dashboard news api handlers", () => {
   it("exporta handlers compatibles con el runtime Web de Vercel", () => {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { parseDashboardNewsInput } from "./news";
+import { parseDashboardNewsInput } from "./news.js";
 
 describe("dashboard news api input", () => {
   it("acepta datos válidos para una noticia", () => {

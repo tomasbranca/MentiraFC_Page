@@ -2,9 +2,9 @@ import {
   createDashboardNews,
   listDashboardNews,
   parseDashboardNewsInput,
-} from "../../_lib/news";
-import { authorizeDashboardUser } from "../../_lib/auth";
-import { errorJson, json } from "../../_lib/responses";
+} from "../../_lib/news.js";
+import { authorizeDashboardUser } from "../../_lib/auth.js";
+import { errorJson, json } from "../../_lib/responses.js";
 
 const dashboardNewsHandler = async (request: Request): Promise<Response> => {
   try {
