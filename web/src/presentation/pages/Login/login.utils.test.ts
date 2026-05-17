@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import {
   createEmptyAuthFormValues,
+  getSignUpErrorMessage,
+  SIGN_UP_INVALID_DATA_MESSAGE,
+  SIGN_UP_RATE_LIMIT_MESSAGE,
   validateAuthForm,
 } from "./login.utils";
 
@@ -44,5 +47,33 @@ describe("validateAuthForm", () => {
     });
 
     expect(errors).toEqual({});
+  });
+});
+
+describe("getSignUpErrorMessage", () => {
+  it("muestra tráfico alto cuando Supabase limita el envío de emails", () => {
+    expect(
+      getSignUpErrorMessage({
+        code: "over_email_send_rate_limit",
+        status: 429,
+      })
+    ).toBe(SIGN_UP_RATE_LIMIT_MESSAGE);
+  });
+
+  it("muestra tráfico alto cuando Supabase limita solicitudes por IP", () => {
+    expect(
+      getSignUpErrorMessage({
+        code: "over_request_rate_limit",
+      })
+    ).toBe(SIGN_UP_RATE_LIMIT_MESSAGE);
+  });
+
+  it("mantiene el mensaje de datos inválidos para otros errores", () => {
+    expect(
+      getSignUpErrorMessage({
+        code: "email_exists",
+        status: 400,
+      })
+    ).toBe(SIGN_UP_INVALID_DATA_MESSAGE);
   });
 });

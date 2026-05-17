@@ -20,6 +20,7 @@ import {
   type AuthFormValues,
   type AuthMode,
   createEmptyAuthFormValues,
+  getSignUpErrorMessage,
   validateAuthForm,
 } from "./login.utils";
 import { AuthField, PasswordField } from "./LoginFields";
@@ -82,8 +83,6 @@ const FORM_CONTENT: Record<
 
 const SIGN_IN_ERROR_MESSAGE =
   "No pudimos iniciar sesión. Revisá tu correo y contraseña e intentá de nuevo.";
-const SIGN_UP_ERROR_MESSAGE =
-  "No pudimos crear tu cuenta. Revisá los datos e intentá de nuevo.";
 const SIGN_UP_CONFIRMATION_MESSAGE =
   "Te enviamos un mail para confirmar tu cuenta. Revisá tu bandeja de entrada antes de ingresar.";
 const BANNED_ACCOUNT_MESSAGE = "Tu usuario ha sido baneado.";
@@ -205,7 +204,7 @@ const Login = ({ initialMode = "signIn" }: LoginProps) => {
       if (error) {
         setStatus({
           tone: "error",
-          message: SIGN_UP_ERROR_MESSAGE,
+          message: getSignUpErrorMessage(error),
         });
         return;
       }
@@ -232,7 +231,9 @@ const Login = ({ initialMode = "signIn" }: LoginProps) => {
       setStatus({
         tone: "error",
         message:
-          mode === "signIn" ? SIGN_IN_ERROR_MESSAGE : SIGN_UP_ERROR_MESSAGE,
+          mode === "signIn"
+            ? SIGN_IN_ERROR_MESSAGE
+            : getSignUpErrorMessage(error),
       });
     } finally {
       setIsSubmitting(false);

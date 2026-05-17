@@ -12,6 +12,15 @@ export type AuthFormErrors = Partial<Record<keyof AuthFormValues, string>>;
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const STRONG_PASSWORD_PATTERN = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+const SIGN_UP_RATE_LIMIT_CODES = new Set([
+  "over_email_send_rate_limit",
+  "over_request_rate_limit",
+]);
+
+export const SIGN_UP_INVALID_DATA_MESSAGE =
+  "No pudimos crear tu cuenta. Revisá los datos e intentá de nuevo.";
+export const SIGN_UP_RATE_LIMIT_MESSAGE =
+  "Estamos experimentando mucho tráfico en este momento. Intentá nuevamente más tarde.";
 
 export const createEmptyAuthFormValues = (): AuthFormValues => ({
   firstName: "",
@@ -65,4 +74,24 @@ export const validateAuthForm = (
   }
 
   return errors;
+};
+
+export const getSignUpErrorMessage = (error: unknown): string => {
+  const authError =
+    error && typeof error === "object"
+      ? (error as { code?: unknown; status?: unknown })
+      : null;
+  const errorCode =
+    typeof authError?.code === "string" ? authError.code : null;
+  const errorStatus =
+    typeof authError?.status === "number" ? authError.status : null;
+
+  if (
+    errorStatus === 429 ||
+    (errorCode !== null && SIGN_UP_RATE_LIMIT_CODES.has(errorCode))
+  ) {
+    return SIGN_UP_RATE_LIMIT_MESSAGE;
+  }
+
+  return SIGN_UP_INVALID_DATA_MESSAGE;
 };
