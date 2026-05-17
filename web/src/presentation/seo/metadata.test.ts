@@ -19,6 +19,7 @@ describe("seo metadata", () => {
       description: "Mentira FC gano un partido clave.",
       date: "2026-04-30",
       slug: "victoria-importante",
+      imageAlt: "Mentira FC festejando un gol",
       imageUrl: "/custom-og.png",
     };
 
@@ -30,6 +31,7 @@ describe("seo metadata", () => {
       "https://mentirafc.vercel.app/noticias/victoria-importante"
     );
     expect(metadata.imageUrl).toBe("https://mentirafc.vercel.app/custom-og.png");
+    expect(metadata.imageAlt).toBe("Mentira FC festejando un gol");
     expect(metadata.openGraphType).toBe("article");
     expect(metadata.publishedTime).toBe("2026-04-30");
   });

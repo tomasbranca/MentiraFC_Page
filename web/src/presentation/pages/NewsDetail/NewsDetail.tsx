@@ -65,7 +65,7 @@ const NewsDetail = () => {
             quality: 72,
             autoFormat: true,
           })}
-          alt={newsItem.title}
+          alt={newsItem.imageAlt || newsItem.title}
           wrapperClassName="absolute inset-0"
           className="w-full h-full object-cover"
           width={1600}

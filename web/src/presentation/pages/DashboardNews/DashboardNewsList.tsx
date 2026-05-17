@@ -44,7 +44,7 @@ const NewsThumbnail = ({ item }: { item: DashboardNewsItem }) => {
       src={imageUrl}
       srcSet={imageSrcSet || undefined}
       sizes="(max-width: 767px) 56px, 80px"
-      alt={`Portada de ${item.title}`}
+      alt={item.imageAlt || `Portada de ${item.title}`}
       loading="lazy"
       decoding="async"
       className="h-14 w-14 shrink-0 rounded-2xl border border-white/10 object-cover md:h-16 md:w-20"

@@ -8,6 +8,7 @@ const createSanityNews = (overrides: Record<string, unknown> = {}) => ({
   description: "Mentira FC gano un partido clave.",
   date: "2026-01-15T20:00:00Z",
   slug: { current: "victoria-importante" },
+  imageAlt: "Jugadores de Mentira FC festejando",
   imageUrl: "https://cdn.sanity.io/images/project/dataset/main.jpg",
   ...overrides,
 });
@@ -38,6 +39,7 @@ describe("news.adapter", () => {
     const news = adaptSingleNews(createSanityNews({ content }));
 
     expect(news?.content).toEqual(content);
+    expect(news?.imageAlt).toBe("Jugadores de Mentira FC festejando");
   });
 
   it("descarta noticias con contenido que no llega como arreglo", () => {

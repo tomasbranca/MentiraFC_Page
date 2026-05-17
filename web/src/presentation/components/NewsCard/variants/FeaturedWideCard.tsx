@@ -29,7 +29,7 @@ const FeaturedWideCard = ({
           autoFormat: true,
         })}
         sizes="(max-width: 768px) calc(100vw - 48px), 66vw"
-        alt={item.title}
+        alt={item.imageAlt || item.title}
         wrapperClassName="w-full h-55 md:absolute md:inset-0 md:h-full"
         className="w-full h-55 md:absolute md:inset-0 md:h-full object-cover"
         loading={imageLoading}

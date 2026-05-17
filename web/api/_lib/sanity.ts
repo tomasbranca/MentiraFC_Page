@@ -10,6 +10,23 @@ type SanityMutationResponse<T> = {
   };
 };
 
+type SanityAssetUploadResponse = {
+  document?: SanityImageAssetDocument;
+  error?: {
+    description?: string;
+    message?: string;
+  };
+};
+
+export type SanityImageAssetDocument = {
+  _id: string;
+  _type: "sanity.imageAsset";
+  url?: string;
+  size?: number;
+  mimeType?: string;
+  originalFilename?: string;
+};
+
 type SanityQueryResponse<T> = {
   result?: T;
   error?: {
@@ -94,4 +111,61 @@ export const mutateSanity = async <T>(
   }
 
   return payload.results?.[0]?.document ?? null;
+};
+
+export const uploadSanityImageAsset = async (
+  imageFile: File
+): Promise<SanityImageAssetDocument> => {
+  const { projectId, dataset, apiVersion, token } = getSanityConfig({
+    requireWriteToken: true,
+  });
+  const url = new URL(
+    `https://${projectId}.api.sanity.io/v${apiVersion}/assets/images/${dataset}`
+  );
+
+  url.searchParams.set("filename", imageFile.name);
+  url.searchParams.set("tag", "dashboard.news.cover");
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": imageFile.type,
+    },
+    body: await imageFile.arrayBuffer(),
+  });
+  const payload = (await response.json()) as
+    | SanityAssetUploadResponse
+    | SanityImageAssetDocument;
+  const error =
+    "error" in payload && payload.error ? payload.error : undefined;
+
+  if (!response.ok || error) {
+    throw new Error(
+      error?.description ?? error?.message ?? "Sanity asset upload failed."
+    );
+  }
+
+  const document =
+    "document" in payload
+      ? payload.document
+      : "_id" in payload
+        ? payload
+        : undefined;
+
+  if (!document?._id) {
+    throw new Error("Sanity asset upload did not return a document.");
+  }
+
+  return document;
+};
+
+export const deleteSanityDocument = async (id: string): Promise<void> => {
+  await mutateSanity<unknown>([
+    {
+      delete: {
+        id,
+      },
+    },
+  ]);
 };

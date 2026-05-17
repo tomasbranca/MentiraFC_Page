@@ -12,6 +12,7 @@ export const NEWS_QUERY = `
     },
     date,
     slug,
+    "imageAlt": image.alt,
     "imageUrl": image.asset->url
   }
 `;
@@ -30,6 +31,7 @@ export const NEWS_BY_SLUG_QUERY = `
     },
     date,
     slug,
+    "imageAlt": image.alt,
     "imageUrl": image.asset->url
   }
 `;
@@ -42,6 +44,7 @@ export const SUGGESTED_NEWS_QUERY = `
     description,
     "slug": slug,
     date,
+    "imageAlt": image.alt,
     "imageUrl": image.asset->url
   }
 `;
@@ -54,6 +57,7 @@ export const FALLBACK_NEWS_QUERY = `
     description,
     "slug": slug,
     date,
+    "imageAlt": image.alt,
     "imageUrl": image.asset->url
   }
 `;

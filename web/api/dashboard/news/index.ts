@@ -1,7 +1,8 @@
 import {
   createDashboardNews,
   listDashboardNews,
-  parseDashboardNewsInput,
+  parseDashboardNewsRequestInput,
+  validateDashboardNewsImageFile,
 } from "../../_lib/news.js";
 import { authorizeDashboardUser } from "../../_lib/auth.js";
 import { errorJson, json } from "../../_lib/responses.js";
@@ -19,10 +20,16 @@ const dashboardNewsHandler = async (request: Request): Promise<Response> => {
     }
 
     if (request.method === "POST") {
-      const input = parseDashboardNewsInput(await request.json());
+      const input = await parseDashboardNewsRequestInput(request);
 
       if (!input) {
         return errorJson("Los datos de la noticia no son válidos.", 400);
+      }
+
+      const imageError = validateDashboardNewsImageFile(input.coverImage);
+
+      if (imageError) {
+        return errorJson(imageError, 400);
       }
 
       return json(await createDashboardNews(input), { status: 201 });

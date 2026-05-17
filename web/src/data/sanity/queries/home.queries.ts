@@ -13,6 +13,7 @@ export const HOME_CRITICAL_QUERY = `
       },
       date,
       slug,
+      "imageAlt": image.alt,
       "imageUrl": image.asset->url
     },
     "latestGame": *[_type == "games" && defined(date)] | order(date desc)[0] {

@@ -1,4 +1,9 @@
-import type { DashboardNewsInput } from "../../../types/dashboard";
+import {
+  DASHBOARD_NEWS_IMAGE_ACCEPTED_TYPES,
+  DASHBOARD_NEWS_IMAGE_MAX_BYTES,
+  DASHBOARD_NEWS_IMAGE_MAX_MEGAPIXELS,
+  type DashboardNewsInput,
+} from "../../../types/dashboard";
 
 export type DashboardNewsErrors = Partial<Record<keyof DashboardNewsInput, string>>;
 
@@ -64,5 +69,47 @@ export const validateDashboardNewsInput = (
     errors.date = "Elegí una fecha válida.";
   }
 
+  if (!values.imageAlt.trim()) {
+    errors.imageAlt = "Escribí un texto alternativo.";
+  }
+
   return errors;
+};
+
+export const validateDashboardNewsImageFile = (
+  file?: Pick<File, "size" | "type"> | null
+): string | null => {
+  if (!file) {
+    return null;
+  }
+
+  if (
+    !DASHBOARD_NEWS_IMAGE_ACCEPTED_TYPES.includes(
+      file.type as (typeof DASHBOARD_NEWS_IMAGE_ACCEPTED_TYPES)[number]
+    )
+  ) {
+    return "La imagen debe ser JPG, PNG o WebP.";
+  }
+
+  if (file.size > DASHBOARD_NEWS_IMAGE_MAX_BYTES) {
+    return "La imagen no puede superar 4 MB en producción.";
+  }
+
+  return null;
+};
+
+export const validateDashboardNewsImageDimensions = ({
+  width,
+  height,
+}: {
+  width: number;
+  height: number;
+}): string | null => {
+  const megapixels = (width * height) / 1_000_000;
+
+  if (megapixels > DASHBOARD_NEWS_IMAGE_MAX_MEGAPIXELS) {
+    return "La imagen supera el límite de 256 megapíxeles de Sanity.";
+  }
+
+  return null;
 };

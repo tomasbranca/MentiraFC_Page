@@ -1,7 +1,7 @@
 import process from "node:process";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { mutateSanity, querySanity } from "./sanity.js";
+import { mutateSanity, querySanity, uploadSanityImageAsset } from "./sanity.js";
 
 const ENV_KEYS = [
   "SANITY_PROJECT_ID",
@@ -81,5 +81,41 @@ describe("dashboard Sanity API client", () => {
         Authorization: "Bearer secret-token",
       },
     });
+  });
+
+  it("sube imágenes como binario al endpoint de assets de Sanity", async () => {
+    const fetchMock = vi.fn<typeof fetch>(async () =>
+      Response.json({
+        document: {
+          _id: "image-test-100x100-webp",
+          _type: "sanity.imageAsset",
+          url: "https://cdn.sanity.io/images/test-project/production/test.webp",
+        },
+      })
+    );
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(
+      uploadSanityImageAsset(
+        new File(["image"], "portada.webp", { type: "image/webp" })
+      )
+    ).resolves.toMatchObject({
+      _id: "image-test-100x100-webp",
+    });
+
+    const [url, init] = fetchMock.mock.calls[0] ?? [];
+
+    expect(String(url)).toContain(
+      "https://test-project.api.sanity.io/v2026-05-17/assets/images/production"
+    );
+    expect(init).toMatchObject({
+      method: "POST",
+      headers: {
+        Authorization: "Bearer secret-token",
+        "Content-Type": "image/webp",
+      },
+    });
+    expect(String(url)).toContain("filename=portada.webp");
   });
 });

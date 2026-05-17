@@ -23,6 +23,7 @@ export const adaptSingleNews = (item: unknown): NewsItem | null => {
     content: content ?? undefined,
     date: validated.date,
     slug: getSanitySlugValue(validated.slug) ?? "",
+    imageAlt: validated.imageAlt,
     imageUrl: validated.imageUrl,
   };
 };

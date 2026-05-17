@@ -52,7 +52,7 @@ const Carousel = ({ items }: CarouselProps) => {
               autoFormat: true,
             })}
             sizes="100vw"
-            alt={item.title}
+            alt={item.imageAlt || item.title}
             wrapperClassName="absolute inset-0"
             className="w-full h-full object-cover"
             {...(Object.prototype.hasOwnProperty.call(

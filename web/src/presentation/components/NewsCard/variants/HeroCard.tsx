@@ -38,7 +38,7 @@ const HeroCard = ({
             autoFormat: true,
           })}
           sizes="(max-width: 768px) calc(100vw - 48px), 66vw"
-          alt={item.title}
+          alt={item.imageAlt || item.title}
           wrapperClassName="absolute inset-0"
           className="absolute inset-0 w-full h-full object-cover"
           loading={imageLoading}

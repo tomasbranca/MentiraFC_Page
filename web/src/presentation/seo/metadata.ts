@@ -171,7 +171,7 @@ export const buildNewsHead = (newsItem: NewsItem): HeadMetadata => {
     description,
     canonicalUrl: canonicalUrl(ROUTES.NEWS_DETAIL(newsItem.slug)),
     imageUrl: resolveImageUrl(newsItem.imageUrl),
-    imageAlt: newsItem.title,
+    imageAlt: newsItem.imageAlt || newsItem.title,
     openGraphType: "article",
     publishedTime: newsItem.date,
   };

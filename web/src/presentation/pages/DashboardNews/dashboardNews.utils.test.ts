@@ -4,6 +4,8 @@ import {
   buildNewsSlug,
   fromDatetimeLocalValue,
   toDatetimeLocalValue,
+  validateDashboardNewsImageDimensions,
+  validateDashboardNewsImageFile,
   validateDashboardNewsInput,
 } from "./dashboardNews.utils";
 
@@ -33,12 +35,35 @@ describe("dashboardNews utils", () => {
         description: "",
         date: "",
         slug: "",
+        imageAlt: "",
       })
     ).toEqual({
       title: "Escribí un título.",
       description: "Escribí una descripción.",
       slug: "Escribí un slug.",
       date: "Elegí una fecha válida.",
+      imageAlt: "Escribí un texto alternativo.",
     });
+  });
+
+  it("valida formato y peso de la imagen de portada", () => {
+    expect(validateDashboardNewsImageFile({ type: "image/gif", size: 100 })).toBe(
+      "La imagen debe ser JPG, PNG o WebP."
+    );
+    expect(
+      validateDashboardNewsImageFile({ type: "image/jpeg", size: 5 * 1024 * 1024 })
+    ).toBe("La imagen no puede superar 4 MB en producción.");
+    expect(
+      validateDashboardNewsImageFile({ type: "image/webp", size: 1024 })
+    ).toBeNull();
+  });
+
+  it("valida el límite de megapíxeles de Sanity", () => {
+    expect(
+      validateDashboardNewsImageDimensions({ width: 16000, height: 16001 })
+    ).toBe("La imagen supera el límite de 256 megapíxeles de Sanity.");
+    expect(
+      validateDashboardNewsImageDimensions({ width: 16000, height: 16000 })
+    ).toBeNull();
   });
 });

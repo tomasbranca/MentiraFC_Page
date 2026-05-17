@@ -97,6 +97,15 @@ export default {
       title: 'Imagen principal',
       type: 'image',
       options: {hotspot: true},
+      fields: [
+        {
+          name: 'alt',
+          title: 'Texto alternativo',
+          type: 'string',
+          validation: (Rule) => Rule.required(),
+        },
+      ],
+      validation: (Rule) => Rule.required(),
     },
     {
       name: 'date',

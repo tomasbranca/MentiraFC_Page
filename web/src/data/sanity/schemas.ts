@@ -58,6 +58,7 @@ export const sanityNewsSchema = z.object({
   content: z.array(z.unknown()).nullish(),
   date: z.string(),
   slug: sanitySlugSchema.optional(),
+  imageAlt: z.string().nullable().optional(),
   imageUrl: z.string().nullable().optional(),
 });
 

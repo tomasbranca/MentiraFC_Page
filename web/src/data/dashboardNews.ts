@@ -1,5 +1,8 @@
 import { getSupabaseClient } from "../utils/supabase";
-import type { DashboardNewsInput, DashboardNewsItem } from "../types/dashboard";
+import type {
+  DashboardNewsItem,
+  DashboardNewsMutationInput,
+} from "../types/dashboard";
 import { z, zodParseOptions } from "./zodRuntime";
 
 const dashboardNewsSchema = z.object({
@@ -8,6 +11,8 @@ const dashboardNewsSchema = z.object({
   description: z.string(),
   date: z.string(),
   slug: z.string(),
+  imageAlt: z.string().nullable().optional(),
+  imageAssetId: z.string().nullable().optional(),
   imageUrl: z.string().nullable().optional(),
   content: z.array(z.unknown()).optional(),
 });
@@ -37,13 +42,17 @@ const fetchDashboardApi = async <T>(
   init?: RequestInit
 ): Promise<T> => {
   const accessToken = await getAccessToken();
+  const headers = new Headers(init?.headers);
+
+  headers.set("Authorization", `Bearer ${accessToken}`);
+
+  if (!(init?.body instanceof FormData) && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+
   const response = await fetch(path, {
     ...init,
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
-      ...init?.headers,
-    },
+    headers,
   });
   const contentType = response.headers.get("content-type") ?? "";
   const payload = contentType.includes("application/json")
@@ -64,6 +73,28 @@ const fetchDashboardApi = async <T>(
   return payload.data as T;
 };
 
+const buildDashboardNewsFormData = (
+  input: DashboardNewsMutationInput
+): FormData => {
+  const formData = new FormData();
+
+  formData.set("title", input.title);
+  formData.set("description", input.description);
+  formData.set("date", input.date);
+  formData.set("slug", input.slug);
+  formData.set("imageAlt", input.imageAlt);
+
+  if (input.useDefaultImage) {
+    formData.set("useDefaultImage", "true");
+  }
+
+  if (input.coverImage) {
+    formData.set("coverImage", input.coverImage, input.coverImage.name);
+  }
+
+  return formData;
+};
+
 export const fetchDashboardNews = async (): Promise<DashboardNewsItem[]> => {
   const data = await fetchDashboardApi<unknown[]>("/api/dashboard/news");
   return dashboardNewsListSchema.parse(
@@ -80,11 +111,11 @@ export const fetchDashboardNewsById = async (
 };
 
 export const createDashboardNews = async (
-  input: DashboardNewsInput
+  input: DashboardNewsMutationInput
 ): Promise<DashboardNewsItem> => {
   const data = await fetchDashboardApi<unknown>("/api/dashboard/news", {
     method: "POST",
-    body: JSON.stringify(input),
+    body: buildDashboardNewsFormData(input),
   });
 
   return dashboardNewsSchema.parse(data, zodParseOptions) as DashboardNewsItem;
@@ -92,11 +123,11 @@ export const createDashboardNews = async (
 
 export const updateDashboardNews = async (
   id: string,
-  input: DashboardNewsInput
+  input: DashboardNewsMutationInput
 ): Promise<DashboardNewsItem> => {
   const data = await fetchDashboardApi<unknown>(`/api/dashboard/news/${id}`, {
     method: "PUT",
-    body: JSON.stringify(input),
+    body: buildDashboardNewsFormData(input),
   });
 
   return dashboardNewsSchema.parse(data, zodParseOptions) as DashboardNewsItem;

@@ -162,6 +162,7 @@ export interface NewsItem {
   content?: NewsContentBlock[];
   date: string;
   slug: string;
+  imageAlt?: string | null;
   imageUrl?: string | null;
 }
 

@@ -55,7 +55,7 @@ const NewsList = ({ items = [] }: NewsListProps) => {
                 quality: 68,
                 autoFormat: true,
               })}
-              alt={item.title}
+              alt={item.imageAlt || item.title}
               wrapperClassName="
                 relative
                 w-full

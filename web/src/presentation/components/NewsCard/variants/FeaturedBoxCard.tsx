@@ -29,7 +29,7 @@ const FeaturedBoxCard = ({
           autoFormat: true,
         })}
         sizes="(max-width: 768px) calc(100vw - 48px), calc(33vw - 32px)"
-        alt={item.title}
+        alt={item.imageAlt || item.title}
         wrapperClassName="row-span-3"
         className="row-span-3 w-full h-full object-cover"
         loading={imageLoading}

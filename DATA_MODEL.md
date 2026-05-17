@@ -119,7 +119,7 @@ Campos:
 | `title` | `string` | Si | Titulo de la noticia. |
 | `description` | `string` | Si | Bajada o descripcion corta. |
 | `content` | `array` de `block` | Si | Contenido rico Portable Text. |
-| `image` | `image` | No | Imagen principal, con hotspot. |
+| `image` | `image` | Si | Imagen principal, con hotspot. Incluye `alt` obligatorio para accesibilidad y SEO. |
 | `date` | `datetime` | Si | Fecha de publicacion o referencia editorial. Tiene valor inicial automatico. |
 | `slug` | `slug` | Si | Slug para URL publica. Se genera desde `title`. |
 
