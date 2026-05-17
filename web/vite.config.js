@@ -41,12 +41,18 @@ const createDashboardApiDevPlugin = (env) => ({
     server.middlewares.use("/api/dashboard/news", async (request, response) => {
       try {
         const relativePath = request.url ?? "/";
+        const normalizedRelativePath = relativePath.startsWith("/")
+          ? relativePath
+          : `/${relativePath}`;
+        const relativeUrl = new URL(normalizedRelativePath, "http://localhost");
         const requestUrl = new URL(
-          `/api/dashboard/news${relativePath === "/" ? "" : relativePath}`,
+          `/api/dashboard/news${
+            normalizedRelativePath === "/" ? "" : normalizedRelativePath
+          }`,
           "http://localhost"
         );
         const routeModulePath =
-          relativePath === "/"
+          relativeUrl.pathname === "/"
             ? "/api/dashboard/news/index.ts"
             : "/api/dashboard/news/[id].ts";
         const routeModule = await server.ssrLoadModule(routeModulePath);

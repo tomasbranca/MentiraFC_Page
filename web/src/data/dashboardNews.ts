@@ -19,6 +19,11 @@ const dashboardNewsSchema = z.object({
 
 const dashboardNewsListSchema = z.array(dashboardNewsSchema);
 
+const DASHBOARD_NEWS_API_PATH = "/api/dashboard/news";
+
+export const buildDashboardNewsItemApiPath = (id: string): string =>
+  `${DASHBOARD_NEWS_API_PATH}?id=${encodeURIComponent(id)}`;
+
 const getAccessToken = async (): Promise<string> => {
   const supabase = getSupabaseClient();
 
@@ -61,9 +66,10 @@ const fetchDashboardApi = async <T>(
         error?: string;
       })
     : {
-        error:
-          (await response.text()) ||
-          `Dashboard request failed with status ${response.status}.`,
+        error: contentType.includes("text/html")
+          ? "La API del dashboard devolvió HTML en vez de JSON. Verificá la ruta de la Function en Vercel."
+          : (await response.text()) ||
+            `Dashboard request failed with status ${response.status}.`,
       };
 
   if (!response.ok || payload.error) {
@@ -101,7 +107,7 @@ const buildDashboardNewsFormData = (
 };
 
 export const fetchDashboardNews = async (): Promise<DashboardNewsItem[]> => {
-  const data = await fetchDashboardApi<unknown[]>("/api/dashboard/news");
+  const data = await fetchDashboardApi<unknown[]>(DASHBOARD_NEWS_API_PATH);
   return dashboardNewsListSchema.parse(
     data,
     zodParseOptions
@@ -111,14 +117,16 @@ export const fetchDashboardNews = async (): Promise<DashboardNewsItem[]> => {
 export const fetchDashboardNewsById = async (
   id: string
 ): Promise<DashboardNewsItem> => {
-  const data = await fetchDashboardApi<unknown>(`/api/dashboard/news/${id}`);
+  const data = await fetchDashboardApi<unknown>(
+    buildDashboardNewsItemApiPath(id)
+  );
   return dashboardNewsSchema.parse(data, zodParseOptions) as DashboardNewsItem;
 };
 
 export const createDashboardNews = async (
   input: DashboardNewsMutationInput
 ): Promise<DashboardNewsItem> => {
-  const data = await fetchDashboardApi<unknown>("/api/dashboard/news", {
+  const data = await fetchDashboardApi<unknown>(DASHBOARD_NEWS_API_PATH, {
     method: "POST",
     body: buildDashboardNewsFormData(input),
   });
@@ -130,16 +138,19 @@ export const updateDashboardNews = async (
   id: string,
   input: DashboardNewsMutationInput
 ): Promise<DashboardNewsItem> => {
-  const data = await fetchDashboardApi<unknown>(`/api/dashboard/news/${id}`, {
-    method: "PUT",
-    body: buildDashboardNewsFormData(input),
-  });
+  const data = await fetchDashboardApi<unknown>(
+    buildDashboardNewsItemApiPath(id),
+    {
+      method: "PUT",
+      body: buildDashboardNewsFormData(input),
+    }
+  );
 
   return dashboardNewsSchema.parse(data, zodParseOptions) as DashboardNewsItem;
 };
 
 export const deleteDashboardNews = async (id: string): Promise<void> => {
-  await fetchDashboardApi<null>(`/api/dashboard/news/${id}`, {
+  await fetchDashboardApi<null>(buildDashboardNewsItemApiPath(id), {
     method: "DELETE",
   });
 };

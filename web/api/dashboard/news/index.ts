@@ -1,12 +1,56 @@
 import {
   createDashboardNews,
+  deleteDashboardNews,
+  getDashboardNewsById,
   listDashboardNews,
   parseDashboardNewsRequestInput,
+  updateDashboardNews,
   validateDashboardNewsContent,
   validateDashboardNewsImageFile,
 } from "../../_lib/news.js";
 import { authorizeDashboardUser } from "../../_lib/auth.js";
 import { errorJson, json } from "../../_lib/responses.js";
+
+const getIdFromRequest = (request: Request): string | null => {
+  const id = new URL(request.url).searchParams.get("id")?.trim();
+  return id || null;
+};
+
+const validateDashboardNewsMutation = async (
+  request: Request
+): Promise<
+  | { ok: true; input: NonNullable<Awaited<ReturnType<typeof parseDashboardNewsRequestInput>>> }
+  | { ok: false; response: Response }
+> => {
+  const input = await parseDashboardNewsRequestInput(request);
+
+  if (!input) {
+    return {
+      ok: false,
+      response: errorJson("Los datos de la noticia no son válidos.", 400),
+    };
+  }
+
+  const imageError = validateDashboardNewsImageFile(input.coverImage);
+
+  if (imageError) {
+    return {
+      ok: false,
+      response: errorJson(imageError, 400),
+    };
+  }
+
+  const contentError = validateDashboardNewsContent(input);
+
+  if (contentError) {
+    return {
+      ok: false,
+      response: errorJson(contentError, 400),
+    };
+  }
+
+  return { ok: true, input };
+};
 
 const dashboardNewsHandler = async (request: Request): Promise<Response> => {
   try {
@@ -16,30 +60,48 @@ const dashboardNewsHandler = async (request: Request): Promise<Response> => {
       return authorization;
     }
 
+    const id = getIdFromRequest(request);
+
+    if (request.method === "GET" && id) {
+      const news = await getDashboardNewsById(id);
+      return news ? json(news) : errorJson("Noticia no encontrada.", 404);
+    }
+
     if (request.method === "GET") {
       return json(await listDashboardNews());
     }
 
     if (request.method === "POST") {
-      const input = await parseDashboardNewsRequestInput(request);
+      const validation = await validateDashboardNewsMutation(request);
 
-      if (!input) {
-        return errorJson("Los datos de la noticia no son válidos.", 400);
+      if (!validation.ok) {
+        return validation.response;
       }
 
-      const imageError = validateDashboardNewsImageFile(input.coverImage);
+      return json(await createDashboardNews(validation.input), { status: 201 });
+    }
 
-      if (imageError) {
-        return errorJson(imageError, 400);
+    if (request.method === "PUT") {
+      if (!id) {
+        return errorJson("Falta el identificador de la noticia.", 400);
       }
 
-      const contentError = validateDashboardNewsContent(input);
+      const validation = await validateDashboardNewsMutation(request);
 
-      if (contentError) {
-        return errorJson(contentError, 400);
+      if (!validation.ok) {
+        return validation.response;
       }
 
-      return json(await createDashboardNews(input), { status: 201 });
+      return json(await updateDashboardNews(id, validation.input));
+    }
+
+    if (request.method === "DELETE") {
+      if (!id) {
+        return errorJson("Falta el identificador de la noticia.", 400);
+      }
+
+      await deleteDashboardNews(id);
+      return json(null);
     }
 
     return errorJson("Método no permitido.", 405);
@@ -49,7 +111,7 @@ const dashboardNewsHandler = async (request: Request): Promise<Response> => {
       error.message === "Sanity write token is not configured."
     ) {
       return errorJson(
-        "Falta configurar SANITY_WRITE_TOKEN para crear noticias.",
+        "Falta configurar SANITY_WRITE_TOKEN para crear o modificar noticias.",
         500
       );
     }
