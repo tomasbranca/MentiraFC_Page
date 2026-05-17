@@ -1,12 +1,14 @@
 import { z } from "zod";
 
 import {
-  DASHBOARD_NEWS_IMAGE_ACCEPTED_TYPES,
-  DASHBOARD_NEWS_IMAGE_MAX_BYTES,
   type DashboardNewsInput,
   type DashboardNewsItem,
   type DashboardNewsMutationInput,
 } from "../../src/types/dashboard";
+import {
+  DASHBOARD_NEWS_IMAGE_ACCEPTED_TYPES,
+  DASHBOARD_NEWS_IMAGE_MAX_BYTES,
+} from "./newsImage.js";
 import {
   deleteSanityDocument,
   mutateSanity,

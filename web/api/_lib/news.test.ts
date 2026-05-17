@@ -7,6 +7,14 @@ import {
   parseDashboardNewsInput,
   validateDashboardNewsImageFile,
 } from "./news.js";
+import {
+  DASHBOARD_NEWS_IMAGE_ACCEPTED_TYPES as DASHBOARD_NEWS_IMAGE_ACCEPTED_TYPES_FOR_API,
+  DASHBOARD_NEWS_IMAGE_MAX_BYTES as DASHBOARD_NEWS_IMAGE_MAX_BYTES_FOR_API,
+} from "./newsImage.js";
+import {
+  DASHBOARD_NEWS_IMAGE_ACCEPTED_TYPES as DASHBOARD_NEWS_IMAGE_ACCEPTED_TYPES_FOR_UI,
+  DASHBOARD_NEWS_IMAGE_MAX_BYTES as DASHBOARD_NEWS_IMAGE_MAX_BYTES_FOR_UI,
+} from "../../src/types/dashboard";
 
 describe("dashboard news api input", () => {
   it("acepta datos válidos para una noticia", () => {
@@ -86,6 +94,15 @@ describe("dashboard news api input", () => {
         })
       )
     ).toBe("La imagen no puede superar 4 MB en producción.");
+  });
+
+  it("mantiene alineadas las restricciones de imagen entre API y dashboard", () => {
+    expect(DASHBOARD_NEWS_IMAGE_ACCEPTED_TYPES_FOR_API).toEqual(
+      DASHBOARD_NEWS_IMAGE_ACCEPTED_TYPES_FOR_UI
+    );
+    expect(DASHBOARD_NEWS_IMAGE_MAX_BYTES_FOR_API).toBe(
+      DASHBOARD_NEWS_IMAGE_MAX_BYTES_FOR_UI
+    );
   });
 
   it("excluye drafts de Sanity en las lecturas del dashboard", () => {
