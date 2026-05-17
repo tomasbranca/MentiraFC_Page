@@ -5,13 +5,80 @@ import {
   deleteDashboardNews,
   fetchDashboardNews,
 } from "../../../data/dashboardNews";
+import { getImageSrcSet, getImageUrl } from "../../../data/imageService";
 import { queryKeys } from "../../../data/queryKeys";
 import { reportError } from "../../../lib/errors/errorLogger";
+import type { DashboardNewsItem } from "../../../types/dashboard";
 import Button from "../../components/Button/Button";
 import ErrorFallback from "../../components/errors/ErrorFallback";
 import Loader from "../../components/Loader/Loader";
 import { ROUTES } from "../../constants/routes.constants";
 import { formatDateTime } from "../../utils/date.utils";
+
+const NewsThumbnail = ({ item }: { item: DashboardNewsItem }) => {
+  const imageUrl = getImageUrl(item.imageUrl, {
+    width: 160,
+    height: 112,
+    fit: "crop",
+    quality: 72,
+  });
+  const imageSrcSet = getImageSrcSet(item.imageUrl, [96, 160, 240], {
+    height: (width) => Math.round(width * 0.7),
+    fit: "crop",
+    quality: 72,
+  });
+
+  if (!imageUrl) {
+    return (
+      <div
+        aria-label="Noticia sin imagen de portada"
+        className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-violet-400/10 text-[0.65rem] font-black uppercase tracking-[0.18em] text-violet-100/55 md:h-16 md:w-20"
+      >
+        MFC
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={imageUrl}
+      srcSet={imageSrcSet || undefined}
+      sizes="(max-width: 767px) 56px, 80px"
+      alt={`Portada de ${item.title}`}
+      loading="lazy"
+      decoding="async"
+      className="h-14 w-14 shrink-0 rounded-2xl border border-white/10 object-cover md:h-16 md:w-20"
+    />
+  );
+};
+
+const DeleteNewsButton = ({
+  itemId,
+  isDeleting,
+  onDelete,
+}: {
+  itemId: string;
+  isDeleting: boolean;
+  onDelete: (id: string) => void;
+}) => (
+  <Button
+    type="button"
+    variant="ghostStrong"
+    className="rounded-full px-3 py-2 text-xs"
+    disabled={isDeleting}
+    onClick={() => {
+      if (
+        window.confirm(
+          "Esta noticia se eliminará de forma definitiva. ¿Querés continuar?"
+        )
+      ) {
+        onDelete(itemId);
+      }
+    }}
+  >
+    Borrar
+  </Button>
+);
 
 const DashboardNewsList = () => {
   const queryClient = useQueryClient();
@@ -101,77 +168,101 @@ const DashboardNewsList = () => {
       ) : (
         <div className="p-4 sm:p-5">
           <div className="overflow-hidden rounded-[1.2rem] border border-white/10 bg-white/[0.025]">
-          <table className="w-full min-w-[46rem] border-collapse text-left">
-            <thead className="bg-white/[0.03] text-xs uppercase tracking-[0.18em] text-violet-100/65">
-              <tr>
-                <th className="px-5 py-4">Noticia</th>
-                <th className="px-5 py-4">Fecha</th>
-                <th className="px-5 py-4">Estado</th>
-                <th className="px-5 py-4">Slug</th>
-                <th className="px-5 py-4 text-right">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
+            <div className="divide-y divide-white/8 md:hidden">
               {news.map((item) => (
-                <tr
-                  key={item.id}
-                  className="border-t border-white/8 text-sm text-violet-50 transition hover:bg-white/[0.045]"
-                >
-                  <td className="max-w-sm px-5 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 shrink-0 rounded-2xl border border-white/10 bg-violet-400/10" />
-                      <div className="min-w-0">
-                        <p className="truncate font-medium text-white">
-                          {item.title}
-                        </p>
-                        <p className="truncate text-xs text-violet-100/55">
-                          {item.description}
-                        </p>
-                      </div>
+                <article key={item.id} className="p-4 text-sm text-violet-50">
+                  <div className="flex min-w-0 gap-3">
+                    <NewsThumbnail item={item} />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-violet-100/45">
+                        {formatDateTime(item.date)}
+                      </p>
+                      <h3 className="mt-1 line-clamp-2 text-sm font-black uppercase leading-snug text-white">
+                        {item.title}
+                      </h3>
+                      <p className="mt-1 line-clamp-2 text-xs leading-snug text-violet-100/60">
+                        {item.description}
+                      </p>
                     </div>
-                  </td>
-                  <td className="px-5 py-4 text-violet-100/70">
-                    {formatDateTime(item.date)}
-                  </td>
-                  <td className="px-5 py-4">
+                  </div>
+
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
                     <span className="inline-flex rounded-full bg-emerald-300/12 px-3 py-1 text-xs font-medium text-emerald-100">
                       Publicada
                     </span>
-                  </td>
-                  <td className="px-5 py-4 text-violet-100/65">
-                    {item.slug}
-                  </td>
-                  <td className="px-5 py-4">
-                    <div className="flex justify-end gap-2">
+                    <div className="flex gap-2">
                       <Link
                         to={ROUTES.DASHBOARD_NEWS_EDIT(item.id)}
                         className="rounded-full border border-violet-200/20 bg-violet-300/10 px-3 py-2 text-xs font-semibold text-white transition hover:border-violet-200/45 hover:bg-violet-300/16"
                       >
                         Editar
                       </Link>
-                      <Button
-                        type="button"
-                        variant="ghostStrong"
-                        className="rounded-full px-3 py-2 text-xs"
-                        disabled={deleteMutation.isPending}
-                        onClick={() => {
-                          if (
-                            window.confirm(
-                              "Esta noticia se eliminará de forma definitiva. ¿Querés continuar?"
-                            )
-                          ) {
-                            deleteMutation.mutate(item.id);
-                          }
-                        }}
-                      >
-                        Borrar
-                      </Button>
+                      <DeleteNewsButton
+                        itemId={item.id}
+                        isDeleting={deleteMutation.isPending}
+                        onDelete={deleteMutation.mutate}
+                      />
                     </div>
-                  </td>
-                </tr>
+                  </div>
+                </article>
               ))}
-            </tbody>
-          </table>
+            </div>
+
+            <table className="hidden w-full border-collapse text-left md:table">
+              <thead className="bg-white/[0.03] text-xs uppercase tracking-[0.18em] text-violet-100/65">
+                <tr>
+                  <th className="px-5 py-4">Noticia</th>
+                  <th className="px-5 py-4">Fecha</th>
+                  <th className="px-5 py-4">Estado</th>
+                  <th className="px-5 py-4 text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {news.map((item) => (
+                  <tr
+                    key={item.id}
+                    className="border-t border-white/8 text-sm text-violet-50 transition hover:bg-white/[0.045]"
+                  >
+                    <td className="max-w-sm px-5 py-4">
+                      <div className="flex items-center gap-3">
+                        <NewsThumbnail item={item} />
+                        <div className="min-w-0">
+                          <p className="truncate font-medium text-white">
+                            {item.title}
+                          </p>
+                          <p className="truncate text-xs text-violet-100/55">
+                            {item.description}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-5 py-4 text-violet-100/70">
+                      {formatDateTime(item.date)}
+                    </td>
+                    <td className="px-5 py-4">
+                      <span className="inline-flex rounded-full bg-emerald-300/12 px-3 py-1 text-xs font-medium text-emerald-100">
+                        Publicada
+                      </span>
+                    </td>
+                    <td className="px-5 py-4">
+                      <div className="flex justify-end gap-2">
+                        <Link
+                          to={ROUTES.DASHBOARD_NEWS_EDIT(item.id)}
+                          className="rounded-full border border-violet-200/20 bg-violet-300/10 px-3 py-2 text-xs font-semibold text-white transition hover:border-violet-200/45 hover:bg-violet-300/16"
+                        >
+                          Editar
+                        </Link>
+                        <DeleteNewsButton
+                          itemId={item.id}
+                          isDeleting={deleteMutation.isPending}
+                          onDelete={deleteMutation.mutate}
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
