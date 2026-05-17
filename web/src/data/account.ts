@@ -1,7 +1,6 @@
-import { z } from "zod";
-
 import { getSupabaseClient } from "../utils/supabase";
 import type { CurrentAccount } from "../types/auth";
+import { z, zodParseOptions } from "./zodRuntime";
 
 const currentAccountRowSchema = z.object({
   id: z.string().uuid(),
@@ -14,7 +13,7 @@ const currentAccountRowSchema = z.object({
 export const adaptCurrentAccountRow = (
   input: unknown
 ): CurrentAccount | null => {
-  const parsed = currentAccountRowSchema.safeParse(input);
+  const parsed = currentAccountRowSchema.safeParse(input, zodParseOptions);
 
   if (!parsed.success) {
     return null;

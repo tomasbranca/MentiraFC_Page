@@ -1,7 +1,6 @@
-import { z } from "zod";
-
 import { getSupabaseClient } from "../utils/supabase";
 import type { DashboardNewsInput, DashboardNewsItem } from "../types/dashboard";
+import { z, zodParseOptions } from "./zodRuntime";
 
 const dashboardNewsSchema = z.object({
   id: z.string(),
@@ -60,14 +59,17 @@ const fetchDashboardApi = async <T>(
 
 export const fetchDashboardNews = async (): Promise<DashboardNewsItem[]> => {
   const data = await fetchDashboardApi<unknown[]>("/api/dashboard/news");
-  return dashboardNewsListSchema.parse(data) as DashboardNewsItem[];
+  return dashboardNewsListSchema.parse(
+    data,
+    zodParseOptions
+  ) as DashboardNewsItem[];
 };
 
 export const fetchDashboardNewsById = async (
   id: string
 ): Promise<DashboardNewsItem> => {
   const data = await fetchDashboardApi<unknown>(`/api/dashboard/news/${id}`);
-  return dashboardNewsSchema.parse(data) as DashboardNewsItem;
+  return dashboardNewsSchema.parse(data, zodParseOptions) as DashboardNewsItem;
 };
 
 export const createDashboardNews = async (
@@ -78,7 +80,7 @@ export const createDashboardNews = async (
     body: JSON.stringify(input),
   });
 
-  return dashboardNewsSchema.parse(data) as DashboardNewsItem;
+  return dashboardNewsSchema.parse(data, zodParseOptions) as DashboardNewsItem;
 };
 
 export const updateDashboardNews = async (
@@ -90,7 +92,7 @@ export const updateDashboardNews = async (
     body: JSON.stringify(input),
   });
 
-  return dashboardNewsSchema.parse(data) as DashboardNewsItem;
+  return dashboardNewsSchema.parse(data, zodParseOptions) as DashboardNewsItem;
 };
 
 export const deleteDashboardNews = async (id: string): Promise<void> => {
