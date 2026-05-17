@@ -14,5 +14,5 @@ export const AUTH_LINK = {
 };
 
 export const ACCOUNT_MENU_ITEMS = [
-  { label: "Mi cuenta", enabled: false },
+  { label: "Mi cuenta", to: ROUTES.ACCOUNT, enabled: true },
 ] as const;

@@ -6,15 +6,16 @@ import { AuthContext } from "../../context/AuthContext";
 import Login from "./Login";
 
 vi.mock("../../../utils/supabase", () => ({
-  supabase: {
-    auth: {
-      signInWithPassword: vi.fn(),
-      signUp: vi.fn(),
-    },
-  },
+  getSupabaseClient: vi.fn(() => null),
 }));
 
-const renderLogin = (initialMode?: "signIn" | "signUp" | "resetPassword") =>
+const renderLogin = ({
+  initialMode,
+  authNotice = null,
+}: {
+  initialMode?: "signIn" | "signUp" | "resetPassword";
+  authNotice?: "banned" | null;
+} = {}) =>
   renderToStaticMarkup(
     <MemoryRouter>
       <AuthContext.Provider
@@ -22,7 +23,13 @@ const renderLogin = (initialMode?: "signIn" | "signUp" | "resetPassword") =>
           session: null,
           user: null,
           isLoading: false,
+          account: null,
+          isAccountLoading: false,
+          accountError: null,
+          authNotice,
           signOut: async () => undefined,
+          clearAuthNotice: () => undefined,
+          refreshAccount: async () => undefined,
         }}
       >
         <Login initialMode={initialMode} />
@@ -46,11 +53,17 @@ describe("Login", () => {
   });
 
   it("incluye nombre y apellido al crear una cuenta", () => {
-    const markup = renderLogin("signUp");
+    const markup = renderLogin({ initialMode: "signUp" });
 
     expect(markup).toContain("Nombre");
     expect(markup).toContain("Apellido");
     expect(markup).toContain('autoComplete="given-name"');
     expect(markup).toContain('autoComplete="family-name"');
+  });
+
+  it("muestra el mensaje de usuario baneado", () => {
+    const markup = renderLogin({ authNotice: "banned" });
+
+    expect(markup).toContain("Tu usuario ha sido baneado.");
   });
 });

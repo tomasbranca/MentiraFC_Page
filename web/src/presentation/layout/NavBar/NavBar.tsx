@@ -14,6 +14,10 @@ import {
 } from "../../constants/assets.constants";
 import { ROUTES } from "../../constants/routes.constants";
 import { useAuth } from "../../context/useAuth";
+import {
+  canAccessAdminPanel,
+  canAccessDashboard,
+} from "../../../domain/auth/permissions";
 
 import {
   ACCOUNT_MENU_ITEMS,
@@ -24,10 +28,13 @@ import { useNavBarScroll } from "./hooks/useNavBarScroll";
 
 import "./NavBar.css";
 
-const getDisplayName = (user: ReturnType<typeof useAuth>["user"]): string => {
-  const metadata = user?.user_metadata;
+const getFallbackDisplayName = (
+  user: ReturnType<typeof useAuth>["user"]
+): string => {
   const firstName =
-    typeof metadata?.first_name === "string" ? metadata.first_name.trim() : "";
+    typeof user?.user_metadata?.first_name === "string"
+      ? user.user_metadata.first_name.trim()
+      : "";
 
   if (firstName) {
     return firstName;
@@ -41,11 +48,27 @@ const getDisplayName = (user: ReturnType<typeof useAuth>["user"]): string => {
 const NavBar = () => {
   const isScrolled = useNavBarScroll();
   const navigate = useNavigate();
-  const { user, isLoading: isAuthLoading, signOut } = useAuth();
+  const {
+    user,
+    account,
+    isLoading: isAuthLoading,
+    isAccountLoading,
+    signOut,
+  } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const accountMenuRef = useRef<HTMLDivElement | null>(null);
-  const displayName = getDisplayName(user);
+  const displayName = account?.firstName ?? getFallbackDisplayName(user);
+  const isAccountPending = isAuthLoading || (Boolean(user) && isAccountLoading);
+  const accountMenuItems = [
+    ...ACCOUNT_MENU_ITEMS,
+    ...(canAccessDashboard(account?.role)
+      ? [{ label: "Dashboard", enabled: false as const }]
+      : []),
+    ...(canAccessAdminPanel(account?.role)
+      ? [{ label: "Panel admin", enabled: false as const }]
+      : []),
+  ];
 
   useEffect(() => {
     if (!accountMenuOpen) {
@@ -124,7 +147,7 @@ const NavBar = () => {
               <GameWidget />
             </div>
 
-            {isAuthLoading ? (
+            {isAccountPending ? (
               <div
                 aria-hidden="true"
                 className="account-placeholder desktop-only"
@@ -149,17 +172,29 @@ const NavBar = () => {
 
                 {accountMenuOpen && (
                   <div className="account-dropdown" role="menu">
-                    {ACCOUNT_MENU_ITEMS.map((item) => (
-                      <button
-                        key={item.label}
-                        type="button"
-                        disabled={!item.enabled}
-                        className="account-dropdown-item"
-                        role="menuitem"
-                      >
-                        {item.label}
-                      </button>
-                    ))}
+                    {accountMenuItems.map((item) =>
+                      item.enabled && "to" in item ? (
+                        <Link
+                          key={item.label}
+                          to={item.to}
+                          className="account-dropdown-item"
+                          role="menuitem"
+                          onClick={() => setAccountMenuOpen(false)}
+                        >
+                          {item.label}
+                        </Link>
+                      ) : (
+                        <button
+                          key={item.label}
+                          type="button"
+                          disabled
+                          className="account-dropdown-item"
+                          role="menuitem"
+                        >
+                          {item.label}
+                        </button>
+                      )
+                    )}
 
                     <button
                       type="button"
@@ -210,11 +245,32 @@ const NavBar = () => {
           ))}
         </nav>
 
-        {isAuthLoading ? (
+        {isAccountPending ? (
           <div aria-hidden="true" className="mobile-account-placeholder" />
         ) : user ? (
           <div className="mobile-account-section">
             <p className="mobile-account-name">{displayName}</p>
+            {accountMenuItems.map((item) =>
+              item.enabled && "to" in item ? (
+                <Link
+                  key={item.label}
+                  to={item.to}
+                  className="mobile-account-action"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {item.label}
+                </Link>
+              ) : (
+                <button
+                  key={item.label}
+                  type="button"
+                  className="mobile-account-action"
+                  disabled
+                >
+                  {item.label}
+                </button>
+              )
+            )}
             <button
               type="button"
               className="mobile-account-action"

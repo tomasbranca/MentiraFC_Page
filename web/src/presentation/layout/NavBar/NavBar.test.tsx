@@ -21,9 +21,19 @@ const createUser = (): User =>
 const renderNavBar = ({
   user,
   isLoading = false,
+  account = null,
+  isAccountLoading = false,
 }: {
   user: User | null;
   isLoading?: boolean;
+  account?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    role: "user" | "editor" | "admin";
+    isActive: true;
+  } | null;
+  isAccountLoading?: boolean;
 }) =>
   renderToStaticMarkup(
     <MemoryRouter>
@@ -32,7 +42,13 @@ const renderNavBar = ({
           session: null,
           user,
           isLoading,
+          account,
+          isAccountLoading,
+          accountError: null,
+          authNotice: null,
           signOut: async () => undefined,
+          clearAuthNotice: () => undefined,
+          refreshAccount: async () => undefined,
         }}
       >
         <GameContext.Provider
@@ -64,10 +80,49 @@ describe("NavBar", () => {
   });
 
   it("muestra el nombre de la cuenta autenticada", () => {
-    const markup = renderNavBar({ user: createUser() });
+    const markup = renderNavBar({
+      user: createUser(),
+      account: {
+        id: "8c2c2e11-31dc-4af2-86b0-ec8ad56a2c76",
+        firstName: "Tomas",
+        lastName: "Brancatisano",
+        role: "user",
+        isActive: true,
+      },
+    });
 
     expect(markup).toContain("Tomas");
+    expect(markup).toContain("Mi cuenta");
     expect(markup).toContain("Cerrar sesión");
+    expect(markup).toContain("mobile-account-name");
     expect(markup).not.toContain("INGRESAR");
+  });
+
+  it("muestra accesos futuros solo para los roles correspondientes", () => {
+    const editorMarkup = renderNavBar({
+      user: createUser(),
+      account: {
+        id: "8c2c2e11-31dc-4af2-86b0-ec8ad56a2c76",
+        firstName: "Tomas",
+        lastName: "Brancatisano",
+        role: "editor",
+        isActive: true,
+      },
+    });
+    const adminMarkup = renderNavBar({
+      user: createUser(),
+      account: {
+        id: "8c2c2e11-31dc-4af2-86b0-ec8ad56a2c76",
+        firstName: "Tomas",
+        lastName: "Brancatisano",
+        role: "admin",
+        isActive: true,
+      },
+    });
+
+    expect(editorMarkup).toContain("Dashboard");
+    expect(editorMarkup).not.toContain("Panel admin");
+    expect(adminMarkup).toContain("Dashboard");
+    expect(adminMarkup).toContain("Panel admin");
   });
 });

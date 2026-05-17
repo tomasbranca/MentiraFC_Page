@@ -104,6 +104,13 @@ export const STATIC_PAGE_HEAD = {
     canonicalUrl: canonicalUrl(ROUTES.LOGIN),
     robots: "noindex, nofollow",
   },
+  account: {
+    ...DEFAULT_HEAD,
+    title: withSiteName("Mi cuenta"),
+    description: "Datos de cuenta de Mentira FC.",
+    canonicalUrl: canonicalUrl(ROUTES.ACCOUNT),
+    robots: "noindex, nofollow",
+  },
 } satisfies Record<string, HeadMetadata>;
 
 const normalizePathname = (pathname: string): string => {
@@ -134,6 +141,8 @@ export const getStaticPageHeadByPathname = (
       return STATIC_PAGE_HEAD.record;
     case ROUTES.LOGIN:
       return STATIC_PAGE_HEAD.login;
+    case ROUTES.ACCOUNT:
+      return STATIC_PAGE_HEAD.account;
     default:
       return null;
   }

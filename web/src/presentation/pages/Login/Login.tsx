@@ -82,6 +82,7 @@ const SIGN_UP_ERROR_MESSAGE =
   "No pudimos crear tu cuenta. Revisá los datos e intentá de nuevo.";
 const SIGN_UP_CONFIRMATION_MESSAGE =
   "Te enviamos un mail para confirmar tu cuenta. Revisá tu bandeja de entrada antes de ingresar.";
+const BANNED_ACCOUNT_MESSAGE = "Tu usuario ha sido baneado.";
 
 type LoginProps = {
   initialMode?: AuthMode;
@@ -89,14 +90,26 @@ type LoginProps = {
 
 const Login = ({ initialMode = "signIn" }: LoginProps) => {
   const navigate = useNavigate();
-  const { user, isLoading: isAuthLoading } = useAuth();
+  const {
+    user,
+    isLoading: isAuthLoading,
+    authNotice,
+    clearAuthNotice,
+  } = useAuth();
   const [mode, setMode] = useState<AuthMode>(initialMode);
   const [showPassword, setShowPassword] = useState(false);
   const [values, setValues] = useState<AuthFormValues>(
     createEmptyAuthFormValues
   );
   const [errors, setErrors] = useState<AuthFormErrors>({});
-  const [status, setStatus] = useState<FormStatus | null>(null);
+  const [status, setStatus] = useState<FormStatus | null>(() =>
+    authNotice === "banned"
+      ? {
+          tone: "error",
+          message: BANNED_ACCOUNT_MESSAGE,
+        }
+      : null
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const panelContent = PANEL_CONTENT[mode];
   const formContent = FORM_CONTENT[mode];
@@ -107,6 +120,12 @@ const Login = ({ initialMode = "signIn" }: LoginProps) => {
       navigate(ROUTES.HOME, { replace: true });
     }
   }, [isAuthLoading, navigate, user]);
+
+  useEffect(() => {
+    if (authNotice) {
+      clearAuthNotice();
+    }
+  }, [authNotice, clearAuthNotice]);
 
   const handleFieldChange = (event: ChangeEvent<HTMLInputElement>) => {
     const fieldName = event.target.name as keyof AuthFormValues;
@@ -166,7 +185,10 @@ const Login = ({ initialMode = "signIn" }: LoginProps) => {
         if (error) {
           setStatus({
             tone: "error",
-            message: SIGN_IN_ERROR_MESSAGE,
+            message:
+              error.code === "user_banned"
+                ? BANNED_ACCOUNT_MESSAGE
+                : SIGN_IN_ERROR_MESSAGE,
           });
           return;
         }

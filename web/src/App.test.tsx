@@ -15,7 +15,13 @@ describe("App", () => {
             session: null,
             user: null,
             isLoading: false,
+            account: null,
+            isAccountLoading: false,
+            accountError: null,
+            authNotice: null,
             signOut: async () => undefined,
+            clearAuthNotice: () => undefined,
+            refreshAccount: async () => undefined,
           }}
         >
           <App initialData={createBootstrapErrorPayload()} />

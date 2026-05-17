@@ -235,9 +235,11 @@
   background: transparent;
   color: white;
   cursor: pointer;
+  display: block;
   font-size: 0.9rem;
   padding: 0.85rem 1rem;
   text-align: left;
+  text-decoration: none;
 }
 
 .account-dropdown-item:disabled {
@@ -376,10 +378,18 @@
   background: transparent;
   color: rgba(255, 255, 255, 0.88);
   cursor: pointer;
+  display: block;
   font-size: 1rem;
+  margin-top: 0.85rem;
   padding: 0;
+  text-align: left;
 }
 
 .mobile-account-action:hover {
   color: white;
+}
+
+.mobile-account-action:disabled {
+  color: rgba(255, 255, 255, 0.45);
+  cursor: not-allowed;
 }

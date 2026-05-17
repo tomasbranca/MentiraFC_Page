@@ -6,6 +6,7 @@ export const ROUTES = {
   TABLE: "/tabla",
   RECORD: "/historial",
   LOGIN: "/ingresar",
+  ACCOUNT: "/mi-cuenta",
 
   NEWS_DETAIL: (slug: string) => `/noticias/${slug}`,
   GALLERY_DETAIL: (slug: string) => `/galeria/${slug}`,

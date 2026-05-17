@@ -11,6 +11,7 @@ import NavBar from "./presentation/layout/NavBar/NavBar";
 import { ROUTES } from "./presentation/constants/routes.constants";
 import RouteHead from "./presentation/seo/RouteHead";
 import Home from "./presentation/pages/Home/Home";
+import RequireAuth from "./presentation/routing/RequireAuth";
 
 import { lazyWithReload } from "./lib/lazyWithReload";
 
@@ -26,6 +27,9 @@ const Team = lazyWithReload(() => import("./presentation/pages/Team/Team"));
 const Table = lazyWithReload(() => import("./presentation/pages/Table/Table"));
 const Record = lazyWithReload(() => import("./presentation/pages/Record/Record"));
 const Login = lazyWithReload(() => import("./presentation/pages/Login/Login"));
+const Account = lazyWithReload(
+  () => import("./presentation/pages/Account/Account")
+);
 const NewsDetail = lazyWithReload(
   () => import("./presentation/pages/NewsDetail/NewsDetail"),
 );
@@ -132,6 +136,14 @@ function App({ initialData }: AppProps) {
                 <Route path={ROUTES.TABLE} element={<Table />} />
                 <Route path={ROUTES.RECORD} element={<Record />} />
                 <Route path={ROUTES.LOGIN} element={<Login />} />
+                <Route
+                  path={ROUTES.ACCOUNT}
+                  element={
+                    <RequireAuth>
+                      <Account />
+                    </RequireAuth>
+                  }
+                />
                 <Route
                   path={ROUTES.NEWS_DETAIL(":slug")}
                   element={<NewsDetail />}
