@@ -64,4 +64,68 @@ describe("NewsRichContent", () => {
     expect(markup).toContain("https://www.youtube.com/embed/abc123");
     expect(markup).toContain("https://cdn.sanity.io/files/project/dataset/gol.mp4");
   });
+
+  it("renderiza enlaces internos y externos", () => {
+    const content: NewsContentBlock[] = [
+      {
+        _key: "paragraph-links",
+        _type: "block",
+        style: "normal",
+        markDefs: [
+          { _key: "internal-link", _type: "link", href: "/plantel" },
+          { _key: "external-link", _type: "link", href: "https://example.com" },
+        ],
+        children: [
+          {
+            _key: "span-internal",
+            _type: "span",
+            marks: ["internal-link"],
+            text: "Plantel",
+          },
+          {
+            _key: "span-external",
+            _type: "span",
+            marks: ["external-link"],
+            text: "Sitio externo",
+          },
+        ],
+      },
+    ];
+
+    const markup = renderToStaticMarkup(<NewsRichContent content={content} />);
+
+    expect(markup).toContain('href="/plantel"');
+    expect(markup).toContain('href="https://example.com"');
+    expect(markup).toContain('target="_blank"');
+  });
+
+  it("no renderiza hrefs inseguros", () => {
+    const content: NewsContentBlock[] = [
+      {
+        _key: "paragraph-links",
+        _type: "block",
+        style: "normal",
+        markDefs: [
+          {
+            _key: "unsafe-link",
+            _type: "link",
+            href: "javascript:alert(1)",
+          },
+        ],
+        children: [
+          {
+            _key: "span-unsafe",
+            _type: "span",
+            marks: ["unsafe-link"],
+            text: "No ejecutar",
+          },
+        ],
+      },
+    ];
+
+    const markup = renderToStaticMarkup(<NewsRichContent content={content} />);
+
+    expect(markup).toContain("No ejecutar");
+    expect(markup).not.toContain("javascript:alert(1)");
+  });
 });

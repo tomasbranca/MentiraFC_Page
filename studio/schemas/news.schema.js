@@ -25,7 +25,62 @@ export default {
       title: 'Contenido',
       type: 'array',
       of: [
-        {type: 'block'},
+        {
+          type: 'block',
+          styles: [
+            {title: 'Normal', value: 'normal'},
+            {title: 'Titulo 2', value: 'h2'},
+            {title: 'Titulo 3', value: 'h3'},
+            {title: 'Cita', value: 'blockquote'},
+          ],
+          lists: [
+            {title: 'Viñetas', value: 'bullet'},
+            {title: 'Numerada', value: 'number'},
+          ],
+          marks: {
+            decorators: [
+              {title: 'Negrita', value: 'strong'},
+              {title: 'Cursiva', value: 'em'},
+              {title: 'Subrayado', value: 'underline'},
+            ],
+            annotations: [
+              {
+                name: 'link',
+                title: 'Enlace',
+                type: 'object',
+                fields: [
+                  {
+                    name: 'href',
+                    title: 'URL',
+                    type: 'string',
+                    validation: (Rule) =>
+                      Rule.required().custom((value) => {
+                        if (typeof value !== 'string') {
+                          return 'El enlace necesita una URL valida.'
+                        }
+
+                        if (
+                          value.startsWith('#') ||
+                          (value.startsWith('/') && !value.startsWith('//'))
+                        ) {
+                          return true
+                        }
+
+                        try {
+                          const url = new globalThis.URL(value)
+                          return ['http:', 'https:'].includes(url.protocol)
+                            ? true
+                            : 'Usa una URL http(s) o una ruta interna.'
+                        } catch {
+                          return 'Usa una URL http(s) o una ruta interna.'
+                        }
+                      }),
+                  },
+                ],
+              },
+            ],
+          },
+        },
         {
           type: 'image',
           title: 'Foto',

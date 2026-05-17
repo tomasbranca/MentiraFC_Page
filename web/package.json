@@ -13,6 +13,7 @@
     "check": "npm run lint && npm run typecheck && npm run test && npm run build"
   },
   "dependencies": {
+    "@portabletext/editor": "^6.6.4",
     "@portabletext/react": "^5.0.0",
     "@sentry/react": "^10.50.0",
     "@sentry/vite-plugin": "^5.2.0",

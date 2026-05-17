@@ -83,6 +83,7 @@ const buildDashboardNewsFormData = (
   formData.set("date", input.date);
   formData.set("slug", input.slug);
   formData.set("imageAlt", input.imageAlt);
+  formData.set("content", JSON.stringify(input.content));
 
   if (input.useDefaultImage) {
     formData.set("useDefaultImage", "true");
@@ -91,6 +92,10 @@ const buildDashboardNewsFormData = (
   if (input.coverImage) {
     formData.set("coverImage", input.coverImage, input.coverImage.name);
   }
+
+  Object.entries(input.contentImageFiles ?? {}).forEach(([uploadKey, file]) => {
+    formData.set(`contentImage:${uploadKey}`, file, file.name);
+  });
 
   return formData;
 };

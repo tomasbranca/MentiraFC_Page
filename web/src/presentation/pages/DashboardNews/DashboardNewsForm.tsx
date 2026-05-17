@@ -28,11 +28,20 @@ import { ROUTES } from "../../constants/routes.constants";
 import {
   buildNewsSlug,
   fromDatetimeLocalValue,
+  readDashboardNewsImageDimensions,
   toDatetimeLocalValue,
   validateDashboardNewsImageDimensions,
   validateDashboardNewsImageFile,
   validateDashboardNewsInput,
 } from "./dashboardNews.utils";
+import DashboardNewsContentEditor from "./DashboardNewsContentEditor";
+import {
+  getDashboardNewsContentImageFiles,
+  serializeDashboardNewsEditorBlocks,
+  toDashboardNewsEditorBlocks,
+  type DashboardNewsEditorBlock,
+  validateDashboardNewsEditorBlocks,
+} from "./dashboardNewsContent.utils";
 
 const createInitialValues = (): DashboardNewsInput => ({
   title: "",
@@ -41,27 +50,6 @@ const createInitialValues = (): DashboardNewsInput => ({
   slug: "",
   imageAlt: "",
 });
-
-const readImageDimensions = (
-  file: File
-): Promise<{ width: number; height: number }> =>
-  new Promise((resolve, reject) => {
-    const previewUrl = URL.createObjectURL(file);
-    const image = new Image();
-
-    image.onload = () => {
-      URL.revokeObjectURL(previewUrl);
-      resolve({
-        width: image.naturalWidth,
-        height: image.naturalHeight,
-      });
-    };
-    image.onerror = () => {
-      URL.revokeObjectURL(previewUrl);
-      reject(new Error("Invalid image file."));
-    };
-    image.src = previewUrl;
-  });
 
 const DashboardNewsForm = () => {
   const { id } = useParams();
@@ -79,6 +67,10 @@ const DashboardNewsForm = () => {
   >(null);
   const [imageError, setImageError] = useState<string | null>(null);
   const [useDefaultImage, setUseDefaultImage] = useState(!isEditing);
+  const [contentBlocks, setContentBlocks] = useState<DashboardNewsEditorBlock[]>(
+    []
+  );
+  const [contentError, setContentError] = useState<string | null>(null);
 
   const newsQuery = useQuery({
     queryKey: queryKeys.dashboard.news.byId(id ?? "new"),
@@ -114,6 +106,8 @@ const DashboardNewsForm = () => {
     setSelectedImageFile(null);
     setUseDefaultImage(false);
     setImageError(null);
+    setContentBlocks(toDashboardNewsEditorBlocks(newsQuery.data.content ?? []));
+    setContentError(null);
   }, [newsQuery.data]);
 
   useEffect(() => {
@@ -211,6 +205,7 @@ const DashboardNewsForm = () => {
       [name]: undefined,
     }));
     setStatus(null);
+    setContentError(null);
   };
 
   const handleCoverImageChange = async (
@@ -233,7 +228,7 @@ const DashboardNewsForm = () => {
     }
 
     try {
-      const dimensions = await readImageDimensions(file);
+      const dimensions = await readDashboardNewsImageDimensions(file);
       const dimensionsError = validateDashboardNewsImageDimensions(dimensions);
 
       if (dimensionsError) {
@@ -288,8 +283,12 @@ const DashboardNewsForm = () => {
     const nextErrors = validateDashboardNewsInput(normalizedValues);
     setErrors(nextErrors);
     setStatus(null);
+    setContentError(null);
 
-    if (Object.keys(nextErrors).length > 0 || imageError) {
+    const nextContentError = validateDashboardNewsEditorBlocks(contentBlocks);
+    setContentError(nextContentError);
+
+    if (Object.keys(nextErrors).length > 0 || imageError || nextContentError) {
       return;
     }
 
@@ -298,6 +297,8 @@ const DashboardNewsForm = () => {
         ...normalizedValues,
         coverImage: selectedImageFile,
         useDefaultImage,
+        content: serializeDashboardNewsEditorBlocks(contentBlocks),
+        contentImageFiles: getDashboardNewsContentImageFiles(contentBlocks),
       });
     } catch (error) {
       reportError(error, {
@@ -366,6 +367,17 @@ const DashboardNewsForm = () => {
               onChange={handleChange}
             />
           </div>
+
+          <DashboardNewsContentEditor
+            title={values.title}
+            blocks={contentBlocks}
+            error={contentError ?? undefined}
+            onChange={(blocks) => {
+              setContentBlocks(blocks);
+              setContentError(null);
+              setStatus(null);
+            }}
+          />
 
           <div className="flex flex-col gap-3 pt-2 sm:flex-row">
             <Button
@@ -474,16 +486,6 @@ const DashboardNewsForm = () => {
               muestra algo más específico.
             </p>
           </section>
-
-          <section className="rounded-[1.2rem] border border-white/10 bg-white/[0.03] p-4">
-            <h3 className="text-sm font-bold uppercase tracking-wide text-violet-100">
-              Contenido
-            </h3>
-            <p className="mt-3 text-sm text-violet-100/75">
-              La noticia todavía nace con un texto de ejemplo hasta sumar el
-              editor avanzado.
-            </p>
-          </section>
         </aside>
       </div>
     </div>
@@ -579,3 +581,5 @@ const TextAreaField = ({
 };
 
 export default DashboardNewsForm;
+
+

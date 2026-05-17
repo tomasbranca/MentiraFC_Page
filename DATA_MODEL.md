@@ -118,7 +118,7 @@ Campos:
 |---|---|---:|---|
 | `title` | `string` | Si | Titulo de la noticia. |
 | `description` | `string` | Si | Bajada o descripcion corta. |
-| `content` | `array` de `block` | Si | Contenido rico Portable Text. |
+| `content` | `array` de `block`, `image` y `video` | Si | Contenido rico Portable Text. Los bloques de texto permiten `h2`, `h3`, citas, listas, negrita, cursiva, subrayado y enlaces; las imagenes internas exigen `alt` y pueden llevar epigrafe. |
 | `image` | `image` | Si | Imagen principal, con hotspot. Incluye `alt` obligatorio para accesibilidad y SEO. |
 | `date` | `datetime` | Si | Fecha de publicacion o referencia editorial. Tiene valor inicial automatico. |
 | `slug` | `slug` | Si | Slug para URL publica. Se genera desde `title`. |
@@ -136,8 +136,6 @@ Relaciones actuales:
 
 Relaciones faltantes/proximas:
 
-- Agregar mas bloques de contenido al editor.
-- Permitir fotos y videos intercalados entre bloques de contenido.
 - Relacionar noticias con datos del sitio: `players`, futuro `staff`, `games`, `tournaments`, etc.
 - Agregar votaciones dentro o asociadas a noticias.
 - Agregar comentarios en noticias, probablemente vinculados al futuro modelo de `usuarios`.
@@ -465,7 +463,6 @@ Estas relaciones y modelos no existen hoy en Sanity. Quedan documentados como pe
 |---|---|---|
 | `players` | Agregar atributos, mapa de posiciones, redes sociales y premios internos. | Enriquecer el perfil publico del jugador. |
 | `players` / `games` | Calcular partidos jugados desde la convocatoria del partido. | Evitar cargar partidos jugados manualmente y usar el partido como fuente real. |
-| `news` | Agregar mas bloques de contenido y permitir fotos/videos entre bloques. | Mejorar la experiencia editorial de las notas. |
 | `news` | Relacionar noticias con `players`, `staff`, `games`, `tournaments`, etc. | Permitir contenido relacionado y contexto deportivo dentro de cada noticia. |
 | `news` / `usuarios` | Agregar votaciones y comentarios. | Habilitar participacion de usuarios en el sitio. |
 | `staff` | Agregar redes sociales. | Enriquecer el perfil publico del staff. |

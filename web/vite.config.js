@@ -145,6 +145,20 @@ export default defineConfig(({ mode }) => {
 
             if (id.includes("@sentry")) return "sentry";
             if (
+              id.includes("@portabletext/editor") ||
+              id.includes("@portabletext/html") ||
+              id.includes("@portabletext/keyboard-shortcuts") ||
+              id.includes("@portabletext/markdown") ||
+              id.includes("@portabletext/patches") ||
+              id.includes("@portabletext/schema") ||
+              id.includes("@portabletext/to-html") ||
+              id.includes("@xstate/react") ||
+              id.includes("scroll-into-view-if-needed") ||
+              id.includes("xstate")
+            ) {
+              return "dashboard-editor";
+            }
+            if (
               id.includes("@sanity") ||
               id.includes("event-source-polyfill") ||
               id.includes("eventsource") ||

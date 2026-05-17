@@ -5,6 +5,7 @@ import {
   dashboardNewsListQuery,
   parseDashboardNewsFormData,
   parseDashboardNewsInput,
+  validateDashboardNewsContent,
   validateDashboardNewsImageFile,
 } from "./news.js";
 import {
@@ -68,6 +69,20 @@ describe("dashboard news api input", () => {
     formData.set("date", "2026-05-16T21:30:00.000Z");
     formData.set("slug", "nueva-noticia");
     formData.set("imageAlt", "Portada de prueba");
+    formData.set(
+      "content",
+      JSON.stringify([
+        {
+          _key: "paragraph-1",
+          _type: "block",
+          style: "normal",
+          markDefs: [],
+          children: [
+            { _key: "span-1", _type: "span", marks: [], text: "Contenido" },
+          ],
+        },
+      ])
+    );
     formData.set("useDefaultImage", "true");
     formData.set("coverImage", file, file.name);
 
@@ -77,6 +92,13 @@ describe("dashboard news api input", () => {
       imageAlt: "Portada de prueba",
       coverImage: file,
       useDefaultImage: true,
+      content: [
+        {
+          _key: "paragraph-1",
+          _type: "block",
+          style: "normal",
+        },
+      ],
     });
   });
 
@@ -105,6 +127,93 @@ describe("dashboard news api input", () => {
     );
   });
 
+  it("valida contenido no vacio, imagenes internas y videos por URL", () => {
+    expect(
+      validateDashboardNewsContent({
+        title: "Nueva noticia",
+        description: "Descripción corta",
+        date: "2026-05-16T21:30:00.000Z",
+        slug: "nueva-noticia",
+        imageAlt: "Portada",
+        content: [],
+      })
+    ).toBe("Agregá al menos un bloque de contenido antes de guardar.");
+
+    expect(
+      validateDashboardNewsContent({
+        title: "Nueva noticia",
+        description: "Descripción corta",
+        date: "2026-05-16T21:30:00.000Z",
+        slug: "nueva-noticia",
+        imageAlt: "Portada",
+        content: [
+          {
+            _key: "video-1",
+            _type: "video",
+            url: "nota-video",
+          },
+        ],
+      })
+    ).toBe("Cada video del contenido necesita una URL válida.");
+
+    const contentImageFile = new File(["image"], "interna.webp", {
+      type: "image/webp",
+    });
+
+    expect(
+      validateDashboardNewsContent({
+        title: "Nueva noticia",
+        description: "Descripción corta",
+        date: "2026-05-16T21:30:00.000Z",
+        slug: "nueva-noticia",
+        imageAlt: "Portada",
+        content: [
+          {
+            _key: "image-1",
+            _type: "image",
+            alt: "Festejo",
+            uploadKey: "upload-1",
+          },
+        ],
+        contentImageFiles: {
+          "upload-1": contentImageFile,
+        },
+      })
+    ).toBeNull();
+
+    expect(
+      validateDashboardNewsContent({
+        title: "Nueva noticia",
+        description: "Descripción corta",
+        date: "2026-05-16T21:30:00.000Z",
+        slug: "nueva-noticia",
+        imageAlt: "Portada",
+        content: [
+          {
+            _key: "paragraph-1",
+            _type: "block",
+            style: "normal",
+            markDefs: [
+              {
+                _key: "unsafe-link",
+                _type: "link",
+                href: "javascript:alert(1)",
+              },
+            ],
+            children: [
+              {
+                _key: "span-1",
+                _type: "span",
+                marks: ["unsafe-link"],
+                text: "Nope",
+              },
+            ],
+          },
+        ],
+      })
+    ).toBe("Cada enlace del contenido necesita una URL segura.");
+  });
+
   it("excluye drafts de Sanity en las lecturas del dashboard", () => {
     expect(dashboardNewsListQuery).toContain(
       '!(_id in path("drafts.**"))'
@@ -113,5 +222,6 @@ describe("dashboard news api input", () => {
       '!(_id in path("drafts.**"))'
     );
     expect(dashboardNewsListQuery).toContain('"imageAssetId": image.asset->_id');
+    expect(dashboardNewsListQuery).toContain('"imageAssetId": asset->_id');
   });
 });

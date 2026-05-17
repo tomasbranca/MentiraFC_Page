@@ -1,4 +1,4 @@
-import type { NewsContentBlock } from "./models";
+import type { NewsContentBlock, NewsImageContentBlock } from "./models";
 
 export const DASHBOARD_NEWS_IMAGE_ACCEPTED_TYPES = [
   "image/jpeg",
@@ -32,7 +32,17 @@ export type DashboardNewsInput = {
   imageAlt: string;
 };
 
+export type DashboardNewsImageContentBlock = NewsImageContentBlock & {
+  uploadKey?: string;
+};
+
+export type DashboardNewsContentBlock =
+  | Exclude<NewsContentBlock, NewsImageContentBlock>
+  | DashboardNewsImageContentBlock;
+
 export type DashboardNewsMutationInput = DashboardNewsInput & {
   coverImage?: File | null;
   useDefaultImage?: boolean;
+  content: DashboardNewsContentBlock[];
+  contentImageFiles?: Record<string, File>;
 };

@@ -3,6 +3,7 @@ import {
   getDashboardNewsById,
   parseDashboardNewsRequestInput,
   updateDashboardNews,
+  validateDashboardNewsContent,
   validateDashboardNewsImageFile,
 } from "../../_lib/news.js";
 import { authorizeDashboardUser } from "../../_lib/auth.js";
@@ -45,6 +46,12 @@ const dashboardNewsByIdHandler = async (request: Request): Promise<Response> => 
 
       if (imageError) {
         return errorJson(imageError, 400);
+      }
+
+      const contentError = validateDashboardNewsContent(input);
+
+      if (contentError) {
+        return errorJson(contentError, 400);
       }
 
       return json(await updateDashboardNews(id, input));

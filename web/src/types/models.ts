@@ -136,6 +136,7 @@ export interface NewsImageContentBlock extends TypedObject {
   _type: "image";
   alt?: string;
   caption?: string;
+  imageAssetId?: string | null;
   imageUrl?: string | null;
   asset?: unknown;
 }

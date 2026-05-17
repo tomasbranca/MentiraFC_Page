@@ -113,3 +113,24 @@ export const validateDashboardNewsImageDimensions = ({
 
   return null;
 };
+
+export const readDashboardNewsImageDimensions = (
+  file: File
+): Promise<{ width: number; height: number }> =>
+  new Promise((resolve, reject) => {
+    const previewUrl = URL.createObjectURL(file);
+    const image = new Image();
+
+    image.onload = () => {
+      URL.revokeObjectURL(previewUrl);
+      resolve({
+        width: image.naturalWidth,
+        height: image.naturalHeight,
+      });
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(previewUrl);
+      reject(new Error("Invalid image file."));
+    };
+    image.src = previewUrl;
+  });

@@ -17,6 +17,33 @@ type ChildrenProps = {
   children?: ReactNode;
 };
 
+type LinkMarkProps = ChildrenProps & {
+  value?: {
+    href?: string;
+  };
+};
+
+const isSafeNewsHref = (href?: string | null): href is string => {
+  if (!href?.trim()) {
+    return false;
+  }
+
+  if (href.startsWith("#")) {
+    return true;
+  }
+
+  if (href.startsWith("/") && !href.startsWith("//")) {
+    return true;
+  }
+
+  try {
+    const parsed = new URL(href);
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+};
+
 const getEmbedVideoUrl = (videoUrl?: string | null): string | null => {
   if (!videoUrl) return null;
 
@@ -191,6 +218,26 @@ const portableTextComponents: Partial<PortableTextReactComponents> = {
     underline: ({ children }: ChildrenProps) => (
       <span className="underline">{children}</span>
     ),
+    link: ({ children, value }: LinkMarkProps) => {
+      const href = value?.href?.trim();
+
+      if (!isSafeNewsHref(href)) {
+        return <>{children}</>;
+      }
+
+      const isExternal = /^https?:\/\//i.test(href);
+
+      return (
+        <a
+          href={href}
+          target={isExternal ? "_blank" : undefined}
+          rel={isExternal ? "noreferrer" : undefined}
+          className="font-semibold text-violet-300 underline underline-offset-4 hover:text-violet-200"
+        >
+          {children}
+        </a>
+      );
+    },
   },
   list: {
     bullet: ({ children }: ChildrenProps) => (
