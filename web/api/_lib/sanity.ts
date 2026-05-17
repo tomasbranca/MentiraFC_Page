@@ -19,7 +19,8 @@ type SanityQueryResponse<T> = {
 };
 
 const getSanityConfig = ({ requireWriteToken = false } = {}) => {
-  const projectId = process.env.SANITY_PROJECT_ID ?? process.env.VITE_SANITY_PROJECT_ID;
+  const projectId =
+    process.env.SANITY_PROJECT_ID ?? process.env.VITE_SANITY_PROJECT_ID;
   const dataset = process.env.SANITY_DATASET ?? process.env.VITE_SANITY_DATASET;
   const apiVersion =
     process.env.SANITY_API_VERSION ?? process.env.VITE_SANITY_API_VERSION;
@@ -40,7 +41,7 @@ export const querySanity = async <T>(
   query: string,
   params?: Record<string, string>
 ): Promise<T> => {
-  const { projectId, dataset, apiVersion, token } = getSanityConfig();
+  const { projectId, dataset, apiVersion } = getSanityConfig();
   const url = new URL(
     `https://${projectId}.api.sanity.io/v${apiVersion}/data/query/${dataset}`
   );
@@ -51,9 +52,7 @@ export const querySanity = async <T>(
     url.searchParams.set(`$${key}`, JSON.stringify(value));
   }
 
-  const response = await fetch(url, {
-    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-  });
+  const response = await fetch(url);
   const payload = (await response.json()) as SanityQueryResponse<T>;
 
   if (!response.ok || payload.error || typeof payload.result === "undefined") {

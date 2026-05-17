@@ -30,6 +30,8 @@ const dashboardNewsItemSchema = z.object({
   content: z.array(z.unknown()).optional(),
 });
 
+const PUBLISHED_NEWS_FILTER = `_type == "news" && !(_id in path("drafts.**"))`;
+
 const dashboardNewsProjection = `{
   "id": _id,
   title,
@@ -45,6 +47,10 @@ const dashboardNewsProjection = `{
     "originalFilename": file.asset->originalFilename
   }
 }`;
+
+export const dashboardNewsListQuery = `*[${PUBLISHED_NEWS_FILTER}] | order(date desc) ${dashboardNewsProjection}`;
+
+export const dashboardNewsByIdQuery = `*[${PUBLISHED_NEWS_FILTER} && _id == $id][0] ${dashboardNewsProjection}`;
 
 const defaultContent = (title: string) => [
   {
@@ -75,9 +81,7 @@ const adaptDashboardNewsItem = (input: unknown): DashboardNewsItem => {
 };
 
 export const listDashboardNews = async (): Promise<DashboardNewsItem[]> => {
-  const result = await querySanity<unknown[]>(
-    `*[_type == "news"] | order(date desc) ${dashboardNewsProjection}`
-  );
+  const result = await querySanity<unknown[]>(dashboardNewsListQuery);
 
   return result.map(adaptDashboardNewsItem);
 };
@@ -86,7 +90,7 @@ export const getDashboardNewsById = async (
   id: string
 ): Promise<DashboardNewsItem | null> => {
   const result = await querySanity<unknown | null>(
-    `*[_type == "news" && _id == $id][0] ${dashboardNewsProjection}`,
+    dashboardNewsByIdQuery,
     { id }
   );
 
