@@ -140,6 +140,8 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         output: {
           manualChunks(id) {
+            const normalizedId = id.replace(/\\/g, "/");
+
             if (id.includes("vite/preload-helper")) return "runtime";
             if (!id.includes("node_modules")) return;
 
@@ -179,7 +181,11 @@ export default defineConfig(({ mode }) => {
               return "query";
             }
             if (id.includes("react-router")) return "router";
-            if (id.includes("react") || id.includes("react-dom")) {
+            if (
+              normalizedId.includes("/node_modules/react/") ||
+              normalizedId.includes("/node_modules/react-dom/") ||
+              normalizedId.includes("/node_modules/scheduler/")
+            ) {
               return "react-vendor";
             }
 
