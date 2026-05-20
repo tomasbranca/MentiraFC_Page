@@ -47,7 +47,7 @@ const getSanityConfig = ({ requireWriteToken = false } = {}) => {
   const dataset = process.env.SANITY_DATASET ?? process.env.VITE_SANITY_DATASET;
   const apiVersion =
     process.env.SANITY_API_VERSION ?? process.env.VITE_SANITY_API_VERSION;
-  const token = process.env.SANITY_WRITE_TOKEN;
+  const token = process.env.SANITY_API_WRITE_TOKEN;
 
   if (!projectId || !dataset || !apiVersion) {
     throw new Error("Sanity server environment variables are not configured.");

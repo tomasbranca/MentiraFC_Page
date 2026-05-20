@@ -9,6 +9,10 @@ const TRUSTED_VERCEL_SCRIPT_PATHS = new Set([
   "/v1/speed-insights/script.js",
   "/v1/speed-insights/script.debug.js",
 ]);
+const TRUSTED_VERCEL_LIVE_ORIGIN = "https://vercel.live";
+const TRUSTED_VERCEL_LIVE_SCRIPT_PATHS = new Set([
+  "/_next-live/feedback/feedback.js",
+]);
 
 type TrustedTypesPolicyFactory = {
   getPolicyNames?: () => string[];
@@ -52,9 +56,16 @@ export const isTrustedScriptUrl = (
       return TRUSTED_SCRIPT_PATHS.has(url.pathname);
     }
 
-    return (
+    if (
       url.origin === TRUSTED_VERCEL_SCRIPT_ORIGIN &&
       TRUSTED_VERCEL_SCRIPT_PATHS.has(url.pathname)
+    ) {
+      return true;
+    }
+
+    return (
+      url.origin === TRUSTED_VERCEL_LIVE_ORIGIN &&
+      TRUSTED_VERCEL_LIVE_SCRIPT_PATHS.has(url.pathname)
     );
   } catch {
     return false;

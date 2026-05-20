@@ -27,6 +27,10 @@
     "/v1/speed-insights/script.js": true,
     "/v1/speed-insights/script.debug.js": true,
   };
+  var trustedVercelLiveScriptOrigin = "https://vercel.live";
+  var trustedVercelLiveScriptPaths = {
+    "/_next-live/feedback/feedback.js": true,
+  };
 
   var isTrustedScriptUrl = function (value) {
     try {
@@ -35,9 +39,16 @@
         return Boolean(trustedScriptPaths[url.pathname]);
       }
 
-      return (
+      if (
         url.origin === trustedVercelScriptOrigin &&
         Boolean(trustedVercelScriptPaths[url.pathname])
+      ) {
+        return true;
+      }
+
+      return (
+        url.origin === trustedVercelLiveScriptOrigin &&
+        Boolean(trustedVercelLiveScriptPaths[url.pathname])
       );
     } catch {
       return false;
