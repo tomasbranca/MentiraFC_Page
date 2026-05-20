@@ -228,7 +228,7 @@ const DashboardNewsContentEditor = ({
       onDrop={() => handleDrop(block.id)}
       className="rounded-[4px] border border-white/10 bg-[#141418]"
     >
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
+      <div className="grid gap-3 border-b border-white/10 px-3 py-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:px-4">
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -249,12 +249,12 @@ const DashboardNewsContentEditor = ({
           </span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="grid grid-cols-3 gap-2 sm:flex sm:items-center">
           <button
             type="button"
             disabled={index === 0}
             onClick={() => moveBlock(block.id, -1)}
-            className={iconButtonClassName}
+            className={`${iconButtonClassName} w-full sm:w-10`}
             aria-label="Subir bloque"
             title="Subir bloque"
           >
@@ -264,7 +264,7 @@ const DashboardNewsContentEditor = ({
             type="button"
             disabled={index === blocks.length - 1}
             onClick={() => moveBlock(block.id, 1)}
-            className={iconButtonClassName}
+            className={`${iconButtonClassName} w-full sm:w-10`}
             aria-label="Bajar bloque"
             title="Bajar bloque"
           >
@@ -274,7 +274,7 @@ const DashboardNewsContentEditor = ({
             <button
               type="button"
               onClick={() => void removeBlock(block.id)}
-              className={`${iconButtonClassName} border-red-300/15 text-red-200 hover:border-red-200/35 hover:bg-red-400/10`}
+              className={`${iconButtonClassName} w-full border-red-300/15 text-red-200 hover:border-red-200/35 hover:bg-red-400/10 sm:w-10`}
               aria-label="Borrar bloque"
               title="Borrar bloque"
             >
@@ -284,7 +284,7 @@ const DashboardNewsContentEditor = ({
         </div>
       </div>
 
-      <div className="p-4">
+      <div className="p-2 sm:p-4">
         {block.kind === "richText" && (
           <DashboardNewsRichTextEditor
             key={block.id}
@@ -349,7 +349,7 @@ const DashboardNewsContentEditor = ({
 
   return (
     <section className="space-y-4">
-      <div className="flex flex-col gap-3 border-t border-white/10 pt-5 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 border-t border-white/10 pt-4 sm:flex-row sm:items-center sm:justify-between sm:pt-5">
         <div>
           <h3 className="text-sm font-bold uppercase tracking-wide text-violet-100">
             Contenido
@@ -375,7 +375,7 @@ const DashboardNewsContentEditor = ({
       </div>
 
       {showPreview ? (
-        <div className="rounded-[4px] border border-white/10 bg-black/20 p-4 sm:p-6">
+        <div className="rounded-[4px] border border-white/10 bg-black/20 p-3 sm:p-6">
           {previewContent.length > 0 ? (
             <NewsRichContent content={previewContent as NewsContentBlock[]} />
           ) : (
@@ -389,7 +389,7 @@ const DashboardNewsContentEditor = ({
           {blocks.length > 0 ? (
             <div className="space-y-4">{blocks.map(renderBlock)}</div>
           ) : (
-            <div className="rounded-[4px] border border-dashed border-white/15 bg-black/15 p-6 text-center">
+            <div className="rounded-[4px] border border-dashed border-white/15 bg-black/15 p-4 text-center sm:p-6">
               <p className="text-sm font-medium text-violet-100">
                 La noticia todavía no tiene contenido.
               </p>
@@ -463,7 +463,7 @@ const ImageBlockEditor = ({
   const imageUrl = block.previewUrl ?? block.value.imageUrl ?? "";
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)]">
+    <div className="grid gap-3 sm:gap-4 lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)]">
       <div className="overflow-hidden rounded-[3px] border border-white/10 bg-black/20">
         {imageUrl ? (
           <img
@@ -491,7 +491,7 @@ const ImageBlockEditor = ({
                 alt: event.target.value,
               })
             }
-            className="min-h-11 w-full rounded-[3px] border border-white/10 bg-[#0f0f13] px-3.5 py-2.5 text-sm text-white outline-none transition focus:border-violet-300/80 focus:ring-2 focus:ring-violet-500/20"
+            className="min-h-11 w-full rounded-[3px] border border-white/10 bg-[#0f0f13] px-3 py-2.5 text-sm text-white outline-none transition focus:border-violet-300/80 focus:ring-2 focus:ring-violet-500/20 sm:px-3.5"
           />
         </label>
 
@@ -507,7 +507,7 @@ const ImageBlockEditor = ({
                 caption: event.target.value,
               })
             }
-            className="min-h-11 w-full rounded-[3px] border border-white/10 bg-[#0f0f13] px-3.5 py-2.5 text-sm text-white outline-none transition focus:border-violet-300/80 focus:ring-2 focus:ring-violet-500/20"
+            className="min-h-11 w-full rounded-[3px] border border-white/10 bg-[#0f0f13] px-3 py-2.5 text-sm text-white outline-none transition focus:border-violet-300/80 focus:ring-2 focus:ring-violet-500/20 sm:px-3.5"
           />
         </label>
 
@@ -541,7 +541,7 @@ const VideoBlockEditor = ({
   block: DashboardNewsVideoEditorBlock;
   onChange: (value: DashboardNewsVideoEditorBlock["value"]) => void;
 }) => (
-  <div className="grid gap-4 lg:grid-cols-2">
+  <div className="grid gap-3 sm:gap-4 lg:grid-cols-2">
     <label className="block">
       <span className="mb-2 block text-sm font-medium text-violet-100">
         URL del video
@@ -556,7 +556,7 @@ const VideoBlockEditor = ({
           })
         }
         placeholder="https://www.youtube.com/..."
-        className="min-h-11 w-full rounded-[3px] border border-white/10 bg-[#0f0f13] px-3.5 py-2.5 text-sm text-white outline-none transition focus:border-violet-300/80 focus:ring-2 focus:ring-violet-500/20"
+        className="min-h-11 w-full rounded-[3px] border border-white/10 bg-[#0f0f13] px-3 py-2.5 text-sm text-white outline-none transition focus:border-violet-300/80 focus:ring-2 focus:ring-violet-500/20 sm:px-3.5"
       />
     </label>
 
@@ -572,7 +572,7 @@ const VideoBlockEditor = ({
             caption: event.target.value,
           })
         }
-        className="min-h-11 w-full rounded-[3px] border border-white/10 bg-[#0f0f13] px-3.5 py-2.5 text-sm text-white outline-none transition focus:border-violet-300/80 focus:ring-2 focus:ring-violet-500/20"
+        className="min-h-11 w-full rounded-[3px] border border-white/10 bg-[#0f0f13] px-3 py-2.5 text-sm text-white outline-none transition focus:border-violet-300/80 focus:ring-2 focus:ring-violet-500/20 sm:px-3.5"
       />
     </label>
   </div>

@@ -164,13 +164,18 @@ const DashboardNewsList = () => {
 
   return (
     <div>
-      <header className="border-b border-white/10 bg-[#151518] p-5 sm:p-6">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-          <div>
+      <header className="border-b border-white/10 bg-[#151518] p-4 sm:p-6">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
             <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-violet-200/80">
               Contenido
             </p>
-            <h2 className="mt-3 text-3xl font-black text-white">Noticias</h2>
+            <div className="mt-3 flex flex-wrap items-end gap-2.5">
+              <h2 className="text-3xl font-black text-white">Noticias</h2>
+              <span className="rounded-[3px] border border-white/10 bg-white/[0.035] px-2.5 py-1.5 text-xs font-medium text-violet-100/70">
+                {news.length} noticias
+              </span>
+            </div>
             <p className="mt-2 text-sm text-violet-100/65">
               Administrá las publicaciones visibles del sitio.
             </p>
@@ -178,18 +183,12 @@ const DashboardNewsList = () => {
 
           <Link
             to={ROUTES.DASHBOARD_NEWS_NEW}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-[3px] border border-violet-200/30 bg-violet-100 text-violet-950 transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/40"
+            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[3px] border border-violet-200/30 bg-violet-100 text-violet-950 transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/40"
             aria-label="Crear noticia"
             title="Crear noticia"
           >
             <FiPlus className="size-5" aria-hidden="true" />
           </Link>
-        </div>
-
-        <div className="mt-6 flex flex-wrap items-center gap-2">
-          <span className="rounded-[3px] border border-white/10 bg-white/[0.035] px-3 py-2 text-xs font-medium text-violet-100/70">
-            {news.length} noticias
-          </span>
         </div>
       </header>
 
@@ -198,11 +197,11 @@ const DashboardNewsList = () => {
           Todavía no hay noticias cargadas.
         </div>
       ) : (
-        <div className="p-4 sm:p-5">
+        <div className="p-3 sm:p-5">
           <div className="overflow-hidden rounded-[4px] border border-white/10 bg-[#16161a]">
             <div className="divide-y divide-white/8 md:hidden">
               {news.map((item) => (
-                <article key={item.id} className="p-4 text-sm text-violet-50">
+                <article key={item.id} className="p-3 text-sm text-violet-50 sm:p-4">
                   <div className="flex min-w-0 gap-3">
                     <NewsThumbnail item={item} />
                     <div className="min-w-0 flex-1">

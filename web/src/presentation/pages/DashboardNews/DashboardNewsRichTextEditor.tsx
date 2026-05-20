@@ -220,7 +220,7 @@ const Toolbar = () => {
   };
 
   return (
-    <div className="border-b border-white/10 p-3">
+    <div className="border-b border-white/10 p-2 sm:p-3">
       <div className="flex flex-wrap gap-2">
         <ToolbarButton label="Párrafo" onClick={() => toggleStyle("normal")}>
           <FiType className="size-4" aria-hidden="true" />
@@ -284,7 +284,7 @@ const Toolbar = () => {
       </div>
 
       {isLinkPanelOpen && (
-        <div className="mt-3 flex flex-col gap-2 rounded-[4px] border border-white/10 bg-black/20 p-3 sm:flex-row">
+        <div className="mt-3 flex flex-col gap-2 rounded-[4px] border border-white/10 bg-black/20 p-2 sm:flex-row sm:p-3">
           <input
             value={href}
             onChange={(event) => setHref(event.target.value)}
@@ -333,7 +333,7 @@ const DashboardNewsRichTextEditor = ({
         />
         <Toolbar />
         <PortableTextEditable
-          className="min-h-40 space-y-4 px-4 py-4 outline-none"
+          className="min-h-40 space-y-4 px-3 py-3 outline-none sm:px-4 sm:py-4"
           renderStyle={renderStyle}
           renderDecorator={renderDecorator}
           renderAnnotation={renderAnnotation}

@@ -1,4 +1,4 @@
-import type { ChangeEvent } from "react";
+import { useEffect, useRef, type ChangeEvent } from "react";
 
 import type { DashboardNewsInput } from "../../../types/dashboard";
 
@@ -36,7 +36,7 @@ export const Field = ({
         onChange={onChange}
         aria-invalid={Boolean(error)}
         aria-describedby={errorId}
-        className="min-h-11 w-full rounded-[3px] border border-white/10 bg-[#0f0f13] px-3.5 py-2.5 text-sm text-white outline-none transition focus:border-violet-300/80 focus:ring-2 focus:ring-violet-500/20"
+        className="min-h-11 w-full rounded-[3px] border border-white/10 bg-[#0f0f13] px-3 py-2.5 text-sm text-white outline-none transition focus:border-violet-300/80 focus:ring-2 focus:ring-violet-500/20 sm:px-3.5"
       />
       {error && (
         <span id={errorId} className="mt-2 block text-sm text-red-300">
@@ -65,6 +65,18 @@ export const TextAreaField = ({
   onChange,
 }: TextAreaFieldProps) => {
   const errorId = error ? `${id}-error` : undefined;
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  useEffect(() => {
+    const textarea = textareaRef.current;
+
+    if (!textarea) {
+      return;
+    }
+
+    textarea.style.height = "auto";
+    textarea.style.height = `${textarea.scrollHeight}px`;
+  }, [value]);
 
   return (
     <label className="block" htmlFor={id}>
@@ -72,14 +84,15 @@ export const TextAreaField = ({
         {label}
       </span>
       <textarea
+        ref={textareaRef}
         id={id}
         name={name}
         value={value}
         onChange={onChange}
-        rows={5}
+        rows={3}
         aria-invalid={Boolean(error)}
         aria-describedby={errorId}
-        className="w-full resize-y rounded-[3px] border border-white/10 bg-[#0f0f13] px-3.5 py-2.5 text-sm text-white outline-none transition focus:border-violet-300/80 focus:ring-2 focus:ring-violet-500/20"
+        className="min-h-24 w-full resize-none overflow-hidden rounded-[3px] border border-white/10 bg-[#0f0f13] px-3 py-2.5 text-sm text-white outline-none transition focus:border-violet-300/80 focus:ring-2 focus:ring-violet-500/20 sm:px-3.5"
       />
       {error && (
         <span id={errorId} className="mt-2 block text-sm text-red-300">

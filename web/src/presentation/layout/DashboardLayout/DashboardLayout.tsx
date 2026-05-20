@@ -5,8 +5,8 @@ import { ROUTES } from "../../../shared/routing";
 
 const DashboardLayout = () => {
   return (
-    <section className="min-h-screen bg-[#101012] px-3 py-4 text-white sm:px-5 md:px-8 md:py-8">
-      <div className="mx-auto grid w-full max-w-[96rem] gap-4 lg:grid-cols-[16rem_minmax(0,1fr)]">
+    <section className="min-h-screen bg-[#101012] px-2 py-3 text-white sm:px-5 md:px-8 md:py-8">
+      <div className="mx-auto grid w-full max-w-[96rem] gap-3 sm:gap-4 lg:grid-cols-[16rem_minmax(0,1fr)]">
         <aside className="overflow-hidden rounded-[4px] border border-white/10 bg-[#151518]">
           <div className="border-b border-white/10 p-5">
             <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-violet-200/80">

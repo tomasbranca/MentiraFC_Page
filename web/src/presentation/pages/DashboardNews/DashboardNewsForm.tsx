@@ -366,7 +366,7 @@ const DashboardNewsForm = () => {
 
   return (
     <div>
-      <header className="border-b border-white/10 bg-[#151518] p-5 sm:p-6">
+      <header className="border-b border-white/10 bg-[#151518] p-4 sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-violet-200/80">
@@ -391,9 +391,9 @@ const DashboardNewsForm = () => {
         </div>
       </header>
 
-      <div className="grid gap-5 p-5 sm:p-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
+      <div className="grid gap-4 p-3 sm:gap-5 sm:p-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
         <form
-          className="space-y-5 rounded-[4px] border border-white/10 bg-[#16161a] p-5 sm:p-6"
+          className="space-y-4 rounded-[4px] border border-white/10 bg-[#16161a] p-3 sm:space-y-5 sm:p-6"
           onSubmit={handleSubmit}
           noValidate
         >
@@ -415,7 +415,7 @@ const DashboardNewsForm = () => {
             onChange={handleChange}
           />
 
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2 sm:gap-5">
             <Field
               id="dashboard-news-date"
               name="date"
@@ -467,7 +467,7 @@ const DashboardNewsForm = () => {
         </form>
 
         <aside className="space-y-4">
-          <section className="rounded-[4px] border border-white/10 bg-[#16161a] p-4">
+          <section className="rounded-[4px] border border-white/10 bg-[#16161a] p-3 sm:p-4">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h3 className="text-sm font-bold uppercase tracking-wide text-violet-100">
@@ -536,7 +536,7 @@ const DashboardNewsForm = () => {
             )}
           </section>
 
-          <section className="rounded-[4px] border border-white/10 bg-[#16161a] p-4">
+          <section className="rounded-[4px] border border-white/10 bg-[#16161a] p-3 sm:p-4">
             <Field
               id="dashboard-news-image-alt"
               name="imageAlt"
