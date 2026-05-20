@@ -85,5 +85,3 @@ export const installTrustedTypesPolicy = (): void => {
     // the existing policy so app startup remains idempotent.
   }
 };
-
-installTrustedTypesPolicy();

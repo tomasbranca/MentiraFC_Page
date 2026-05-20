@@ -1,5 +1,3 @@
-import "./lib/security/trustedTypes";
-
 import { StrictMode, Suspense, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
