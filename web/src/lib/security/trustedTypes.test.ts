@@ -1,9 +1,13 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { isTrustedScriptUrl } from "./trustedTypes";
+import { installTrustedTypesPolicy, isTrustedScriptUrl } from "./trustedTypes";
 
 describe("trustedTypes", () => {
   const origin = "https://mentirafc.vercel.app";
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
 
   it("permite los scripts propios que inyecta Vercel", () => {
     expect(isTrustedScriptUrl("/_vercel/insights/script.js", origin)).toBe(
@@ -19,5 +23,31 @@ describe("trustedTypes", () => {
       false
     );
     expect(isTrustedScriptUrl("/assets/index.js", origin)).toBe(false);
+  });
+
+  it("instala una politica default con HTML para librerias legacy", () => {
+    const createPolicy = vi.fn();
+
+    vi.stubGlobal("window", {
+      location: {
+        origin,
+      },
+      trustedTypes: {
+        createPolicy,
+      },
+    });
+
+    installTrustedTypesPolicy();
+
+    expect(createPolicy).toHaveBeenCalledWith(
+      "default",
+      expect.objectContaining({
+        createHTML: expect.any(Function),
+        createScriptURL: expect.any(Function),
+      })
+    );
+    expect(createPolicy.mock.calls[0]?.[1].createHTML("<style></style>")).toBe(
+      "<style></style>"
+    );
   });
 });

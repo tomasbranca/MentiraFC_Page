@@ -1,3 +1,5 @@
+import "./lib/security/trustedTypes";
+
 import { StrictMode, Suspense, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
@@ -15,7 +17,6 @@ import { reportError } from "./lib/errors/errorLogger";
 import { sortNews } from "./presentation/utils/news.utils";
 import { startWebVitalsTracking } from "./lib/performance/reportWebVitals";
 import { initSentry } from "./lib/errors/sentryClient";
-import { installTrustedTypesPolicy } from "./lib/security/trustedTypes";
 import ScrollToTop from "./presentation/app/scrollToTop";
 import Loader from "./presentation/components/Loader/Loader";
 import ErrorBoundary from "./presentation/components/errors/ErrorBoundary";
@@ -33,8 +34,6 @@ const root = createRoot(rootElement);
 
 const EMPTY_INITIAL_DATA: InitialDataPayload = createEmptyInitialData();
 const SENTRY_IDLE_DELAY_MS = 5000;
-
-installTrustedTypesPolicy();
 
 const isSentryConfigured = (): boolean =>
   Boolean(import.meta.env.VITE_SENTRY_DSN?.trim());

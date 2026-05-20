@@ -7,6 +7,7 @@ type TrustedTypesPolicyFactory = {
   createPolicy: (
     name: string,
     rules: {
+      createHTML?: (value: string) => string;
       createScriptURL: (value: string) => string;
     }
   ) => unknown;
@@ -41,6 +42,9 @@ export const installTrustedTypesPolicy = (): void => {
 
   try {
     trustedTypes.createPolicy("default", {
+      createHTML(value) {
+        return value;
+      },
       createScriptURL(value) {
         if (isTrustedScriptUrl(value)) {
           return value;
@@ -54,3 +58,5 @@ export const installTrustedTypesPolicy = (): void => {
     // the existing policy so app startup remains idempotent.
   }
 };
+
+installTrustedTypesPolicy();
