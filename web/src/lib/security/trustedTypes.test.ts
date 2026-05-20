@@ -34,6 +34,12 @@ describe("trustedTypes", () => {
         origin
       )
     ).toBe(true);
+    expect(
+      isTrustedScriptUrl(
+        "https://vercel.live/_next-live/feedback/feedback.js",
+        origin
+      )
+    ).toBe(true);
   });
 
   it("rechaza scripts externos o rutas no permitidas", () => {
@@ -44,6 +50,9 @@ describe("trustedTypes", () => {
     expect(
       isTrustedScriptUrl("https://va.vercel-scripts.com/unsafe.js", origin)
     ).toBe(false);
+    expect(isTrustedScriptUrl("https://vercel.live/unsafe.js", origin)).toBe(
+      false
+    );
   });
 
   it("instala una politica default con HTML para librerias legacy", () => {

@@ -7,7 +7,7 @@ const ENV_KEYS = [
   "SANITY_PROJECT_ID",
   "SANITY_DATASET",
   "SANITY_API_VERSION",
-  "SANITY_WRITE_TOKEN",
+  "SANITY_API_WRITE_TOKEN",
 ] as const;
 
 const originalEnv = Object.fromEntries(
@@ -19,7 +19,7 @@ describe("dashboard Sanity API client", () => {
     process.env.SANITY_PROJECT_ID = "test-project";
     process.env.SANITY_DATASET = "production";
     process.env.SANITY_API_VERSION = "2026-05-17";
-    process.env.SANITY_WRITE_TOKEN = "secret-token";
+    process.env.SANITY_API_WRITE_TOKEN = "secret-token";
   });
 
   afterEach(() => {

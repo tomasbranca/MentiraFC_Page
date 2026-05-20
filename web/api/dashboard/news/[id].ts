@@ -74,7 +74,7 @@ const dashboardNewsByIdHandler = async (request: Request): Promise<Response> => 
       error.message === "Sanity write token is not configured."
     ) {
       return errorJson(
-        "Falta configurar SANITY_WRITE_TOKEN para modificar noticias.",
+        "Falta configurar SANITY_API_WRITE_TOKEN para modificar noticias.",
         500
       );
     }
