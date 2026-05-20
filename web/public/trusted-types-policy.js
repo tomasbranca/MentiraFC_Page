@@ -5,6 +5,17 @@
     return;
   }
 
+  try {
+    if (
+      typeof trustedTypes.getPolicyNames === "function" &&
+      trustedTypes.getPolicyNames().indexOf("default") !== -1
+    ) {
+      return;
+    }
+  } catch {
+    // Fall through and let createPolicy decide in browsers without this API.
+  }
+
   var trustedScriptPaths = {
     "/_vercel/insights/script.js": true,
     "/_vercel/speed-insights/script.js": true,

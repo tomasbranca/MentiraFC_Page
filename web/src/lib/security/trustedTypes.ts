@@ -11,6 +11,7 @@ const TRUSTED_VERCEL_SCRIPT_PATHS = new Set([
 ]);
 
 type TrustedTypesPolicyFactory = {
+  getPolicyNames?: () => string[];
   createPolicy: (
     name: string,
     rules: {
@@ -27,6 +28,17 @@ const getTrustedTypes = (): TrustedTypesPolicyFactory | undefined => {
 
   return (window as Window & { trustedTypes?: TrustedTypesPolicyFactory })
     .trustedTypes;
+};
+
+const hasTrustedTypesPolicy = (
+  trustedTypes: TrustedTypesPolicyFactory,
+  name: string
+): boolean => {
+  try {
+    return trustedTypes.getPolicyNames?.().includes(name) ?? false;
+  } catch {
+    return false;
+  }
 };
 
 export const isTrustedScriptUrl = (
@@ -53,6 +65,7 @@ export const installTrustedTypesPolicy = (): void => {
   const trustedTypes = getTrustedTypes();
 
   if (!trustedTypes) return;
+  if (hasTrustedTypesPolicy(trustedTypes, "default")) return;
 
   try {
     trustedTypes.createPolicy("default", {

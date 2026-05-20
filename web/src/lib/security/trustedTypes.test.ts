@@ -71,4 +71,22 @@ describe("trustedTypes", () => {
       "<style></style>"
     );
   });
+
+  it("no vuelve a crear la politica default si ya existe", () => {
+    const createPolicy = vi.fn();
+
+    vi.stubGlobal("window", {
+      location: {
+        origin,
+      },
+      trustedTypes: {
+        getPolicyNames: () => ["default"],
+        createPolicy,
+      },
+    });
+
+    installTrustedTypesPolicy();
+
+    expect(createPolicy).not.toHaveBeenCalled();
+  });
 });
