@@ -46,11 +46,45 @@ const NewsThumbnail = ({ item }: { item: DashboardNewsItem }) => {
       src={imageUrl}
       srcSet={imageSrcSet || undefined}
       sizes="80px"
-      alt={item.imageAlt || `Portada de ${item.title}`}
+      alt={item.imageAlt || `Portada de ${getNewsTitle(item)}`}
       loading="lazy"
       decoding="async"
       className="h-16 w-20 shrink-0 rounded-[3px] border border-white/10 object-cover"
     />
+  );
+};
+
+const getNewsTitle = (item: DashboardNewsItem): string =>
+  item.title.trim() || "Sin titulo";
+
+const getNewsDescription = (item: DashboardNewsItem): string =>
+  item.description.trim() || "Borrador sin descripcion";
+
+const getNewsDateLabel = (item: DashboardNewsItem): string => {
+  if (item.date) {
+    return formatDateTime(item.date);
+  }
+
+  if (item.updatedAt) {
+    return `Borrador guardado ${formatDateTime(item.updatedAt)}`;
+  }
+
+  return "Sin fecha";
+};
+
+const NewsStatusBadge = ({ item }: { item: DashboardNewsItem }) => {
+  if (item.status === "draft") {
+    return (
+      <span className="inline-flex rounded-[3px] border border-amber-200/20 bg-amber-200/10 px-2.5 py-1 text-xs font-medium text-amber-100">
+        {item.hasPublishedVersion ? "Borrador" : "Borrador sin publicar"}
+      </span>
+    );
+  }
+
+  return (
+    <span className="inline-flex rounded-[3px] border border-emerald-300/15 bg-emerald-300/10 px-2.5 py-1 text-xs font-medium text-emerald-100">
+      Publicada
+    </span>
   );
 };
 
@@ -177,7 +211,7 @@ const DashboardNewsList = () => {
               </span>
             </div>
             <p className="mt-2 text-sm text-violet-100/65">
-              Administrá las publicaciones visibles del sitio.
+              Administrá publicaciones y borradores del sitio.
             </p>
           </div>
 
@@ -194,7 +228,7 @@ const DashboardNewsList = () => {
 
       {news.length === 0 ? (
         <div className="p-6 text-sm text-violet-100/75">
-          Todavía no hay noticias cargadas.
+          Todavía no hay noticias ni borradores cargados.
         </div>
       ) : (
         <div className="p-3 sm:p-5">
@@ -206,21 +240,19 @@ const DashboardNewsList = () => {
                     <NewsThumbnail item={item} />
                     <div className="min-w-0 flex-1">
                       <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-violet-100/45">
-                        {formatDateTime(item.date)}
+                        {getNewsDateLabel(item)}
                       </p>
                       <h3 className="mt-1 line-clamp-2 text-sm font-black uppercase leading-snug text-white">
-                        {item.title}
+                        {getNewsTitle(item)}
                       </h3>
                       <p className="mt-1 line-clamp-2 text-xs leading-snug text-violet-100/60">
-                        {item.description}
+                        {getNewsDescription(item)}
                       </p>
                     </div>
                   </div>
 
                   <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-                    <span className="inline-flex rounded-[3px] border border-emerald-300/15 bg-emerald-300/10 px-2.5 py-1 text-xs font-medium text-emerald-100">
-                      Publicada
-                    </span>
+                    <NewsStatusBadge item={item} />
                     <div className="flex gap-2">
                       <Link
                         to={ROUTES.DASHBOARD_NEWS_EDIT(item.id)}
@@ -232,7 +264,7 @@ const DashboardNewsList = () => {
                       </Link>
                       <DeleteNewsButton
                         itemId={item.id}
-                        itemTitle={item.title}
+                        itemTitle={getNewsTitle(item)}
                         isDeleting={deleteMutation.isPending}
                         onDelete={handleDeleteNews}
                       />
@@ -262,21 +294,19 @@ const DashboardNewsList = () => {
                         <NewsThumbnail item={item} />
                         <div className="min-w-0">
                           <p className="truncate font-medium text-white">
-                            {item.title}
+                            {getNewsTitle(item)}
                           </p>
                           <p className="truncate text-xs text-violet-100/55">
-                            {item.description}
+                            {getNewsDescription(item)}
                           </p>
                         </div>
                       </div>
                     </td>
                     <td className="px-5 py-4 text-violet-100/70">
-                      {formatDateTime(item.date)}
+                      {getNewsDateLabel(item)}
                     </td>
                     <td className="px-5 py-4">
-                      <span className="inline-flex rounded-[3px] border border-emerald-300/15 bg-emerald-300/10 px-2.5 py-1 text-xs font-medium text-emerald-100">
-                        Publicada
-                      </span>
+                      <NewsStatusBadge item={item} />
                     </td>
                     <td className="px-5 py-4">
                       <div className="flex justify-end gap-2">
@@ -290,7 +320,7 @@ const DashboardNewsList = () => {
                         </Link>
                         <DeleteNewsButton
                           itemId={item.id}
-                          itemTitle={item.title}
+                          itemTitle={getNewsTitle(item)}
                           isDeleting={deleteMutation.isPending}
                           onDelete={handleDeleteNews}
                         />

@@ -1,17 +1,26 @@
 import {
   deleteDashboardNews,
   getDashboardNewsById,
-  updateDashboardNews,
+  publishDashboardNews,
+  saveDashboardNewsDraft,
 } from "../../_lib/news.js";
 import { authorizeDashboardUser } from "../../_lib/auth.js";
 import { errorJson, json } from "../../_lib/responses.js";
-import { validateDashboardNewsMutation } from "./_shared.js";
+import {
+  validateDashboardNewsDraftMutation,
+  validateDashboardNewsMutation,
+} from "./_shared.js";
 
 const getIdFromRequest = (request: Request): string | null => {
   const pathname = new URL(request.url).pathname;
   const id = pathname.split("/").filter(Boolean).at(-1);
 
   return id ?? null;
+};
+
+const getIntentFromRequest = (request: Request): "draft" | "publish" => {
+  const intent = new URL(request.url).searchParams.get("intent")?.trim();
+  return intent === "draft" ? "draft" : "publish";
 };
 
 const dashboardNewsByIdHandler = async (request: Request): Promise<Response> => {
@@ -34,13 +43,23 @@ const dashboardNewsByIdHandler = async (request: Request): Promise<Response> => 
     }
 
     if (request.method === "PUT") {
+      if (getIntentFromRequest(request) === "draft") {
+        const validation = await validateDashboardNewsDraftMutation(request);
+
+        if (!validation.ok) {
+          return validation.response;
+        }
+
+        return json(await saveDashboardNewsDraft(id, validation.input));
+      }
+
       const validation = await validateDashboardNewsMutation(request);
 
       if (!validation.ok) {
         return validation.response;
       }
 
-      return json(await updateDashboardNews(id, validation.input));
+      return json(await publishDashboardNews(id, validation.input));
     }
 
     if (request.method === "DELETE") {

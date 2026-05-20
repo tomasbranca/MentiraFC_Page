@@ -1,5 +1,7 @@
+const PUBLISHED_NEWS_FILTER = `_type == "news" && !(_id in path("drafts.**"))`;
+
 export const NEWS_QUERY = `
-  *[_type == "news"] | order(date desc) {
+  *[${PUBLISHED_NEWS_FILTER}] | order(date desc) {
     _id,
     title,
     description,
@@ -18,7 +20,7 @@ export const NEWS_QUERY = `
 `;
 
 export const NEWS_BY_SLUG_QUERY = `
-  *[_type == "news" && slug.current == $slug][0] {
+  *[${PUBLISHED_NEWS_FILTER} && slug.current == $slug][0] {
     _id,
     title,
     description,
@@ -37,7 +39,7 @@ export const NEWS_BY_SLUG_QUERY = `
 `;
 
 export const SUGGESTED_NEWS_QUERY = `
-  *[_type == "news" && slug.current != $slug && date >= $date]
+  *[${PUBLISHED_NEWS_FILTER} && slug.current != $slug && date >= $date]
   | order(date desc)[0...10] {
     _id,
     title,
@@ -50,7 +52,7 @@ export const SUGGESTED_NEWS_QUERY = `
 `;
 
 export const FALLBACK_NEWS_QUERY = `
-  *[_type == "news" && slug.current != $slug]
+  *[${PUBLISHED_NEWS_FILTER} && slug.current != $slug]
   | order(date desc)[0...10] {
     _id,
     title,

@@ -30,6 +30,7 @@ const getSanityQueryUrl = (
   );
 
   url.searchParams.set("query", query);
+  url.searchParams.set("perspective", "published");
 
   if (params) {
     for (const [key, value] of Object.entries(params)) {

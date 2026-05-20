@@ -35,6 +35,12 @@ type SanityQueryResponse<T> = {
   };
 };
 
+type SanityQueryOptions = {
+  params?: Record<string, string>;
+  perspective?: "published" | "drafts" | "raw";
+  useToken?: boolean;
+};
+
 const getSanityConfig = ({ requireWriteToken = false } = {}) => {
   const projectId =
     process.env.SANITY_PROJECT_ID ?? process.env.VITE_SANITY_PROJECT_ID;
@@ -56,20 +62,36 @@ const getSanityConfig = ({ requireWriteToken = false } = {}) => {
 
 export const querySanity = async <T>(
   query: string,
-  params?: Record<string, string>
+  options: SanityQueryOptions = {}
 ): Promise<T> => {
-  const { projectId, dataset, apiVersion } = getSanityConfig();
+  const { params, perspective, useToken = false } = options;
+  const { projectId, dataset, apiVersion, token } = getSanityConfig({
+    requireWriteToken: useToken,
+  });
   const url = new URL(
     `https://${projectId}.api.sanity.io/v${apiVersion}/data/query/${dataset}`
   );
 
   url.searchParams.set("query", query);
 
+  if (perspective) {
+    url.searchParams.set("perspective", perspective);
+  }
+
   for (const [key, value] of Object.entries(params ?? {})) {
     url.searchParams.set(`$${key}`, JSON.stringify(value));
   }
 
-  const response = await fetch(url);
+  const response = await fetch(
+    url,
+    useToken
+      ? {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      : undefined
+  );
   const payload = (await response.json()) as SanityQueryResponse<T>;
 
   if (!response.ok || payload.error || typeof payload.result === "undefined") {

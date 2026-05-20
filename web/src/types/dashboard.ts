@@ -12,11 +12,19 @@ export const DASHBOARD_NEWS_IMAGE_MAX_BYTES = 4 * 1024 * 1024;
 
 export const DASHBOARD_NEWS_IMAGE_MAX_MEGAPIXELS = 256;
 
+export type DashboardNewsStatus = "published" | "draft";
+
 export type DashboardNewsItem = {
   id: string;
+  publishedId?: string | null;
+  draftId?: string | null;
+  status: DashboardNewsStatus;
+  hasDraft: boolean;
+  hasPublishedVersion: boolean;
   title: string;
   description: string;
-  date: string;
+  date?: string | null;
+  updatedAt?: string | null;
   slug: string;
   imageAlt?: string | null;
   imageAssetId?: string | null;
@@ -44,5 +52,12 @@ export type DashboardNewsMutationInput = DashboardNewsInput & {
   coverImage?: File | null;
   useDefaultImage?: boolean;
   content: DashboardNewsContentBlock[];
+  contentImageFiles?: Record<string, File>;
+};
+
+export type DashboardNewsDraftMutationInput = Partial<DashboardNewsInput> & {
+  coverImage?: File | null;
+  useDefaultImage?: boolean;
+  content?: DashboardNewsContentBlock[];
   contentImageFiles?: Record<string, File>;
 };

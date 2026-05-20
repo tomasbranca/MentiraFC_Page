@@ -1,6 +1,6 @@
 export const HOME_CRITICAL_QUERY = `
   {
-    "news": *[_type == "news"] | order(date desc)[0...6] {
+    "news": *[_type == "news" && !(_id in path("drafts.**"))] | order(date desc)[0...6] {
       _id,
       title,
       description,

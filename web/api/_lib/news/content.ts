@@ -1,6 +1,9 @@
 import type { PortableTextBlock } from "@portabletext/types";
 
-import type { DashboardNewsMutationInput } from "../../../src/types/dashboard";
+import type {
+  DashboardNewsDraftMutationInput,
+  DashboardNewsMutationInput,
+} from "../../../src/types/dashboard";
 import type {
   NewsContentBlock,
   NewsImageContentBlock,
@@ -242,6 +245,60 @@ const normalizeContentImageBlock = async (
   };
 };
 
+const normalizeDraftContentImageBlock = async (
+  block: NewsImageContentBlock & {
+    uploadKey?: string;
+  },
+  contentImageFiles: Record<string, File>
+): Promise<{ block: NewsImageContentBlock; uploadedAssetId: string | null }> => {
+  const baseBlock = {
+    _key: block._key,
+    _type: "image" as const,
+    alt: block.alt?.trim() ?? "",
+    caption: block.caption?.trim() || undefined,
+  };
+
+  if (block.uploadKey) {
+    const imageFile = contentImageFiles[block.uploadKey];
+
+    if (imageFile) {
+      const imageError = validateDashboardNewsImageFile(imageFile);
+
+      if (imageError) {
+        throw new Error(imageError);
+      }
+
+      const uploadedAsset = await uploadSanityImageAsset(imageFile);
+
+      return {
+        block: {
+          ...baseBlock,
+          asset: {
+            _type: "reference",
+            _ref: uploadedAsset._id,
+          },
+        },
+        uploadedAssetId: uploadedAsset._id,
+      };
+    }
+  }
+
+  const assetId = getContentImageAssetId(block);
+
+  return {
+    block: assetId
+      ? {
+          ...baseBlock,
+          asset: {
+            _type: "reference",
+            _ref: assetId,
+          },
+        }
+      : baseBlock,
+    uploadedAssetId: null,
+  };
+};
+
 export const normalizeNewsContent = async (
   input: DashboardNewsMutationInput
 ): Promise<{ content: NewsContentBlock[]; uploadedAssetIds: string[] }> => {
@@ -284,6 +341,46 @@ export const normalizeNewsContent = async (
         _type: "video",
         url: videoBlock.url?.trim(),
         caption: videoBlock.caption?.trim() || undefined,
+      });
+      continue;
+    }
+
+    normalizedContent.push(block);
+  }
+
+  return {
+    content: normalizedContent,
+    uploadedAssetIds,
+  };
+};
+
+export const normalizeNewsDraftContent = async (
+  input: DashboardNewsDraftMutationInput
+): Promise<{ content: NewsContentBlock[]; uploadedAssetIds: string[] }> => {
+  const uploadedAssetIds: string[] = [];
+  const normalizedContent: NewsContentBlock[] = [];
+
+  for (const block of input.content ?? []) {
+    if (isImageContentBlock(block)) {
+      const normalized = await normalizeDraftContentImageBlock(
+        block as NewsImageContentBlock & { uploadKey?: string },
+        input.contentImageFiles ?? {}
+      );
+      normalizedContent.push(normalized.block);
+
+      if (normalized.uploadedAssetId) {
+        uploadedAssetIds.push(normalized.uploadedAssetId);
+      }
+
+      continue;
+    }
+
+    if (isVideoContentBlock(block)) {
+      normalizedContent.push({
+        _key: block._key,
+        _type: "video",
+        url: block.url?.trim() ?? "",
+        caption: block.caption?.trim() || undefined,
       });
       continue;
     }

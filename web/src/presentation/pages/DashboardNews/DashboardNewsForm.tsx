@@ -2,6 +2,7 @@ import {
   type ChangeEvent,
   type FormEvent,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -10,9 +11,10 @@ import toast from "react-hot-toast";
 import { FiArrowLeft, FiSave, FiTrash2, FiUpload } from "react-icons/fi";
 
 import {
-  createDashboardNews,
   fetchDashboardNewsById,
-  updateDashboardNews,
+  publishDashboardNews,
+  publishDashboardNewsById,
+  saveDashboardNewsDraft,
 } from "../../../data/dashboardNews";
 import { getImageUrl } from "../../../data/imageService";
 import { queryKeys } from "../../../data/queryKeys";
@@ -20,7 +22,9 @@ import { reportError } from "../../../lib/errors/errorLogger";
 import { confirmDashboardAction } from "../../app/confirmDialog";
 import {
   DASHBOARD_NEWS_IMAGE_ACCEPTED_EXTENSIONS,
+  type DashboardNewsDraftMutationInput,
   type DashboardNewsInput,
+  type DashboardNewsItem,
   type DashboardNewsMutationInput,
 } from "../../../types/dashboard";
 import type { DashboardNewsErrors } from "./dashboardNews.utils";
@@ -60,12 +64,83 @@ const saveToastOptions = {
   },
 } as const;
 
+type SavedNewsSnapshot = {
+  values: DashboardNewsInput;
+  contentJson: string;
+  useDefaultImage: boolean;
+};
+
+const dirtyFieldLabels = {
+  title: "Titulo",
+  description: "Descripcion",
+  date: "Fecha",
+  slug: "Slug",
+  content: "Contenido",
+  coverImage: "Portada",
+  imageAlt: "Texto alternativo",
+} as const;
+
+type DirtyFieldKey = keyof typeof dirtyFieldLabels;
+
+const serializeContentForDirtyCheck = (
+  blocks: DashboardNewsEditorBlock[]
+): string => JSON.stringify(serializeDashboardNewsEditorBlocks(blocks));
+
+const createSavedSnapshot = ({
+  values,
+  contentBlocks,
+  useDefaultImage,
+}: {
+  values: DashboardNewsInput;
+  contentBlocks: DashboardNewsEditorBlock[];
+  useDefaultImage: boolean;
+}): SavedNewsSnapshot => ({
+  values,
+  contentJson: serializeContentForDirtyCheck(contentBlocks),
+  useDefaultImage,
+});
+
+const getSavedUseDefaultImage = (news: DashboardNewsItem): boolean =>
+  !news.imageAssetId && !news.imageUrl;
+
+const getValuesFromNews = (news: DashboardNewsItem): DashboardNewsInput => ({
+  title: news.title,
+  description: news.description,
+  date: news.date ?? "",
+  slug: news.slug,
+  imageAlt: news.imageAlt || news.title,
+});
+
+const createSnapshotFromNews = (news: DashboardNewsItem): SavedNewsSnapshot =>
+  createSavedSnapshot({
+    values: getValuesFromNews(news),
+    contentBlocks: toDashboardNewsEditorBlocks(news.content ?? []),
+    useDefaultImage: getSavedUseDefaultImage(news),
+  });
+
 const DashboardNewsForm = () => {
   const { id } = useParams();
   const isEditing = Boolean(id);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [values, setValues] = useState<DashboardNewsInput>(createInitialValues);
+  const [initialFormState] = useState(() => {
+    const initialValues = createInitialValues();
+
+    return {
+      values: initialValues,
+      snapshot: createSavedSnapshot({
+        values: initialValues,
+        contentBlocks: [],
+        useDefaultImage: true,
+      }),
+    };
+  });
+  const [values, setValues] = useState<DashboardNewsInput>(
+    initialFormState.values
+  );
+  const [savedSnapshot, setSavedSnapshot] = useState<SavedNewsSnapshot>(
+    initialFormState.snapshot
+  );
   const [errors, setErrors] = useState<DashboardNewsErrors>({});
   const [status, setStatus] = useState<string | null>(null);
   const [slugTouched, setSlugTouched] = useState(false);
@@ -103,20 +178,27 @@ const DashboardNewsForm = () => {
       return;
     }
 
-    setValues({
-      title: newsQuery.data.title,
-      description: newsQuery.data.description,
-      date: newsQuery.data.date,
-      slug: newsQuery.data.slug,
-      imageAlt: newsQuery.data.imageAlt || newsQuery.data.title,
-    });
+    const nextValues = getValuesFromNews(newsQuery.data);
+    const nextContentBlocks = toDashboardNewsEditorBlocks(
+      newsQuery.data.content ?? []
+    );
+    const nextUseDefaultImage = getSavedUseDefaultImage(newsQuery.data);
+
+    setValues(nextValues);
     setSlugTouched(true);
     setImageAltTouched(Boolean(newsQuery.data.imageAlt));
     setSelectedImageFile(null);
-    setUseDefaultImage(false);
+    setUseDefaultImage(nextUseDefaultImage);
     setImageError(null);
-    setContentBlocks(toDashboardNewsEditorBlocks(newsQuery.data.content ?? []));
+    setContentBlocks(nextContentBlocks);
     setContentError(null);
+    setSavedSnapshot(
+      createSavedSnapshot({
+        values: nextValues,
+        contentBlocks: nextContentBlocks,
+        useDefaultImage: nextUseDefaultImage,
+      })
+    );
   }, [newsQuery.data]);
 
   useEffect(() => {
@@ -131,11 +213,48 @@ const DashboardNewsForm = () => {
     return () => URL.revokeObjectURL(previewUrl);
   }, [selectedImageFile]);
 
-  const saveMutation = useMutation({
+  const applySavedNews = (savedNews: DashboardNewsItem) => {
+    const nextValues = getValuesFromNews(savedNews);
+    const nextContentBlocks = toDashboardNewsEditorBlocks(
+      savedNews.content ?? []
+    );
+    const nextUseDefaultImage = getSavedUseDefaultImage(savedNews);
+
+    setValues(nextValues);
+    setSlugTouched(true);
+    setImageAltTouched(Boolean(savedNews.imageAlt));
+    setSelectedImageFile(null);
+    setUseDefaultImage(nextUseDefaultImage);
+    setImageError(null);
+    setContentBlocks(nextContentBlocks);
+    setContentError(null);
+    setSavedSnapshot(createSnapshotFromNews(savedNews));
+  };
+
+  const saveDraftMutation = useMutation({
+    mutationFn: async (input: DashboardNewsDraftMutationInput) =>
+      saveDashboardNewsDraft(input, id),
+    onSuccess: async (savedNews) => {
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.dashboard.news.all,
+      });
+      queryClient.setQueryData(
+        queryKeys.dashboard.news.byId(savedNews.id),
+        savedNews
+      );
+      applySavedNews(savedNews);
+
+      if (!isEditing) {
+        navigate(ROUTES.DASHBOARD_NEWS_EDIT(savedNews.id), { replace: true });
+      }
+    },
+  });
+
+  const publishMutation = useMutation({
     mutationFn: async (input: DashboardNewsMutationInput) =>
       isEditing && id
-        ? updateDashboardNews(id, input)
-        : createDashboardNews(input),
+        ? publishDashboardNewsById(id, input)
+        : publishDashboardNews(input),
     onSuccess: async (savedNews) => {
       await Promise.all([
         queryClient.invalidateQueries({
@@ -150,6 +269,54 @@ const DashboardNewsForm = () => {
       navigate(ROUTES.DASHBOARD_NEWS);
     },
   });
+
+  const currentContentJson = useMemo(
+    () => serializeContentForDirtyCheck(contentBlocks),
+    [contentBlocks]
+  );
+  const dirtyFields = useMemo<DirtyFieldKey[]>(() => {
+    const nextDirtyFields: DirtyFieldKey[] = [];
+
+    if (values.title !== savedSnapshot.values.title) {
+      nextDirtyFields.push("title");
+    }
+
+    if (values.description !== savedSnapshot.values.description) {
+      nextDirtyFields.push("description");
+    }
+
+    if (values.date !== savedSnapshot.values.date) {
+      nextDirtyFields.push("date");
+    }
+
+    if (values.slug !== savedSnapshot.values.slug) {
+      nextDirtyFields.push("slug");
+    }
+
+    if (currentContentJson !== savedSnapshot.contentJson) {
+      nextDirtyFields.push("content");
+    }
+
+    if (selectedImageFile || useDefaultImage !== savedSnapshot.useDefaultImage) {
+      nextDirtyFields.push("coverImage");
+    }
+
+    if (values.imageAlt !== savedSnapshot.values.imageAlt) {
+      nextDirtyFields.push("imageAlt");
+    }
+
+    return nextDirtyFields;
+  }, [
+    currentContentJson,
+    savedSnapshot,
+    selectedImageFile,
+    useDefaultImage,
+    values,
+  ]);
+  const dirtyLabels = dirtyFields.map((field) => dirtyFieldLabels[field]);
+  const isDirty = (field: DirtyFieldKey): boolean =>
+    dirtyFields.includes(field);
+  const isSaving = saveDraftMutation.isPending || publishMutation.isPending;
 
   if (newsQuery.isLoading) {
     return <Loader />;
@@ -295,6 +462,57 @@ const DashboardNewsForm = () => {
     }
   };
 
+  const buildDraftInput = (): DashboardNewsDraftMutationInput => {
+    const contentImageFiles = getDashboardNewsContentImageFiles(contentBlocks);
+
+    return {
+      title: values.title.trim(),
+      description: values.description.trim(),
+      date: values.date.trim(),
+      slug: values.slug.trim(),
+      imageAlt: values.imageAlt.trim(),
+      coverImage: selectedImageFile,
+      useDefaultImage,
+      content: serializeDashboardNewsEditorBlocks(contentBlocks),
+      contentImageFiles,
+    };
+  };
+
+  const handleSaveDraft = async () => {
+    setStatus(null);
+    setErrors({});
+    setContentError(null);
+
+    if (imageError) {
+      return;
+    }
+
+    const draftInput = buildDraftInput();
+    const hasPendingUploads =
+      Boolean(selectedImageFile) ||
+      Object.keys(draftInput.contentImageFiles ?? {}).length > 0;
+
+    try {
+      await toast.promise(
+        saveDraftMutation.mutateAsync(draftInput),
+        {
+          loading: hasPendingUploads
+            ? "Subiendo archivos y guardando borrador..."
+            : "Guardando borrador en Sanity...",
+          success: "Borrador guardado correctamente.",
+          error: "No pudimos guardar el borrador.",
+        },
+        saveToastOptions
+      );
+    } catch (error) {
+      reportError(error, {
+        page: "DashboardNewsForm",
+        action: "save_news_draft",
+      });
+      setStatus("No pudimos guardar el borrador. Intenta de nuevo.");
+    }
+  };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -321,11 +539,11 @@ const DashboardNewsForm = () => {
     const hasPendingUploads =
       Boolean(selectedImageFile) || Object.keys(contentImageFiles).length > 0;
     const confirmed = await confirmDashboardAction({
-      title: isEditing ? "Guardar cambios" : "Publicar noticia",
+      title: isEditing ? "Publicar cambios" : "Publicar noticia",
       text: isEditing
-        ? "Los cambios se van a guardar en Sanity y actualizarán la noticia visible en el sitio."
-        : "La noticia se va a guardar en Sanity y quedará disponible para publicarse en el sitio.",
-      confirmText: isEditing ? "Guardar cambios" : "Publicar",
+        ? "El borrador se va a publicar en Sanity y actualizará la noticia visible en el sitio."
+        : "La noticia se va a publicar en Sanity y quedará visible en el sitio.",
+      confirmText: isEditing ? "Publicar cambios" : "Publicar",
       icon: isEditing ? "question" : "info",
     });
 
@@ -335,7 +553,7 @@ const DashboardNewsForm = () => {
 
     try {
       await toast.promise(
-        saveMutation.mutateAsync({
+        publishMutation.mutateAsync({
           ...normalizedValues,
           coverImage: selectedImageFile,
           useDefaultImage,
@@ -346,21 +564,21 @@ const DashboardNewsForm = () => {
           loading: hasPendingUploads
             ? "Subiendo archivos y guardando en Sanity..."
             : isEditing
-              ? "Guardando cambios en Sanity..."
+              ? "Publicando cambios en Sanity..."
               : "Publicando noticia en Sanity...",
           success: isEditing
-            ? "Noticia actualizada correctamente."
+            ? "Cambios publicados correctamente."
             : "Noticia publicada correctamente.",
-          error: "No pudimos guardar la noticia.",
+          error: "No pudimos publicar la noticia.",
         },
         saveToastOptions
       );
     } catch (error) {
       reportError(error, {
         page: "DashboardNewsForm",
-        action: isEditing ? "update_news" : "create_news",
+        action: isEditing ? "publish_news_changes" : "publish_news",
       });
-      setStatus("No pudimos guardar la noticia. Intentá de nuevo.");
+      setStatus("No pudimos publicar la noticia. Intentá de nuevo.");
     }
   };
 
@@ -397,12 +615,22 @@ const DashboardNewsForm = () => {
           onSubmit={handleSubmit}
           noValidate
         >
+          {dirtyLabels.length > 0 && (
+            <div className="rounded-[4px] border border-amber-200/20 bg-amber-200/[0.06] p-3 text-sm text-amber-50">
+              <p className="font-semibold">Cambios sin guardar</p>
+              <p className="mt-1 text-xs leading-relaxed text-amber-50/75">
+                Campos editados: {dirtyLabels.join(", ")}.
+              </p>
+            </div>
+          )}
+
           <Field
             id="dashboard-news-title"
             name="title"
             label="Título"
             value={values.title}
             error={errors.title}
+            dirty={isDirty("title")}
             onChange={handleChange}
           />
 
@@ -412,6 +640,7 @@ const DashboardNewsForm = () => {
             label="Descripción corta"
             value={values.description}
             error={errors.description}
+            dirty={isDirty("description")}
             onChange={handleChange}
           />
 
@@ -423,6 +652,7 @@ const DashboardNewsForm = () => {
               label="Fecha"
               value={toDatetimeLocalValue(values.date)}
               error={errors.date}
+              dirty={isDirty("date")}
               onChange={handleChange}
             />
             <Field
@@ -431,6 +661,7 @@ const DashboardNewsForm = () => {
               label="Slug"
               value={values.slug}
               error={errors.slug}
+              dirty={isDirty("slug")}
               onChange={handleChange}
             />
           </div>
@@ -439,6 +670,7 @@ const DashboardNewsForm = () => {
             title={values.title}
             blocks={contentBlocks}
             error={contentError ?? undefined}
+            dirty={isDirty("content")}
             onChange={(blocks) => {
               setContentBlocks(blocks);
               setContentError(null);
@@ -448,12 +680,25 @@ const DashboardNewsForm = () => {
 
           <div className="flex flex-col gap-3 pt-2 sm:flex-row">
             <button
+              type="button"
+              disabled={isSaving}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[3px] border border-white/10 px-5 py-3 text-sm font-semibold text-white transition hover:border-violet-200/35 hover:bg-white/[0.045] focus:outline-none focus:ring-2 focus:ring-violet-500/40 disabled:cursor-not-allowed disabled:opacity-55"
+              onClick={() => void handleSaveDraft()}
+            >
+              <FiSave className="size-4" aria-hidden="true" />
+              {saveDraftMutation.isPending ? "Guardando..." : "Guardar borrador"}
+            </button>
+            <button
               type="submit"
-              disabled={saveMutation.isPending}
+              disabled={isSaving}
               className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[3px] border border-violet-200/25 bg-violet-100 px-5 py-3 text-sm font-semibold text-violet-950 transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/40 disabled:cursor-not-allowed disabled:opacity-55"
             >
               <FiSave className="size-4" aria-hidden="true" />
-              {saveMutation.isPending ? "Guardando..." : "Guardar"}
+              {publishMutation.isPending
+                ? "Publicando..."
+                : isEditing
+                  ? "Publicar cambios"
+                  : "Publicar"}
             </button>
           </div>
 
@@ -473,6 +718,11 @@ const DashboardNewsForm = () => {
                 <h3 className="text-sm font-bold uppercase tracking-wide text-violet-100">
                   Imagen de portada
                 </h3>
+                {isDirty("coverImage") && (
+                  <span className="mt-2 inline-flex rounded-[3px] border border-amber-200/20 bg-amber-200/10 px-2 py-0.5 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-amber-100">
+                    Editado
+                  </span>
+                )}
                 <p className="mt-2 text-xs leading-relaxed text-violet-100/65">
                   Obligatoria. Si quitás la imagen, se usa la portada por
                   defecto del club.
@@ -543,6 +793,7 @@ const DashboardNewsForm = () => {
               label="Texto alternativo"
               value={values.imageAlt}
               error={errors.imageAlt}
+              dirty={isDirty("imageAlt")}
               onChange={handleChange}
             />
             <p className="mt-3 text-xs leading-relaxed text-violet-100/55">

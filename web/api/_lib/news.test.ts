@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 import {
   dashboardNewsByIdQuery,
   dashboardNewsListQuery,
+  parseDashboardNewsDraftFormData,
+  parseDashboardNewsDraftInput,
   parseDashboardNewsFormData,
   parseDashboardNewsInput,
   validateDashboardNewsContent,
@@ -99,6 +101,34 @@ describe("dashboard news api input", () => {
           style: "normal",
         },
       ],
+    });
+  });
+
+  it("acepta borradores incompletos", () => {
+    expect(
+      parseDashboardNewsDraftInput({
+        title: "",
+        description: "",
+        date: "",
+        slug: "Titulo provisorio",
+        imageAlt: "",
+      })
+    ).toEqual({
+      title: "",
+      description: "",
+      date: "",
+      slug: "Titulo provisorio",
+      imageAlt: "",
+    });
+
+    const formData = new FormData();
+
+    formData.set("content", JSON.stringify([]));
+
+    expect(parseDashboardNewsDraftFormData(formData)).toMatchObject({
+      title: "",
+      description: "",
+      content: [],
     });
   });
 
@@ -214,13 +244,9 @@ describe("dashboard news api input", () => {
     ).toBe("Cada enlace del contenido necesita una URL segura.");
   });
 
-  it("excluye drafts de Sanity en las lecturas del dashboard", () => {
-    expect(dashboardNewsListQuery).toContain(
-      '!(_id in path("drafts.**"))'
-    );
-    expect(dashboardNewsByIdQuery).toContain(
-      '!(_id in path("drafts.**"))'
-    );
+  it("lee publicados y borradores en las lecturas del dashboard", () => {
+    expect(dashboardNewsListQuery).toContain('*[_type == "news"]');
+    expect(dashboardNewsByIdQuery).toContain("_id == $draftId");
     expect(dashboardNewsListQuery).toContain('"imageAssetId": image.asset->_id');
     expect(dashboardNewsListQuery).toContain('"imageAssetId": asset->_id');
   });

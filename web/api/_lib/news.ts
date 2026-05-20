@@ -2,17 +2,20 @@ export {
   validateDashboardNewsContent,
 } from "./news/content.js";
 export {
-  createDashboardNews,
   deleteDashboardNews,
   getDashboardNewsById,
   listDashboardNews,
-  updateDashboardNews,
+  publishDashboardNews,
+  saveDashboardNewsDraft,
 } from "./news/repository.js";
 export {
   dashboardNewsByIdQuery,
   dashboardNewsListQuery,
 } from "./news/queries.js";
 export {
+  parseDashboardNewsDraftFormData,
+  parseDashboardNewsDraftInput,
+  parseDashboardNewsDraftRequestInput,
   parseDashboardNewsFormData,
   parseDashboardNewsInput,
   parseDashboardNewsRequestInput,

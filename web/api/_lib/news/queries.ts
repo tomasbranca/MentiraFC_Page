@@ -1,7 +1,6 @@
-const PUBLISHED_NEWS_FILTER = `_type == "news" && !(_id in path("drafts.**"))`;
-
 const dashboardNewsProjection = `{
   "id": _id,
+  "updatedAt": _updatedAt,
   title,
   description,
   date,
@@ -19,6 +18,9 @@ const dashboardNewsProjection = `{
   }
 }`;
 
-export const dashboardNewsListQuery = `*[${PUBLISHED_NEWS_FILTER}] | order(date desc) ${dashboardNewsProjection}`;
+export const dashboardNewsListQuery = `*[_type == "news"] | order(coalesce(date, _updatedAt) desc) ${dashboardNewsProjection}`;
 
-export const dashboardNewsByIdQuery = `*[${PUBLISHED_NEWS_FILTER} && _id == $id][0] ${dashboardNewsProjection}`;
+export const dashboardNewsByIdQuery = `*[
+  _type == "news" &&
+  (_id == $id || _id == $draftId)
+] ${dashboardNewsProjection}`;

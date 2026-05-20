@@ -51,6 +51,30 @@ describe("dashboard Sanity API client", () => {
     expect(fetchMock.mock.calls[0]?.[1]).toBeUndefined();
   });
 
+  it("usa token y perspectiva raw para lecturas de borradores", async () => {
+    const fetchMock = vi.fn<typeof fetch>(async () =>
+      Response.json({
+        result: [],
+      })
+    );
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    await querySanity("[]", {
+      perspective: "raw",
+      useToken: true,
+    });
+
+    const [url, init] = fetchMock.mock.calls[0] ?? [];
+
+    expect(String(url)).toContain("perspective=raw");
+    expect(init).toMatchObject({
+      headers: {
+        Authorization: "Bearer secret-token",
+      },
+    });
+  });
+
   it("usa el token de escritura para mutaciones", async () => {
     const fetchMock = vi.fn<typeof fetch>(async () =>
       Response.json({

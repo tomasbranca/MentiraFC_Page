@@ -8,6 +8,7 @@ type FieldProps = {
   label: string;
   value: string;
   error?: string;
+  dirty?: boolean;
   type?: "text" | "datetime-local";
   onChange: (event: ChangeEvent<HTMLInputElement>) => void;
 };
@@ -18,6 +19,7 @@ export const Field = ({
   label,
   value,
   error,
+  dirty = false,
   type = "text",
   onChange,
 }: FieldProps) => {
@@ -25,8 +27,13 @@ export const Field = ({
 
   return (
     <label className="block" htmlFor={id}>
-      <span className="mb-2 block text-sm font-medium text-violet-100">
-        {label}
+      <span className="mb-2 flex items-center gap-2 text-sm font-medium text-violet-100">
+        <span>{label}</span>
+        {dirty && (
+          <span className="rounded-[3px] border border-amber-200/20 bg-amber-200/10 px-2 py-0.5 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-amber-100">
+            Editado
+          </span>
+        )}
       </span>
       <input
         id={id}
@@ -53,6 +60,7 @@ type TextAreaFieldProps = {
   label: string;
   value: string;
   error?: string;
+  dirty?: boolean;
   onChange: (event: ChangeEvent<HTMLTextAreaElement>) => void;
 };
 
@@ -62,6 +70,7 @@ export const TextAreaField = ({
   label,
   value,
   error,
+  dirty = false,
   onChange,
 }: TextAreaFieldProps) => {
   const errorId = error ? `${id}-error` : undefined;
@@ -80,8 +89,13 @@ export const TextAreaField = ({
 
   return (
     <label className="block" htmlFor={id}>
-      <span className="mb-2 block text-sm font-medium text-violet-100">
-        {label}
+      <span className="mb-2 flex items-center gap-2 text-sm font-medium text-violet-100">
+        <span>{label}</span>
+        {dirty && (
+          <span className="rounded-[3px] border border-amber-200/20 bg-amber-200/10 px-2 py-0.5 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-amber-100">
+            Editado
+          </span>
+        )}
       </span>
       <textarea
         ref={textareaRef}

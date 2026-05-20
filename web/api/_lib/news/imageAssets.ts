@@ -1,4 +1,5 @@
 import type {
+  DashboardNewsDraftMutationInput,
   DashboardNewsInput,
   DashboardNewsMutationInput,
 } from "../../../src/types/dashboard";
@@ -21,6 +22,20 @@ export const buildNewsImageValue = (assetId: string, alt: string) => ({
   },
   alt,
 });
+
+const normalizeDraftImageAlt = ({
+  title,
+  imageAlt,
+}: DashboardNewsDraftMutationInput): string => {
+  const normalizedImageAlt = imageAlt?.trim();
+  const normalizedTitle = title?.trim();
+
+  return (
+    normalizedImageAlt ||
+    normalizedTitle ||
+    "Imagen principal de Mentira FC"
+  );
+};
 
 const isDefaultNewsImageAsset = (assetId?: string | null): boolean =>
   assetId === DEFAULT_NEWS_IMAGE_ASSET_ID;
@@ -65,3 +80,37 @@ export const resolveNextImageAssetId = async (
     uploadedAssetId: null,
   };
 };
+
+export const resolveNextDraftImageAssetId = async (
+  input: DashboardNewsDraftMutationInput,
+  previousImageAssetId?: string | null
+): Promise<{ assetId: string | null; uploadedAssetId: string | null }> => {
+  if (input.coverImage) {
+    const uploadedAsset = await uploadSanityImageAsset(input.coverImage);
+
+    return {
+      assetId: uploadedAsset._id,
+      uploadedAssetId: uploadedAsset._id,
+    };
+  }
+
+  if (input.useDefaultImage) {
+    return {
+      assetId: DEFAULT_NEWS_IMAGE_ASSET_ID,
+      uploadedAssetId: null,
+    };
+  }
+
+  return {
+    assetId: previousImageAssetId ?? null,
+    uploadedAssetId: null,
+  };
+};
+
+export const buildDraftNewsImageValue = (
+  assetId: string | null,
+  input: DashboardNewsDraftMutationInput
+) =>
+  assetId
+    ? buildNewsImageValue(assetId, normalizeDraftImageAlt(input))
+    : undefined;

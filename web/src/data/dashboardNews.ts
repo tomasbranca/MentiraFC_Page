@@ -1,5 +1,6 @@
 import { getCurrentAccessToken } from "./auth";
 import type {
+  DashboardNewsDraftMutationInput,
   DashboardNewsItem,
   DashboardNewsMutationInput,
 } from "../types/dashboard";
@@ -7,9 +8,15 @@ import { z, zodParseOptions } from "./zodRuntime";
 
 const dashboardNewsSchema = z.object({
   id: z.string(),
+  publishedId: z.string().nullable().optional(),
+  draftId: z.string().nullable().optional(),
+  status: z.enum(["published", "draft"]),
+  hasDraft: z.boolean(),
+  hasPublishedVersion: z.boolean(),
   title: z.string(),
   description: z.string(),
-  date: z.string(),
+  date: z.string().nullable().optional(),
+  updatedAt: z.string().nullable().optional(),
   slug: z.string(),
   imageAlt: z.string().nullable().optional(),
   imageAssetId: z.string().nullable().optional(),
@@ -21,8 +28,28 @@ const dashboardNewsListSchema = z.array(dashboardNewsSchema);
 
 const DASHBOARD_NEWS_API_PATH = "/api/dashboard/news";
 
+type DashboardNewsMutationIntent = "draft" | "publish";
+
+const buildDashboardNewsApiPath = (
+  id?: string | null,
+  intent?: DashboardNewsMutationIntent
+): string => {
+  const params = new URLSearchParams();
+
+  if (id) {
+    params.set("id", id);
+  }
+
+  if (intent) {
+    params.set("intent", intent);
+  }
+
+  const query = params.toString();
+  return query ? `${DASHBOARD_NEWS_API_PATH}?${query}` : DASHBOARD_NEWS_API_PATH;
+};
+
 export const buildDashboardNewsItemApiPath = (id: string): string =>
-  `${DASHBOARD_NEWS_API_PATH}?id=${encodeURIComponent(id)}`;
+  buildDashboardNewsApiPath(id);
 
 const fetchDashboardApi = async <T>(
   path: string,
@@ -62,16 +89,16 @@ const fetchDashboardApi = async <T>(
 };
 
 const buildDashboardNewsFormData = (
-  input: DashboardNewsMutationInput
+  input: DashboardNewsMutationInput | DashboardNewsDraftMutationInput
 ): FormData => {
   const formData = new FormData();
 
-  formData.set("title", input.title);
-  formData.set("description", input.description);
-  formData.set("date", input.date);
-  formData.set("slug", input.slug);
-  formData.set("imageAlt", input.imageAlt);
-  formData.set("content", JSON.stringify(input.content));
+  formData.set("title", input.title ?? "");
+  formData.set("description", input.description ?? "");
+  formData.set("date", input.date ?? "");
+  formData.set("slug", input.slug ?? "");
+  formData.set("imageAlt", input.imageAlt ?? "");
+  formData.set("content", JSON.stringify(input.content ?? []));
 
   if (input.useDefaultImage) {
     formData.set("useDefaultImage", "true");
@@ -102,6 +129,50 @@ export const fetchDashboardNewsById = async (
   const data = await fetchDashboardApi<unknown>(
     buildDashboardNewsItemApiPath(id)
   );
+  return dashboardNewsSchema.parse(data, zodParseOptions) as DashboardNewsItem;
+};
+
+export const publishDashboardNews = async (
+  input: DashboardNewsMutationInput
+): Promise<DashboardNewsItem> => {
+  const data = await fetchDashboardApi<unknown>(
+    buildDashboardNewsApiPath(null, "publish"),
+    {
+      method: "POST",
+      body: buildDashboardNewsFormData(input),
+    }
+  );
+
+  return dashboardNewsSchema.parse(data, zodParseOptions) as DashboardNewsItem;
+};
+
+export const publishDashboardNewsById = async (
+  id: string,
+  input: DashboardNewsMutationInput
+): Promise<DashboardNewsItem> => {
+  const data = await fetchDashboardApi<unknown>(
+    buildDashboardNewsApiPath(id, "publish"),
+    {
+      method: "PUT",
+      body: buildDashboardNewsFormData(input),
+    }
+  );
+
+  return dashboardNewsSchema.parse(data, zodParseOptions) as DashboardNewsItem;
+};
+
+export const saveDashboardNewsDraft = async (
+  input: DashboardNewsDraftMutationInput,
+  id?: string | null
+): Promise<DashboardNewsItem> => {
+  const data = await fetchDashboardApi<unknown>(
+    buildDashboardNewsApiPath(id, "draft"),
+    {
+      method: id ? "PUT" : "POST",
+      body: buildDashboardNewsFormData(input),
+    }
+  );
+
   return dashboardNewsSchema.parse(data, zodParseOptions) as DashboardNewsItem;
 };
 

@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import {
+  type DashboardNewsDraftMutationInput,
   type DashboardNewsInput,
   type DashboardNewsItem,
   type DashboardNewsMutationInput,
@@ -23,11 +24,29 @@ const dashboardNewsInputSchema = z.object({
   imageAlt: z.string().trim().optional(),
 });
 
+const dashboardNewsDraftInputSchema = z.object({
+  title: z.string().trim().optional(),
+  description: z.string().trim().optional(),
+  date: z
+    .string()
+    .trim()
+    .refine((value) => !value || !Number.isNaN(new Date(value).getTime()))
+    .optional(),
+  slug: z.string().trim().optional(),
+  imageAlt: z.string().trim().optional(),
+});
+
 const dashboardNewsItemSchema = z.object({
   id: z.string(),
+  publishedId: z.string().nullable().optional(),
+  draftId: z.string().nullable().optional(),
+  status: z.enum(["published", "draft"]),
+  hasDraft: z.boolean(),
+  hasPublishedVersion: z.boolean(),
   title: z.string(),
   description: z.string(),
-  date: z.string(),
+  date: z.string().nullable().optional(),
+  updatedAt: z.string().nullable().optional(),
   slug: z.string(),
   imageAlt: z.string().nullable().optional(),
   imageAssetId: z.string().nullable().optional(),
@@ -116,6 +135,24 @@ export const parseDashboardNewsInput = (
   };
 };
 
+export const parseDashboardNewsDraftInput = (
+  input: unknown
+): DashboardNewsDraftMutationInput | null => {
+  const parsed = dashboardNewsDraftInputSchema.safeParse(input);
+
+  if (!parsed.success) {
+    return null;
+  }
+
+  return {
+    title: parsed.data.title ?? "",
+    description: parsed.data.description ?? "",
+    date: parsed.data.date ?? "",
+    slug: parsed.data.slug ?? "",
+    imageAlt: parsed.data.imageAlt ?? "",
+  };
+};
+
 export const parseDashboardNewsFormData = (
   formData: FormData
 ): DashboardNewsMutationInput | null => {
@@ -146,6 +183,30 @@ export const parseDashboardNewsFormData = (
   };
 };
 
+export const parseDashboardNewsDraftFormData = (
+  formData: FormData
+): DashboardNewsDraftMutationInput | null => {
+  const input = parseDashboardNewsDraftInput({
+    title: getFormString(formData, "title"),
+    description: getFormString(formData, "description"),
+    date: getFormString(formData, "date"),
+    slug: getFormString(formData, "slug"),
+    imageAlt: getFormString(formData, "imageAlt"),
+  });
+
+  if (!input) {
+    return null;
+  }
+
+  return {
+    ...input,
+    coverImage: getFormImageFile(formData),
+    useDefaultImage: getFormBoolean(formData, "useDefaultImage"),
+    content: getFormContent(formData) ?? [],
+    contentImageFiles: getFormContentImageFiles(formData),
+  };
+};
+
 export const parseDashboardNewsRequestInput = async (
   request: Request
 ): Promise<DashboardNewsMutationInput | null> => {
@@ -167,6 +228,32 @@ export const parseDashboardNewsRequestInput = async (
   return {
     ...input,
     content: payload.content as NewsContentBlock[],
+  };
+};
+
+export const parseDashboardNewsDraftRequestInput = async (
+  request: Request
+): Promise<DashboardNewsDraftMutationInput | null> => {
+  const contentType = request.headers.get("content-type") ?? "";
+
+  if (contentType.includes("multipart/form-data")) {
+    return parseDashboardNewsDraftFormData(await request.formData());
+  }
+
+  const payload = (await request.json()) as {
+    content?: unknown;
+  };
+  const input = parseDashboardNewsDraftInput(payload);
+
+  if (!input) {
+    return null;
+  }
+
+  return {
+    ...input,
+    content: Array.isArray(payload.content)
+      ? (payload.content as NewsContentBlock[])
+      : [],
   };
 };
 

@@ -35,6 +35,7 @@ type DashboardNewsContentEditorProps = {
   title: string;
   blocks: DashboardNewsEditorBlock[];
   error?: string;
+  dirty?: boolean;
   onChange: (blocks: DashboardNewsEditorBlock[]) => void;
 };
 
@@ -52,6 +53,7 @@ const DashboardNewsContentEditor = ({
   title,
   blocks,
   error,
+  dirty = false,
   onChange,
 }: DashboardNewsContentEditorProps) => {
   const [showPreview, setShowPreview] = useState(false);
@@ -354,6 +356,11 @@ const DashboardNewsContentEditor = ({
           <h3 className="text-sm font-bold uppercase tracking-wide text-violet-100">
             Contenido
           </h3>
+          {dirty && (
+            <span className="mt-2 inline-flex rounded-[3px] border border-amber-200/20 bg-amber-200/10 px-2 py-0.5 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-amber-100">
+              Editado
+            </span>
+          )}
           <p className="mt-2 text-sm text-violet-100/70">
             Armá la nota con texto, imágenes y videos. Las imágenes se suben recién al guardar.
           </p>

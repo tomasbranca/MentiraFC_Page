@@ -129,6 +129,7 @@ Uso en web:
 - Query de detalle: `NEWS_BY_SLUG_QUERY`
 - Queries relacionadas: `SUGGESTED_NEWS_QUERY`, `FALLBACK_NEWS_QUERY`
 - Modelo de dominio: `NewsItem`
+- El dashboard puede guardar cambios como documentos `drafts.*` de Sanity. Las queries publicas fuerzan contenido publicado y excluyen drafts.
 
 Relaciones actuales:
 
