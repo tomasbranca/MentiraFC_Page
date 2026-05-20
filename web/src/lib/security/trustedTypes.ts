@@ -2,6 +2,13 @@ const TRUSTED_SCRIPT_PATHS = new Set([
   "/_vercel/insights/script.js",
   "/_vercel/speed-insights/script.js",
 ]);
+const TRUSTED_VERCEL_SCRIPT_ORIGIN = "https://va.vercel-scripts.com";
+const TRUSTED_VERCEL_SCRIPT_PATHS = new Set([
+  "/v1/script.js",
+  "/v1/script.debug.js",
+  "/v1/speed-insights/script.js",
+  "/v1/speed-insights/script.debug.js",
+]);
 
 type TrustedTypesPolicyFactory = {
   createPolicy: (
@@ -29,7 +36,14 @@ export const isTrustedScriptUrl = (
   try {
     const url = new URL(value, origin);
 
-    return url.origin === origin && TRUSTED_SCRIPT_PATHS.has(url.pathname);
+    if (url.origin === origin) {
+      return TRUSTED_SCRIPT_PATHS.has(url.pathname);
+    }
+
+    return (
+      url.origin === TRUSTED_VERCEL_SCRIPT_ORIGIN &&
+      TRUSTED_VERCEL_SCRIPT_PATHS.has(url.pathname)
+    );
   } catch {
     return false;
   }

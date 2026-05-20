@@ -16,6 +16,24 @@ describe("trustedTypes", () => {
     expect(
       isTrustedScriptUrl("/_vercel/speed-insights/script.js", origin)
     ).toBe(true);
+    expect(
+      isTrustedScriptUrl(
+        "https://va.vercel-scripts.com/v1/speed-insights/script.debug.js",
+        origin
+      )
+    ).toBe(true);
+    expect(
+      isTrustedScriptUrl(
+        "https://va.vercel-scripts.com/v1/speed-insights/script.js",
+        origin
+      )
+    ).toBe(true);
+    expect(
+      isTrustedScriptUrl(
+        "https://va.vercel-scripts.com/v1/script.debug.js",
+        origin
+      )
+    ).toBe(true);
   });
 
   it("rechaza scripts externos o rutas no permitidas", () => {
@@ -23,6 +41,9 @@ describe("trustedTypes", () => {
       false
     );
     expect(isTrustedScriptUrl("/assets/index.js", origin)).toBe(false);
+    expect(
+      isTrustedScriptUrl("https://va.vercel-scripts.com/unsafe.js", origin)
+    ).toBe(false);
   });
 
   it("instala una politica default con HTML para librerias legacy", () => {

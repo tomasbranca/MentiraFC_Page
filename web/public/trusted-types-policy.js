@@ -9,11 +9,25 @@
     "/_vercel/insights/script.js": true,
     "/_vercel/speed-insights/script.js": true,
   };
+  var trustedVercelScriptOrigin = "https://va.vercel-scripts.com";
+  var trustedVercelScriptPaths = {
+    "/v1/script.js": true,
+    "/v1/script.debug.js": true,
+    "/v1/speed-insights/script.js": true,
+    "/v1/speed-insights/script.debug.js": true,
+  };
 
   var isTrustedScriptUrl = function (value) {
     try {
       var url = new URL(value, window.location.origin);
-      return url.origin === window.location.origin && Boolean(trustedScriptPaths[url.pathname]);
+      if (url.origin === window.location.origin) {
+        return Boolean(trustedScriptPaths[url.pathname]);
+      }
+
+      return (
+        url.origin === trustedVercelScriptOrigin &&
+        Boolean(trustedVercelScriptPaths[url.pathname])
+      );
     } catch {
       return false;
     }
