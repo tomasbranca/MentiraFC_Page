@@ -1,0 +1,121 @@
+.mfc-confirm-container {
+  z-index: 10000;
+}
+
+.mfc-confirm-popup {
+  width: min(30rem, calc(100vw - 2rem));
+  padding: 0;
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: 4px;
+  background: #151518;
+  color: #f8f7ff;
+  box-shadow: 0 24px 52px rgb(0 0 0 / 0.42);
+}
+
+.mfc-confirm-popup .swal2-icon {
+  width: 3.1rem;
+  height: 3.1rem;
+  margin: 1.5rem auto 0;
+  border-radius: 4px;
+}
+
+.mfc-confirm-popup .swal2-icon.swal2-question,
+.mfc-confirm-popup .swal2-icon.swal2-warning {
+  border-color: rgb(167 139 250 / 0.72);
+  color: #c4b5fd;
+}
+
+.mfc-confirm-popup .swal2-icon.swal2-error {
+  border-color: rgb(252 165 165 / 0.62);
+  color: #fecaca;
+}
+
+.mfc-confirm-title {
+  margin: 0;
+  padding: 1.35rem 1.5rem 0;
+  color: #ffffff;
+  font-family: Archivo, Roboto, system-ui, sans-serif;
+  font-size: 1.35rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 1.15;
+  text-transform: uppercase;
+}
+
+.mfc-confirm-text {
+  margin: 0;
+  padding: 0.75rem 1.5rem 0;
+  color: rgb(237 233 254 / 0.74);
+  font-size: 0.925rem;
+  line-height: 1.55;
+}
+
+.mfc-confirm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  justify-content: flex-end;
+  margin: 0;
+  padding: 1.35rem 1.5rem 1.5rem;
+}
+
+.mfc-confirm-button {
+  min-height: 2.75rem;
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: 3px;
+  padding: 0.72rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.mfc-confirm-button:focus-visible {
+  outline: 2px solid rgb(139 92 246 / 0.55);
+  outline-offset: 2px;
+}
+
+.mfc-confirm-button--primary {
+  border-color: rgb(221 214 254 / 0.45);
+  background: #ede9fe;
+  color: #2e1065;
+}
+
+.mfc-confirm-button--primary:hover {
+  background: #ffffff;
+}
+
+.mfc-confirm-button--danger {
+  border-color: rgb(252 165 165 / 0.34);
+  background: rgb(248 113 113 / 0.14);
+  color: #fecaca;
+}
+
+.mfc-confirm-button--danger:hover {
+  border-color: rgb(252 165 165 / 0.55);
+  background: rgb(248 113 113 / 0.22);
+}
+
+.mfc-confirm-button--secondary {
+  background: transparent;
+  color: rgb(237 233 254 / 0.82);
+}
+
+.mfc-confirm-button--secondary:hover {
+  border-color: rgb(196 181 253 / 0.38);
+  background: rgb(255 255 255 / 0.045);
+  color: #ffffff;
+}
+
+@media (max-width: 520px) {
+  .mfc-confirm-actions {
+    flex-direction: column-reverse;
+  }
+
+  .mfc-confirm-button {
+    width: 100%;
+  }
+}

@@ -13,8 +13,20 @@ import type {
 } from "@portabletext/editor";
 import { EventListenerPlugin } from "@portabletext/editor/plugins";
 import * as selectors from "@portabletext/editor/selectors";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import type { PortableTextBlock } from "@portabletext/types";
+import {
+  FiBold,
+  FiCheck,
+  FiHash,
+  FiItalic,
+  FiLink,
+  FiList,
+  FiMessageSquare,
+  FiType,
+  FiUnderline,
+  FiX,
+} from "react-icons/fi";
 
 type DashboardNewsRichTextEditorProps = {
   value: PortableTextBlock[];
@@ -89,24 +101,28 @@ const ToolbarButton = ({
   active,
   disabled,
   label,
+  children,
   onClick,
 }: {
   active?: boolean;
   disabled?: boolean;
   label: string;
+  children: ReactNode;
   onClick: () => void;
 }) => (
   <button
     type="button"
     disabled={disabled}
     onClick={onClick}
-    className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
+    className={`inline-flex h-9 min-w-9 items-center justify-center rounded-[3px] border px-2 text-xs font-semibold transition ${
       active
         ? "border-violet-300 bg-violet-200 text-violet-950"
         : "border-white/10 bg-black/20 text-violet-100 hover:border-violet-200/35 hover:bg-white/[0.05]"
     } disabled:cursor-not-allowed disabled:opacity-45`}
+    aria-label={label}
+    title={label}
   >
-    {label}
+    {children}
   </button>
 );
 
@@ -206,58 +222,84 @@ const Toolbar = () => {
   return (
     <div className="border-b border-white/10 p-3">
       <div className="flex flex-wrap gap-2">
-        <ToolbarButton label="P" onClick={() => toggleStyle("normal")} />
-        <ToolbarButton label="H2" active={isH2} onClick={() => toggleStyle("h2")} />
-        <ToolbarButton label="H3" active={isH3} onClick={() => toggleStyle("h3")} />
+        <ToolbarButton label="Párrafo" onClick={() => toggleStyle("normal")}>
+          <FiType className="size-4" aria-hidden="true" />
+        </ToolbarButton>
+        <ToolbarButton label="Título H2" active={isH2} onClick={() => toggleStyle("h2")}>
+          H2
+        </ToolbarButton>
+        <ToolbarButton label="Título H3" active={isH3} onClick={() => toggleStyle("h3")}>
+          H3
+        </ToolbarButton>
         <ToolbarButton
           label="Cita"
           active={isQuote}
           onClick={() => toggleStyle("blockquote")}
-        />
+        >
+          <FiMessageSquare className="size-4" aria-hidden="true" />
+        </ToolbarButton>
         <ToolbarButton
           label="Negrita"
           active={isBold}
           onClick={() => toggleDecorator("strong")}
-        />
+        >
+          <FiBold className="size-4" aria-hidden="true" />
+        </ToolbarButton>
         <ToolbarButton
           label="Cursiva"
           active={isItalic}
           onClick={() => toggleDecorator("em")}
-        />
+        >
+          <FiItalic className="size-4" aria-hidden="true" />
+        </ToolbarButton>
         <ToolbarButton
           label="Subrayado"
           active={isUnderline}
           onClick={() => toggleDecorator("underline")}
-        />
+        >
+          <FiUnderline className="size-4" aria-hidden="true" />
+        </ToolbarButton>
         <ToolbarButton
           label="Viñetas"
           active={isBullet}
           onClick={() => toggleList("bullet")}
-        />
+        >
+          <FiList className="size-4" aria-hidden="true" />
+        </ToolbarButton>
         <ToolbarButton
           label="Numerada"
           active={isNumber}
           onClick={() => toggleList("number")}
-        />
+        >
+          <FiHash className="size-4" aria-hidden="true" />
+        </ToolbarButton>
         <ToolbarButton
           label="Enlace"
           active={Boolean(activeLink)}
           disabled={!activeLink && !isSelectionExpanded}
           onClick={openLinkPanel}
-        />
+        >
+          <FiLink className="size-4" aria-hidden="true" />
+        </ToolbarButton>
       </div>
 
       {isLinkPanelOpen && (
-        <div className="mt-3 flex flex-col gap-2 rounded-2xl border border-white/10 bg-black/20 p-3 sm:flex-row">
+        <div className="mt-3 flex flex-col gap-2 rounded-[4px] border border-white/10 bg-black/20 p-3 sm:flex-row">
           <input
             value={href}
             onChange={(event) => setHref(event.target.value)}
             placeholder="https://... o /noticias/..."
-            className="min-w-0 flex-1 rounded-xl border border-white/10 bg-black/25 px-3 py-2 text-sm text-white outline-none transition focus:border-violet-400 focus:ring-2 focus:ring-violet-500/20"
+            className="min-h-10 min-w-0 flex-1 rounded-[3px] border border-white/10 bg-[#0f0f13] px-3 py-2 text-sm text-white outline-none transition focus:border-violet-300/80 focus:ring-2 focus:ring-violet-500/20"
           />
           <div className="flex gap-2">
-            <ToolbarButton label="Aplicar" onClick={applyLink} />
-            {activeLink && <ToolbarButton label="Quitar" onClick={removeActiveLink} />}
+            <ToolbarButton label="Aplicar enlace" onClick={applyLink}>
+              <FiCheck className="size-4" aria-hidden="true" />
+            </ToolbarButton>
+            {activeLink && (
+              <ToolbarButton label="Quitar enlace" onClick={removeActiveLink}>
+                <FiX className="size-4" aria-hidden="true" />
+              </ToolbarButton>
+            )}
           </div>
         </div>
       )}
@@ -275,7 +317,7 @@ const DashboardNewsRichTextEditor = ({
   );
 
   return (
-    <div className="overflow-hidden rounded-[1.1rem] border border-white/10 bg-black/15">
+    <div className="overflow-hidden rounded-[4px] border border-white/10 bg-black/15">
       <EditorProvider
         initialConfig={{
           schemaDefinition,

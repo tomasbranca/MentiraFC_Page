@@ -1,6 +1,19 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  FiArrowDown,
+  FiArrowUp,
+  FiEdit2,
+  FiEye,
+  FiImage,
+  FiMove,
+  FiTrash2,
+  FiType,
+  FiUpload,
+  FiVideo,
+} from "react-icons/fi";
 
 import type { NewsContentBlock } from "../../../types/models";
+import { confirmDashboardAction } from "../../app/confirmDialog";
 import NewsRichContent from "../NewsDetail/NewsRichContent";
 import {
   createImageEditorBlock,
@@ -32,6 +45,9 @@ const moveItem = <T,>(items: T[], from: number, to: number): T[] => {
   return nextItems;
 };
 
+const iconButtonClassName =
+  "inline-flex h-10 w-10 items-center justify-center rounded-[3px] border border-white/10 text-violet-100 transition hover:border-violet-200/35 hover:bg-white/[0.045] focus:outline-none focus:ring-2 focus:ring-violet-500/40 disabled:cursor-not-allowed disabled:opacity-35";
+
 const DashboardNewsContentEditor = ({
   title,
   blocks,
@@ -62,8 +78,24 @@ const DashboardNewsContentEditor = ({
     onChange(blocks.map((block) => (block.id === id ? updater(block) : block)));
   };
 
-  const removeBlock = (id: string) => {
+  const removeBlock = async (id: string) => {
     const block = blocks.find((item) => item.id === id);
+
+    if (!block) {
+      return;
+    }
+
+    const confirmed = await confirmDashboardAction({
+      title: "Borrar bloque",
+      text: "El bloque se va a quitar de esta noticia. El cambio se confirma recién cuando guardás la noticia.",
+      confirmText: "Borrar bloque",
+      icon: "warning",
+      variant: "danger",
+    });
+
+    if (!confirmed) {
+      return;
+    }
 
     if (block?.kind === "image" && block.previewUrl) {
       URL.revokeObjectURL(block.previewUrl);
@@ -194,7 +226,7 @@ const DashboardNewsContentEditor = ({
       key={block.id}
       onDragOver={(event) => event.preventDefault()}
       onDrop={() => handleDrop(block.id)}
-      className="rounded-[1.2rem] border border-white/10 bg-white/[0.025]"
+      className="rounded-[4px] border border-white/10 bg-[#141418]"
     >
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
         <div className="flex items-center gap-2">
@@ -203,12 +235,13 @@ const DashboardNewsContentEditor = ({
             draggable
             onDragStart={() => setDraggedBlockId(block.id)}
             onDragEnd={() => setDraggedBlockId(null)}
-            className="cursor-grab rounded-full border border-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-violet-100/70 active:cursor-grabbing"
+            className={`${iconButtonClassName} cursor-grab active:cursor-grabbing`}
             aria-label="Arrastrar bloque"
+            title="Arrastrar bloque"
           >
-            Mover
+            <FiMove className="size-4" aria-hidden="true" />
           </button>
-          <span className="text-xs font-semibold uppercase tracking-[0.18em] text-violet-100/55">
+          <span className="text-xs font-semibold uppercase tracking-[0.16em] text-violet-100/55">
             {block.kind === "richText" && "Texto"}
             {block.kind === "image" && "Imagen"}
             {block.kind === "video" && "Video"}
@@ -221,25 +254,31 @@ const DashboardNewsContentEditor = ({
             type="button"
             disabled={index === 0}
             onClick={() => moveBlock(block.id, -1)}
-            className="rounded-full border border-white/10 px-3 py-1 text-xs text-violet-100 transition hover:border-violet-200/35 hover:bg-white/[0.04] disabled:cursor-not-allowed disabled:opacity-35"
+            className={iconButtonClassName}
+            aria-label="Subir bloque"
+            title="Subir bloque"
           >
-            Subir
+            <FiArrowUp className="size-4" aria-hidden="true" />
           </button>
           <button
             type="button"
             disabled={index === blocks.length - 1}
             onClick={() => moveBlock(block.id, 1)}
-            className="rounded-full border border-white/10 px-3 py-1 text-xs text-violet-100 transition hover:border-violet-200/35 hover:bg-white/[0.04] disabled:cursor-not-allowed disabled:opacity-35"
+            className={iconButtonClassName}
+            aria-label="Bajar bloque"
+            title="Bajar bloque"
           >
-            Bajar
+            <FiArrowDown className="size-4" aria-hidden="true" />
           </button>
           {block.kind !== "readonly" && (
             <button
               type="button"
-              onClick={() => removeBlock(block.id)}
-              className="rounded-full border border-red-300/15 px-3 py-1 text-xs text-red-200 transition hover:border-red-200/35 hover:bg-red-400/10"
+              onClick={() => void removeBlock(block.id)}
+              className={`${iconButtonClassName} border-red-300/15 text-red-200 hover:border-red-200/35 hover:bg-red-400/10`}
+              aria-label="Borrar bloque"
+              title="Borrar bloque"
             >
-              Borrar
+              <FiTrash2 className="size-4" aria-hidden="true" />
             </button>
           )}
         </div>
@@ -297,7 +336,7 @@ const DashboardNewsContentEditor = ({
         )}
 
         {block.kind === "readonly" && (
-          <div className="rounded-2xl border border-amber-200/15 bg-amber-200/[0.06] p-4">
+          <div className="rounded-[4px] border border-amber-200/15 bg-amber-200/[0.06] p-4">
             <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-amber-100/70">
               Este bloque se conserva pero todavía no se puede editar desde el dashboard.
             </p>
@@ -323,14 +362,20 @@ const DashboardNewsContentEditor = ({
         <button
           type="button"
           onClick={() => setShowPreview((current) => !current)}
-          className="rounded-full border border-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:border-violet-200/35 hover:bg-white/[0.045]"
+          className={iconButtonClassName}
+          aria-label={showPreview ? "Volver al editor" : "Ver preview"}
+          title={showPreview ? "Volver al editor" : "Ver preview"}
         >
-          {showPreview ? "Volver al editor" : "Ver preview"}
+          {showPreview ? (
+            <FiEdit2 className="size-4" aria-hidden="true" />
+          ) : (
+            <FiEye className="size-4" aria-hidden="true" />
+          )}
         </button>
       </div>
 
       {showPreview ? (
-        <div className="rounded-[1.2rem] border border-white/10 bg-black/20 p-4 sm:p-6">
+        <div className="rounded-[4px] border border-white/10 bg-black/20 p-4 sm:p-6">
           {previewContent.length > 0 ? (
             <NewsRichContent content={previewContent as NewsContentBlock[]} />
           ) : (
@@ -344,7 +389,7 @@ const DashboardNewsContentEditor = ({
           {blocks.length > 0 ? (
             <div className="space-y-4">{blocks.map(renderBlock)}</div>
           ) : (
-            <div className="rounded-[1.2rem] border border-dashed border-white/15 bg-black/15 p-6 text-center">
+            <div className="rounded-[4px] border border-dashed border-white/15 bg-black/15 p-6 text-center">
               <p className="text-sm font-medium text-violet-100">
                 La noticia todavía no tiene contenido.
               </p>
@@ -354,17 +399,24 @@ const DashboardNewsContentEditor = ({
             </div>
           )}
 
-          <div className="flex flex-col gap-2 sm:flex-row">
+          <div className="flex flex-wrap gap-2">
             <button
               type="button"
               onClick={() => onChange([...blocks, createRichTextEditorBlock()])}
-              className="rounded-full border border-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:border-violet-200/35 hover:bg-white/[0.045]"
+              className={iconButtonClassName}
+              aria-label="Agregar texto"
+              title="Agregar texto"
             >
-              Agregar texto
+              <FiType className="size-4" aria-hidden="true" />
             </button>
 
-            <label className="cursor-pointer rounded-full border border-white/10 px-4 py-2 text-center text-sm font-semibold text-white transition hover:border-violet-200/35 hover:bg-white/[0.045]">
-              Agregar imagen
+            <label
+              className={`${iconButtonClassName} cursor-pointer`}
+              aria-label="Agregar imagen"
+              title="Agregar imagen"
+            >
+              <FiImage className="size-4" aria-hidden="true" />
+              <span className="sr-only">Agregar imagen</span>
               <input
                 type="file"
                 accept=".jpg,.jpeg,.png,.webp"
@@ -380,9 +432,11 @@ const DashboardNewsContentEditor = ({
             <button
               type="button"
               onClick={() => onChange([...blocks, createVideoEditorBlock()])}
-              className="rounded-full border border-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:border-violet-200/35 hover:bg-white/[0.045]"
+              className={iconButtonClassName}
+              aria-label="Agregar video"
+              title="Agregar video"
             >
-              Agregar video
+              <FiVideo className="size-4" aria-hidden="true" />
             </button>
           </div>
         </>
@@ -410,7 +464,7 @@ const ImageBlockEditor = ({
 
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)]">
-      <div className="overflow-hidden rounded-2xl border border-white/10 bg-black/20">
+      <div className="overflow-hidden rounded-[3px] border border-white/10 bg-black/20">
         {imageUrl ? (
           <img
             src={imageUrl}
@@ -437,7 +491,7 @@ const ImageBlockEditor = ({
                 alt: event.target.value,
               })
             }
-            className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none transition focus:border-violet-400 focus:ring-2 focus:ring-violet-500/20"
+            className="min-h-11 w-full rounded-[3px] border border-white/10 bg-[#0f0f13] px-3.5 py-2.5 text-sm text-white outline-none transition focus:border-violet-300/80 focus:ring-2 focus:ring-violet-500/20"
           />
         </label>
 
@@ -453,12 +507,17 @@ const ImageBlockEditor = ({
                 caption: event.target.value,
               })
             }
-            className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none transition focus:border-violet-400 focus:ring-2 focus:ring-violet-500/20"
+            className="min-h-11 w-full rounded-[3px] border border-white/10 bg-[#0f0f13] px-3.5 py-2.5 text-sm text-white outline-none transition focus:border-violet-300/80 focus:ring-2 focus:ring-violet-500/20"
           />
         </label>
 
-        <label className="inline-flex cursor-pointer rounded-full border border-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:border-violet-200/35 hover:bg-white/[0.045]">
-          Reemplazar imagen
+        <label
+          className={`${iconButtonClassName} cursor-pointer`}
+          aria-label="Reemplazar imagen"
+          title="Reemplazar imagen"
+        >
+          <FiUpload className="size-4" aria-hidden="true" />
+          <span className="sr-only">Reemplazar imagen</span>
           <input
             type="file"
             accept=".jpg,.jpeg,.png,.webp"
@@ -497,7 +556,7 @@ const VideoBlockEditor = ({
           })
         }
         placeholder="https://www.youtube.com/..."
-        className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none transition focus:border-violet-400 focus:ring-2 focus:ring-violet-500/20"
+        className="min-h-11 w-full rounded-[3px] border border-white/10 bg-[#0f0f13] px-3.5 py-2.5 text-sm text-white outline-none transition focus:border-violet-300/80 focus:ring-2 focus:ring-violet-500/20"
       />
     </label>
 
@@ -513,7 +572,7 @@ const VideoBlockEditor = ({
             caption: event.target.value,
           })
         }
-        className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none transition focus:border-violet-400 focus:ring-2 focus:ring-violet-500/20"
+        className="min-h-11 w-full rounded-[3px] border border-white/10 bg-[#0f0f13] px-3.5 py-2.5 text-sm text-white outline-none transition focus:border-violet-300/80 focus:ring-2 focus:ring-violet-500/20"
       />
     </label>
   </div>

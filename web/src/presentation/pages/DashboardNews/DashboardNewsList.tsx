@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
+import toast from "react-hot-toast";
+import { FiEdit2, FiPlus, FiTrash2 } from "react-icons/fi";
 
 import {
   deleteDashboardNews,
@@ -9,7 +11,7 @@ import { getImageSrcSet, getImageUrl } from "../../../data/imageService";
 import { queryKeys } from "../../../data/queryKeys";
 import { reportError } from "../../../lib/errors/errorLogger";
 import type { DashboardNewsItem } from "../../../types/dashboard";
-import Button from "../../components/Button/Button";
+import { confirmDashboardAction } from "../../app/confirmDialog";
 import ErrorFallback from "../../components/errors/ErrorFallback";
 import Loader from "../../components/Loader/Loader";
 import { ROUTES } from "../../../shared/routing";
@@ -32,7 +34,7 @@ const NewsThumbnail = ({ item }: { item: DashboardNewsItem }) => {
     return (
       <div
         aria-label="Noticia sin imagen de portada"
-        className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-violet-400/10 text-[0.65rem] font-black uppercase tracking-[0.18em] text-violet-100/55 md:h-16 md:w-20"
+        className="flex h-16 w-20 shrink-0 items-center justify-center rounded-[3px] border border-white/10 bg-violet-400/10 text-[0.65rem] font-black uppercase tracking-[0.18em] text-violet-100/55"
       >
         MFC
       </div>
@@ -43,41 +45,59 @@ const NewsThumbnail = ({ item }: { item: DashboardNewsItem }) => {
     <img
       src={imageUrl}
       srcSet={imageSrcSet || undefined}
-      sizes="(max-width: 767px) 56px, 80px"
+      sizes="80px"
       alt={item.imageAlt || `Portada de ${item.title}`}
       loading="lazy"
       decoding="async"
-      className="h-14 w-14 shrink-0 rounded-2xl border border-white/10 object-cover md:h-16 md:w-20"
+      className="h-16 w-20 shrink-0 rounded-[3px] border border-white/10 object-cover"
     />
   );
 };
 
+const actionButtonClassName =
+  "inline-flex h-11 w-11 items-center justify-center rounded-[3px] border text-white transition hover:bg-white/[0.055] focus:outline-none focus:ring-2 focus:ring-violet-500/40 disabled:cursor-not-allowed disabled:opacity-45";
+
+const deleteToastOptions = {
+  style: {
+    minWidth: "16rem",
+  },
+} as const;
+
 const DeleteNewsButton = ({
   itemId,
+  itemTitle,
   isDeleting,
   onDelete,
 }: {
   itemId: string;
+  itemTitle: string;
   isDeleting: boolean;
-  onDelete: (id: string) => void;
+  onDelete: (id: string) => void | Promise<void>;
 }) => (
-  <Button
+  <button
     type="button"
-    variant="ghostStrong"
-    className="rounded-full px-3 py-2 text-xs"
+    className={`${actionButtonClassName} border-red-300/20 text-red-100 hover:border-red-200/45 hover:bg-red-400/10`}
     disabled={isDeleting}
+    aria-label="Borrar noticia"
+    title="Borrar noticia"
     onClick={() => {
-      if (
-        window.confirm(
-          "Esta noticia se eliminará de forma definitiva. ¿Querés continuar?"
-        )
-      ) {
-        onDelete(itemId);
-      }
+      void (async () => {
+        const confirmed = await confirmDashboardAction({
+          title: "Borrar noticia",
+          text: `Vas a eliminar "${itemTitle}". Esta acción no se puede deshacer.`,
+          confirmText: "Borrar",
+          icon: "warning",
+          variant: "danger",
+        });
+
+        if (confirmed) {
+          await onDelete(itemId);
+        }
+      })();
     }}
   >
-    Borrar
-  </Button>
+    <FiTrash2 className="size-4" aria-hidden="true" />
+  </button>
 );
 
 const DashboardNewsList = () => {
@@ -106,6 +126,26 @@ const DashboardNewsList = () => {
     },
   });
 
+  const handleDeleteNews = async (itemId: string) => {
+    try {
+      await toast.promise(
+        deleteMutation.mutateAsync(itemId),
+        {
+          loading: "Eliminando noticia de Sanity...",
+          success: "Noticia eliminada correctamente.",
+          error: "No pudimos borrar la noticia.",
+        },
+        deleteToastOptions
+      );
+    } catch (error) {
+      reportError(error, {
+        page: "DashboardNewsList",
+        action: "delete_news",
+        id: itemId,
+      });
+    }
+  };
+
   if (newsQuery.isLoading) {
     return <Loader />;
   }
@@ -124,40 +164,32 @@ const DashboardNewsList = () => {
 
   return (
     <div>
-      <header className="border-b border-white/10 p-5 sm:p-6">
+      <header className="border-b border-white/10 bg-[#151518] p-5 sm:p-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-violet-200">
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-violet-200/80">
               Contenido
             </p>
             <h2 className="mt-3 text-3xl font-black text-white">Noticias</h2>
-            <p className="mt-2 text-sm text-violet-100/70">
+            <p className="mt-2 text-sm text-violet-100/65">
               Administrá las publicaciones visibles del sitio.
             </p>
           </div>
 
           <Link
             to={ROUTES.DASHBOARD_NEWS_NEW}
-            className="inline-flex items-center justify-center rounded-full border border-violet-200/20 bg-violet-100 px-5 py-3 text-sm font-semibold text-violet-950 transition hover:bg-white"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-[3px] border border-violet-200/30 bg-violet-100 text-violet-950 transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/40"
+            aria-label="Crear noticia"
+            title="Crear noticia"
           >
-            Nueva noticia
+            <FiPlus className="size-5" aria-hidden="true" />
           </Link>
         </div>
 
-        <div className="mt-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <label className="flex min-w-0 flex-1 items-center gap-3 rounded-full border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-violet-100/70">
-            <span aria-hidden="true">⌕</span>
-            <span>Buscador disponible próximamente</span>
-          </label>
-
-          <div className="flex flex-wrap gap-2">
-            <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-medium text-violet-100/70">
-              {news.length} noticias
-            </span>
-            <span className="rounded-full border border-violet-300/15 bg-violet-400/10 px-3 py-2 text-xs font-medium text-violet-100">
-              Vista lista
-            </span>
-          </div>
+        <div className="mt-6 flex flex-wrap items-center gap-2">
+          <span className="rounded-[3px] border border-white/10 bg-white/[0.035] px-3 py-2 text-xs font-medium text-violet-100/70">
+            {news.length} noticias
+          </span>
         </div>
       </header>
 
@@ -167,7 +199,7 @@ const DashboardNewsList = () => {
         </div>
       ) : (
         <div className="p-4 sm:p-5">
-          <div className="overflow-hidden rounded-[1.2rem] border border-white/10 bg-white/[0.025]">
+          <div className="overflow-hidden rounded-[4px] border border-white/10 bg-[#16161a]">
             <div className="divide-y divide-white/8 md:hidden">
               {news.map((item) => (
                 <article key={item.id} className="p-4 text-sm text-violet-50">
@@ -187,20 +219,23 @@ const DashboardNewsList = () => {
                   </div>
 
                   <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-                    <span className="inline-flex rounded-full bg-emerald-300/12 px-3 py-1 text-xs font-medium text-emerald-100">
+                    <span className="inline-flex rounded-[3px] border border-emerald-300/15 bg-emerald-300/10 px-2.5 py-1 text-xs font-medium text-emerald-100">
                       Publicada
                     </span>
                     <div className="flex gap-2">
                       <Link
                         to={ROUTES.DASHBOARD_NEWS_EDIT(item.id)}
-                        className="rounded-full border border-violet-200/20 bg-violet-300/10 px-3 py-2 text-xs font-semibold text-white transition hover:border-violet-200/45 hover:bg-violet-300/16"
+                        className={`${actionButtonClassName} border-violet-200/20 bg-violet-300/10 hover:border-violet-200/45 hover:bg-violet-300/16`}
+                        aria-label="Editar noticia"
+                        title="Editar noticia"
                       >
-                        Editar
+                        <FiEdit2 className="size-4" aria-hidden="true" />
                       </Link>
                       <DeleteNewsButton
                         itemId={item.id}
+                        itemTitle={item.title}
                         isDeleting={deleteMutation.isPending}
-                        onDelete={deleteMutation.mutate}
+                        onDelete={handleDeleteNews}
                       />
                     </div>
                   </div>
@@ -209,7 +244,7 @@ const DashboardNewsList = () => {
             </div>
 
             <table className="hidden w-full border-collapse text-left md:table">
-              <thead className="bg-white/[0.03] text-xs uppercase tracking-[0.18em] text-violet-100/65">
+              <thead className="bg-white/[0.025] text-xs uppercase tracking-[0.16em] text-violet-100/60">
                 <tr>
                   <th className="px-5 py-4">Noticia</th>
                   <th className="px-5 py-4">Fecha</th>
@@ -221,7 +256,7 @@ const DashboardNewsList = () => {
                 {news.map((item) => (
                   <tr
                     key={item.id}
-                    className="border-t border-white/8 text-sm text-violet-50 transition hover:bg-white/[0.045]"
+                    className="border-t border-white/8 text-sm text-violet-50 transition hover:bg-white/[0.04]"
                   >
                     <td className="max-w-sm px-5 py-4">
                       <div className="flex items-center gap-3">
@@ -240,7 +275,7 @@ const DashboardNewsList = () => {
                       {formatDateTime(item.date)}
                     </td>
                     <td className="px-5 py-4">
-                      <span className="inline-flex rounded-full bg-emerald-300/12 px-3 py-1 text-xs font-medium text-emerald-100">
+                      <span className="inline-flex rounded-[3px] border border-emerald-300/15 bg-emerald-300/10 px-2.5 py-1 text-xs font-medium text-emerald-100">
                         Publicada
                       </span>
                     </td>
@@ -248,14 +283,17 @@ const DashboardNewsList = () => {
                       <div className="flex justify-end gap-2">
                         <Link
                           to={ROUTES.DASHBOARD_NEWS_EDIT(item.id)}
-                          className="rounded-full border border-violet-200/20 bg-violet-300/10 px-3 py-2 text-xs font-semibold text-white transition hover:border-violet-200/45 hover:bg-violet-300/16"
+                          className={`${actionButtonClassName} border-violet-200/20 bg-violet-300/10 hover:border-violet-200/45 hover:bg-violet-300/16`}
+                          aria-label="Editar noticia"
+                          title="Editar noticia"
                         >
-                          Editar
+                          <FiEdit2 className="size-4" aria-hidden="true" />
                         </Link>
                         <DeleteNewsButton
                           itemId={item.id}
+                          itemTitle={item.title}
                           isDeleting={deleteMutation.isPending}
-                          onDelete={deleteMutation.mutate}
+                          onDelete={handleDeleteNews}
                         />
                       </div>
                     </td>

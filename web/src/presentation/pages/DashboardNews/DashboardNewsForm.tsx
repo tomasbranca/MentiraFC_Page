@@ -6,6 +6,8 @@ import {
 } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import toast from "react-hot-toast";
+import { FiArrowLeft, FiSave, FiTrash2, FiUpload } from "react-icons/fi";
 
 import {
   createDashboardNews,
@@ -15,13 +17,13 @@ import {
 import { getImageUrl } from "../../../data/imageService";
 import { queryKeys } from "../../../data/queryKeys";
 import { reportError } from "../../../lib/errors/errorLogger";
+import { confirmDashboardAction } from "../../app/confirmDialog";
 import {
   DASHBOARD_NEWS_IMAGE_ACCEPTED_EXTENSIONS,
   type DashboardNewsInput,
   type DashboardNewsMutationInput,
 } from "../../../types/dashboard";
 import type { DashboardNewsErrors } from "./dashboardNews.utils";
-import Button from "../../components/Button/Button";
 import ErrorFallback from "../../components/errors/ErrorFallback";
 import Loader from "../../components/Loader/Loader";
 import { ROUTES } from "../../../shared/routing";
@@ -51,6 +53,12 @@ const createInitialValues = (): DashboardNewsInput => ({
   slug: "",
   imageAlt: "",
 });
+
+const saveToastOptions = {
+  style: {
+    minWidth: "17rem",
+  },
+} as const;
 
 const DashboardNewsForm = () => {
   const { id } = useParams();
@@ -258,7 +266,23 @@ const DashboardNewsForm = () => {
     }
   };
 
-  const handleRemoveCoverImage = () => {
+  const handleRemoveCoverImage = async () => {
+    if (!coverPreviewSrc) {
+      return;
+    }
+
+    const confirmed = await confirmDashboardAction({
+      title: "Quitar portada",
+      text: "La noticia va a usar la portada por defecto del club. Podés subir otra imagen antes de guardar.",
+      confirmText: "Quitar imagen",
+      icon: "warning",
+      variant: "danger",
+    });
+
+    if (!confirmed) {
+      return;
+    }
+
     setSelectedImageFile(null);
     setUseDefaultImage(true);
     setImageError(null);
@@ -293,14 +317,44 @@ const DashboardNewsForm = () => {
       return;
     }
 
+    const contentImageFiles = getDashboardNewsContentImageFiles(contentBlocks);
+    const hasPendingUploads =
+      Boolean(selectedImageFile) || Object.keys(contentImageFiles).length > 0;
+    const confirmed = await confirmDashboardAction({
+      title: isEditing ? "Guardar cambios" : "Publicar noticia",
+      text: isEditing
+        ? "Los cambios se van a guardar en Sanity y actualizarán la noticia visible en el sitio."
+        : "La noticia se va a guardar en Sanity y quedará disponible para publicarse en el sitio.",
+      confirmText: isEditing ? "Guardar cambios" : "Publicar",
+      icon: isEditing ? "question" : "info",
+    });
+
+    if (!confirmed) {
+      return;
+    }
+
     try {
-      await saveMutation.mutateAsync({
-        ...normalizedValues,
-        coverImage: selectedImageFile,
-        useDefaultImage,
-        content: serializeDashboardNewsEditorBlocks(contentBlocks),
-        contentImageFiles: getDashboardNewsContentImageFiles(contentBlocks),
-      });
+      await toast.promise(
+        saveMutation.mutateAsync({
+          ...normalizedValues,
+          coverImage: selectedImageFile,
+          useDefaultImage,
+          content: serializeDashboardNewsEditorBlocks(contentBlocks),
+          contentImageFiles,
+        }),
+        {
+          loading: hasPendingUploads
+            ? "Subiendo archivos y guardando en Sanity..."
+            : isEditing
+              ? "Guardando cambios en Sanity..."
+              : "Publicando noticia en Sanity...",
+          success: isEditing
+            ? "Noticia actualizada correctamente."
+            : "Noticia publicada correctamente.",
+          error: "No pudimos guardar la noticia.",
+        },
+        saveToastOptions
+      );
     } catch (error) {
       reportError(error, {
         page: "DashboardNewsForm",
@@ -312,22 +366,34 @@ const DashboardNewsForm = () => {
 
   return (
     <div>
-      <header className="border-b border-white/10 p-5 sm:p-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-violet-200">
-          Noticias
-        </p>
-        <h2 className="mt-3 text-3xl font-black text-white">
-          {isEditing ? "Editar noticia" : "Nueva noticia"}
-        </h2>
-        <p className="mt-2 text-sm text-violet-100/75">
-          Cargá los datos principales y definí una portada para publicar la
-          noticia directamente en el sitio.
-        </p>
+      <header className="border-b border-white/10 bg-[#151518] p-5 sm:p-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-violet-200/80">
+              Noticias
+            </p>
+            <h2 className="mt-3 text-3xl font-black text-white">
+              {isEditing ? "Editar noticia" : "Nueva noticia"}
+            </h2>
+            <p className="mt-2 text-sm text-violet-100/65">
+              Cargá los datos principales y definí una portada para publicar la
+              noticia directamente en el sitio.
+            </p>
+          </div>
+
+          <Link
+            to={ROUTES.DASHBOARD_NEWS}
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[3px] border border-white/10 px-4 py-3 text-sm text-white transition hover:border-violet-200/35 hover:bg-white/[0.045]"
+          >
+            <FiArrowLeft className="size-4" aria-hidden="true" />
+            Volver
+          </Link>
+        </div>
       </header>
 
       <div className="grid gap-5 p-5 sm:p-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
         <form
-          className="space-y-5 rounded-[1.2rem] border border-white/10 bg-white/[0.03] p-5 sm:p-6"
+          className="space-y-5 rounded-[4px] border border-white/10 bg-[#16161a] p-5 sm:p-6"
           onSubmit={handleSubmit}
           noValidate
         >
@@ -381,20 +447,14 @@ const DashboardNewsForm = () => {
           />
 
           <div className="flex flex-col gap-3 pt-2 sm:flex-row">
-            <Button
+            <button
               type="submit"
-              variant="cta"
               disabled={saveMutation.isPending}
-              className="rounded-full px-5 py-3"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[3px] border border-violet-200/25 bg-violet-100 px-5 py-3 text-sm font-semibold text-violet-950 transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/40 disabled:cursor-not-allowed disabled:opacity-55"
             >
-              {saveMutation.isPending ? "Guardando..." : "Guardar noticia"}
-            </Button>
-            <Link
-              to={ROUTES.DASHBOARD_NEWS}
-              className="inline-flex items-center justify-center rounded-full border border-white/10 px-5 py-3 text-sm text-white transition hover:border-violet-200/35 hover:bg-white/[0.045]"
-            >
-              Cancelar
-            </Link>
+              <FiSave className="size-4" aria-hidden="true" />
+              {saveMutation.isPending ? "Guardando..." : "Guardar"}
+            </button>
           </div>
 
           <div
@@ -407,7 +467,7 @@ const DashboardNewsForm = () => {
         </form>
 
         <aside className="space-y-4">
-          <section className="rounded-[1.2rem] border border-white/10 bg-white/[0.03] p-4">
+          <section className="rounded-[4px] border border-white/10 bg-[#16161a] p-4">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h3 className="text-sm font-bold uppercase tracking-wide text-violet-100">
@@ -418,12 +478,12 @@ const DashboardNewsForm = () => {
                   defecto del club.
                 </p>
               </div>
-              <span className="rounded-full bg-violet-300/10 px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-[0.16em] text-violet-100/70">
+              <span className="rounded-[3px] border border-violet-300/15 bg-violet-300/10 px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-[0.16em] text-violet-100/70">
                 16:9
               </span>
             </div>
 
-            <div className="mt-4 overflow-hidden rounded-2xl border border-white/10 bg-black/25">
+            <div className="mt-4 overflow-hidden rounded-[3px] border border-white/10 bg-black/25">
               {coverPreviewSrc ? (
                 <img
                   src={coverPreviewSrc}
@@ -437,12 +497,13 @@ const DashboardNewsForm = () => {
               )}
             </div>
 
-            <div className="mt-4 grid gap-2">
+            <div className="mt-4 flex gap-2">
               <label
                 htmlFor="dashboard-news-cover-image"
-                className="inline-flex cursor-pointer items-center justify-center rounded-full border border-violet-200/20 bg-violet-100 px-4 py-2.5 text-sm font-semibold text-violet-950 transition hover:bg-white"
+                className="inline-flex min-h-11 flex-1 cursor-pointer items-center justify-center gap-2 rounded-[3px] border border-violet-200/25 bg-violet-100 px-4 py-2.5 text-sm font-semibold text-violet-950 transition hover:bg-white"
               >
-                Subir imagen
+                <FiUpload className="size-4" aria-hidden="true" />
+                Subir
               </label>
               <input
                 id="dashboard-news-cover-image"
@@ -453,11 +514,13 @@ const DashboardNewsForm = () => {
               />
               <button
                 type="button"
-                className="rounded-full border border-white/10 px-4 py-2.5 text-sm text-white transition hover:border-violet-200/35 hover:bg-white/[0.045] disabled:cursor-not-allowed disabled:opacity-45"
-                disabled={!coverPreviewSrc && useDefaultImage}
-                onClick={handleRemoveCoverImage}
+                className="inline-flex h-11 w-11 items-center justify-center rounded-[3px] border border-white/10 text-white transition hover:border-violet-200/35 hover:bg-white/[0.045] focus:outline-none focus:ring-2 focus:ring-violet-500/40 disabled:cursor-not-allowed disabled:opacity-45"
+                disabled={!coverPreviewSrc}
+                aria-label="Quitar imagen"
+                title="Quitar imagen"
+                onClick={() => void handleRemoveCoverImage()}
               >
-                Quitar imagen
+                <FiTrash2 className="size-4" aria-hidden="true" />
               </button>
             </div>
 
@@ -473,7 +536,7 @@ const DashboardNewsForm = () => {
             )}
           </section>
 
-          <section className="rounded-[1.2rem] border border-white/10 bg-white/[0.03] p-4">
+          <section className="rounded-[4px] border border-white/10 bg-[#16161a] p-4">
             <Field
               id="dashboard-news-image-alt"
               name="imageAlt"
@@ -494,4 +557,3 @@ const DashboardNewsForm = () => {
 };
 
 export default DashboardNewsForm;
-
