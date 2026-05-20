@@ -1,5 +1,6 @@
 import { type ReactNode, useCallback, useEffect, useState } from "react";
 
+import { getLatestGame } from "../../data/games";
 import { reportError } from "../../lib/errors/errorLogger";
 import type { Game } from "../../types/models";
 import { GameContext } from "./GameContext";
@@ -29,7 +30,6 @@ export const GameProvider = ({ children }: GameProviderProps) => {
     setLoading(true);
 
     try {
-      const { getLatestGame } = await import("../../data/games");
       const latestGame = await getLatestGame();
       setGame(latestGame);
       setError(null);
