@@ -61,6 +61,23 @@ const MatchThumbnail = ({ item }: { item: DashboardMatchItem }) => {
 const getMatchTitle = (item: DashboardMatchItem): string =>
   item.rivalName ? `Mentira FC vs ${item.rivalName}` : "Partido sin rival";
 
+const MatchTitle = ({ item }: { item: DashboardMatchItem }) => {
+  if (!item.rivalName) {
+    return (
+      <h3 className="line-clamp-2 text-base font-black uppercase leading-tight text-white">
+        Partido sin rival
+      </h3>
+    );
+  }
+
+  return (
+    <h3 className="text-base font-black uppercase leading-tight text-white">
+      <span className="block">Mentira FC</span>
+      <span className="block truncate text-violet-100/90">vs {item.rivalName}</span>
+    </h3>
+  );
+};
+
 const getMatchDateLabel = (item: DashboardMatchItem): string => {
   if (item.date) {
     return formatDateTime(item.date);
@@ -252,31 +269,34 @@ const DashboardMatchesList = () => {
             <div className="divide-y divide-white/8 md:hidden">
               {matches.map((item) => (
                 <article key={item.id} className="p-3 text-sm text-violet-50 sm:p-4">
-                  <div className="flex min-w-0 gap-3">
+                  <div className="mb-3 flex min-w-0 items-center justify-between gap-3">
+                    <p className="min-w-0 truncate text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-violet-100/50">
+                      {getMatchDateLabel(item)}
+                    </p>
+                    <p className="shrink-0 text-[0.58rem] font-semibold uppercase tracking-[0.1em] text-violet-100/45">
+                      {getDashboardMatchStateLabel(item.state)}
+                    </p>
+                  </div>
+
+                  <div className="grid min-w-0 grid-cols-[3.5rem_minmax(0,1fr)_4.25rem] items-center gap-3">
                     <MatchThumbnail item={item} />
                     <div className="min-w-0 flex-1">
-                      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-violet-100/45">
-                        {getMatchDateLabel(item)}
-                      </p>
-                      <h3 className="mt-1 line-clamp-2 text-sm font-black uppercase leading-snug text-white">
-                        {getMatchTitle(item)}
-                      </h3>
-                      <p className="mt-1 line-clamp-2 text-xs leading-snug text-violet-100/60">
-                        {getDashboardMatchCompetitionLabel(item.competition)} -{" "}
-                        {item.location || "Sin ubicacion"}
-                      </p>
+                      <MatchTitle item={item} />
                     </div>
-                    <div className="shrink-0 text-right">
-                      <p className="text-xl font-black text-white">
+                    <div className="flex min-h-14 shrink-0 items-center justify-center rounded-[3px] border border-white/10 bg-black/20 px-2 text-center">
+                      <p className="text-lg font-black leading-none text-white">
                         {getMatchScoreLabel(item)}
-                      </p>
-                      <p className="mt-1 text-[0.65rem] uppercase tracking-[0.14em] text-violet-100/45">
-                        {getDashboardMatchStateLabel(item.state)}
                       </p>
                     </div>
                   </div>
 
-                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+                  <p className="mt-3 line-clamp-2 text-xs leading-snug text-violet-100/60">
+                    {item.tournamentLabel ||
+                      getDashboardMatchCompetitionLabel(item.competition)}
+                    {item.location ? ` - ${item.location}` : ""}
+                  </p>
+
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-white/8 pt-3">
                     <MatchStatusBadge item={item} />
                     <div className="flex gap-2">
                       <Link
