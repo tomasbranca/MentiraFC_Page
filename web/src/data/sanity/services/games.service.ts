@@ -1,5 +1,5 @@
 import {
-  LATEST_GAMES_QUERY,
+  LATEST_GAME_QUERY,
   FINISHED_GAMES_QUERY,
   FINISHED_TOURNAMENT_GAMES_QUERY,
 } from "../queries/games.queries";
@@ -9,18 +9,8 @@ import { fetchSanityQuery } from "../sanityFetch";
 import type { Game } from "../../../types/models";
 
 export const getLatestGame = async (): Promise<Game | null> => {
-  const data = await fetchSanityQuery(LATEST_GAMES_QUERY);
-
-  if (!Array.isArray(data)) {
-    return adaptGame(data);
-  }
-
-  for (const item of data) {
-    const adapted = adaptGame(item);
-    if (adapted) return adapted;
-  }
-
-  return null;
+  const data = await fetchSanityQuery(LATEST_GAME_QUERY, { useCdn: false });
+  return adaptGame(data);
 };
 
 export const getFinishedGames = async (): Promise<Game[]> => {

@@ -60,4 +60,37 @@ describe("games.adapter", () => {
       adaptGame(createSanityGame({ playedPlayers: undefined }))?.playedPlayers
     ).toEqual([]);
   });
+
+  it("adapta proximos partidos no asociados a un torneo", () => {
+    const game = adaptGame(
+      createSanityGame({
+        _id: "games-71b76489-bbea-417f-9421-726cb24f30c8",
+        state: "por_jugar",
+        competition: "Amistoso",
+        tournament: null,
+        result: null,
+        rival: {
+          _id: "team-1",
+          name: "Kickeros",
+          logoUrl:
+            "https://cdn.sanity.io/images/jwpxrdo2/production/logo.jpg",
+        },
+      })
+    );
+
+    expect(game).toMatchObject({
+      id: "games-71b76489-bbea-417f-9421-726cb24f30c8",
+      state: "por_jugar",
+      competition: "Amistoso",
+      tournamentId: null,
+      tournament: null,
+      rival: {
+        name: "Kickeros",
+      },
+      result: {
+        goalsFor: 0,
+        goalsAgainst: 0,
+      },
+    });
+  });
 });
