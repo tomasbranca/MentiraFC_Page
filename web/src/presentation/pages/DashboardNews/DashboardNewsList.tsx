@@ -236,22 +236,29 @@ const DashboardNewsList = () => {
             <div className="divide-y divide-white/8 md:hidden">
               {news.map((item) => (
                 <article key={item.id} className="p-3 text-sm text-violet-50 sm:p-4">
-                  <div className="flex min-w-0 gap-3">
+                  <div className="mb-3 flex min-w-0 items-center justify-between gap-3">
+                    <p className="min-w-0 truncate text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-violet-100/50">
+                      {getNewsDateLabel(item)}
+                    </p>
+                    <span className="shrink-0 rounded-[3px] border border-violet-300/15 bg-violet-300/10 px-2 py-0.5 text-[0.58rem] font-bold uppercase tracking-[0.12em] text-violet-100/60">
+                      Noticia
+                    </span>
+                  </div>
+
+                  <div className="grid min-w-0 grid-cols-[5rem_minmax(0,1fr)] items-center gap-3">
                     <NewsThumbnail item={item} />
                     <div className="min-w-0 flex-1">
-                      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-violet-100/45">
-                        {getNewsDateLabel(item)}
-                      </p>
-                      <h3 className="mt-1 line-clamp-2 text-sm font-black uppercase leading-snug text-white">
+                      <h3 className="line-clamp-2 text-base font-black uppercase leading-tight text-white">
                         {getNewsTitle(item)}
                       </h3>
-                      <p className="mt-1 line-clamp-2 text-xs leading-snug text-violet-100/60">
-                        {getNewsDescription(item)}
-                      </p>
                     </div>
                   </div>
 
-                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+                  <p className="mt-3 line-clamp-2 text-xs leading-snug text-violet-100/60">
+                    {getNewsDescription(item)}
+                  </p>
+
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-white/8 pt-3">
                     <NewsStatusBadge item={item} />
                     <div className="flex gap-2">
                       <Link
