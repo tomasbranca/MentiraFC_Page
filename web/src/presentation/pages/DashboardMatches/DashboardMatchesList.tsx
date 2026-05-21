@@ -248,7 +248,7 @@ const DashboardMatchesList = () => {
         </div>
       ) : (
         <div className="p-3 sm:p-5">
-          <div className="overflow-hidden rounded-[4px] border border-white/10 bg-[#16161a]">
+          <div className="overflow-hidden rounded-sm border border-white/10 bg-[#16161a]">
             <div className="divide-y divide-white/8 md:hidden">
               {matches.map((item) => (
                 <article key={item.id} className="p-3 text-sm text-violet-50 sm:p-4">
@@ -300,7 +300,7 @@ const DashboardMatchesList = () => {
             </div>
 
             <table className="hidden w-full border-collapse text-left md:table">
-              <thead className="bg-white/[0.025] text-xs uppercase tracking-[0.16em] text-violet-100/60">
+              <thead className="bg-white/2.5 text-xs uppercase tracking-[0.16em] text-violet-100/60">
                 <tr>
                   <th className="px-5 py-4">Partido</th>
                   <th className="px-5 py-4">Fecha</th>
@@ -313,7 +313,7 @@ const DashboardMatchesList = () => {
                 {matches.map((item) => (
                   <tr
                     key={item.id}
-                    className="border-t border-white/8 text-sm text-violet-50 transition hover:bg-white/[0.04]"
+                    className="border-t border-white/8 text-sm text-violet-50 transition hover:bg-white/4"
                   >
                     <td className="max-w-sm px-5 py-4">
                       <div className="flex items-center gap-3">

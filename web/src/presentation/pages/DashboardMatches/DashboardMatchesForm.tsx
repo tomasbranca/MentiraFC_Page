@@ -483,7 +483,7 @@ const DashboardMatchesForm = () => {
 
           <Link
             to={ROUTES.DASHBOARD_MATCHES}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[3px] border border-white/10 px-4 py-3 text-sm text-white transition hover:border-violet-200/35 hover:bg-white/[0.045]"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[3px] border border-white/10 px-4 py-3 text-sm text-white transition hover:border-violet-200/35 hover:bg-white/4.5"
           >
             <FiArrowLeft className="size-4" aria-hidden="true" />
             Volver
@@ -493,12 +493,12 @@ const DashboardMatchesForm = () => {
 
       <div className="grid gap-4 p-3 sm:gap-5 sm:p-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
         <form
-          className="space-y-4 rounded-[4px] border border-white/10 bg-[#16161a] p-3 sm:space-y-5 sm:p-6"
+          className="space-y-4 rounded-sm border border-white/10 bg-[#16161a] p-3 sm:space-y-5 sm:p-6"
           onSubmit={handleSubmit}
           noValidate
         >
           {dirtyLabels.length > 0 && (
-            <div className="rounded-[4px] border border-amber-200/20 bg-amber-200/[0.06] p-3 text-sm text-amber-50">
+            <div className="rounded-sm border border-amber-200/20 bg-amber-200/6 p-3 text-sm text-amber-50">
               <p className="font-semibold">Cambios sin guardar</p>
               <p className="mt-1 text-xs leading-relaxed text-amber-50/75">
                 Campos editados: {dirtyLabels.join(", ")}.
@@ -606,7 +606,7 @@ const DashboardMatchesForm = () => {
           )}
 
           {values.state === "finalizado" && (
-            <section className="space-y-4 rounded-[4px] border border-white/10 bg-[#0f0f13] p-3 sm:p-4">
+            <section className="space-y-4 rounded-sm border border-white/10 bg-[#0f0f13] p-3 sm:p-4">
               <div>
                 <h3 className="text-sm font-bold uppercase tracking-wide text-violet-100">
                   Resultado
@@ -653,7 +653,7 @@ const DashboardMatchesForm = () => {
                   </div>
                   <button
                     type="button"
-                    className="rounded-[3px] border border-white/10 px-3 py-1.5 text-xs text-violet-100/75 transition hover:border-violet-200/35 hover:bg-white/[0.045] hover:text-white"
+                    className="rounded-[3px] border border-white/10 px-3 py-1.5 text-xs text-violet-100/75 transition hover:border-violet-200/35 hover:bg-white/4.5 hover:text-white"
                     onClick={handleSelectAllPlayers}
                   >
                     {selectedPlayersCount === players.length
@@ -672,7 +672,7 @@ const DashboardMatchesForm = () => {
                       {players.map((player) => (
                         <label
                           key={player.id}
-                          className="flex min-h-11 cursor-pointer items-center gap-3 rounded-[3px] px-3 py-2 text-sm text-violet-50 transition hover:bg-white/[0.045]"
+                          className="flex min-h-11 cursor-pointer items-center gap-3 rounded-[3px] px-3 py-2 text-sm text-violet-50 transition hover:bg-white/4.5"
                         >
                           <input
                             type="checkbox"
@@ -704,7 +704,7 @@ const DashboardMatchesForm = () => {
             <button
               type="button"
               disabled={isSaving}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[3px] border border-white/10 px-5 py-3 text-sm font-semibold text-white transition hover:border-violet-200/35 hover:bg-white/[0.045] focus:outline-none focus:ring-2 focus:ring-violet-500/40 disabled:cursor-not-allowed disabled:opacity-55"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[3px] border border-white/10 px-5 py-3 text-sm font-semibold text-white transition hover:border-violet-200/35 hover:bg-white/4.5 focus:outline-none focus:ring-2 focus:ring-violet-500/40 disabled:cursor-not-allowed disabled:opacity-55"
               onClick={() => void handleSaveDraft()}
             >
               <FiSave className="size-4" aria-hidden="true" />
@@ -734,7 +734,7 @@ const DashboardMatchesForm = () => {
         </form>
 
         <aside className="space-y-4">
-          <section className="rounded-[4px] border border-white/10 bg-[#16161a] p-3 sm:p-4">
+          <section className="rounded-sm border border-white/10 bg-[#16161a] p-3 sm:p-4">
             <h3 className="text-sm font-bold uppercase tracking-wide text-violet-100">
               Resumen
             </h3>
