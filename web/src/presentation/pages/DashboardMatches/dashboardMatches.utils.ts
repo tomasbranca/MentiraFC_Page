@@ -74,6 +74,28 @@ const parseScore = (value: string): number | undefined =>
 
 const uniqueIds = (ids: string[]): string[] => [...new Set(ids)];
 
+const normalizeGoalScorers = (
+  scorers: DashboardMatchInput["goalScorers"]
+): DashboardMatchMutationInput["goalScorers"] => {
+  const goalsByPlayer = new Map<string, number>();
+
+  for (const scorer of scorers) {
+    const playerId = scorer.playerId.trim();
+    const goals = Number(scorer.goals);
+
+    if (!playerId || !Number.isInteger(goals) || goals < 1) {
+      continue;
+    }
+
+    goalsByPlayer.set(playerId, (goalsByPlayer.get(playerId) ?? 0) + goals);
+  }
+
+  return [...goalsByPlayer.entries()].map(([playerId, goals]) => ({
+    playerId,
+    goals,
+  }));
+};
+
 export const validateDashboardMatchInput = (
   values: DashboardMatchInput
 ): DashboardMatchErrors => {
@@ -124,6 +146,7 @@ export const buildDashboardMatchMutationInput = (
     goalsFor: isFinished ? parseScore(values.goalsFor) : undefined,
     goalsAgainst: isFinished ? parseScore(values.goalsAgainst) : undefined,
     playedPlayerIds: isFinished ? uniqueIds(values.playedPlayerIds) : [],
+    goalScorers: isFinished ? normalizeGoalScorers(values.goalScorers) : [],
   };
 };
 

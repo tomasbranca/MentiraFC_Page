@@ -99,6 +99,10 @@ export type DashboardMatchOptions = {
 
 export type DashboardMatchPlayedPlayer = DashboardMatchPlayerOption;
 
+export type DashboardMatchGoalScorer = DashboardMatchPlayerOption & {
+  goals: number;
+};
+
 export type DashboardMatchItem = {
   id: string;
   publishedId?: string | null;
@@ -122,6 +126,7 @@ export type DashboardMatchItem = {
     goalsAgainst?: number | null;
   } | null;
   playedPlayers: DashboardMatchPlayedPlayer[];
+  goalScorers: DashboardMatchGoalScorer[];
 };
 
 export type DashboardMatchInput = {
@@ -134,6 +139,10 @@ export type DashboardMatchInput = {
   goalsFor: string;
   goalsAgainst: string;
   playedPlayerIds: string[];
+  goalScorers: Array<{
+    playerId: string;
+    goals: string;
+  }>;
 };
 
 export type DashboardMatchMutationInput = {
@@ -146,9 +155,17 @@ export type DashboardMatchMutationInput = {
   goalsFor?: number;
   goalsAgainst?: number;
   playedPlayerIds: string[];
+  goalScorers: Array<{
+    playerId: string;
+    goals: number;
+  }>;
 };
 
 export type DashboardMatchDraftMutationInput =
-  Partial<Omit<DashboardMatchMutationInput, "playedPlayerIds">> & {
+  Partial<Omit<DashboardMatchMutationInput, "playedPlayerIds" | "goalScorers">> & {
     playedPlayerIds?: string[];
+    goalScorers?: Array<{
+      playerId: string;
+      goals: number;
+    }>;
   };

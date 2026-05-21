@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   dashboardMatchByIdQuery,
+  dashboardMatchGoalEventsQuery,
   dashboardMatchListQuery,
   dashboardMatchOptionsQuery,
   parseDashboardMatchDraftInput,
@@ -21,6 +22,11 @@ describe("dashboard matches api input", () => {
         goalsFor: "2",
         goalsAgainst: 1,
         playedPlayerIds: ["player-1", "player-1", "player-2"],
+        goalScorers: [
+          { playerId: "player-1", goals: 2 },
+          { playerId: "player-1", goals: 1 },
+          { playerId: "player-2", goals: "1" },
+        ],
       })
     ).toEqual({
       rivalId: "team-1",
@@ -32,6 +38,10 @@ describe("dashboard matches api input", () => {
       goalsFor: 2,
       goalsAgainst: 1,
       playedPlayerIds: ["player-1", "player-2"],
+      goalScorers: [
+        { playerId: "player-1", goals: 3 },
+        { playerId: "player-2", goals: 1 },
+      ],
     });
   });
 
@@ -69,6 +79,7 @@ describe("dashboard matches api input", () => {
         state: "",
         goalsFor: "",
         playedPlayerIds: ["player-1", "player-1"],
+        goalScorers: [{ playerId: "player-2", goals: "2" }],
       })
     ).toEqual({
       rivalId: "",
@@ -80,12 +91,15 @@ describe("dashboard matches api input", () => {
       goalsFor: undefined,
       goalsAgainst: undefined,
       playedPlayerIds: ["player-1"],
+      goalScorers: [{ playerId: "player-2", goals: 2 }],
     });
   });
 
   it("lee publicados, borradores y opciones de referencia", () => {
     expect(dashboardMatchListQuery).toContain('*[_type == "games"]');
     expect(dashboardMatchByIdQuery).toContain("_id == $draftId");
+    expect(dashboardMatchByIdQuery).toContain('"goalEvents"');
+    expect(dashboardMatchGoalEventsQuery).toContain('type == "goal"');
     expect(dashboardMatchOptionsQuery).toContain('"teams"');
     expect(dashboardMatchOptionsQuery).toContain('"players"');
     expect(dashboardMatchOptionsQuery).toContain('"tournaments"');

@@ -10,6 +10,7 @@ import type {
 import { mutateSanity, querySanity } from "../sanity.js";
 import {
   dashboardMatchByIdQuery,
+  dashboardMatchGoalEventsQuery,
   dashboardMatchListQuery,
   dashboardMatchOptionsQuery,
   dashboardMatchRelatedEventsQuery,
@@ -49,6 +50,11 @@ type DashboardMatchDocument = {
     goalsAgainst?: number | null;
   } | null;
   playedPlayers?: DashboardMatchDocumentPlayer[] | null;
+  goalEvents?: Array<{
+    id?: string | null;
+    order?: number | null;
+    player?: DashboardMatchDocumentPlayer | null;
+  }> | null;
 };
 
 type DashboardMatchDocumentPair = {
@@ -82,6 +88,11 @@ type DashboardMatchOptionsSource = {
 };
 
 type DashboardRelatedEvent = {
+  id: string;
+  type?: string | null;
+};
+
+type DashboardGoalEvent = {
   id: string;
 };
 
@@ -141,6 +152,34 @@ const adaptPlayerOption = (
   };
 };
 
+const adaptGoalScorers = (
+  goalEvents: DashboardMatchDocument["goalEvents"] = []
+) => {
+  const scorers = new Map<
+    string,
+    DashboardMatchPlayerOption & { goals: number }
+  >();
+
+  for (const event of goalEvents ?? []) {
+    if (!event?.player?.id) {
+      continue;
+    }
+
+    const player = adaptPlayerOption({
+      ...event.player,
+      id: event.player.id,
+    });
+    const current = scorers.get(player.id);
+
+    scorers.set(player.id, {
+      ...(current ?? player),
+      goals: (current?.goals ?? 0) + 1,
+    });
+  }
+
+  return [...scorers.values()];
+};
+
 const groupDashboardMatchDocuments = (
   documents: DashboardMatchDocument[]
 ): DashboardMatchDocumentPair[] => {
@@ -195,6 +234,7 @@ const adaptDashboardMatchPair = (
         Boolean(player?.id)
       )
       .map(adaptPlayerOption),
+    goalScorers: adaptGoalScorers(selectedDocument?.goalEvents),
   };
 
   return adaptDashboardMatchItem(rawItem);
@@ -287,6 +327,76 @@ const buildMatchDocument = (
   };
 };
 
+const createGoalEventId = (): string => `events-${randomUUID()}`;
+
+const buildGoalEventDocuments = (
+  matchId: string,
+  scorers: DashboardMatchMutationInput["goalScorers"] = []
+) => {
+  let order = 1;
+
+  return scorers.flatMap((scorer) =>
+    Array.from({ length: scorer.goals }).map(() => ({
+      _id: createGoalEventId(),
+      _type: "events",
+      game: buildReference(matchId),
+      type: "goal",
+      player: buildReference(scorer.playerId),
+      order: order++,
+    }))
+  );
+};
+
+const queryDashboardMatchGoalEvents = async ({
+  id,
+  draftId,
+  publicId,
+}: {
+  id: string;
+  draftId: string;
+  publicId: string;
+}): Promise<DashboardGoalEvent[]> =>
+  querySanity<DashboardGoalEvent[]>(dashboardMatchGoalEventsQuery, {
+    params: {
+      id,
+      draftId,
+      publicId,
+    },
+    perspective: "raw",
+    useToken: true,
+  });
+
+const buildGoalEventSyncMutations = async ({
+  canonicalId,
+  publicCanonicalId,
+  input,
+}: {
+  canonicalId: string;
+  publicCanonicalId: string;
+  input: DashboardMatchMutationInput;
+}) => {
+  const previousGoalEvents = await queryDashboardMatchGoalEvents({
+    id: canonicalId,
+    draftId: getDraftMatchId(canonicalId),
+    publicId: publicCanonicalId,
+  });
+  const nextGoalEvents =
+    input.state === "finalizado"
+      ? buildGoalEventDocuments(publicCanonicalId, input.goalScorers)
+      : [];
+
+  return [
+    ...previousGoalEvents.map((event) => ({
+      delete: {
+        id: event.id,
+      },
+    })),
+    ...nextGoalEvents.map((event) => ({
+      create: event,
+    })),
+  ];
+};
+
 export const listDashboardMatches = async (): Promise<DashboardMatchItem[]> => {
   const result = await queryDashboardMatchDocuments(dashboardMatchListQuery);
 
@@ -367,6 +477,11 @@ export const publishDashboardMatch = async (
             useToken: true,
           }
         );
+  const goalEventMutations = await buildGoalEventSyncMutations({
+    canonicalId,
+    publicCanonicalId,
+    input,
+  });
 
   await mutateSanity<unknown>([
     {
@@ -380,6 +495,7 @@ export const publishDashboardMatch = async (
         },
       },
     })),
+    ...goalEventMutations,
     {
       delete: {
         id: getDraftMatchId(canonicalId),
