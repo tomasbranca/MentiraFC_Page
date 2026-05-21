@@ -104,6 +104,7 @@ export const sanityGameSchema = z.object({
         })
         .optional(),
     })
+    .nullable()
     .optional(),
   rival: z
     .object({

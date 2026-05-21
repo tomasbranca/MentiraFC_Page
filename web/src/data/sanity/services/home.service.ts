@@ -14,7 +14,10 @@ export const getHomeCriticalData = async (): Promise<{
   news: NewsItem[];
   latestGame: Game | null;
 }> => {
-  const data = await fetchSanityQuery<HomeCriticalResponse>(HOME_CRITICAL_QUERY);
+  const data = await fetchSanityQuery<HomeCriticalResponse>(
+    HOME_CRITICAL_QUERY,
+    { useCdn: false }
+  );
 
   return {
     news: adaptNews(data?.news),

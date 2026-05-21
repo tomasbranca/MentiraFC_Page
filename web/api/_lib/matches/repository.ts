@@ -20,6 +20,8 @@ import {
 } from "./validation.js";
 
 const DRAFT_PREFIX = "drafts.";
+const PRIVATE_MATCH_PREFIX = "games.";
+const PUBLIC_MATCH_PREFIX = "games-";
 
 type DashboardMatchDocumentPlayer = {
   id?: string | null;
@@ -89,7 +91,19 @@ const getCanonicalMatchId = (id: string): string =>
 const getDraftMatchId = (id: string): string =>
   `${DRAFT_PREFIX}${getCanonicalMatchId(id)}`;
 
-const createCanonicalMatchId = (): string => `games.${randomUUID()}`;
+export const getPublicMatchId = (id: string): string => {
+  const canonicalId = getCanonicalMatchId(id);
+
+  return canonicalId.startsWith(PRIVATE_MATCH_PREFIX)
+    ? `${PUBLIC_MATCH_PREFIX}${canonicalId.slice(PRIVATE_MATCH_PREFIX.length)}`
+    : canonicalId;
+};
+
+export const createCanonicalMatchId = (): string => {
+  // Sanity treats path-style IDs containing dots as private for unauthenticated
+  // public queries, so dashboard-created matches must use a dash namespace.
+  return `${PUBLIC_MATCH_PREFIX}${randomUUID()}`;
+};
 
 const getSelectedDocument = ({
   draft,
@@ -338,19 +352,56 @@ export const publishDashboardMatch = async (
   input: DashboardMatchMutationInput
 ): Promise<DashboardMatchItem> => {
   const canonicalId = id ? getCanonicalMatchId(id) : createCanonicalMatchId();
+  const publicCanonicalId = getPublicMatchId(canonicalId);
+  const relatedEvents =
+    canonicalId === publicCanonicalId
+      ? []
+      : await querySanity<DashboardRelatedEvent[]>(
+          dashboardMatchRelatedEventsQuery,
+          {
+            params: {
+              id: canonicalId,
+              draftId: getDraftMatchId(canonicalId),
+            },
+            perspective: "raw",
+            useToken: true,
+          }
+        );
 
   await mutateSanity<unknown>([
     {
-      createOrReplace: buildMatchDocument(canonicalId, input),
+      createOrReplace: buildMatchDocument(publicCanonicalId, input),
     },
+    ...relatedEvents.map((event) => ({
+      patch: {
+        id: event.id,
+        set: {
+          game: buildReference(publicCanonicalId),
+        },
+      },
+    })),
     {
       delete: {
         id: getDraftMatchId(canonicalId),
       },
     },
+    ...(canonicalId === publicCanonicalId
+      ? []
+      : [
+          {
+            delete: {
+              id: canonicalId,
+            },
+          },
+          {
+            delete: {
+              id: getDraftMatchId(publicCanonicalId),
+            },
+          },
+        ]),
   ]);
 
-  const match = await getDashboardMatchById(canonicalId);
+  const match = await getDashboardMatchById(publicCanonicalId);
 
   if (!match) {
     throw new Error("Published match could not be reloaded.");

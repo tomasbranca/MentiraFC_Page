@@ -1,5 +1,4 @@
-export const LATEST_GAMES_QUERY = `
-  *[_type == "games" && defined(date)] | order(date desc)[0...20] {
+export const GAME_PROJECTION = `{
     _id,
     date,
     state,
@@ -47,7 +46,28 @@ export const LATEST_GAMES_QUERY = `
       lastName,
       slug
     }
-  }
+  }`;
+
+export const LATEST_GAME_QUERY = `
+  coalesce(
+    *[
+      _type == "games" &&
+      state == "por_jugar" &&
+      defined(date) &&
+      dateTime(date) <= dateTime(now())
+    ] | order(date desc)[0] ${GAME_PROJECTION},
+    *[
+      _type == "games" &&
+      state == "por_jugar" &&
+      defined(date) &&
+      dateTime(date) > dateTime(now())
+    ] | order(date asc)[0] ${GAME_PROJECTION},
+    *[
+      _type == "games" &&
+      state == "finalizado" &&
+      defined(date)
+    ] | order(date desc)[0] ${GAME_PROJECTION}
+  )
 `;
 
 export const FINISHED_GAMES_QUERY = `

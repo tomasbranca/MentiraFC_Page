@@ -1,3 +1,5 @@
+import { GAME_PROJECTION } from "./games.queries";
+
 export const HOME_CRITICAL_QUERY = `
   {
     "news": *[_type == "news" && !(_id in path("drafts.**"))] | order(date desc)[0...6] {
@@ -16,43 +18,24 @@ export const HOME_CRITICAL_QUERY = `
       "imageAlt": image.alt,
       "imageUrl": image.asset->url
     },
-    "latestGame": *[_type == "games" && defined(date)] | order(date desc)[0] {
-      _id,
-      date,
-      state,
-      location,
-      competition,
-      tournament->{
-        _id,
-        name,
-        organization->{
-          name
-        }
-      },
-      rival->{
-        _id,
-        name,
-        "logoUrl": logo.asset->url
-      },
-      result{
-        goalsFor,
-        goalsAgainst
-      },
-      "events": *[
-        _type == "events" &&
-        game._ref == ^._id &&
-        type == "goal"
-      ]{
-        _id,
-        type,
-        order,
-        player->{
-          _id,
-          name,
-          lastName,
-          slug
-        }
-      }
-    }
+    "latestGame": coalesce(
+      *[
+        _type == "games" &&
+        state == "por_jugar" &&
+        defined(date) &&
+        dateTime(date) <= dateTime(now())
+      ] | order(date desc)[0] ${GAME_PROJECTION},
+      *[
+        _type == "games" &&
+        state == "por_jugar" &&
+        defined(date) &&
+        dateTime(date) > dateTime(now())
+      ] | order(date asc)[0] ${GAME_PROJECTION},
+      *[
+        _type == "games" &&
+        state == "finalizado" &&
+        defined(date)
+      ] | order(date desc)[0] ${GAME_PROJECTION}
+    )
   }
 `;
