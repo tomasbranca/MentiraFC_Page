@@ -19,6 +19,13 @@ import ScrollToTop from "./presentation/app/scrollToTop";
 import Loader from "./presentation/components/Loader/Loader";
 import ErrorBoundary from "./presentation/components/errors/ErrorBoundary";
 import { AuthProvider } from "./presentation/context/AuthProvider";
+import {
+  getHomeCarouselImageHeight,
+  HOME_CAROUSEL_IMAGE_FIT,
+  HOME_CAROUSEL_IMAGE_QUALITY,
+  HOME_CAROUSEL_IMAGE_SIZES,
+  HOME_CAROUSEL_IMAGE_WIDTHS,
+} from "./presentation/features/main/LatestNews/Carousel/carouselImages";
 
 import "./index.css";
 
@@ -94,8 +101,6 @@ const renderAppShell = (
 
 const HOME_PATHNAME = "/";
 const HOME_LCP_PRELOAD_ID = "home-lcp-image-preload";
-const HOME_LCP_IMAGE_WIDTHS = [640, 960, 1280] as const;
-const HOME_LCP_IMAGE_SIZES = "100vw";
 
 const buildHomeLcpImageUrl = (imageUrl: string, width: number): string => {
   if (!imageUrl.includes("cdn.sanity.io/images/")) {
@@ -105,9 +110,9 @@ const buildHomeLcpImageUrl = (imageUrl: string, width: number): string => {
   try {
     const url = new URL(imageUrl);
     url.searchParams.set("w", String(width));
-    url.searchParams.set("h", String(Math.round(width * 0.75)));
-    url.searchParams.set("fit", "crop");
-    url.searchParams.set("q", "70");
+    url.searchParams.set("h", String(getHomeCarouselImageHeight(width)));
+    url.searchParams.set("fit", HOME_CAROUSEL_IMAGE_FIT);
+    url.searchParams.set("q", String(HOME_CAROUSEL_IMAGE_QUALITY));
     url.searchParams.set("auto", "format");
 
     return url.toString();
@@ -117,7 +122,7 @@ const buildHomeLcpImageUrl = (imageUrl: string, width: number): string => {
 };
 
 const buildHomeLcpImageSrcSet = (imageUrl: string): string =>
-  HOME_LCP_IMAGE_WIDTHS.map(
+  HOME_CAROUSEL_IMAGE_WIDTHS.map(
     (width) => `${buildHomeLcpImageUrl(imageUrl, width)} ${width}w`
   ).join(", ");
 
@@ -125,8 +130,8 @@ const getHomeLcpPreloadWidth = (): number => {
   const targetWidth = Math.ceil(window.innerWidth * window.devicePixelRatio);
 
   return (
-    HOME_LCP_IMAGE_WIDTHS.find((width) => width >= targetWidth) ??
-    HOME_LCP_IMAGE_WIDTHS[HOME_LCP_IMAGE_WIDTHS.length - 1]
+    HOME_CAROUSEL_IMAGE_WIDTHS.find((width) => width >= targetWidth) ??
+    HOME_CAROUSEL_IMAGE_WIDTHS[HOME_CAROUSEL_IMAGE_WIDTHS.length - 1]
   );
 };
 
@@ -151,7 +156,7 @@ const ensureHomeLcpPreload = (
   if (existing instanceof HTMLLinkElement) {
     existing.href = optimizedLcpImage;
     existing.setAttribute("imagesrcset", optimizedLcpImageSrcSet);
-    existing.setAttribute("imagesizes", HOME_LCP_IMAGE_SIZES);
+    existing.setAttribute("imagesizes", HOME_CAROUSEL_IMAGE_SIZES);
     return;
   }
 
@@ -162,7 +167,7 @@ const ensureHomeLcpPreload = (
   link.href = optimizedLcpImage;
   link.fetchPriority = "high";
   link.setAttribute("imagesrcset", optimizedLcpImageSrcSet);
-  link.setAttribute("imagesizes", HOME_LCP_IMAGE_SIZES);
+  link.setAttribute("imagesizes", HOME_CAROUSEL_IMAGE_SIZES);
   document.head.appendChild(link);
 };
 
@@ -219,15 +224,24 @@ const preloadQueryCache = (payload: InitialDataPayload) => {
   }
 };
 
+const loadRouteInitialData = async (
+  pathname: string
+): Promise<InitialDataPayload> => {
+  const { getRouteInitialData } = await import("./data/getRouteInitialData");
+
+  return getRouteInitialData(pathname);
+};
+
 const bootstrap = async () => {
   startWebVitalsTracking();
   scheduleSentryInit();
+  const pathname = window.location.pathname;
+  const routeInitialDataPromise = loadRouteInitialData(pathname);
+
   renderAppShell(EMPTY_INITIAL_DATA, "shell");
 
   try {
-    const pathname = window.location.pathname;
-    const { getRouteInitialData } = await import("./data/getRouteInitialData");
-    const initialData = await getRouteInitialData(pathname);
+    const initialData = await routeInitialDataPromise;
 
     ensureHomeLcpPreload(initialData, pathname);
     preloadQueryCache(initialData);

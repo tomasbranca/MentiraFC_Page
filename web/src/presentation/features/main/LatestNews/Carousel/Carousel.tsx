@@ -1,9 +1,16 @@
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import Button from "../../../../components/Button/Button";
 import ProgressiveMedia from "../../../../components/ProgressiveMedia/ProgressiveMedia";
 import { getImageSrcSet, getImageUrl } from "../../../../../data/imageService";
 import "./Carousel.css";
+import {
+  getHomeCarouselImageHeight,
+  HOME_CAROUSEL_IMAGE_FIT,
+  HOME_CAROUSEL_IMAGE_QUALITY,
+  HOME_CAROUSEL_IMAGE_SIZES,
+  HOME_CAROUSEL_IMAGE_WIDTHS,
+} from "./carouselImages";
 
 import { useCarousel } from "../../../../hooks/useCarrousel";
 import { useAutoplay } from "./hooks/useAutoPlay";
@@ -14,9 +21,19 @@ type CarouselProps = {
   items: NewsItem[];
 };
 
+const INACTIVE_CAROUSEL_IMAGE_DELAY_MS = 4500;
+
 const Carousel = ({ items }: CarouselProps) => {
   const { activeIndex, next, prev } = useCarousel(items?.length || 0);
   const { autoplay, manual } = useAutoplay();
+  const [shouldLoadInactiveImages, setShouldLoadInactiveImages] =
+    useState(false);
+  const itemsKey = useMemo(
+    () => items.map((item) => item.id).join("|"),
+    [items]
+  );
+  const largestImageWidth =
+    HOME_CAROUSEL_IMAGE_WIDTHS[HOME_CAROUSEL_IMAGE_WIDTHS.length - 1];
 
   useEffect(() => {
     if (!autoplay || !items?.length) return;
@@ -28,30 +45,57 @@ const Carousel = ({ items }: CarouselProps) => {
     return () => clearInterval(interval);
   }, [autoplay, items, next]);
 
+  useEffect(() => {
+    setShouldLoadInactiveImages(false);
+  }, [itemsKey]);
+
+  useEffect(() => {
+    if (shouldLoadInactiveImages || !items.length) return;
+
+    const timeoutId = globalThis.setTimeout(
+      () => setShouldLoadInactiveImages(true),
+      INACTIVE_CAROUSEL_IMAGE_DELAY_MS
+    );
+    return () => globalThis.clearTimeout(timeoutId);
+  }, [items.length, itemsKey, shouldLoadInactiveImages]);
+
   if (!items || items.length === 0) return null;
 
   return (
     <section className="carousel-wrapper relative w-full overflow-hidden">
-      {items.map((item, index) => (
-        <div
-          key={item.id}
-          className={`carousel-slide ${index === activeIndex ? "active" : ""}`}
-        >
+      {items.map((item, index) => {
+        const isActive = index === activeIndex;
+        const shouldLoadImage = isActive || shouldLoadInactiveImages;
+        const imageSource = shouldLoadImage ? item.imageUrl : null;
+
+        return (
+          <div
+            key={item.id}
+            className={`carousel-slide ${isActive ? "active" : ""}`}
+          >
           <ProgressiveMedia
-            src={getImageUrl(item.imageUrl, {
-              width: 1280,
-              height: 720,
-              fit: "crop",
-              quality: 70,
-              autoFormat: true,
-            })}
-            srcSet={getImageSrcSet(item.imageUrl, [640, 960, 1280], {
-              height: (width) => Math.round(width * 0.75),
-              fit: "crop",
-              quality: 70,
-              autoFormat: true,
-            })}
-            sizes="100vw"
+            src={
+              shouldLoadImage
+                ? getImageUrl(imageSource, {
+                    width: largestImageWidth,
+                    height: getHomeCarouselImageHeight(largestImageWidth),
+                    fit: HOME_CAROUSEL_IMAGE_FIT,
+                    quality: HOME_CAROUSEL_IMAGE_QUALITY,
+                    autoFormat: true,
+                  })
+                : undefined
+            }
+            srcSet={
+              shouldLoadImage
+                ? getImageSrcSet(imageSource, [...HOME_CAROUSEL_IMAGE_WIDTHS], {
+                    height: getHomeCarouselImageHeight,
+                    fit: HOME_CAROUSEL_IMAGE_FIT,
+                    quality: HOME_CAROUSEL_IMAGE_QUALITY,
+                    autoFormat: true,
+                  })
+                : undefined
+            }
+            sizes={HOME_CAROUSEL_IMAGE_SIZES}
             alt={item.imageAlt || item.title}
             wrapperClassName="absolute inset-0"
             className="w-full h-full object-cover"
@@ -59,12 +103,12 @@ const Carousel = ({ items }: CarouselProps) => {
               HTMLImageElement.prototype,
               "fetchPriority"
             )
-              ? { fetchPriority: index === activeIndex ? "high" : "auto" }
+              ? { fetchPriority: isActive ? "high" : "auto" }
               : {})}
-            loading={index === activeIndex ? "eager" : "lazy"}
+            loading={isActive ? "eager" : "lazy"}
             decoding="async"
-            width={1280}
-            height={720}
+            width={largestImageWidth}
+            height={getHomeCarouselImageHeight(largestImageWidth)}
             skeletonClassName="bg-violet-950"
           />
 
@@ -101,8 +145,9 @@ const Carousel = ({ items }: CarouselProps) => {
               </div>
             </div>
           </div>
-        </div>
-      ))}
+          </div>
+        );
+      })}
 
       {manual && (
         <>

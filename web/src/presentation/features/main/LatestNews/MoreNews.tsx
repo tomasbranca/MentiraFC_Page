@@ -32,7 +32,6 @@ const MoreNews = ({ news = [] }: MoreNewsProps) => {
             key={item.id}
             item={item}
             featured={index === 0}
-            priority={index === 0}
           />
         ))}
       </div>

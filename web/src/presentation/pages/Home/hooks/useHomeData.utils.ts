@@ -1,4 +1,5 @@
 import type { InitialDataPayload } from "../../../../data/getInitialData";
+import type { BootstrapScope } from "../../../../types/models";
 import {
   getHybridTournamentTable,
   getTopScorersFromGoalEvents,
@@ -27,6 +28,22 @@ export const hasCompleteDeferredHomeData = (
     Array.isArray(candidate.tournamentGames) &&
     Object.prototype.hasOwnProperty.call(candidate, "tournament")
   );
+};
+
+export const isDeferredHomeDataPending = (
+  bootstrapScope: BootstrapScope,
+  hasDeferredData: boolean,
+  hasQueryError: boolean
+) => {
+  if (bootstrapScope !== "home-critical") {
+    return false;
+  }
+
+  if (hasDeferredData || hasQueryError) {
+    return false;
+  }
+
+  return true;
 };
 
 export const getDeferredHomeQueryBehavior = (cachedData: unknown) => {
