@@ -33,28 +33,42 @@ const writeWebResponse = async (response, nodeResponse) => {
   nodeResponse.end(body);
 };
 
+const DASHBOARD_API_RESOURCES = new Set(["news", "matches"]);
+
 const createDashboardApiDevPlugin = (env) => ({
   name: "dashboard-api-dev",
   configureServer(server) {
     Object.assign(process.env, env);
 
-    server.middlewares.use("/api/dashboard/news", async (request, response) => {
+    server.middlewares.use("/api/dashboard", async (request, response) => {
       try {
         const relativePath = request.url ?? "/";
         const normalizedRelativePath = relativePath.startsWith("/")
           ? relativePath
           : `/${relativePath}`;
         const relativeUrl = new URL(normalizedRelativePath, "http://localhost");
+        const pathParts = relativeUrl.pathname.split("/").filter(Boolean);
+        const resource = pathParts[0];
+
+        if (!DASHBOARD_API_RESOURCES.has(resource)) {
+          response.statusCode = 404;
+          response.setHeader("Content-Type", "application/json");
+          response.end(
+            JSON.stringify({
+              error: "Dashboard API route not found.",
+            })
+          );
+          return;
+        }
+
         const requestUrl = new URL(
-          `/api/dashboard/news${
-            normalizedRelativePath === "/" ? "" : normalizedRelativePath
-          }`,
+          `/api/dashboard${normalizedRelativePath}`,
           "http://localhost"
         );
         const routeModulePath =
-          relativeUrl.pathname === "/"
-            ? "/api/dashboard/news/index.ts"
-            : "/api/dashboard/news/[id].ts";
+          pathParts.length <= 1
+            ? `/api/dashboard/${resource}/index.ts`
+            : `/api/dashboard/${resource}/[id].ts`;
         const routeModule = await server.ssrLoadModule(routeModulePath);
         const routeHandler =
           routeModule.default?.fetch ?? routeModule.default;

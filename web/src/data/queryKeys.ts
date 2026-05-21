@@ -31,6 +31,11 @@ export const queryKeys = {
       all: ["dashboard", "news"] as const,
       byId: (id: string) => ["dashboard", "news", id] as const,
     },
+    matches: {
+      all: ["dashboard", "matches"] as const,
+      byId: (id: string) => ["dashboard", "matches", id] as const,
+      options: ["dashboard", "matches", "options"] as const,
+    },
   },
   galleries: {
     all: ["galleries"] as const,
