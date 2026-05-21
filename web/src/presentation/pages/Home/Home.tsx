@@ -22,10 +22,14 @@ const TableWidget = lazyWithReload(
 const Home = () => {
   const { initialData, isHomeCriticalLoading } = useInitialData();
   const { game, loading: gameLoading } = useGame();
-  const { news, topScorers, tournament } = useHomeData();
+  const { news, topScorers, tournament, isDeferredHomeLoading } = useHomeData();
 
   const isHomeLoading =
     initialData.bootstrapScope === "empty" || isHomeCriticalLoading;
+  const hasDeferredHomeSections =
+    topScorers.some((player) => player.goals > 0) || Boolean(tournament);
+  const showDeferredHomeGrid =
+    isDeferredHomeLoading || hasDeferredHomeSections;
 
   if (initialData.bootstrapScope === "bootstrap-error") {
     return (
@@ -50,14 +54,25 @@ const Home = () => {
 
       <Game game={game} loading={gameLoading} />
 
-      <div className="relative grid grid-cols-1 lg:grid-cols-3">
-        <Suspense fallback={<TopScorersSkeleton />}>
-          <TopScorers players={topScorers} />
-        </Suspense>
-        <Suspense fallback={<TableWidgetSkeleton />}>
-          <TableWidget table={tournament} />
-        </Suspense>
-      </div>
+      {showDeferredHomeGrid && (
+        <div className="relative grid grid-cols-1 lg:grid-cols-3">
+          {isDeferredHomeLoading ? (
+            <>
+              <TopScorersSkeleton />
+              <TableWidgetSkeleton />
+            </>
+          ) : (
+            <>
+              <Suspense fallback={<TopScorersSkeleton />}>
+                <TopScorers players={topScorers} />
+              </Suspense>
+              <Suspense fallback={<TableWidgetSkeleton />}>
+                <TableWidget table={tournament} />
+              </Suspense>
+            </>
+          )}
+        </div>
+      )}
     </>
   );
 };

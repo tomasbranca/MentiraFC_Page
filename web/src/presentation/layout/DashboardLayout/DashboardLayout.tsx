@@ -1,11 +1,19 @@
+import { Suspense } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { FiArrowLeft, FiCalendar, FiFileText } from "react-icons/fi";
 
+import { lazyWithReload } from "../../../lib/lazyWithReload";
 import { ROUTES } from "../../../shared/routing";
+
+const AppToaster = lazyWithReload(() => import("../../app/AppToaster"));
 
 const DashboardLayout = () => {
   return (
     <section className="min-h-screen bg-[#101012] px-2 py-3 text-white sm:px-5 md:px-8 md:py-8">
+      <Suspense fallback={null}>
+        <AppToaster />
+      </Suspense>
+
       <div className="mx-auto grid w-full max-w-[96rem] gap-3 sm:gap-4 lg:grid-cols-[16rem_minmax(0,1fr)]">
         <aside className="overflow-hidden rounded-[4px] border border-white/10 bg-[#151518]">
           <div className="border-b border-white/10 p-5">

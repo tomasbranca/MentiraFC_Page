@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { getTournamentGames } from "../../../../data/games";
@@ -12,6 +12,7 @@ import { useInitialData } from "../../../context/useInitialData";
 import {
   getDeferredHomeQueryBehavior,
   hasCompleteDeferredHomeData,
+  isDeferredHomeDataPending,
   resolveHomeData,
 } from "./useHomeData.utils";
 
@@ -21,16 +22,48 @@ type IdleWindow = Window &
     cancelIdleCallback?: (handle: number) => void;
   };
 
+const DEFERRED_HOME_DATA_DELAY_MS = 4500;
+
 export const useHomeData = () => {
   const { initialData } = useInitialData();
   const queryClient = useQueryClient();
   const year = new Date().getFullYear();
-  const shouldHydrateDeferredData = initialData.bootstrapScope === "home-critical";
+  const [shouldStartDeferredHomeData, setShouldStartDeferredHomeData] =
+    useState(() =>
+      initialData.bootstrapScope === "home-critical" &&
+      hasCompleteDeferredHomeData(
+        queryClient.getQueryData(queryKeys.home.deferred)
+      )
+    );
   const cachedDeferredHomeData = queryClient.getQueryData(
     queryKeys.home.deferred
   );
+  const hasCachedDeferredHomeData = hasCompleteDeferredHomeData(
+    cachedDeferredHomeData
+  );
   const deferredHomeQueryBehavior =
     getDeferredHomeQueryBehavior(cachedDeferredHomeData);
+  const shouldHydrateDeferredData =
+    initialData.bootstrapScope === "home-critical" &&
+    (shouldStartDeferredHomeData || hasCachedDeferredHomeData);
+
+  useEffect(() => {
+    if (initialData.bootstrapScope !== "home-critical") {
+      setShouldStartDeferredHomeData(false);
+      return;
+    }
+
+    if (hasCachedDeferredHomeData) {
+      setShouldStartDeferredHomeData(true);
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setShouldStartDeferredHomeData(true);
+    }, DEFERRED_HOME_DATA_DELAY_MS);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [hasCachedDeferredHomeData, initialData.bootstrapScope]);
 
   const deferredHomeQuery = useQuery({
     queryKey: queryKeys.home.deferred,
@@ -64,10 +97,11 @@ export const useHomeData = () => {
     refetchOnMount: deferredHomeQueryBehavior.refetchOnMount,
   });
 
-  const deferredHomeData =
-    shouldHydrateDeferredData && hasCompleteDeferredHomeData(deferredHomeQuery.data)
-      ? deferredHomeQuery.data
-      : null;
+  const deferredHomePayload =
+    deferredHomeQuery.data ?? cachedDeferredHomeData;
+  const deferredHomeData = hasCompleteDeferredHomeData(deferredHomePayload)
+    ? deferredHomePayload
+    : null;
 
   useEffect(() => {
     if (!deferredHomeData) {
@@ -114,8 +148,15 @@ export const useHomeData = () => {
     return resolveHomeData(initialData, deferredHomeData, year);
   }, [deferredHomeData, initialData, year]);
 
+  const isDeferredHomeLoading = isDeferredHomeDataPending(
+    initialData.bootstrapScope,
+    Boolean(deferredHomeData),
+    deferredHomeQuery.isError
+  );
+
   return {
     ...homeData,
     year,
+    isDeferredHomeLoading,
   };
 };

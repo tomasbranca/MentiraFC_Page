@@ -166,6 +166,16 @@ export default defineConfig(({ mode }) => {
             if (!id.includes("node_modules")) return;
 
             if (id.includes("@sentry")) return "sentry";
+            if (normalizedId.includes("/node_modules/@supabase/")) return "auth-vendor";
+            if (
+              normalizedId.includes("/node_modules/react-hot-toast/") ||
+              normalizedId.includes("/node_modules/goober/")
+            ) {
+              return "toast-vendor";
+            }
+            if (normalizedId.includes("/node_modules/sweetalert2/")) {
+              return "dialog-vendor";
+            }
             if (
               id.includes("@portabletext/editor") ||
               id.includes("@portabletext/html") ||
@@ -179,6 +189,12 @@ export default defineConfig(({ mode }) => {
               id.includes("xstate")
             ) {
               return "dashboard-editor";
+            }
+            if (
+              normalizedId.includes("/node_modules/@portabletext/react/") ||
+              normalizedId.includes("/node_modules/@portabletext/toolkit/")
+            ) {
+              return "portable-text";
             }
             if (
               id.includes("@sanity") ||

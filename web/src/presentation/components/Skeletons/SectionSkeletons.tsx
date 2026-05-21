@@ -1,19 +1,13 @@
-type SkeletonBlockProps = {
-  className: string;
-};
+import { Link } from "react-router-dom";
+import { ROUTES } from "../../../shared/routing";
+import PlayerCardSkeleton from "../PlayerCard/PlayerCardSkeleton";
+import { SkeletonBlock } from "./SkeletonBlock";
 
 const joinClasses = (...classes: Array<string | false | null | undefined>) =>
   classes.filter(Boolean).join(" ");
 
-const SkeletonBlock = ({ className }: SkeletonBlockProps) => (
-  <div
-    aria-hidden="true"
-    className={joinClasses(
-      "animate-pulse rounded-md bg-linear-to-r from-white/6 via-white/10 to-white/6",
-      className
-    )}
-  />
-);
+const TOP_SCORERS_SKELETON_CARD_COUNT = 4;
+const TABLE_WIDGET_SKELETON_ROW_COUNT = 5;
 
 export const GameWidgetSkeleton = ({ compact = false }: { compact?: boolean }) => (
   <div
@@ -46,18 +40,32 @@ export const GameWidgetSkeleton = ({ compact = false }: { compact?: boolean }) =
 export const TopScorersSkeleton = () => (
   <section className="p-4 m-6 lg:col-span-2" aria-label="Cargando máximos goleadores">
     <div className="flex flex-col items-center lg:flex-row lg:items-center mb-8">
-      <SkeletonBlock className="h-10 w-56" />
-      <SkeletonBlock className="hidden lg:block h-8 grow ml-4" />
+      <h2 className="font-extrabold uppercase whitespace-nowrap text-white bg-violet-900 px-6 py-2 text-center text-[clamp(1.2rem,5vw,1.6rem)] lg:text-violet-900 lg:bg-transparent lg:px-0 lg:py-0">
+        Máximos goleadores
+      </h2>
+
+      <div className="hidden lg:block bg-violet-900 h-8 grow ml-4" />
     </div>
 
-    <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4 lg:gap-8">
-      {Array.from({ length: 4 }).map((_, index) => (
-        <div key={index} className="space-y-3">
-          <SkeletonBlock className="aspect-3/4 w-full" />
-          <SkeletonBlock className="h-3 w-3/4" />
-          <SkeletonBlock className="h-3 w-1/2" />
+    <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-2 lg:hidden">
+      {Array.from({ length: TOP_SCORERS_SKELETON_CARD_COUNT }).map((_, index) => (
+        <div
+          key={index}
+          className="snap-start shrink-0 w-[75%] sm:w-[55%]"
+        >
+          <PlayerCardSkeleton />
         </div>
       ))}
+    </div>
+
+    <div className="hidden lg:block">
+      <div className="flex justify-between">
+        {Array.from({ length: TOP_SCORERS_SKELETON_CARD_COUNT }).map((_, index) => (
+          <div key={index} className="w-45 lg:w-50">
+            <PlayerCardSkeleton />
+          </div>
+        ))}
+      </div>
     </div>
   </section>
 );
@@ -68,29 +76,39 @@ export const TableWidgetSkeleton = () => (
     aria-label="Cargando clasificación"
   >
     <div className="mb-6">
-      <SkeletonBlock className="h-8 w-48" />
-      <SkeletonBlock className="mt-2 h-1 w-16" />
+      <h2 className="text-2xl lg:text-3xl font-extrabold uppercase text-white tracking-wide">
+        Clasificación
+      </h2>
+      <div className="mt-2 h-1 w-16 bg-violet-600" />
     </div>
 
     <div className="space-y-2">
-      {Array.from({ length: 5 }).map((_, index) => (
+      {Array.from({ length: TABLE_WIDGET_SKELETON_ROW_COUNT }).map((_, index) => (
         <div
           key={index}
-          className="flex items-center justify-between px-3 py-3 lg:px-4 bg-stone-800/80"
+          className={joinClasses(
+            "flex items-center justify-between px-3 py-2 lg:px-4 lg:py-3 bg-stone-800/80",
+            index === 2 && "border-l-4 border-violet-500/70 bg-violet-900/50"
+          )}
         >
-          <div className="flex items-center gap-3 lg:gap-4 min-w-0">
-            <SkeletonBlock className="h-5 w-5" />
-            <SkeletonBlock className="hidden md:block size-8" />
-            <SkeletonBlock className="h-4 w-28" />
+          <div className="flex min-w-0 items-center gap-3 lg:gap-4">
+            <SkeletonBlock className="h-5 w-6 rounded-none" />
+            <SkeletonBlock className="hidden md:block size-8 rounded-sm" />
+            <SkeletonBlock className="h-4 w-28 max-w-40 lg:max-w-none lg:h-5 lg:w-36" />
           </div>
 
-          <SkeletonBlock className="h-6 w-8" />
+          <SkeletonBlock className="h-6 w-8 lg:h-7 lg:w-10" />
         </div>
       ))}
     </div>
 
-    <div className="mt-6 flex justify-end">
-      <SkeletonBlock className="h-4 w-28" />
+    <div className="mt-6 text-right">
+      <Link
+        to={ROUTES.TABLE}
+        className="text-sm font-semibold text-violet-400 hover:text-violet-300 transition"
+      >
+        Ver tabla completa →
+      </Link>
     </div>
   </section>
 );

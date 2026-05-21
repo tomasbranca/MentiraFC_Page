@@ -4,6 +4,7 @@ import {
   DEFERRED_HOME_STALE_TIME,
   getDeferredHomeQueryBehavior,
   hasCompleteDeferredHomeData,
+  isDeferredHomeDataPending,
   resolveHomeData,
 } from "./useHomeData.utils";
 import type { InitialDataPayload } from "../../../../data/getInitialData";
@@ -84,6 +85,25 @@ const createInitialData = (
 } as InitialDataPayload);
 
 describe("useHomeData.utils", () => {
+  it("marca la carga diferida como pendiente solo en Home critico sin datos ni error", () => {
+    expect(isDeferredHomeDataPending("home-critical", false, false)).toBe(true);
+    expect(isDeferredHomeDataPending("home-critical", true, false)).toBe(false);
+    expect(isDeferredHomeDataPending("home-critical", false, true)).toBe(false);
+    expect(isDeferredHomeDataPending("full", false, false)).toBe(false);
+  });
+
+  it("reconoce la cache diferida completa como lista para hidratar Home", () => {
+    const completeCache = {
+      players: [],
+      goalEvents: [],
+      tournament: null,
+      tournamentGames: [],
+    };
+
+    expect(hasCompleteDeferredHomeData(completeCache)).toBe(true);
+    expect(getDeferredHomeQueryBehavior(completeCache).hasCompleteData).toBe(true);
+  });
+
   it("detecta cuando la cache diferida de Home esta incompleta", () => {
     const partialCache = {
       players: [],

@@ -10,7 +10,6 @@ import Footer from "./presentation/layout/Footer/Footer";
 import NavBar from "./presentation/layout/NavBar/NavBar";
 import { ROUTES } from "./shared/routing";
 import RouteHead from "./presentation/seo/RouteHead";
-import AppToaster from "./presentation/app/AppToaster";
 import Home from "./presentation/pages/Home/Home";
 import RequireAuth from "./presentation/routing/RequireAuth";
 import RequirePermission from "./presentation/routing/RequirePermission";
@@ -130,7 +129,6 @@ function App({ initialData }: AppProps) {
 
       <GameProvider>
         <RouteHead />
-        <AppToaster />
         {!isAuthRoute && <NavBar />}
 
         <main
