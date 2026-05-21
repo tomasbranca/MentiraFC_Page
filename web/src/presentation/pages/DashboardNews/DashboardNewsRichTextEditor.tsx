@@ -117,7 +117,7 @@ const ToolbarButton = ({
     className={`inline-flex h-9 min-w-9 items-center justify-center rounded-[3px] border px-2 text-xs font-semibold transition ${
       active
         ? "border-violet-300 bg-violet-200 text-violet-950"
-        : "border-white/10 bg-black/20 text-violet-100 hover:border-violet-200/35 hover:bg-white/[0.05]"
+        : "border-white/10 bg-black/20 text-violet-100 hover:border-violet-200/35 hover:bg-white/5"
     } disabled:cursor-not-allowed disabled:opacity-45`}
     aria-label={label}
     title={label}
@@ -284,7 +284,7 @@ const Toolbar = () => {
       </div>
 
       {isLinkPanelOpen && (
-        <div className="mt-3 flex flex-col gap-2 rounded-[4px] border border-white/10 bg-black/20 p-2 sm:flex-row sm:p-3">
+        <div className="mt-3 flex flex-col gap-2 rounded-sm border border-white/10 bg-black/20 p-2 sm:flex-row sm:p-3">
           <input
             value={href}
             onChange={(event) => setHref(event.target.value)}
@@ -317,7 +317,7 @@ const DashboardNewsRichTextEditor = ({
   );
 
   return (
-    <div className="overflow-hidden rounded-[4px] border border-white/10 bg-black/15">
+    <div className="overflow-hidden rounded-sm border border-white/10 bg-black/15">
       <EditorProvider
         initialConfig={{
           schemaDefinition,

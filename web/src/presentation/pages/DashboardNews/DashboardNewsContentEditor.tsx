@@ -228,7 +228,7 @@ const DashboardNewsContentEditor = ({
       key={block.id}
       onDragOver={(event) => event.preventDefault()}
       onDrop={() => handleDrop(block.id)}
-      className="rounded-[4px] border border-white/10 bg-[#141418]"
+      className="rounded-sm border border-white/10 bg-[#141418]"
     >
       <div className="grid gap-3 border-b border-white/10 px-3 py-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:px-4">
         <div className="flex items-center gap-2">
@@ -338,7 +338,7 @@ const DashboardNewsContentEditor = ({
         )}
 
         {block.kind === "readonly" && (
-          <div className="rounded-[4px] border border-amber-200/15 bg-amber-200/[0.06] p-4">
+          <div className="rounded-sm border border-amber-200/15 bg-amber-200/6 p-4">
             <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-amber-100/70">
               Este bloque se conserva pero todavía no se puede editar desde el dashboard.
             </p>
@@ -382,7 +382,7 @@ const DashboardNewsContentEditor = ({
       </div>
 
       {showPreview ? (
-        <div className="rounded-[4px] border border-white/10 bg-black/20 p-3 sm:p-6">
+        <div className="rounded-sm border border-white/10 bg-black/20 p-3 sm:p-6">
           {previewContent.length > 0 ? (
             <NewsRichContent content={previewContent as NewsContentBlock[]} />
           ) : (
@@ -396,7 +396,7 @@ const DashboardNewsContentEditor = ({
           {blocks.length > 0 ? (
             <div className="space-y-4">{blocks.map(renderBlock)}</div>
           ) : (
-            <div className="rounded-[4px] border border-dashed border-white/15 bg-black/15 p-4 text-center sm:p-6">
+            <div className="rounded-sm border border-dashed border-white/15 bg-black/15 p-4 text-center sm:p-6">
               <p className="text-sm font-medium text-violet-100">
                 La noticia todavía no tiene contenido.
               </p>

@@ -601,7 +601,7 @@ const DashboardNewsForm = () => {
 
           <Link
             to={ROUTES.DASHBOARD_NEWS}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[3px] border border-white/10 px-4 py-3 text-sm text-white transition hover:border-violet-200/35 hover:bg-white/[0.045]"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[3px] border border-white/10 px-4 py-3 text-sm text-white transition hover:border-violet-200/35 hover:bg-white/4.5"
           >
             <FiArrowLeft className="size-4" aria-hidden="true" />
             Volver
@@ -611,12 +611,12 @@ const DashboardNewsForm = () => {
 
       <div className="grid gap-4 p-3 sm:gap-5 sm:p-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
         <form
-          className="space-y-4 rounded-[4px] border border-white/10 bg-[#16161a] p-3 sm:space-y-5 sm:p-6"
+          className="space-y-4 rounded-sm border border-white/10 bg-[#16161a] p-3 sm:space-y-5 sm:p-6"
           onSubmit={handleSubmit}
           noValidate
         >
           {dirtyLabels.length > 0 && (
-            <div className="rounded-[4px] border border-amber-200/20 bg-amber-200/[0.06] p-3 text-sm text-amber-50">
+            <div className="rounded-sm border border-amber-200/20 bg-amber-200/6 p-3 text-sm text-amber-50">
               <p className="font-semibold">Cambios sin guardar</p>
               <p className="mt-1 text-xs leading-relaxed text-amber-50/75">
                 Campos editados: {dirtyLabels.join(", ")}.
@@ -682,7 +682,7 @@ const DashboardNewsForm = () => {
             <button
               type="button"
               disabled={isSaving}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[3px] border border-white/10 px-5 py-3 text-sm font-semibold text-white transition hover:border-violet-200/35 hover:bg-white/[0.045] focus:outline-none focus:ring-2 focus:ring-violet-500/40 disabled:cursor-not-allowed disabled:opacity-55"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[3px] border border-white/10 px-5 py-3 text-sm font-semibold text-white transition hover:border-violet-200/35 hover:bg-white/4.5 focus:outline-none focus:ring-2 focus:ring-violet-500/40 disabled:cursor-not-allowed disabled:opacity-55"
               onClick={() => void handleSaveDraft()}
             >
               <FiSave className="size-4" aria-hidden="true" />
@@ -712,7 +712,7 @@ const DashboardNewsForm = () => {
         </form>
 
         <aside className="space-y-4">
-          <section className="rounded-[4px] border border-white/10 bg-[#16161a] p-3 sm:p-4">
+          <section className="rounded-sm border border-white/10 bg-[#16161a] p-3 sm:p-4">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h3 className="text-sm font-bold uppercase tracking-wide text-violet-100">
@@ -741,7 +741,7 @@ const DashboardNewsForm = () => {
                   className="aspect-video w-full object-cover"
                 />
               ) : (
-                <div className="flex aspect-video w-full items-center justify-center bg-[radial-gradient(circle,_rgba(124,58,237,0.22),_transparent_60%),linear-gradient(135deg,_#211336,_#060608)] text-center text-xs font-black uppercase tracking-[0.2em] text-violet-100/55">
+                <div className="flex aspect-video w-full items-center justify-center bg-[radial-gradient(circle,rgba(124,58,237,0.22),transparent_60%),linear-gradient(135deg,#211336,#060608)] text-center text-xs font-black uppercase tracking-[0.2em] text-violet-100/55">
                   Portada por defecto
                 </div>
               )}
@@ -764,7 +764,7 @@ const DashboardNewsForm = () => {
               />
               <button
                 type="button"
-                className="inline-flex h-11 w-11 items-center justify-center rounded-[3px] border border-white/10 text-white transition hover:border-violet-200/35 hover:bg-white/[0.045] focus:outline-none focus:ring-2 focus:ring-violet-500/40 disabled:cursor-not-allowed disabled:opacity-45"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-[3px] border border-white/10 text-white transition hover:border-violet-200/35 hover:bg-white/4.5 focus:outline-none focus:ring-2 focus:ring-violet-500/40 disabled:cursor-not-allowed disabled:opacity-45"
                 disabled={!coverPreviewSrc}
                 aria-label="Quitar imagen"
                 title="Quitar imagen"
@@ -786,7 +786,7 @@ const DashboardNewsForm = () => {
             )}
           </section>
 
-          <section className="rounded-[4px] border border-white/10 bg-[#16161a] p-3 sm:p-4">
+          <section className="rounded-sm border border-white/10 bg-[#16161a] p-3 sm:p-4">
             <Field
               id="dashboard-news-image-alt"
               name="imageAlt"
