@@ -10,10 +10,13 @@ export const ROUTES = {
   DASHBOARD: "/dashboard",
   DASHBOARD_NEWS: "/dashboard/noticias",
   DASHBOARD_NEWS_NEW: "/dashboard/noticias/nueva",
+  DASHBOARD_MATCHES: "/dashboard/partidos",
+  DASHBOARD_MATCHES_NEW: "/dashboard/partidos/nuevo",
 
   NEWS_DETAIL: (slug: string) => `/noticias/${slug}`,
   GALLERY_DETAIL: (slug: string) => `/galeria/${slug}`,
   PLAYER_DETAIL: (slug: string) => `/plantel/${slug}`,
   STAFF_DETAIL: (slug: string) => `/plantel/staff/${slug}`,
   DASHBOARD_NEWS_EDIT: (id: string) => `/dashboard/noticias/${id}`,
+  DASHBOARD_MATCHES_EDIT: (id: string) => `/dashboard/partidos/${id}`,
 };

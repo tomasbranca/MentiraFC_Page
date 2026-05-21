@@ -1,5 +1,5 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
-import { FiArrowLeft, FiFileText } from "react-icons/fi";
+import { FiArrowLeft, FiCalendar, FiFileText } from "react-icons/fi";
 
 import { ROUTES } from "../../../shared/routing";
 
@@ -21,19 +21,35 @@ const DashboardLayout = () => {
           </div>
 
           <nav className="p-2">
-            <NavLink
-              to={ROUTES.DASHBOARD_NEWS}
-              className={({ isActive }) =>
-                `flex min-h-11 items-center gap-3 rounded-[3px] border px-3 py-2.5 text-sm font-semibold transition ${
-                  isActive
-                    ? "border-violet-300/35 bg-violet-500/15 text-white"
-                    : "border-transparent text-violet-100/75 hover:border-white/10 hover:bg-white/[0.045] hover:text-white"
-                }`
-              }
-            >
-              <FiFileText className="size-4" aria-hidden="true" />
-              <span>Noticias</span>
-            </NavLink>
+            <div className="space-y-1">
+              <NavLink
+                to={ROUTES.DASHBOARD_NEWS}
+                className={({ isActive }) =>
+                  `flex min-h-11 items-center gap-3 rounded-[3px] border px-3 py-2.5 text-sm font-semibold transition ${
+                    isActive
+                      ? "border-violet-300/35 bg-violet-500/15 text-white"
+                      : "border-transparent text-violet-100/75 hover:border-white/10 hover:bg-white/[0.045] hover:text-white"
+                  }`
+                }
+              >
+                <FiFileText className="size-4" aria-hidden="true" />
+                <span>Noticias</span>
+              </NavLink>
+
+              <NavLink
+                to={ROUTES.DASHBOARD_MATCHES}
+                className={({ isActive }) =>
+                  `flex min-h-11 items-center gap-3 rounded-[3px] border px-3 py-2.5 text-sm font-semibold transition ${
+                    isActive
+                      ? "border-violet-300/35 bg-violet-500/15 text-white"
+                      : "border-transparent text-violet-100/75 hover:border-white/10 hover:bg-white/[0.045] hover:text-white"
+                  }`
+                }
+              >
+                <FiCalendar className="size-4" aria-hidden="true" />
+                <span>Partidos</span>
+              </NavLink>
+            </div>
           </nav>
 
           <div className="border-t border-white/10 p-2">

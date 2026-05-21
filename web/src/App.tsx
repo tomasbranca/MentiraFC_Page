@@ -44,6 +44,12 @@ const DashboardNewsList = lazyWithReload(
 const DashboardNewsForm = lazyWithReload(
   () => import("./presentation/pages/DashboardNews/DashboardNewsForm")
 );
+const DashboardMatchesList = lazyWithReload(
+  () => import("./presentation/pages/DashboardMatches/DashboardMatchesList")
+);
+const DashboardMatchesForm = lazyWithReload(
+  () => import("./presentation/pages/DashboardMatches/DashboardMatchesForm")
+);
 const NewsDetail = lazyWithReload(
   () => import("./presentation/pages/NewsDetail/NewsDetail"),
 );
@@ -189,6 +195,30 @@ function App({ initialData }: AppProps) {
                     element={
                       <RequirePermission permission="manage_news">
                         <DashboardNewsForm />
+                      </RequirePermission>
+                    }
+                  />
+                  <Route
+                    path="partidos"
+                    element={
+                      <RequirePermission permission="manage_matches">
+                        <DashboardMatchesList />
+                      </RequirePermission>
+                    }
+                  />
+                  <Route
+                    path="partidos/nuevo"
+                    element={
+                      <RequirePermission permission="manage_matches">
+                        <DashboardMatchesForm />
+                      </RequirePermission>
+                    }
+                  />
+                  <Route
+                    path="partidos/:id"
+                    element={
+                      <RequirePermission permission="manage_matches">
+                        <DashboardMatchesForm />
                       </RequirePermission>
                     }
                   />
