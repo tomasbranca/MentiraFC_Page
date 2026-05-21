@@ -23,7 +23,16 @@ const dashboardMatchProjection = `{
     goalsFor,
     goalsAgainst
   },
-  "playedPlayers": playedPlayers[]->${dashboardMatchPlayerProjection}
+  "playedPlayers": playedPlayers[]->${dashboardMatchPlayerProjection},
+  "goalEvents": *[
+    _type == "events" &&
+    game._ref == ^._id &&
+    type == "goal"
+  ] | order(order asc, _createdAt asc) {
+    "id": _id,
+    order,
+    player->${dashboardMatchPlayerProjection}
+  }
 }`;
 
 export const dashboardMatchListQuery = `*[_type == "games"] | order(coalesce(date, _updatedAt) desc) ${dashboardMatchProjection}`;
@@ -36,6 +45,15 @@ export const dashboardMatchByIdQuery = `*[
 export const dashboardMatchRelatedEventsQuery = `*[
   _type == "events" &&
   (game._ref == $id || game._ref == $draftId)
+]{
+  "id": _id,
+  type
+}`;
+
+export const dashboardMatchGoalEventsQuery = `*[
+  _type == "events" &&
+  type == "goal" &&
+  (game._ref == $id || game._ref == $draftId || game._ref == $publicId)
 ]{
   "id": _id
 }`;

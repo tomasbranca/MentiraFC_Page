@@ -18,10 +18,15 @@ const dashboardMatchCompetitionSchema = z.enum(
 );
 const dashboardMatchStateSchema = z.enum(dashboardMatchStateValues);
 const scoreSchema = z.coerce.number().int().min(0);
+const scorerGoalSchema = z.coerce.number().int().min(1);
 const optionalScoreSchema = z.preprocess(
   (value) => (value === "" || value === null ? undefined : value),
   scoreSchema.optional()
 );
+const dashboardMatchGoalScorerSchema = z.object({
+  playerId: z.string().trim().min(1),
+  goals: scorerGoalSchema,
+});
 
 const dashboardMatchInputSchema = z
   .object({
@@ -34,6 +39,7 @@ const dashboardMatchInputSchema = z
     goalsFor: optionalScoreSchema,
     goalsAgainst: optionalScoreSchema,
     playedPlayerIds: z.array(z.string().trim().min(1)).optional(),
+    goalScorers: z.array(dashboardMatchGoalScorerSchema).optional(),
   })
   .superRefine((input, context) => {
     if (input.competition === "Torneo" && !input.tournamentId?.trim()) {
@@ -79,6 +85,7 @@ const dashboardMatchDraftInputSchema = z.object({
   goalsFor: optionalScoreSchema,
   goalsAgainst: optionalScoreSchema,
   playedPlayerIds: z.array(z.string().trim().min(1)).optional(),
+  goalScorers: z.array(dashboardMatchGoalScorerSchema).optional(),
 });
 
 const dashboardMatchPlayerSchema = z.object({
@@ -116,6 +123,11 @@ const dashboardMatchItemSchema = z.object({
     .nullable()
     .optional(),
   playedPlayers: z.array(dashboardMatchPlayerSchema),
+  goalScorers: z.array(
+    dashboardMatchPlayerSchema.extend({
+      goals: z.number(),
+    })
+  ),
 });
 
 const dashboardMatchOptionsSchema = z.object({
@@ -139,6 +151,27 @@ const dashboardMatchOptionsSchema = z.object({
 });
 
 const uniqueIds = (ids: string[] = []): string[] => [...new Set(ids)];
+
+const normalizeGoalScorers = (
+  scorers: Array<{ playerId: string; goals: number }> = []
+): Array<{ playerId: string; goals: number }> => {
+  const goalsByPlayer = new Map<string, number>();
+
+  for (const scorer of scorers) {
+    const playerId = scorer.playerId.trim();
+
+    if (!playerId || scorer.goals < 1) {
+      continue;
+    }
+
+    goalsByPlayer.set(playerId, (goalsByPlayer.get(playerId) ?? 0) + scorer.goals);
+  }
+
+  return [...goalsByPlayer.entries()].map(([playerId, goals]) => ({
+    playerId,
+    goals,
+  }));
+};
 
 const isMatchCompetition = (
   value?: string
@@ -173,6 +206,7 @@ export const parseDashboardMatchInput = (
     goalsFor: isFinished ? data.goalsFor : undefined,
     goalsAgainst: isFinished ? data.goalsAgainst : undefined,
     playedPlayerIds: isFinished ? uniqueIds(data.playedPlayerIds) : [],
+    goalScorers: isFinished ? normalizeGoalScorers(data.goalScorers) : [],
   };
 };
 
@@ -199,6 +233,7 @@ export const parseDashboardMatchDraftInput = (
     goalsFor: data.goalsFor,
     goalsAgainst: data.goalsAgainst,
     playedPlayerIds: uniqueIds(data.playedPlayerIds),
+    goalScorers: normalizeGoalScorers(data.goalScorers),
   };
 };
 

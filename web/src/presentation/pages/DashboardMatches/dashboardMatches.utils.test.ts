@@ -32,6 +32,7 @@ describe("dashboardMatches utils", () => {
         goalsFor: "",
         goalsAgainst: "-1",
         playedPlayerIds: [],
+        goalScorers: [],
       })
     ).toEqual({
       rivalId: "Elegi un rival.",
@@ -55,6 +56,7 @@ describe("dashboardMatches utils", () => {
         goalsFor: "4",
         goalsAgainst: "2",
         playedPlayerIds: ["player-1"],
+        goalScorers: [{ playerId: "player-1", goals: "2" }],
       })
     ).toEqual({
       rivalId: "team-1",
@@ -66,6 +68,30 @@ describe("dashboardMatches utils", () => {
       goalsFor: undefined,
       goalsAgainst: undefined,
       playedPlayerIds: [],
+      goalScorers: [],
     });
+  });
+
+  it("normaliza goleadores sin correlacionar con el resultado", () => {
+    expect(
+      buildDashboardMatchMutationInput({
+        rivalId: "team-1",
+        date: "2026-05-17T00:30:00.000Z",
+        location: "Cancha 1",
+        competition: "Torneo",
+        tournamentId: "tournament-1",
+        state: "finalizado",
+        goalsFor: "1",
+        goalsAgainst: "0",
+        playedPlayerIds: [],
+        goalScorers: [
+          { playerId: "player-1", goals: "2" },
+          { playerId: "player-2", goals: "1" },
+        ],
+      }).goalScorers
+    ).toEqual([
+      { playerId: "player-1", goals: 2 },
+      { playerId: "player-2", goals: 1 },
+    ]);
   });
 });

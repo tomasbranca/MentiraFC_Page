@@ -42,6 +42,11 @@ const dashboardMatchSchema = z.object({
     .nullable()
     .optional(),
   playedPlayers: z.array(dashboardMatchPlayerSchema),
+  goalScorers: z.array(
+    dashboardMatchPlayerSchema.extend({
+      goals: z.number(),
+    })
+  ),
 });
 
 const dashboardMatchOptionsSchema = z.object({

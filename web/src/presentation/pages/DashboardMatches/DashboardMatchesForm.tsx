@@ -8,7 +8,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
-import { FiArrowLeft, FiSave } from "react-icons/fi";
+import { FiArrowLeft, FiPlus, FiSave, FiTrash2 } from "react-icons/fi";
 
 import {
   fetchDashboardMatchById,
@@ -55,6 +55,7 @@ const createInitialValues = (): DashboardMatchInput => ({
   goalsFor: "0",
   goalsAgainst: "0",
   playedPlayerIds: [],
+  goalScorers: [],
 });
 
 const saveToastOptions = {
@@ -77,6 +78,7 @@ const dirtyFieldLabels = {
   goalsFor: "Goles Mentira FC",
   goalsAgainst: "Goles rival",
   playedPlayerIds: "Jugadores",
+  goalScorers: "Goleadores",
 } as const;
 
 type DirtyFieldKey = keyof typeof dirtyFieldLabels;
@@ -120,6 +122,10 @@ const getValuesFromMatch = (match: DashboardMatchItem): DashboardMatchInput => (
   goalsFor: String(match.result?.goalsFor ?? 0),
   goalsAgainst: String(match.result?.goalsAgainst ?? 0),
   playedPlayerIds: match.playedPlayers.map((player) => player.id),
+  goalScorers: match.goalScorers.map((scorer) => ({
+    playerId: scorer.id,
+    goals: String(scorer.goals),
+  })),
 });
 
 const DashboardMatchesForm = () => {
@@ -134,6 +140,8 @@ const DashboardMatchesForm = () => {
   );
   const [errors, setErrors] = useState<DashboardMatchErrors>({});
   const [status, setStatus] = useState<string | null>(null);
+  const [selectedScorerPlayerId, setSelectedScorerPlayerId] = useState("");
+  const [selectedScorerGoals, setSelectedScorerGoals] = useState("1");
 
   const optionsQuery = useQuery({
     queryKey: queryKeys.dashboard.matches.options,
@@ -276,6 +284,17 @@ const DashboardMatchesForm = () => {
         );
       }
 
+      if (field === "goalScorers") {
+        return (
+          JSON.stringify([...values.goalScorers].sort((left, right) =>
+            left.playerId.localeCompare(right.playerId)
+          )) !==
+          JSON.stringify([...savedValues.goalScorers].sort((left, right) =>
+            left.playerId.localeCompare(right.playerId)
+          ))
+        );
+      }
+
       return values[field] !== savedValues[field];
     });
   }, [currentValuesJson, savedSnapshot.valuesJson, values]);
@@ -310,6 +329,14 @@ const DashboardMatchesForm = () => {
     (tournament) => tournament.id === values.tournamentId
   );
   const selectedPlayersCount = values.playedPlayerIds.length;
+  const selectedGoalScorersCount = values.goalScorers.reduce(
+    (total, scorer) => total + (Number(scorer.goals) || 0),
+    0
+  );
+  const availableScorerPlayers = players.filter(
+    (player) =>
+      !values.goalScorers.some((scorer) => scorer.playerId === player.id)
+  );
 
   const handleChange = (
     event: ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -380,6 +407,60 @@ const DashboardMatchesForm = () => {
         currentValues.playedPlayerIds.length === players.length
           ? []
           : players.map((player) => player.id),
+    }));
+    setStatus(null);
+  };
+
+  const handleAddGoalScorer = () => {
+    const goals = Number(selectedScorerGoals);
+
+    if (
+      !selectedScorerPlayerId ||
+      !Number.isInteger(goals) ||
+      goals < 1
+    ) {
+      return;
+    }
+
+    setValues((currentValues) => ({
+      ...currentValues,
+      goalScorers: [
+        ...currentValues.goalScorers,
+        {
+          playerId: selectedScorerPlayerId,
+          goals: String(goals),
+        },
+      ],
+    }));
+    setSelectedScorerPlayerId("");
+    setSelectedScorerGoals("1");
+    setStatus(null);
+  };
+
+  const handleGoalScorerGoalsChange = (
+    playerId: string,
+    nextGoals: string
+  ) => {
+    setValues((currentValues) => ({
+      ...currentValues,
+      goalScorers: currentValues.goalScorers.map((scorer) =>
+        scorer.playerId === playerId
+          ? {
+              ...scorer,
+              goals: nextGoals,
+            }
+          : scorer
+      ),
+    }));
+    setStatus(null);
+  };
+
+  const handleRemoveGoalScorer = (playerId: string) => {
+    setValues((currentValues) => ({
+      ...currentValues,
+      goalScorers: currentValues.goalScorers.filter(
+        (scorer) => scorer.playerId !== playerId
+      ),
     }));
     setStatus(null);
   };
@@ -616,7 +697,7 @@ const DashboardMatchesForm = () => {
                 </p>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2 sm:gap-5">
+              <div className="grid grid-cols-2 gap-3 sm:gap-5">
                 <Field
                   id="dashboard-match-goals-for"
                   name="goalsFor"
@@ -641,8 +722,121 @@ const DashboardMatchesForm = () => {
                 />
               </div>
 
+              <div className="space-y-3 rounded-[3px] border border-white/10 bg-[#151518] p-3">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <div className="flex items-center gap-2 text-sm font-medium text-violet-100">
+                      <span>Goleadores</span>
+                      {isDirty("goalScorers") && (
+                        <span className="rounded-[3px] border border-amber-200/20 bg-amber-200/10 px-2 py-0.5 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-amber-100">
+                          Editado
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <span className="w-fit rounded-[3px] border border-violet-300/15 bg-violet-300/10 px-2.5 py-1 text-xs font-medium text-violet-100">
+                    {selectedGoalScorersCount} goles
+                  </span>
+                </div>
+
+                <div className="grid gap-2 rounded-[3px] border border-white/10 bg-[#0f0f13] p-2 sm:grid-cols-[minmax(0,1fr)_7rem_2.75rem] sm:border-0 sm:bg-transparent sm:p-0">
+                  <select
+                    value={selectedScorerPlayerId}
+                    onChange={(event) =>
+                      setSelectedScorerPlayerId(event.target.value)
+                    }
+                    className="min-h-11 w-full min-w-0 rounded-[3px] border border-white/10 bg-[#0f0f13] px-3 py-2.5 text-sm text-white outline-none transition focus:border-violet-300/80 focus:ring-2 focus:ring-violet-500/20"
+                    aria-label="Goleador"
+                  >
+                    <option value="">Elegir goleador</option>
+                    {availableScorerPlayers.map((player) => (
+                      <option key={player.id} value={player.id}>
+                        {player.number != null ? `#${player.number} ` : ""}
+                        {player.fullName}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    type="number"
+                    min={1}
+                    value={selectedScorerGoals}
+                    onChange={(event) =>
+                      setSelectedScorerGoals(event.target.value)
+                    }
+                    className="min-h-11 w-full min-w-0 rounded-[3px] border border-white/10 bg-[#0f0f13] px-3 py-2.5 text-sm text-white outline-none transition focus:border-violet-300/80 focus:ring-2 focus:ring-violet-500/20"
+                    aria-label="Cantidad de goles"
+                  />
+                  <button
+                    type="button"
+                    className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[3px] border border-violet-200/25 bg-violet-100 px-3 text-sm font-semibold text-violet-950 transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/40 disabled:cursor-not-allowed disabled:opacity-45 sm:h-11 sm:w-11 sm:px-0"
+                    disabled={!selectedScorerPlayerId}
+                    aria-label="Agregar goleador"
+                    title="Agregar goleador"
+                    onClick={handleAddGoalScorer}
+                  >
+                    <FiPlus className="size-4" aria-hidden="true" />
+                    <span className="sm:sr-only">Agregar</span>
+                  </button>
+                </div>
+
+                {values.goalScorers.length > 0 ? (
+                  <div className="space-y-2">
+                    {values.goalScorers.map((scorer) => {
+                      const player = players.find(
+                        (item) => item.id === scorer.playerId
+                      );
+
+                      return (
+                        <div
+                          key={scorer.playerId}
+                          className="relative grid gap-3 rounded-[3px] border border-white/10 bg-[#0f0f13] p-3 sm:grid-cols-[minmax(0,1fr)_6rem_2.75rem] sm:items-center sm:p-2"
+                        >
+                          <div className="min-w-0 pr-12 sm:pr-0">
+                            <p className="truncate text-sm font-medium text-white">
+                              {player?.number != null
+                                ? `#${player.number} `
+                                : ""}
+                              {player?.fullName ?? "Jugador"}
+                            </p>
+                            <p className="text-xs text-violet-100/45">
+                              Evento de gol
+                            </p>
+                          </div>
+                          <input
+                            type="number"
+                            min={1}
+                            value={scorer.goals}
+                            onChange={(event) =>
+                              handleGoalScorerGoalsChange(
+                                scorer.playerId,
+                                event.target.value
+                              )
+                            }
+                            className="min-h-11 w-full min-w-0 rounded-[3px] border border-white/10 bg-[#151518] px-3 py-2.5 text-sm text-white outline-none transition focus:border-violet-300/80 focus:ring-2 focus:ring-violet-500/20"
+                            aria-label={`Goles de ${player?.fullName ?? "jugador"}`}
+                          />
+                          <button
+                            type="button"
+                            className="absolute right-3 top-3 inline-flex size-9 items-center justify-center rounded-[3px] border border-red-300/20 text-red-100 transition hover:border-red-200/45 hover:bg-red-400/10 focus:outline-none focus:ring-2 focus:ring-violet-500/40 sm:static sm:size-11"
+                            aria-label="Quitar goleador"
+                            title="Quitar goleador"
+                            onClick={() => handleRemoveGoalScorer(scorer.playerId)}
+                          >
+                            <FiTrash2 className="size-4" aria-hidden="true" />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="rounded-[3px] border border-dashed border-white/10 px-3 py-3 text-sm text-violet-100/55">
+                    Sin goleadores cargados. El resultado se puede publicar igual.
+                  </p>
+                )}
+              </div>
+
               <div>
-                <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
+                <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-2 text-sm font-medium text-violet-100">
                     <span>Jugadores que jugaron</span>
                     {isDirty("playedPlayerIds") && (
@@ -653,7 +847,7 @@ const DashboardMatchesForm = () => {
                   </div>
                   <button
                     type="button"
-                    className="rounded-[3px] border border-white/10 px-3 py-1.5 text-xs text-violet-100/75 transition hover:border-violet-200/35 hover:bg-white/4.5 hover:text-white"
+                    className="min-h-9 w-full rounded-[3px] border border-white/10 px-3 py-1.5 text-xs font-medium text-violet-100/75 transition hover:border-violet-200/35 hover:bg-white/4.5 hover:text-white sm:w-auto"
                     onClick={handleSelectAllPlayers}
                   >
                     {selectedPlayersCount === players.length
@@ -785,6 +979,14 @@ const DashboardMatchesForm = () => {
                 <dd className="mt-1 text-white">
                   {values.state === "finalizado"
                     ? `${selectedPlayersCount} seleccionados`
+                    : "Se cargan al finalizar"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-violet-100/45">Goleadores</dt>
+                <dd className="mt-1 text-white">
+                  {values.state === "finalizado"
+                    ? `${selectedGoalScorersCount} eventos de gol`
                     : "Se cargan al finalizar"}
                 </dd>
               </div>

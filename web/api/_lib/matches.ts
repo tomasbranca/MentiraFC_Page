@@ -8,6 +8,7 @@ export {
 } from "./matches/repository.js";
 export {
   dashboardMatchByIdQuery,
+  dashboardMatchGoalEventsQuery,
   dashboardMatchListQuery,
   dashboardMatchOptionsQuery,
 } from "./matches/queries.js";
