@@ -55,6 +55,9 @@ const DashboardPlayersList = lazyWithReload(
 const DashboardPlayersForm = lazyWithReload(
   () => import("./presentation/pages/DashboardPlayers/DashboardPlayersForm")
 );
+const DashboardStaffForm = lazyWithReload(
+  () => import("./presentation/pages/DashboardPlayers/DashboardStaffForm")
+);
 const NewsDetail = lazyWithReload(
   () => import("./presentation/pages/NewsDetail/NewsDetail"),
 );
@@ -239,6 +242,22 @@ function App({ initialData }: AppProps) {
                     element={
                       <RequirePermission permission="manage_team_members">
                         <DashboardPlayersForm />
+                      </RequirePermission>
+                    }
+                  />
+                  <Route
+                    path="jugadores/staff/nuevo"
+                    element={
+                      <RequirePermission permission="manage_team_members">
+                        <DashboardStaffForm />
+                      </RequirePermission>
+                    }
+                  />
+                  <Route
+                    path="jugadores/staff/:id"
+                    element={
+                      <RequirePermission permission="manage_team_members">
+                        <DashboardStaffForm />
                       </RequirePermission>
                     }
                   />

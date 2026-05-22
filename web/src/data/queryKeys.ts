@@ -40,6 +40,10 @@ export const queryKeys = {
       all: ["dashboard", "players"] as const,
       byId: (id: string) => ["dashboard", "players", id] as const,
     },
+    staff: {
+      all: ["dashboard", "staff"] as const,
+      byId: (id: string) => ["dashboard", "staff", id] as const,
+    },
   },
   galleries: {
     all: ["galleries"] as const,
