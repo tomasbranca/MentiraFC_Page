@@ -25,8 +25,26 @@ export const Field = ({
 }: FieldProps) => {
   const errorId = error ? `${id}-error` : undefined;
 
+  const inputClassName =
+    type === "datetime-local"
+      ? "min-h-11 w-full min-w-0 max-w-full rounded-[3px] border border-white/10 bg-[#0f0f13] px-3 py-2.5 text-sm text-white outline-none transition focus:border-violet-300/80 focus:ring-2 focus:ring-violet-500/20 sm:px-3.5 [&::-webkit-datetime-edit-fields-wrapper]:min-w-0 [&::-webkit-datetime-edit]:min-w-0"
+      : "min-h-11 w-full min-w-0 max-w-full rounded-[3px] border border-white/10 bg-[#0f0f13] px-3 py-2.5 text-sm text-white outline-none transition focus:border-violet-300/80 focus:ring-2 focus:ring-violet-500/20 sm:px-3.5";
+
+  const input = (
+    <input
+      id={id}
+      name={name}
+      type={type}
+      value={value}
+      onChange={onChange}
+      aria-invalid={Boolean(error)}
+      aria-describedby={errorId}
+      className={inputClassName}
+    />
+  );
+
   return (
-    <label className="block" htmlFor={id}>
+    <label className="block min-w-0" htmlFor={id}>
       <span className="mb-2 flex items-center gap-2 text-sm font-medium text-violet-100">
         <span>{label}</span>
         {dirty && (
@@ -35,16 +53,11 @@ export const Field = ({
           </span>
         )}
       </span>
-      <input
-        id={id}
-        name={name}
-        type={type}
-        value={value}
-        onChange={onChange}
-        aria-invalid={Boolean(error)}
-        aria-describedby={errorId}
-        className="min-h-11 w-full rounded-[3px] border border-white/10 bg-[#0f0f13] px-3 py-2.5 text-sm text-white outline-none transition focus:border-violet-300/80 focus:ring-2 focus:ring-violet-500/20 sm:px-3.5"
-      />
+      {type === "datetime-local" ? (
+        <div className="min-w-0 overflow-hidden">{input}</div>
+      ) : (
+        input
+      )}
       {error && (
         <span id={errorId} className="mt-2 block text-sm text-red-300">
           {error}
@@ -88,7 +101,7 @@ export const TextAreaField = ({
   }, [value]);
 
   return (
-    <label className="block" htmlFor={id}>
+    <label className="block min-w-0" htmlFor={id}>
       <span className="mb-2 flex items-center gap-2 text-sm font-medium text-violet-100">
         <span>{label}</span>
         {dirty && (

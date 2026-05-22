@@ -644,7 +644,7 @@ const DashboardNewsForm = () => {
             onChange={handleChange}
           />
 
-          <div className="grid gap-4 sm:grid-cols-2 sm:gap-5">
+          <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 *:min-w-0">
             <Field
               id="dashboard-news-date"
               name="date"

@@ -49,6 +49,11 @@ type FieldProps = {
   onChange: (event: ChangeEvent<HTMLInputElement>) => void;
 };
 
+const fieldInputClassName = (type: FieldProps["type"]) =>
+  type === "datetime-local"
+    ? "min-h-11 w-full min-w-0 max-w-full rounded-[3px] border border-white/10 bg-[#0f0f13] px-3 py-2.5 text-sm text-white outline-none transition focus:border-violet-300/80 focus:ring-2 focus:ring-violet-500/20 sm:px-3.5 [&::-webkit-datetime-edit-fields-wrapper]:min-w-0 [&::-webkit-datetime-edit]:min-w-0"
+    : "min-h-11 w-full min-w-0 max-w-full rounded-[3px] border border-white/10 bg-[#0f0f13] px-3 py-2.5 text-sm text-white outline-none transition focus:border-violet-300/80 focus:ring-2 focus:ring-violet-500/20 sm:px-3.5";
+
 export const Field = ({
   id,
   name,
@@ -62,19 +67,27 @@ export const Field = ({
 }: FieldProps) => {
   const errorId = error ? `${id}-error` : undefined;
 
+  const input = (
+    <input
+      id={id}
+      name={name}
+      type={type}
+      min={min}
+      value={value}
+      onChange={onChange}
+      aria-invalid={Boolean(error)}
+      aria-describedby={errorId}
+      className={fieldInputClassName(type)}
+    />
+  );
+
   return (
     <FieldFrame id={id} label={label} error={error} dirty={dirty}>
-      <input
-        id={id}
-        name={name}
-        type={type}
-        min={min}
-        value={value}
-        onChange={onChange}
-        aria-invalid={Boolean(error)}
-        aria-describedby={errorId}
-        className="min-h-11 w-full min-w-0 max-w-full rounded-[3px] border border-white/10 bg-[#0f0f13] px-3 py-2.5 text-sm text-white outline-none transition focus:border-violet-300/80 focus:ring-2 focus:ring-violet-500/20 sm:px-3.5"
-      />
+      {type === "datetime-local" ? (
+        <div className="min-w-0 overflow-hidden">{input}</div>
+      ) : (
+        input
+      )}
     </FieldFrame>
   );
 };
