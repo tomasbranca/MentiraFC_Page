@@ -1,4 +1,10 @@
-import type { NewsContentBlock, NewsImageContentBlock } from "./models";
+import type {
+  DominantFoot,
+  FieldPlayerRatings,
+  GoalkeeperRatings,
+  NewsContentBlock,
+  NewsImageContentBlock,
+} from "./models";
 
 export const DASHBOARD_NEWS_IMAGE_ACCEPTED_TYPES = [
   "image/jpeg",
@@ -11,6 +17,19 @@ export const DASHBOARD_NEWS_IMAGE_ACCEPTED_EXTENSIONS = ".jpg,.jpeg,.png,.webp";
 export const DASHBOARD_NEWS_IMAGE_MAX_BYTES = 4 * 1024 * 1024;
 
 export const DASHBOARD_NEWS_IMAGE_MAX_MEGAPIXELS = 256;
+
+export const DASHBOARD_PLAYER_IMAGE_ACCEPTED_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+] as const;
+
+export const DASHBOARD_PLAYER_IMAGE_ACCEPTED_EXTENSIONS =
+  ".jpg,.jpeg,.png,.webp";
+
+export const DASHBOARD_PLAYER_IMAGE_MAX_BYTES = 4 * 1024 * 1024;
+
+export const DASHBOARD_PLAYER_IMAGE_MAX_MEGAPIXELS = 256;
 
 export type DashboardNewsStatus = "published" | "draft";
 
@@ -63,6 +82,75 @@ export type DashboardNewsDraftMutationInput = Partial<DashboardNewsInput> & {
 };
 
 export type DashboardDocumentStatus = "published" | "draft";
+
+export type DashboardPlayerPosition = "arq" | "def" | "med" | "del";
+
+export type DashboardPlayerFieldRatingsInput = {
+  speed: string;
+  shooting: string;
+  passing: string;
+  dribbling: string;
+  defense: string;
+  physical: string;
+};
+
+export type DashboardPlayerGoalkeeperRatingsInput = {
+  jumping: string;
+  saving: string;
+  kicking: string;
+  reflexes: string;
+  speed: string;
+  positioning: string;
+};
+
+export type DashboardPlayerItem = {
+  id: string;
+  publishedId?: string | null;
+  draftId?: string | null;
+  status: DashboardDocumentStatus;
+  hasDraft: boolean;
+  hasPublishedVersion: boolean;
+  name: string;
+  lastName: string;
+  fullName: string;
+  number?: number | null;
+  position?: DashboardPlayerPosition | string | null;
+  dominantFoot?: DominantFoot | null;
+  fieldRatings?: FieldPlayerRatings;
+  goalkeeperRatings?: GoalkeeperRatings;
+  birthDate?: string | null;
+  updatedAt?: string | null;
+  slug: string;
+  imageAssetId?: string | null;
+  imageUrl?: string | null;
+};
+
+export type DashboardPlayerInput = {
+  name: string;
+  lastName: string;
+  number: string;
+  position: DashboardPlayerPosition | "";
+  dominantFoot: DominantFoot | "";
+  birthDate: string;
+  fieldRatings: DashboardPlayerFieldRatingsInput;
+  goalkeeperRatings: DashboardPlayerGoalkeeperRatingsInput;
+};
+
+export type DashboardPlayerMutationInput = {
+  name: string;
+  lastName: string;
+  number: number;
+  position: DashboardPlayerPosition;
+  dominantFoot?: DominantFoot;
+  birthDate?: string;
+  fieldRatings?: Partial<Record<keyof FieldPlayerRatings, number>>;
+  goalkeeperRatings?: Partial<Record<keyof GoalkeeperRatings, number>>;
+  photoImage?: File | null;
+  removePhoto?: boolean;
+};
+
+export type DashboardPlayerDraftMutationInput =
+  Partial<DashboardPlayerMutationInput>;
 
 export type DashboardMatchState = "por_jugar" | "finalizado";
 
