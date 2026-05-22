@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
-import { FiArrowLeft, FiCalendar, FiFileText } from "react-icons/fi";
+import { FiArrowLeft, FiCalendar, FiFileText, FiUsers } from "react-icons/fi";
 
 import { lazyWithReload } from "../../../lib/lazyWithReload";
 import { ROUTES } from "../../../shared/routing";
@@ -14,7 +14,7 @@ const DashboardLayout = () => {
         <AppToaster />
       </Suspense>
 
-      <div className="mx-auto grid w-full max-w-[96rem] gap-3 sm:gap-4 lg:grid-cols-[16rem_minmax(0,1fr)]">
+      <div className="mx-auto grid w-full max-w-384 gap-3 sm:gap-4 lg:grid-cols-[16rem_minmax(0,1fr)]">
         <aside className="overflow-hidden rounded-[4px] border border-white/10 bg-[#151518]">
           <div className="border-b border-white/10 p-5">
             <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-violet-200/80">
@@ -36,7 +36,7 @@ const DashboardLayout = () => {
                   `flex min-h-11 items-center gap-3 rounded-[3px] border px-3 py-2.5 text-sm font-semibold transition ${
                     isActive
                       ? "border-violet-300/35 bg-violet-500/15 text-white"
-                      : "border-transparent text-violet-100/75 hover:border-white/10 hover:bg-white/[0.045] hover:text-white"
+                      : "border-transparent text-violet-100/75 hover:border-white/10 hover:bg-white/4.5 hover:text-white"
                   }`
                 }
               >
@@ -50,12 +50,26 @@ const DashboardLayout = () => {
                   `flex min-h-11 items-center gap-3 rounded-[3px] border px-3 py-2.5 text-sm font-semibold transition ${
                     isActive
                       ? "border-violet-300/35 bg-violet-500/15 text-white"
-                      : "border-transparent text-violet-100/75 hover:border-white/10 hover:bg-white/[0.045] hover:text-white"
+                      : "border-transparent text-violet-100/75 hover:border-white/10 hover:bg-white/4.5 hover:text-white"
                   }`
                 }
               >
                 <FiCalendar className="size-4" aria-hidden="true" />
                 <span>Partidos</span>
+              </NavLink>
+
+              <NavLink
+                to={ROUTES.DASHBOARD_PLAYERS}
+                className={({ isActive }) =>
+                  `flex min-h-11 items-center gap-3 rounded-[3px] border px-3 py-2.5 text-sm font-semibold transition ${
+                    isActive
+                      ? "border-violet-300/35 bg-violet-500/15 text-white"
+                      : "border-transparent text-violet-100/75 hover:border-white/10 hover:bg-white/4.5 hover:text-white"
+                  }`
+                }
+              >
+                <FiUsers className="size-4" aria-hidden="true" />
+                <span>Jugadores</span>
               </NavLink>
             </div>
           </nav>
@@ -63,7 +77,7 @@ const DashboardLayout = () => {
           <div className="border-t border-white/10 p-2">
             <Link
               to={ROUTES.HOME}
-              className="flex min-h-11 items-center gap-3 rounded-[3px] px-3 py-2.5 text-sm text-violet-100/75 transition hover:bg-white/[0.045] hover:text-white"
+              className="flex min-h-11 items-center gap-3 rounded-[3px] px-3 py-2.5 text-sm text-violet-100/75 transition hover:bg-white/4.5 hover:text-white"
             >
               <FiArrowLeft className="size-4" aria-hidden="true" />
               <span>Volver al sitio</span>

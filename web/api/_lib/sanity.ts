@@ -136,7 +136,8 @@ export const mutateSanity = async <T>(
 };
 
 export const uploadSanityImageAsset = async (
-  imageFile: File
+  imageFile: File,
+  options?: { tag?: string }
 ): Promise<SanityImageAssetDocument> => {
   const { projectId, dataset, apiVersion, token } = getSanityConfig({
     requireWriteToken: true,
@@ -146,7 +147,7 @@ export const uploadSanityImageAsset = async (
   );
 
   url.searchParams.set("filename", imageFile.name);
-  url.searchParams.set("tag", "dashboard.news.cover");
+  url.searchParams.set("tag", options?.tag ?? "dashboard.news.cover");
 
   const response = await fetch(url, {
     method: "POST",
