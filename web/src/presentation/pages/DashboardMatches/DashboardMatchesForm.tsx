@@ -587,7 +587,7 @@ const DashboardMatchesForm = () => {
             </div>
           )}
 
-          <div className="grid gap-4 sm:grid-cols-2 sm:gap-5">
+          <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 *:min-w-0">
             <SelectField
               id="dashboard-match-rival"
               name="rivalId"
