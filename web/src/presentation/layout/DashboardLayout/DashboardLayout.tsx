@@ -69,7 +69,7 @@ const DashboardLayout = () => {
                 }
               >
                 <FiUsers className="size-4" aria-hidden="true" />
-                <span>Jugadores</span>
+                <span>Plantel</span>
               </NavLink>
             </div>
           </nav>

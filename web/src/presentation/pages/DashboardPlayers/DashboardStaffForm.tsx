@@ -11,72 +11,42 @@ import toast from "react-hot-toast";
 import { FiArrowLeft, FiSave, FiTrash2, FiUpload } from "react-icons/fi";
 
 import {
-  fetchDashboardPlayerById,
-  publishDashboardPlayer,
-  publishDashboardPlayerById,
-  saveDashboardPlayerDraft,
-} from "../../../data/dashboardPlayers";
+  fetchDashboardStaffById,
+  publishDashboardStaff,
+  publishDashboardStaffById,
+  saveDashboardStaffDraft,
+} from "../../../data/dashboardStaff";
 import { getImageUrl } from "../../../data/imageService";
 import { queryKeys } from "../../../data/queryKeys";
 import { reportError } from "../../../lib/errors/errorLogger";
 import { ROUTES } from "../../../shared/routing";
 import {
-  DASHBOARD_PLAYER_IMAGE_ACCEPTED_EXTENSIONS,
-  type DashboardPlayerFieldRatingsInput,
-  type DashboardPlayerGoalkeeperRatingsInput,
-  type DashboardPlayerInput,
-  type DashboardPlayerItem,
-  type DashboardPlayerMutationInput,
+  DASHBOARD_STAFF_IMAGE_ACCEPTED_EXTENSIONS,
+  type DashboardStaffInput,
+  type DashboardStaffItem,
+  type DashboardStaffMutationInput,
 } from "../../../types/dashboard";
 import { confirmDashboardAction } from "../../app/confirmDialog";
 import ErrorFallback from "../../components/errors/ErrorFallback";
 import Loader from "../../components/Loader/Loader";
 import { formatDate } from "../../utils/date.utils";
-import { Field, SelectField } from "./DashboardPlayersFields";
+import { Field } from "./DashboardPlayersFields";
 import {
-  FIELD_RATING_FIELDS,
-  GOALKEEPER_RATING_FIELDS,
-  PLAYER_DOMINANT_FOOT_OPTIONS,
-  PLAYER_POSITION_OPTIONS,
-  buildDashboardPlayerDraftInput,
-  buildDashboardPlayerMutationInput,
-  type DashboardPlayerErrors,
-  getDashboardPlayerDominantFootLabel,
-  getDashboardPlayerPositionLabel,
-  readDashboardPlayerImageDimensions,
-  validateDashboardPlayerImageDimensions,
-  validateDashboardPlayerImageFile,
-  validateDashboardPlayerInput,
-  validateDashboardPlayerRatings,
-} from "./dashboardPlayers.utils";
+  buildDashboardStaffDraftInput,
+  buildDashboardStaffMutationInput,
+  type DashboardStaffErrors,
+  getDashboardStaffRoleLabel,
+  readDashboardStaffImageDimensions,
+  validateDashboardStaffImageDimensions,
+  validateDashboardStaffImageFile,
+  validateDashboardStaffInput,
+} from "./dashboardStaff.utils";
 
-const createFieldRatings = (): DashboardPlayerFieldRatingsInput => ({
-  speed: "",
-  shooting: "",
-  passing: "",
-  dribbling: "",
-  defense: "",
-  physical: "",
-});
-
-const createGoalkeeperRatings = (): DashboardPlayerGoalkeeperRatingsInput => ({
-  jumping: "",
-  saving: "",
-  kicking: "",
-  reflexes: "",
-  speed: "",
-  positioning: "",
-});
-
-const createInitialValues = (): DashboardPlayerInput => ({
+const createInitialValues = (): DashboardStaffInput => ({
   name: "",
   lastName: "",
-  number: "",
-  position: "",
-  dominantFoot: "",
+  role: "",
   birthDate: "",
-  fieldRatings: createFieldRatings(),
-  goalkeeperRatings: createGoalkeeperRatings(),
 });
 
 const saveToastOptions = {
@@ -88,78 +58,45 @@ const saveToastOptions = {
 const dirtyFieldLabels = {
   name: "Nombre",
   lastName: "Apellido",
-  number: "Numero",
-  position: "Posicion",
-  dominantFoot: "Pie habil",
+  role: "Rol",
   birthDate: "Nacimiento",
-  fieldRatings: "Valoraciones de campo",
-  goalkeeperRatings: "Valoraciones de arquero",
   photo: "Foto",
 } as const;
 
 type DirtyFieldKey = keyof typeof dirtyFieldLabels;
 
-type SavedPlayerSnapshot = {
+type SavedStaffSnapshot = {
   valuesJson: string;
 };
 
-const serializeValues = (values: DashboardPlayerInput): string =>
+const serializeValues = (values: DashboardStaffInput): string =>
   JSON.stringify(values);
 
 const createSavedSnapshot = (
-  values: DashboardPlayerInput
-): SavedPlayerSnapshot => ({
+  values: DashboardStaffInput
+): SavedStaffSnapshot => ({
   valuesJson: serializeValues(values),
 });
 
-const getKnownPosition = (
-  position?: string | null
-): DashboardPlayerInput["position"] =>
-  PLAYER_POSITION_OPTIONS.some((option) => option.value === position)
-    ? (position as DashboardPlayerInput["position"])
-    : "";
-
-const getRatingInputValue = (value?: number | null): string =>
-  typeof value === "number" ? String(value) : "";
-
-const getValuesFromPlayer = (player: DashboardPlayerItem): DashboardPlayerInput => ({
-  name: player.name,
-  lastName: player.lastName,
-  number: player.number == null ? "" : String(player.number),
-  position: getKnownPosition(player.position),
-  dominantFoot: player.dominantFoot ?? "",
-  birthDate: player.birthDate ?? "",
-  fieldRatings: {
-    speed: getRatingInputValue(player.fieldRatings?.speed),
-    shooting: getRatingInputValue(player.fieldRatings?.shooting),
-    passing: getRatingInputValue(player.fieldRatings?.passing),
-    dribbling: getRatingInputValue(player.fieldRatings?.dribbling),
-    defense: getRatingInputValue(player.fieldRatings?.defense),
-    physical: getRatingInputValue(player.fieldRatings?.physical),
-  },
-  goalkeeperRatings: {
-    jumping: getRatingInputValue(player.goalkeeperRatings?.jumping),
-    saving: getRatingInputValue(player.goalkeeperRatings?.saving),
-    kicking: getRatingInputValue(player.goalkeeperRatings?.kicking),
-    reflexes: getRatingInputValue(player.goalkeeperRatings?.reflexes),
-    speed: getRatingInputValue(player.goalkeeperRatings?.speed),
-    positioning: getRatingInputValue(player.goalkeeperRatings?.positioning),
-  },
+const getValuesFromStaff = (staffMember: DashboardStaffItem): DashboardStaffInput => ({
+  name: staffMember.name,
+  lastName: staffMember.lastName,
+  role: staffMember.role ?? "",
+  birthDate: staffMember.birthDate ?? "",
 });
 
-const DashboardPlayersForm = () => {
+const DashboardStaffForm = () => {
   const { id } = useParams();
   const isEditing = Boolean(id);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [initialValues] = useState(createInitialValues);
-  const [values, setValues] = useState<DashboardPlayerInput>(initialValues);
-  const [savedSnapshot, setSavedSnapshot] = useState<SavedPlayerSnapshot>(
+  const [values, setValues] = useState<DashboardStaffInput>(initialValues);
+  const [savedSnapshot, setSavedSnapshot] = useState<SavedStaffSnapshot>(
     createSavedSnapshot(initialValues)
   );
-  const [errors, setErrors] = useState<DashboardPlayerErrors>({});
+  const [errors, setErrors] = useState<DashboardStaffErrors>({});
   const [status, setStatus] = useState<string | null>(null);
-  const [ratingError, setRatingError] = useState<string | null>(null);
   const [selectedPhotoFile, setSelectedPhotoFile] = useState<File | null>(null);
   const [selectedPhotoPreviewUrl, setSelectedPhotoPreviewUrl] = useState<
     string | null
@@ -167,16 +104,16 @@ const DashboardPlayersForm = () => {
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [removePhoto, setRemovePhoto] = useState(false);
 
-  const playerQuery = useQuery({
-    queryKey: queryKeys.dashboard.players.byId(id ?? "new"),
+  const staffQuery = useQuery({
+    queryKey: queryKeys.dashboard.staff.byId(id ?? "new"),
     enabled: isEditing,
     queryFn: async () => {
       try {
-        return await fetchDashboardPlayerById(id ?? "");
+        return await fetchDashboardStaffById(id ?? "");
       } catch (error) {
         reportError(error, {
-          page: "DashboardPlayersForm",
-          action: "load_player",
+          page: "DashboardStaffForm",
+          action: "load_staff",
           id,
         });
         throw error;
@@ -185,21 +122,20 @@ const DashboardPlayersForm = () => {
   });
 
   useEffect(() => {
-    if (!playerQuery.data) {
+    if (!staffQuery.data) {
       return;
     }
 
-    const nextValues = getValuesFromPlayer(playerQuery.data);
+    const nextValues = getValuesFromStaff(staffQuery.data);
 
     setValues(nextValues);
     setSavedSnapshot(createSavedSnapshot(nextValues));
     setErrors({});
     setStatus(null);
-    setRatingError(null);
     setSelectedPhotoFile(null);
     setPhotoError(null);
     setRemovePhoto(false);
-  }, [playerQuery.data]);
+  }, [staffQuery.data]);
 
   useEffect(() => {
     if (!selectedPhotoFile) {
@@ -213,20 +149,19 @@ const DashboardPlayersForm = () => {
     return () => URL.revokeObjectURL(previewUrl);
   }, [selectedPhotoFile]);
 
-  const applySavedPlayer = (savedPlayer: DashboardPlayerItem) => {
-    const nextValues = getValuesFromPlayer(savedPlayer);
+  const applySavedStaff = (savedStaff: DashboardStaffItem) => {
+    const nextValues = getValuesFromStaff(savedStaff);
 
     setValues(nextValues);
     setSavedSnapshot(createSavedSnapshot(nextValues));
     setSelectedPhotoFile(null);
     setRemovePhoto(false);
     setPhotoError(null);
-    setRatingError(null);
   };
 
   const saveDraftMutation = useMutation({
-    mutationFn: async (input: ReturnType<typeof buildDashboardPlayerDraftInput>) =>
-      saveDashboardPlayerDraft(
+    mutationFn: async (input: ReturnType<typeof buildDashboardStaffDraftInput>) =>
+      saveDashboardStaffDraft(
         {
           ...input,
           photoImage: selectedPhotoFile,
@@ -234,18 +169,18 @@ const DashboardPlayersForm = () => {
         },
         id
       ),
-    onSuccess: async (savedPlayer) => {
+    onSuccess: async (savedStaff) => {
       await queryClient.invalidateQueries({
-        queryKey: queryKeys.dashboard.players.all,
+        queryKey: queryKeys.dashboard.staff.all,
       });
       queryClient.setQueryData(
-        queryKeys.dashboard.players.byId(savedPlayer.id),
-        savedPlayer
+        queryKeys.dashboard.staff.byId(savedStaff.id),
+        savedStaff
       );
-      applySavedPlayer(savedPlayer);
+      applySavedStaff(savedStaff);
 
       if (!isEditing) {
-        navigate(ROUTES.DASHBOARD_PLAYERS_EDIT(savedPlayer.id), {
+        navigate(ROUTES.DASHBOARD_STAFF_EDIT(savedStaff.id), {
           replace: true,
         });
       }
@@ -253,33 +188,28 @@ const DashboardPlayersForm = () => {
   });
 
   const publishMutation = useMutation({
-    mutationFn: async (input: DashboardPlayerMutationInput) =>
+    mutationFn: async (input: DashboardStaffMutationInput) =>
       isEditing && id
-        ? publishDashboardPlayerById(id, {
+        ? publishDashboardStaffById(id, {
             ...input,
             photoImage: selectedPhotoFile,
             removePhoto,
           })
-        : publishDashboardPlayer({
+        : publishDashboardStaff({
             ...input,
             photoImage: selectedPhotoFile,
             removePhoto,
           }),
-    onSuccess: async (savedPlayer) => {
+    onSuccess: async (savedStaff) => {
       await Promise.all([
         queryClient.invalidateQueries({
-          queryKey: queryKeys.dashboard.players.all,
+          queryKey: queryKeys.dashboard.staff.all,
         }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.players.all }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.dashboard.matches.options,
-        }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.games.all }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.events.goals() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.staff.all }),
       ]);
       queryClient.setQueryData(
-        queryKeys.dashboard.players.byId(savedPlayer.id),
-        savedPlayer
+        queryKeys.dashboard.staff.byId(savedStaff.id),
+        savedStaff
       );
       navigate(ROUTES.DASHBOARD_PLAYERS);
     },
@@ -287,16 +217,12 @@ const DashboardPlayersForm = () => {
 
   const currentValuesJson = useMemo(() => serializeValues(values), [values]);
   const dirtyFields = useMemo<DirtyFieldKey[]>(() => {
-    const savedValues = JSON.parse(savedSnapshot.valuesJson) as DashboardPlayerInput;
+    const savedValues = JSON.parse(savedSnapshot.valuesJson) as DashboardStaffInput;
     const nextDirtyFields = (
       Object.keys(dirtyFieldLabels) as DirtyFieldKey[]
     ).filter((field) => {
       if (field === "photo") {
         return Boolean(selectedPhotoFile) || removePhoto;
-      }
-
-      if (field === "fieldRatings" || field === "goalkeeperRatings") {
-        return JSON.stringify(values[field]) !== JSON.stringify(savedValues[field]);
       }
 
       return values[field] !== savedValues[field];
@@ -319,21 +245,21 @@ const DashboardPlayersForm = () => {
     dirtyFields.includes(field);
   const isSaving = saveDraftMutation.isPending || publishMutation.isPending;
 
-  if (playerQuery.isLoading) {
+  if (staffQuery.isLoading) {
     return <Loader />;
   }
 
-  if (playerQuery.isError) {
+  if (staffQuery.isError) {
     return (
       <ErrorFallback
         title="No pudimos cargar el integrante"
         message="Intenta nuevamente en unos minutos."
-        onRetry={() => void playerQuery.refetch()}
+        onRetry={() => void staffQuery.refetch()}
       />
     );
   }
 
-  const existingPhotoUrl = removePhoto ? null : playerQuery.data?.imageUrl;
+  const existingPhotoUrl = removePhoto ? null : staffQuery.data?.imageUrl;
   const photoPreviewUrl = selectedPhotoPreviewUrl ?? existingPhotoUrl ?? null;
   const photoPreviewSrc = photoPreviewUrl
     ? getImageUrl(photoPreviewUrl, {
@@ -348,9 +274,7 @@ const DashboardPlayersForm = () => {
     [values.name.trim(), values.lastName.trim()].filter(Boolean).join(" ") ||
     "Integrante";
 
-  const handleChange = (
-    event: ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
 
     setValues((currentValues) => ({
@@ -362,23 +286,6 @@ const DashboardPlayersForm = () => {
       [name]: undefined,
     }));
     setStatus(null);
-    setRatingError(null);
-  };
-
-  const handleRatingChange = (
-    group: "fieldRatings" | "goalkeeperRatings",
-    name: string,
-    value: string
-  ) => {
-    setValues((currentValues) => ({
-      ...currentValues,
-      [group]: {
-        ...currentValues[group],
-        [name]: value,
-      },
-    }));
-    setStatus(null);
-    setRatingError(null);
   };
 
   const handlePhotoChange = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -390,7 +297,7 @@ const DashboardPlayersForm = () => {
       return;
     }
 
-    const fileError = validateDashboardPlayerImageFile(file);
+    const fileError = validateDashboardStaffImageFile(file);
 
     if (fileError) {
       setPhotoError(fileError);
@@ -399,9 +306,9 @@ const DashboardPlayersForm = () => {
     }
 
     try {
-      const dimensions = await readDashboardPlayerImageDimensions(file);
+      const dimensions = await readDashboardStaffImageDimensions(file);
       const dimensionsError =
-        validateDashboardPlayerImageDimensions(dimensions);
+        validateDashboardStaffImageDimensions(dimensions);
 
       if (dimensionsError) {
         setPhotoError(dimensionsError);
@@ -414,8 +321,8 @@ const DashboardPlayersForm = () => {
       setPhotoError(null);
     } catch (error) {
       reportError(error, {
-        page: "DashboardPlayersForm",
-        action: "read_player_photo",
+        page: "DashboardStaffForm",
+        action: "read_staff_photo",
       });
       setPhotoError("No pudimos leer la foto seleccionada.");
       setSelectedPhotoFile(null);
@@ -448,16 +355,13 @@ const DashboardPlayersForm = () => {
     setStatus(null);
     setErrors({});
 
-    const nextRatingError = validateDashboardPlayerRatings(values);
-    setRatingError(nextRatingError);
-
-    if (photoError || nextRatingError) {
+    if (photoError) {
       return;
     }
 
     try {
       await toast.promise(
-        saveDraftMutation.mutateAsync(buildDashboardPlayerDraftInput(values)),
+        saveDraftMutation.mutateAsync(buildDashboardStaffDraftInput(values)),
         {
           loading: selectedPhotoFile
             ? "Subiendo foto y guardando borrador..."
@@ -469,8 +373,8 @@ const DashboardPlayersForm = () => {
       );
     } catch (error) {
       reportError(error, {
-        page: "DashboardPlayersForm",
-        action: "save_player_draft",
+        page: "DashboardStaffForm",
+        action: "save_staff_draft",
       });
       setStatus("No pudimos guardar el borrador. Intenta de nuevo.");
     }
@@ -479,24 +383,17 @@ const DashboardPlayersForm = () => {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const normalizedValues: DashboardPlayerInput = {
-      ...values,
+    const normalizedValues: DashboardStaffInput = {
       name: values.name.trim(),
       lastName: values.lastName.trim(),
-      number: values.number.trim(),
+      role: values.role.trim(),
       birthDate: values.birthDate.trim(),
     };
-    const nextErrors = validateDashboardPlayerInput(normalizedValues);
-    const nextRatingError = validateDashboardPlayerRatings(normalizedValues);
+    const nextErrors = validateDashboardStaffInput(normalizedValues);
     setErrors(nextErrors);
     setStatus(null);
-    setRatingError(nextRatingError);
 
-    if (
-      Object.keys(nextErrors).length > 0 ||
-      photoError ||
-      nextRatingError
-    ) {
+    if (Object.keys(nextErrors).length > 0 || photoError) {
       return;
     }
 
@@ -516,7 +413,7 @@ const DashboardPlayersForm = () => {
     try {
       await toast.promise(
         publishMutation.mutateAsync(
-          buildDashboardPlayerMutationInput(normalizedValues)
+          buildDashboardStaffMutationInput(normalizedValues)
         ),
         {
           loading: selectedPhotoFile
@@ -533,18 +430,12 @@ const DashboardPlayersForm = () => {
       );
     } catch (error) {
       reportError(error, {
-        page: "DashboardPlayersForm",
-        action: isEditing ? "publish_player_changes" : "publish_player",
+        page: "DashboardStaffForm",
+        action: isEditing ? "publish_staff_changes" : "publish_staff",
       });
       setStatus("No pudimos publicar el integrante. Intenta de nuevo.");
     }
   };
-
-  const ratingFields =
-    values.position === "arq" ? GOALKEEPER_RATING_FIELDS : FIELD_RATING_FIELDS;
-  const ratingGroup =
-    values.position === "arq" ? "goalkeeperRatings" : "fieldRatings";
-  const activeRatings = values[ratingGroup] as Record<string, string>;
 
   return (
     <div>
@@ -555,10 +446,10 @@ const DashboardPlayersForm = () => {
               Plantel
             </p>
             <h2 className="mt-3 text-3xl font-black text-white">
-              {isEditing ? "Editar jugador" : "Nuevo jugador"}
+              {isEditing ? "Editar integrante" : "Nuevo integrante"}
             </h2>
             <p className="mt-2 text-sm text-violet-100/65">
-              Carga la ficha del plantel y publicala en el sitio.
+              Carga la ficha del cuerpo tecnico y publicala en el sitio.
             </p>
           </div>
 
@@ -589,7 +480,7 @@ const DashboardPlayersForm = () => {
 
           <div className="grid gap-4 sm:grid-cols-2 sm:gap-5">
             <Field
-              id="dashboard-player-name"
+              id="dashboard-staff-name"
               name="name"
               label="Nombre"
               value={values.name}
@@ -598,7 +489,7 @@ const DashboardPlayersForm = () => {
               onChange={handleChange}
             />
             <Field
-              id="dashboard-player-last-name"
+              id="dashboard-staff-last-name"
               name="lastName"
               label="Apellido"
               value={values.lastName}
@@ -610,18 +501,16 @@ const DashboardPlayersForm = () => {
 
           <div className="grid gap-4 sm:grid-cols-2 sm:gap-5">
             <Field
-              id="dashboard-player-number"
-              name="number"
-              type="number"
-              min={0}
-              label="Numero de camiseta"
-              value={values.number}
-              error={errors.number}
-              dirty={isDirty("number")}
+              id="dashboard-staff-role"
+              name="role"
+              label="Rol"
+              value={values.role}
+              error={errors.role}
+              dirty={isDirty("role")}
               onChange={handleChange}
             />
             <Field
-              id="dashboard-player-birth-date"
+              id="dashboard-staff-birth-date"
               name="birthDate"
               type="date"
               label="Fecha de nacimiento"
@@ -631,86 +520,6 @@ const DashboardPlayersForm = () => {
               onChange={handleChange}
             />
           </div>
-
-          <div className="grid gap-4 sm:grid-cols-2 sm:gap-5">
-            <SelectField
-              id="dashboard-player-position"
-              name="position"
-              label="Posicion"
-              value={values.position}
-              error={errors.position}
-              dirty={isDirty("position")}
-              onChange={handleChange}
-            >
-              <option value="">Elegir posicion</option>
-              {PLAYER_POSITION_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </SelectField>
-
-            <SelectField
-              id="dashboard-player-dominant-foot"
-              name="dominantFoot"
-              label="Pie habil"
-              value={values.dominantFoot}
-              error={errors.dominantFoot}
-              dirty={isDirty("dominantFoot")}
-              onChange={handleChange}
-            >
-              <option value="">Sin definir</option>
-              {PLAYER_DOMINANT_FOOT_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </SelectField>
-          </div>
-
-          <section className="space-y-4 rounded-sm border border-white/10 bg-[#0f0f13] p-3 sm:p-4">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <h3 className="text-sm font-bold uppercase tracking-wide text-violet-100">
-                  Valoraciones
-                </h3>
-                <p className="mt-1 text-xs leading-relaxed text-violet-100/55">
-                  {values.position === "arq"
-                    ? "Perfil de arquero."
-                    : "Perfil de jugador de campo."}
-                </p>
-              </div>
-              {isDirty(ratingGroup) && (
-                <span className="w-fit rounded-[3px] border border-amber-200/20 bg-amber-200/10 px-2 py-0.5 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-amber-100">
-                  Editado
-                </span>
-              )}
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {ratingFields.map((field) => (
-                <Field
-                  key={`${ratingGroup}-${field.name}`}
-                  id={`dashboard-player-${ratingGroup}-${field.name}`}
-                  name={field.name}
-                  type="number"
-                  min={1}
-                  max={10}
-                  label={field.label}
-                  value={activeRatings[field.name] ?? ""}
-                  onChange={(event) =>
-                    handleRatingChange(ratingGroup, field.name, event.target.value)
-                  }
-                />
-              ))}
-            </div>
-
-            {ratingError && (
-              <p className="text-sm text-red-300" role="alert">
-                {ratingError}
-              </p>
-            )}
-          </section>
 
           <div className="flex flex-col gap-3 pt-2 sm:flex-row">
             <button
@@ -779,16 +588,16 @@ const DashboardPlayersForm = () => {
 
             <div className="mt-4 flex gap-2">
               <label
-                htmlFor="dashboard-player-photo"
+                htmlFor="dashboard-staff-photo"
                 className="inline-flex min-h-11 flex-1 cursor-pointer items-center justify-center gap-2 rounded-[3px] border border-violet-200/25 bg-violet-100 px-4 py-2.5 text-sm font-semibold text-violet-950 transition hover:bg-white"
               >
                 <FiUpload className="size-4" aria-hidden="true" />
                 Subir
               </label>
               <input
-                id="dashboard-player-photo"
+                id="dashboard-staff-photo"
                 type="file"
-                accept={DASHBOARD_PLAYER_IMAGE_ACCEPTED_EXTENSIONS}
+                accept={DASHBOARD_STAFF_IMAGE_ACCEPTED_EXTENSIONS}
                 className="sr-only"
                 onChange={handlePhotoChange}
               />
@@ -822,7 +631,7 @@ const DashboardPlayersForm = () => {
             <div className="mt-4 overflow-hidden rounded-[3px] border border-white/10 bg-[#0f0f13]">
               <div className="border-b border-white/8 p-4">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-violet-100/45">
-                  {values.number.trim() ? `#${values.number.trim()}` : "Plantel"}
+                  Cuerpo tecnico
                 </p>
                 <p className="mt-2 text-xl font-black uppercase leading-tight text-white">
                   {displayName}
@@ -830,15 +639,9 @@ const DashboardPlayersForm = () => {
               </div>
               <dl className="space-y-3 p-4 text-sm">
                 <div>
-                  <dt className="text-violet-100/45">Posicion</dt>
+                  <dt className="text-violet-100/45">Rol</dt>
                   <dd className="mt-1 text-white">
-                    {getDashboardPlayerPositionLabel(values.position)}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-violet-100/45">Pie habil</dt>
-                  <dd className="mt-1 text-white">
-                    {getDashboardPlayerDominantFootLabel(values.dominantFoot)}
+                    {getDashboardStaffRoleLabel(values.role)}
                   </dd>
                 </div>
                 <div>
@@ -856,4 +659,4 @@ const DashboardPlayersForm = () => {
   );
 };
 
-export default DashboardPlayersForm;
+export default DashboardStaffForm;
