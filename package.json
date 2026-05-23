@@ -15,7 +15,7 @@
     "install:studio": "cd studio && npm install",
     "install": "npm run install:all",
     "install:all": "npm run install:web && npm run install:studio",
-    "deploy": "cd studio && npx sanity deploy",
+    "deploy": "cd studio && npm run deploy",
     "push": "node scripts/push-and-deploy.mjs"
   }
 }
