@@ -307,3 +307,108 @@ export type DashboardMatchDraftMutationInput =
       goals: number;
     }>;
   };
+
+export type DashboardTableTeamOption = {
+  id: string;
+  name: string;
+  isMain?: boolean;
+  imageUrl?: string | null;
+  status?: string | null;
+  activeFromMatchday?: number | null;
+  activeUntilMatchday?: number | null;
+};
+
+export type DashboardTableTournamentOption = {
+  id: string;
+  name: string;
+  organizationName?: string | null;
+  active?: boolean;
+  imageUrl?: string | null;
+  participants: DashboardTableTeamOption[];
+};
+
+export type DashboardTableOptions = {
+  tournaments: DashboardTableTournamentOption[];
+};
+
+export type DashboardTableRowItem = {
+  key?: string | null;
+  teamId?: string | null;
+  teamName?: string | null;
+  teamImageUrl?: string | null;
+  wins?: number | null;
+  draws?: number | null;
+  losses?: number | null;
+  goalsFor?: number | null;
+  goalsAgainst?: number | null;
+};
+
+export type DashboardTableItem = {
+  id: string;
+  publishedId?: string | null;
+  draftId?: string | null;
+  status: DashboardDocumentStatus;
+  hasDraft: boolean;
+  hasPublishedVersion: boolean;
+  tournamentId?: string | null;
+  tournamentName?: string | null;
+  tournamentOrganizationName?: string | null;
+  tournamentImageUrl?: string | null;
+  matchdayNumber?: number | null;
+  label?: string | null;
+  snapshotDate?: string | null;
+  gamesThroughDate?: string | null;
+  updatedAt?: string | null;
+  rows: DashboardTableRowItem[];
+};
+
+export type DashboardTableRowMutationInput = {
+  key?: string;
+  teamId: string;
+  wins: number;
+  draws: number;
+  losses: number;
+  goalsFor: number;
+  goalsAgainst: number;
+};
+
+export type DashboardTableRowDraftMutationInput = {
+  key?: string;
+  teamId?: string;
+  wins?: number;
+  draws?: number;
+  losses?: number;
+  goalsFor?: number;
+  goalsAgainst?: number;
+};
+
+export type DashboardTableInput = {
+  tournamentId: string;
+  matchdayNumber: string;
+  label: string;
+  snapshotDate: string;
+  gamesThroughDate: string;
+  rows: Array<{
+    key: string;
+    teamId: string;
+    wins: string;
+    draws: string;
+    losses: string;
+    goalsFor: string;
+    goalsAgainst: string;
+  }>;
+};
+
+export type DashboardTableMutationInput = {
+  tournamentId: string;
+  matchdayNumber: number;
+  label?: string;
+  snapshotDate: string;
+  gamesThroughDate: string;
+  rows: DashboardTableRowMutationInput[];
+};
+
+export type DashboardTableDraftMutationInput =
+  Partial<Omit<DashboardTableMutationInput, "rows">> & {
+    rows?: DashboardTableRowDraftMutationInput[];
+  };

@@ -1,6 +1,12 @@
 import { Suspense } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
-import { FiArrowLeft, FiCalendar, FiFileText, FiUsers } from "react-icons/fi";
+import {
+  FiArrowLeft,
+  FiBarChart2,
+  FiCalendar,
+  FiFileText,
+  FiUsers,
+} from "react-icons/fi";
 
 import { lazyWithReload } from "../../../lib/lazyWithReload";
 import { ROUTES } from "../../../shared/routing";
@@ -70,6 +76,20 @@ const DashboardLayout = () => {
               >
                 <FiUsers className="size-4" aria-hidden="true" />
                 <span>Plantel</span>
+              </NavLink>
+
+              <NavLink
+                to={ROUTES.DASHBOARD_TABLE}
+                className={({ isActive }) =>
+                  `flex min-h-11 items-center gap-3 rounded-[3px] border px-3 py-2.5 text-sm font-semibold transition ${
+                    isActive
+                      ? "border-violet-300/35 bg-violet-500/15 text-white"
+                      : "border-transparent text-violet-100/75 hover:border-white/10 hover:bg-white/4.5 hover:text-white"
+                  }`
+                }
+              >
+                <FiBarChart2 className="size-4" aria-hidden="true" />
+                <span>Tabla</span>
               </NavLink>
             </div>
           </nav>

@@ -44,6 +44,11 @@ export const queryKeys = {
       all: ["dashboard", "staff"] as const,
       byId: (id: string) => ["dashboard", "staff", id] as const,
     },
+    table: {
+      all: ["dashboard", "table"] as const,
+      byId: (id: string) => ["dashboard", "table", id] as const,
+      options: ["dashboard", "table", "options"] as const,
+    },
   },
   galleries: {
     all: ["galleries"] as const,
