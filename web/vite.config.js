@@ -36,6 +36,7 @@ const writeWebResponse = async (response, nodeResponse) => {
 export const DASHBOARD_API_RESOURCES = new Set([
   "news",
   "matches",
+  "table",
   "players",
   "staff",
 ]);

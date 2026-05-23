@@ -49,6 +49,12 @@ const DashboardMatchesList = lazyWithReload(
 const DashboardMatchesForm = lazyWithReload(
   () => import("./presentation/pages/DashboardMatches/DashboardMatchesForm")
 );
+const DashboardTableList = lazyWithReload(
+  () => import("./presentation/pages/DashboardTable/DashboardTableList")
+);
+const DashboardTableForm = lazyWithReload(
+  () => import("./presentation/pages/DashboardTable/DashboardTableForm")
+);
 const DashboardPlayersList = lazyWithReload(
   () => import("./presentation/pages/DashboardPlayers/DashboardPlayersList")
 );
@@ -226,6 +232,30 @@ function App({ initialData }: AppProps) {
                     element={
                       <RequirePermission permission="manage_matches">
                         <DashboardMatchesForm />
+                      </RequirePermission>
+                    }
+                  />
+                  <Route
+                    path="tabla"
+                    element={
+                      <RequirePermission permission="manage_tables">
+                        <DashboardTableList />
+                      </RequirePermission>
+                    }
+                  />
+                  <Route
+                    path="tabla/nueva"
+                    element={
+                      <RequirePermission permission="manage_tables">
+                        <DashboardTableForm />
+                      </RequirePermission>
+                    }
+                  />
+                  <Route
+                    path="tabla/:id"
+                    element={
+                      <RequirePermission permission="manage_tables">
+                        <DashboardTableForm />
                       </RequirePermission>
                     }
                   />

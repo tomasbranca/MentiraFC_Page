@@ -9,6 +9,7 @@ describe("dashboard api dev middleware", () => {
       "news",
       "players",
       "staff",
+      "table",
     ]);
   });
 });
