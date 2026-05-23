@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest";
 
-import dashboardTournamentRoute from "./index.js";
+import dashboardOrganizationRoute from "./index.js";
 
-describe("dashboard tournaments api handlers", () => {
+describe("dashboard organizations api handlers", () => {
   it("exporta handlers compatibles con el runtime Web de Vercel", () => {
-    expect(dashboardTournamentRoute.fetch).toBeTypeOf("function");
+    expect(dashboardOrganizationRoute.fetch).toBeTypeOf("function");
   });
 
   it("responde JSON cuando falta autorizacion", async () => {
-    const response = await dashboardTournamentRoute.fetch(
-      new Request("https://mentirafc.vercel.app/api/dashboard/tournaments")
+    const response = await dashboardOrganizationRoute.fetch(
+      new Request("https://mentirafc.vercel.app/api/dashboard/organizations")
     );
 
     await expect(response.json()).resolves.toEqual({

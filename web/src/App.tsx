@@ -61,6 +61,12 @@ const DashboardTournamentsList = lazyWithReload(
 const DashboardTournamentsForm = lazyWithReload(
   () => import("./presentation/pages/DashboardTournaments/DashboardTournamentsForm")
 );
+const DashboardOrganizationsList = lazyWithReload(
+  () => import("./presentation/pages/DashboardOrganizations/DashboardOrganizationsList")
+);
+const DashboardOrganizationsForm = lazyWithReload(
+  () => import("./presentation/pages/DashboardOrganizations/DashboardOrganizationsForm")
+);
 const DashboardPlayersList = lazyWithReload(
   () => import("./presentation/pages/DashboardPlayers/DashboardPlayersList")
 );
@@ -286,6 +292,30 @@ function App({ initialData }: AppProps) {
                     element={
                       <RequirePermission permission="manage_tables">
                         <DashboardTournamentsForm />
+                      </RequirePermission>
+                    }
+                  />
+                  <Route
+                    path="organizadores"
+                    element={
+                      <RequirePermission permission="manage_tables">
+                        <DashboardOrganizationsList />
+                      </RequirePermission>
+                    }
+                  />
+                  <Route
+                    path="organizadores/nuevo"
+                    element={
+                      <RequirePermission permission="manage_tables">
+                        <DashboardOrganizationsForm />
+                      </RequirePermission>
+                    }
+                  />
+                  <Route
+                    path="organizadores/:id"
+                    element={
+                      <RequirePermission permission="manage_tables">
+                        <DashboardOrganizationsForm />
                       </RequirePermission>
                     }
                   />

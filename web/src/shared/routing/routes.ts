@@ -16,6 +16,8 @@ export const ROUTES = {
   DASHBOARD_TABLE_NEW: "/dashboard/tabla/nueva",
   DASHBOARD_TOURNAMENTS: "/dashboard/torneos",
   DASHBOARD_TOURNAMENTS_NEW: "/dashboard/torneos/nuevo",
+  DASHBOARD_ORGANIZATIONS: "/dashboard/organizadores",
+  DASHBOARD_ORGANIZATIONS_NEW: "/dashboard/organizadores/nuevo",
   DASHBOARD_PLAYERS: "/dashboard/jugadores",
   DASHBOARD_PLAYERS_NEW: "/dashboard/jugadores/nuevo",
   DASHBOARD_STAFF_NEW: "/dashboard/jugadores/staff/nuevo",
@@ -28,6 +30,8 @@ export const ROUTES = {
   DASHBOARD_MATCHES_EDIT: (id: string) => `/dashboard/partidos/${id}`,
   DASHBOARD_TABLE_EDIT: (id: string) => `/dashboard/tabla/${id}`,
   DASHBOARD_TOURNAMENTS_EDIT: (id: string) => `/dashboard/torneos/${id}`,
+  DASHBOARD_ORGANIZATIONS_EDIT: (id: string) =>
+    `/dashboard/organizadores/${id}`,
   DASHBOARD_PLAYERS_EDIT: (id: string) => `/dashboard/jugadores/${id}`,
   DASHBOARD_STAFF_EDIT: (id: string) => `/dashboard/jugadores/staff/${id}`,
 };

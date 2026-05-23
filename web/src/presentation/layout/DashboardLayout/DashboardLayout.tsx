@@ -6,6 +6,7 @@ import {
   FiBarChart2,
   FiCalendar,
   FiFileText,
+  FiFlag,
   FiUsers,
 } from "react-icons/fi";
 
@@ -77,6 +78,20 @@ const DashboardLayout = () => {
               >
                 <FiUsers className="size-4" aria-hidden="true" />
                 <span>Plantel</span>
+              </NavLink>
+
+              <NavLink
+                to={ROUTES.DASHBOARD_ORGANIZATIONS}
+                className={({ isActive }) =>
+                  `flex min-h-11 items-center gap-3 rounded-[3px] border px-3 py-2.5 text-sm font-semibold transition ${
+                    isActive
+                      ? "border-violet-300/35 bg-violet-500/15 text-white"
+                      : "border-transparent text-violet-100/75 hover:border-white/10 hover:bg-white/4.5 hover:text-white"
+                  }`
+                }
+              >
+                <FiFlag className="size-4" aria-hidden="true" />
+                <span>Organizadores</span>
               </NavLink>
 
               <NavLink
