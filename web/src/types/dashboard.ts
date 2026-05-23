@@ -412,3 +412,113 @@ export type DashboardTableDraftMutationInput =
   Partial<Omit<DashboardTableMutationInput, "rows">> & {
     rows?: DashboardTableRowDraftMutationInput[];
   };
+
+export type DashboardTournamentParticipantStatus =
+  | "active"
+  | "replaced"
+  | "withdrawn";
+
+export type DashboardTournamentReferenceCounts = {
+  matches: number;
+  tables: number;
+  snapshots: number;
+};
+
+export type DashboardTournamentParticipantItem = {
+  key?: string | null;
+  teamId?: string | null;
+  teamName?: string | null;
+  teamImageUrl?: string | null;
+  status?: DashboardTournamentParticipantStatus | string | null;
+  activeFromMatchday?: number | null;
+  activeUntilMatchday?: number | null;
+  notes?: string | null;
+};
+
+export type DashboardTournamentItem = {
+  id: string;
+  publishedId?: string | null;
+  draftId?: string | null;
+  status: DashboardDocumentStatus;
+  hasDraft: boolean;
+  hasPublishedVersion: boolean;
+  name: string;
+  organizationId?: string | null;
+  organizationName?: string | null;
+  organizationImageUrl?: string | null;
+  active?: boolean | null;
+  primaryPrizeSlots?: number | null;
+  secondaryPrizeSlots?: number | null;
+  updatedAt?: string | null;
+  participants: DashboardTournamentParticipantItem[];
+  referenceCounts: DashboardTournamentReferenceCounts;
+};
+
+export type DashboardTournamentOrganizationOption = {
+  id: string;
+  name: string;
+  imageUrl?: string | null;
+};
+
+export type DashboardTournamentTeamOption = {
+  id: string;
+  name: string;
+  isMain?: boolean;
+  imageUrl?: string | null;
+};
+
+export type DashboardTournamentOptions = {
+  organizations: DashboardTournamentOrganizationOption[];
+  teams: DashboardTournamentTeamOption[];
+};
+
+export type DashboardTournamentParticipantInput = {
+  key: string;
+  teamId: string;
+  status: DashboardTournamentParticipantStatus;
+  activeFromMatchday: string;
+  activeUntilMatchday: string;
+  notes: string;
+};
+
+export type DashboardTournamentInput = {
+  name: string;
+  organizationId: string;
+  active: boolean;
+  primaryPrizeSlots: string;
+  secondaryPrizeSlots: string;
+  participants: DashboardTournamentParticipantInput[];
+};
+
+export type DashboardTournamentParticipantMutationInput = {
+  key?: string;
+  teamId: string;
+  status: DashboardTournamentParticipantStatus;
+  activeFromMatchday?: number;
+  activeUntilMatchday?: number;
+  notes?: string;
+};
+
+export type DashboardTournamentParticipantDraftMutationInput = {
+  key?: string;
+  teamId?: string;
+  status?: DashboardTournamentParticipantStatus;
+  activeFromMatchday?: number;
+  activeUntilMatchday?: number;
+  notes?: string;
+};
+
+export type DashboardTournamentMutationInput = {
+  name: string;
+  organizationId: string;
+  active: boolean;
+  primaryPrizeSlots: number;
+  secondaryPrizeSlots: number;
+  participants: DashboardTournamentParticipantMutationInput[];
+};
+
+export type DashboardTournamentDraftMutationInput = Partial<
+  Omit<DashboardTournamentMutationInput, "participants">
+> & {
+  participants?: DashboardTournamentParticipantDraftMutationInput[];
+};
