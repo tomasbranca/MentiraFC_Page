@@ -7,6 +7,7 @@ describe("dashboard api dev middleware", () => {
     expect([...DASHBOARD_API_RESOURCES].sort()).toEqual([
       "matches",
       "news",
+      "organizations",
       "players",
       "staff",
       "table",

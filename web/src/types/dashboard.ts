@@ -44,6 +44,19 @@ export const DASHBOARD_STAFF_IMAGE_MAX_BYTES = 4 * 1024 * 1024;
 
 export const DASHBOARD_STAFF_IMAGE_MAX_MEGAPIXELS = 256;
 
+export const DASHBOARD_ORGANIZATION_IMAGE_ACCEPTED_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+] as const;
+
+export const DASHBOARD_ORGANIZATION_IMAGE_ACCEPTED_EXTENSIONS =
+  ".jpg,.jpeg,.png,.webp";
+
+export const DASHBOARD_ORGANIZATION_IMAGE_MAX_BYTES = 4 * 1024 * 1024;
+
+export const DASHBOARD_ORGANIZATION_IMAGE_MAX_MEGAPIXELS = 256;
+
 export type DashboardNewsStatus = "published" | "draft";
 
 export type DashboardNewsItem = {
@@ -201,6 +214,40 @@ export type DashboardStaffMutationInput = {
 
 export type DashboardStaffDraftMutationInput =
   Partial<DashboardStaffMutationInput>;
+
+export type DashboardOrganizationReferenceCounts = {
+  tournaments: number;
+};
+
+export type DashboardOrganizationItem = {
+  id: string;
+  publishedId?: string | null;
+  draftId?: string | null;
+  status: DashboardDocumentStatus;
+  hasDraft: boolean;
+  hasPublishedVersion: boolean;
+  name: string;
+  primaryColor?: string | null;
+  updatedAt?: string | null;
+  logoAssetId?: string | null;
+  logoUrl?: string | null;
+  referenceCounts: DashboardOrganizationReferenceCounts;
+};
+
+export type DashboardOrganizationInput = {
+  name: string;
+  primaryColor: string;
+};
+
+export type DashboardOrganizationMutationInput = {
+  name: string;
+  primaryColor?: string;
+  logoImage?: File | null;
+  removeLogo?: boolean;
+};
+
+export type DashboardOrganizationDraftMutationInput =
+  Partial<DashboardOrganizationMutationInput>;
 
 export type DashboardMatchState = "por_jugar" | "finalizado";
 

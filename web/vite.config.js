@@ -38,6 +38,7 @@ export const DASHBOARD_API_RESOURCES = new Set([
   "matches",
   "table",
   "tournaments",
+  "organizations",
   "players",
   "staff",
 ]);
