@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { FiEdit2, FiPlus, FiTrash2 } from "react-icons/fi";
@@ -15,7 +16,15 @@ import { confirmDashboardAction } from "../../app/confirmDialog";
 import ErrorFallback from "../../components/errors/ErrorFallback";
 import Loader from "../../components/Loader/Loader";
 import { ROUTES } from "../../../shared/routing";
+import DashboardListFilteredEmpty from "../../dashboard/DashboardListFilteredEmpty";
+import DashboardListFilters from "../../dashboard/DashboardListFilters";
+import { DASHBOARD_STATUS_FILTER_OPTIONS } from "../../dashboard/dashboardListFilters.utils";
 import { formatDateTime } from "../../utils/date.utils";
+import {
+  defaultDashboardNewsListFilters,
+  filterDashboardNewsList,
+  hasActiveDashboardNewsListFilters,
+} from "./dashboardNewsList.filters";
 
 const NewsThumbnail = ({ item }: { item: DashboardNewsItem }) => {
   const imageUrl = getImageUrl(item.imageUrl, {
@@ -135,6 +144,7 @@ const DeleteNewsButton = ({
 );
 
 const DashboardNewsList = () => {
+  const [filters, setFilters] = useState(defaultDashboardNewsListFilters);
   const queryClient = useQueryClient();
   const newsQuery = useQuery({
     queryKey: queryKeys.dashboard.news.all,
@@ -180,6 +190,18 @@ const DashboardNewsList = () => {
     }
   };
 
+  const allNews = newsQuery.data;
+  const news = useMemo(
+    () => filterDashboardNewsList(allNews ?? [], filters),
+    [allNews, filters]
+  );
+  const totalNews = allNews?.length ?? 0;
+  const hasActiveFilters = hasActiveDashboardNewsListFilters(filters);
+  const countLabel =
+    hasActiveFilters && news.length !== totalNews
+      ? `${news.length} de ${totalNews} noticias`
+      : `${totalNews} noticias`;
+
   if (newsQuery.isLoading) {
     return <Loader />;
   }
@@ -194,8 +216,6 @@ const DashboardNewsList = () => {
     );
   }
 
-  const news = newsQuery.data ?? [];
-
   return (
     <div>
       <header className="border-b border-white/10 bg-[#151518] p-4 sm:p-6">
@@ -207,7 +227,7 @@ const DashboardNewsList = () => {
             <div className="mt-3 flex flex-wrap items-end gap-2.5">
               <h2 className="text-3xl font-black text-white">Noticias</h2>
               <span className="rounded-[3px] border border-white/10 bg-white/[0.035] px-2.5 py-1.5 text-xs font-medium text-violet-100/70">
-                {news.length} noticias
+                {countLabel}
               </span>
             </div>
             <p className="mt-2 text-sm text-violet-100/65">
@@ -226,11 +246,44 @@ const DashboardNewsList = () => {
         </div>
       </header>
 
-      {news.length === 0 ? (
+      {totalNews === 0 ? (
         <div className="p-6 text-sm text-violet-100/75">
           Todavía no hay noticias ni borradores cargados.
         </div>
       ) : (
+        <>
+          <DashboardListFilters
+            searchId="dashboard-news-search"
+            searchLabel="Buscar noticias"
+            searchPlaceholder="Titulo, descripcion o slug..."
+            searchValue={filters.search}
+            onSearchChange={(search) =>
+              setFilters((current) => ({ ...current, search }))
+            }
+            selects={[
+              {
+                id: "dashboard-news-status",
+                label: "Estado",
+                value: filters.status,
+                onChange: (status) =>
+                  setFilters((current) => ({
+                    ...current,
+                    status: status as typeof filters.status,
+                  })),
+                options: DASHBOARD_STATUS_FILTER_OPTIONS,
+              },
+            ]}
+            showClear={hasActiveFilters}
+            onClear={() => setFilters(defaultDashboardNewsListFilters())}
+            filteredCount={news.length}
+            totalCount={totalNews}
+          />
+
+          {news.length === 0 ? (
+            <DashboardListFilteredEmpty
+              onClear={() => setFilters(defaultDashboardNewsListFilters())}
+            />
+          ) : (
         <div className="p-3 sm:p-5">
           <div className="overflow-hidden rounded-sm border border-white/10 bg-[#16161a]">
             <div className="divide-y divide-white/8 md:hidden">
@@ -339,6 +392,8 @@ const DashboardNewsList = () => {
             </table>
           </div>
         </div>
+          )}
+        </>
       )}
     </div>
   );

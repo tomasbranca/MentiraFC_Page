@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { FiEdit2, FiPlus, FiTrash2 } from "react-icons/fi";
@@ -15,10 +16,20 @@ import { ROUTES } from "../../../shared/routing";
 import { confirmDashboardAction } from "../../app/confirmDialog";
 import ErrorFallback from "../../components/errors/ErrorFallback";
 import Loader from "../../components/Loader/Loader";
+import DashboardListFilteredEmpty from "../../dashboard/DashboardListFilteredEmpty";
+import DashboardListFilters from "../../dashboard/DashboardListFilters";
+import { DASHBOARD_STATUS_FILTER_OPTIONS } from "../../dashboard/dashboardListFilters.utils";
 import { formatDateTime } from "../../utils/date.utils";
+import {
+  defaultDashboardMatchesListFilters,
+  filterDashboardMatchesList,
+  hasActiveDashboardMatchesListFilters,
+} from "./dashboardMatchesList.filters";
 import {
   getDashboardMatchCompetitionLabel,
   getDashboardMatchStateLabel,
+  MATCH_COMPETITION_OPTIONS,
+  MATCH_STATE_OPTIONS,
 } from "./dashboardMatches.utils";
 
 const MatchThumbnail = ({ item }: { item: DashboardMatchItem }) => {
@@ -161,6 +172,7 @@ const DeleteMatchButton = ({
 );
 
 const DashboardMatchesList = () => {
+  const [filters, setFilters] = useState(defaultDashboardMatchesListFilters);
   const queryClient = useQueryClient();
   const matchesQuery = useQuery({
     queryKey: queryKeys.dashboard.matches.all,
@@ -213,6 +225,18 @@ const DashboardMatchesList = () => {
     }
   };
 
+  const allMatches = matchesQuery.data;
+  const matches = useMemo(
+    () => filterDashboardMatchesList(allMatches ?? [], filters),
+    [allMatches, filters]
+  );
+  const totalMatches = allMatches?.length ?? 0;
+  const hasActiveFilters = hasActiveDashboardMatchesListFilters(filters);
+  const countLabel =
+    hasActiveFilters && matches.length !== totalMatches
+      ? `${matches.length} de ${totalMatches} partidos`
+      : `${totalMatches} partidos`;
+
   if (matchesQuery.isLoading) {
     return <Loader />;
   }
@@ -227,8 +251,6 @@ const DashboardMatchesList = () => {
     );
   }
 
-  const matches = matchesQuery.data ?? [];
-
   return (
     <div>
       <header className="border-b border-white/10 bg-[#151518] p-4 sm:p-6">
@@ -240,7 +262,7 @@ const DashboardMatchesList = () => {
             <div className="mt-3 flex flex-wrap items-end gap-2.5">
               <h2 className="text-3xl font-black text-white">Partidos</h2>
               <span className="rounded-[3px] border border-white/10 bg-white/[0.035] px-2.5 py-1.5 text-xs font-medium text-violet-100/70">
-                {matches.length} partidos
+                {countLabel}
               </span>
             </div>
             <p className="mt-2 text-sm text-violet-100/65">
@@ -259,11 +281,72 @@ const DashboardMatchesList = () => {
         </div>
       </header>
 
-      {matches.length === 0 ? (
+      {totalMatches === 0 ? (
         <div className="p-6 text-sm text-violet-100/75">
           Todavia no hay partidos ni borradores cargados.
         </div>
       ) : (
+        <>
+          <DashboardListFilters
+            searchId="dashboard-matches-search"
+            searchLabel="Buscar partidos"
+            searchPlaceholder="Rival, torneo, sede o resultado..."
+            searchValue={filters.search}
+            onSearchChange={(search) =>
+              setFilters((current) => ({ ...current, search }))
+            }
+            selects={[
+              {
+                id: "dashboard-matches-status",
+                label: "Publicacion",
+                value: filters.status,
+                onChange: (status) =>
+                  setFilters((current) => ({
+                    ...current,
+                    status: status as typeof filters.status,
+                  })),
+                options: DASHBOARD_STATUS_FILTER_OPTIONS,
+              },
+              {
+                id: "dashboard-matches-state",
+                label: "Estado del partido",
+                value: filters.state,
+                onChange: (state) =>
+                  setFilters((current) => ({
+                    ...current,
+                    state: state as typeof filters.state,
+                  })),
+                options: [
+                  { value: "all", label: "Todos" },
+                  ...MATCH_STATE_OPTIONS,
+                ],
+              },
+              {
+                id: "dashboard-matches-competition",
+                label: "Competencia",
+                value: filters.competition,
+                onChange: (competition) =>
+                  setFilters((current) => ({
+                    ...current,
+                    competition: competition as typeof filters.competition,
+                  })),
+                options: [
+                  { value: "all", label: "Todas" },
+                  ...MATCH_COMPETITION_OPTIONS,
+                ],
+              },
+            ]}
+            showClear={hasActiveFilters}
+            onClear={() => setFilters(defaultDashboardMatchesListFilters())}
+            filteredCount={matches.length}
+            totalCount={totalMatches}
+          />
+
+          {matches.length === 0 ? (
+            <DashboardListFilteredEmpty
+              onClear={() => setFilters(defaultDashboardMatchesListFilters())}
+            />
+          ) : (
         <div className="p-3 sm:p-5">
           <div className="overflow-hidden rounded-sm border border-white/10 bg-[#16161a]">
             <div className="divide-y divide-white/8 md:hidden">
@@ -273,7 +356,7 @@ const DashboardMatchesList = () => {
                     <p className="min-w-0 truncate text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-violet-100/50">
                       {getMatchDateLabel(item)}
                     </p>
-                    <p className="shrink-0 text-[0.58rem] font-semibold uppercase tracking-[0.1em] text-violet-100/45">
+                    <p className="shrink-0 text-[0.58rem] font-semibold uppercase tracking-widest text-violet-100/45">
                       {getDashboardMatchStateLabel(item.state)}
                     </p>
                   </div>
@@ -388,6 +471,8 @@ const DashboardMatchesList = () => {
             </table>
           </div>
         </div>
+          )}
+        </>
       )}
     </div>
   );

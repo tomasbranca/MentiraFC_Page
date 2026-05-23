@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { FiBarChart2, FiEdit2, FiPlus, FiTrash2 } from "react-icons/fi";
@@ -15,7 +16,15 @@ import type { DashboardTableItem } from "../../../types/dashboard";
 import { confirmDashboardAction } from "../../app/confirmDialog";
 import ErrorFallback from "../../components/errors/ErrorFallback";
 import Loader from "../../components/Loader/Loader";
+import DashboardListFilteredEmpty from "../../dashboard/DashboardListFilteredEmpty";
+import DashboardListFilters from "../../dashboard/DashboardListFilters";
+import { DASHBOARD_STATUS_FILTER_OPTIONS } from "../../dashboard/dashboardListFilters.utils";
 import { formatDateTime } from "../../utils/date.utils";
+import {
+  defaultDashboardTableListFilters,
+  filterDashboardTableList,
+  hasActiveDashboardTableListFilters,
+} from "./dashboardTableList.filters";
 
 const TableThumbnail = ({ item }: { item: DashboardTableItem }) => {
   const imageUrl = getImageUrl(item.tournamentImageUrl, {
@@ -130,6 +139,7 @@ const DeleteTableButton = ({
 );
 
 const DashboardTableList = () => {
+  const [filters, setFilters] = useState(defaultDashboardTableListFilters);
   const queryClient = useQueryClient();
   const tablesQuery = useQuery({
     queryKey: queryKeys.dashboard.table.all,
@@ -179,6 +189,18 @@ const DashboardTableList = () => {
     }
   };
 
+  const allTables = tablesQuery.data;
+  const tables = useMemo(
+    () => filterDashboardTableList(allTables ?? [], filters),
+    [allTables, filters]
+  );
+  const totalTables = allTables?.length ?? 0;
+  const hasActiveFilters = hasActiveDashboardTableListFilters(filters);
+  const countLabel =
+    hasActiveFilters && tables.length !== totalTables
+      ? `${tables.length} de ${totalTables} actuales`
+      : `${totalTables} actuales`;
+
   if (tablesQuery.isLoading) {
     return <Loader />;
   }
@@ -193,8 +215,6 @@ const DashboardTableList = () => {
     );
   }
 
-  const tables = tablesQuery.data ?? [];
-
   return (
     <div>
       <header className="border-b border-white/10 bg-[#151518] p-4 sm:p-6">
@@ -206,7 +226,7 @@ const DashboardTableList = () => {
             <div className="mt-3 flex flex-wrap items-end gap-2.5">
               <h2 className="text-3xl font-black text-white">Tabla</h2>
               <span className="rounded-[3px] border border-white/10 bg-white/[0.035] px-2.5 py-1.5 text-xs font-medium text-violet-100/70">
-                {tables.length} actuales
+                {countLabel}
               </span>
             </div>
             <p className="mt-2 text-sm text-violet-100/65">
@@ -226,11 +246,44 @@ const DashboardTableList = () => {
         </div>
       </header>
 
-      {tables.length === 0 ? (
+      {totalTables === 0 ? (
         <div className="p-6 text-sm text-violet-100/75">
           Todavia no hay tablas actuales ni borradores cargados.
         </div>
       ) : (
+        <>
+          <DashboardListFilters
+            searchId="dashboard-table-search"
+            searchLabel="Buscar tablas"
+            searchPlaceholder="Torneo, fecha o etiqueta..."
+            searchValue={filters.search}
+            onSearchChange={(search) =>
+              setFilters((current) => ({ ...current, search }))
+            }
+            selects={[
+              {
+                id: "dashboard-table-status",
+                label: "Estado",
+                value: filters.status,
+                onChange: (status) =>
+                  setFilters((current) => ({
+                    ...current,
+                    status: status as typeof filters.status,
+                  })),
+                options: DASHBOARD_STATUS_FILTER_OPTIONS,
+              },
+            ]}
+            showClear={hasActiveFilters}
+            onClear={() => setFilters(defaultDashboardTableListFilters())}
+            filteredCount={tables.length}
+            totalCount={totalTables}
+          />
+
+          {tables.length === 0 ? (
+            <DashboardListFilteredEmpty
+              onClear={() => setFilters(defaultDashboardTableListFilters())}
+            />
+          ) : (
         <div className="p-3 sm:p-5">
           <div className="overflow-hidden rounded-sm border border-white/10 bg-[#16161a]">
             <div className="divide-y divide-white/8 md:hidden">
@@ -240,7 +293,7 @@ const DashboardTableList = () => {
                     <p className="min-w-0 truncate text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-violet-100/50">
                       {getTableDateLabel(item)}
                     </p>
-                    <p className="shrink-0 text-[0.58rem] font-semibold uppercase tracking-[0.1em] text-violet-100/45">
+                    <p className="shrink-0 text-[0.58rem] font-semibold uppercase tracking-widest text-violet-100/45">
                       {item.rows.length} filas
                     </p>
                   </div>
@@ -346,6 +399,8 @@ const DashboardTableList = () => {
             </table>
           </div>
         </div>
+          )}
+        </>
       )}
     </div>
   );

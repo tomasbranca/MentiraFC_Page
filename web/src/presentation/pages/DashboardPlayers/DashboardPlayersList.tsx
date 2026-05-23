@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { FaUserTie } from "react-icons/fa";
@@ -24,8 +25,20 @@ import type {
 import { confirmDashboardAction } from "../../app/confirmDialog";
 import ErrorFallback from "../../components/errors/ErrorFallback";
 import Loader from "../../components/Loader/Loader";
+import DashboardListFilteredEmpty from "../../dashboard/DashboardListFilteredEmpty";
+import DashboardListFilters from "../../dashboard/DashboardListFilters";
+import { DASHBOARD_STATUS_FILTER_OPTIONS } from "../../dashboard/dashboardListFilters.utils";
 import { formatDate } from "../../utils/date.utils";
-import { getDashboardPlayerPositionLabel } from "./dashboardPlayers.utils";
+import {
+  defaultDashboardPlayersListFilters,
+  filterDashboardPlayersList,
+  filterDashboardStaffList,
+  hasActiveDashboardPlayersListFilters,
+} from "./dashboardPlayersList.filters";
+import {
+  getDashboardPlayerPositionLabel,
+  PLAYER_POSITION_OPTIONS,
+} from "./dashboardPlayers.utils";
 import { getDashboardStaffRoleLabel } from "./dashboardStaff.utils";
 
 const thumbnailClassName =
@@ -196,6 +209,7 @@ const SectionTitle = ({ title, count }: { title: string; count: number }) => (
 );
 
 const DashboardPlayersList = () => {
+  const [filters, setFilters] = useState(defaultDashboardPlayersListFilters);
   const queryClient = useQueryClient();
   const playersQuery = useQuery({
     queryKey: queryKeys.dashboard.players.all,
@@ -293,6 +307,30 @@ const DashboardPlayersList = () => {
     }
   };
 
+  const allPlayers = playersQuery.data;
+  const allStaff = staffQuery.data;
+  const players = useMemo(
+    () => filterDashboardPlayersList(allPlayers ?? [], filters),
+    [allPlayers, filters]
+  );
+  const staff = useMemo(
+    () =>
+      filterDashboardStaffList(allStaff ?? [], {
+        search: filters.search,
+        status: filters.status,
+      }),
+    [allStaff, filters.search, filters.status]
+  );
+  const totalPlayers = allPlayers?.length ?? 0;
+  const totalStaff = allStaff?.length ?? 0;
+  const totalMembers = totalPlayers + totalStaff;
+  const filteredMembers = players.length + staff.length;
+  const hasActiveFilters = hasActiveDashboardPlayersListFilters(filters);
+  const countLabel =
+    hasActiveFilters && filteredMembers !== totalMembers
+      ? `${filteredMembers} de ${totalMembers} integrantes`
+      : `${totalMembers} integrantes`;
+
   if (playersQuery.isLoading || staffQuery.isLoading) {
     return <Loader />;
   }
@@ -310,10 +348,6 @@ const DashboardPlayersList = () => {
     );
   }
 
-  const players = playersQuery.data ?? [];
-  const staff = staffQuery.data ?? [];
-  const totalMembers = players.length + staff.length;
-
   return (
     <div>
       <header className="border-b border-white/10 bg-[#151518] p-4 sm:p-6">
@@ -325,7 +359,7 @@ const DashboardPlayersList = () => {
             <div className="mt-3 flex flex-wrap items-end gap-2.5">
               <h2 className="text-3xl font-black text-white">Plantel</h2>
               <span className="rounded-[3px] border border-white/10 bg-white/[0.035] px-2.5 py-1.5 text-xs font-medium text-violet-100/70">
-                {totalMembers} integrantes
+                {countLabel}
               </span>
             </div>
             <p className="mt-2 text-sm text-violet-100/65">
@@ -359,13 +393,64 @@ const DashboardPlayersList = () => {
           Todavia no hay integrantes del plantel ni borradores cargados.
         </div>
       ) : (
+        <>
+          <DashboardListFilters
+            searchId="dashboard-players-search"
+            searchLabel="Buscar integrantes"
+            searchPlaceholder="Nombre, numero, posicion o rol..."
+            searchValue={filters.search}
+            onSearchChange={(search) =>
+              setFilters((current) => ({ ...current, search }))
+            }
+            selects={[
+              {
+                id: "dashboard-players-status",
+                label: "Estado",
+                value: filters.status,
+                onChange: (status) =>
+                  setFilters((current) => ({
+                    ...current,
+                    status: status as typeof filters.status,
+                  })),
+                options: DASHBOARD_STATUS_FILTER_OPTIONS,
+              },
+              {
+                id: "dashboard-players-position",
+                label: "Posicion (jugadores)",
+                value: filters.position,
+                onChange: (position) =>
+                  setFilters((current) => ({
+                    ...current,
+                    position: position as typeof filters.position,
+                  })),
+                options: [
+                  { value: "all", label: "Todas" },
+                  ...PLAYER_POSITION_OPTIONS,
+                ],
+              },
+            ]}
+            showClear={hasActiveFilters}
+            onClear={() => setFilters(defaultDashboardPlayersListFilters())}
+            filteredCount={filteredMembers}
+            totalCount={totalMembers}
+          />
+
+          {filteredMembers === 0 ? (
+            <DashboardListFilteredEmpty
+              onClear={() => setFilters(defaultDashboardPlayersListFilters())}
+            />
+          ) : (
         <div className="space-y-5 p-3 sm:p-5">
           <section className="overflow-hidden rounded-sm border border-white/10 bg-[#16161a]">
             <SectionTitle title="Jugadores" count={players.length} />
 
-            {players.length === 0 ? (
+            {totalPlayers === 0 ? (
               <div className="p-5 text-sm text-violet-100/75">
                 Todavia no hay jugadores ni borradores cargados.
+              </div>
+            ) : players.length === 0 ? (
+              <div className="p-5 text-sm text-violet-100/75">
+                Ningun jugador coincide con los filtros aplicados.
               </div>
             ) : (
               <>
@@ -492,10 +577,15 @@ const DashboardPlayersList = () => {
           <section className="overflow-hidden rounded-sm border border-white/10 bg-[#16161a]">
             <SectionTitle title="Cuerpo tecnico" count={staff.length} />
 
-            {staff.length === 0 ? (
+            {totalStaff === 0 ? (
               <div className="p-5 text-sm text-violet-100/75">
                 Todavia no hay integrantes del cuerpo tecnico ni borradores
                 cargados.
+              </div>
+            ) : staff.length === 0 ? (
+              <div className="p-5 text-sm text-violet-100/75">
+                Ningun integrante del cuerpo tecnico coincide con los filtros
+                aplicados.
               </div>
             ) : (
               <>
@@ -619,6 +709,8 @@ const DashboardPlayersList = () => {
             )}
           </section>
         </div>
+          )}
+        </>
       )}
     </div>
   );
