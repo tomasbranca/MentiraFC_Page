@@ -43,6 +43,20 @@ export const DASHBOARD_API_RESOURCES = new Set([
   "staff",
 ]);
 
+export const createSentryReleaseConfig = ({
+  name,
+  setCommits = false,
+}) => ({
+  name,
+  ...(setCommits
+    ? {
+        setCommits: {
+          auto: true,
+        },
+      }
+    : {}),
+});
+
 const createDashboardApiDevPlugin = (env) => ({
   name: "dashboard-api-dev",
   configureServer(server) {
@@ -125,6 +139,7 @@ export default defineConfig(({ mode }) => {
   const sentryOrg = env.SENTRY_ORG || "tomas-brancatisano";
   const sentryProject = env.SENTRY_PROJECT || "mentira-fc";
   const sentryRelease = env.SENTRY_RELEASE || env.VERCEL_GIT_COMMIT_SHA;
+  const shouldSetSentryReleaseCommits = isEnabled(env.SENTRY_SET_COMMITS);
   const shouldUploadSentrySourcemaps = Boolean(
     env.SENTRY_AUTH_TOKEN &&
       sentryOrg &&
@@ -145,12 +160,10 @@ export default defineConfig(({ mode }) => {
               org: sentryOrg,
               project: sentryProject,
               authToken: env.SENTRY_AUTH_TOKEN,
-              release: {
+              release: createSentryReleaseConfig({
                 name: sentryRelease,
-                setCommits: {
-                  auto: true,
-                },
-              },
+                setCommits: shouldSetSentryReleaseCommits,
+              }),
               sourcemaps: {
                 assets: "./dist/assets/**",
                 filesToDeleteAfterUpload: "./dist/**/*.map",
