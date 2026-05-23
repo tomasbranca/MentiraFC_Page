@@ -87,10 +87,7 @@ const createDashboardApiDevPlugin = (env) => ({
           `/api/dashboard${normalizedRelativePath}`,
           "http://localhost"
         );
-        const routeModulePath =
-          pathParts.length <= 1
-            ? `/api/dashboard/${resource}/index.ts`
-            : `/api/dashboard/${resource}/[id].ts`;
+        const routeModulePath = `/api/dashboard/${resource}/index.ts`;
         const routeModule = await server.ssrLoadModule(routeModulePath);
         const routeHandler =
           routeModule.default?.fetch ?? routeModule.default;

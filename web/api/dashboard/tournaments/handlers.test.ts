@@ -1,12 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import dashboardTournamentRoute from "./index.js";
-import dashboardTournamentByIdRoute from "./[id].js";
 
 describe("dashboard tournaments api handlers", () => {
   it("exporta handlers compatibles con el runtime Web de Vercel", () => {
     expect(dashboardTournamentRoute.fetch).toBeTypeOf("function");
-    expect(dashboardTournamentByIdRoute.fetch).toBeTypeOf("function");
   });
 
   it("responde JSON cuando falta autorizacion", async () => {
