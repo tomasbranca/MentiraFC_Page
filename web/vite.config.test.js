@@ -10,6 +10,7 @@ describe("dashboard api dev middleware", () => {
       "players",
       "staff",
       "table",
+      "tournaments",
     ]);
   });
 });
