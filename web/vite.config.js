@@ -33,7 +33,12 @@ const writeWebResponse = async (response, nodeResponse) => {
   nodeResponse.end(body);
 };
 
-const DASHBOARD_API_RESOURCES = new Set(["news", "matches", "players"]);
+export const DASHBOARD_API_RESOURCES = new Set([
+  "news",
+  "matches",
+  "players",
+  "staff",
+]);
 
 const createDashboardApiDevPlugin = (env) => ({
   name: "dashboard-api-dev",

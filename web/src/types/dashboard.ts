@@ -31,6 +31,19 @@ export const DASHBOARD_PLAYER_IMAGE_MAX_BYTES = 4 * 1024 * 1024;
 
 export const DASHBOARD_PLAYER_IMAGE_MAX_MEGAPIXELS = 256;
 
+export const DASHBOARD_STAFF_IMAGE_ACCEPTED_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+] as const;
+
+export const DASHBOARD_STAFF_IMAGE_ACCEPTED_EXTENSIONS =
+  ".jpg,.jpeg,.png,.webp";
+
+export const DASHBOARD_STAFF_IMAGE_MAX_BYTES = 4 * 1024 * 1024;
+
+export const DASHBOARD_STAFF_IMAGE_MAX_MEGAPIXELS = 256;
+
 export type DashboardNewsStatus = "published" | "draft";
 
 export type DashboardNewsItem = {
@@ -151,6 +164,43 @@ export type DashboardPlayerMutationInput = {
 
 export type DashboardPlayerDraftMutationInput =
   Partial<DashboardPlayerMutationInput>;
+
+export type DashboardStaffItem = {
+  id: string;
+  publishedId?: string | null;
+  draftId?: string | null;
+  status: DashboardDocumentStatus;
+  hasDraft: boolean;
+  hasPublishedVersion: boolean;
+  name: string;
+  lastName: string;
+  fullName: string;
+  role?: string | null;
+  birthDate?: string | null;
+  updatedAt?: string | null;
+  slug: string;
+  imageAssetId?: string | null;
+  imageUrl?: string | null;
+};
+
+export type DashboardStaffInput = {
+  name: string;
+  lastName: string;
+  role: string;
+  birthDate: string;
+};
+
+export type DashboardStaffMutationInput = {
+  name: string;
+  lastName: string;
+  role: string;
+  birthDate?: string;
+  photoImage?: File | null;
+  removePhoto?: boolean;
+};
+
+export type DashboardStaffDraftMutationInput =
+  Partial<DashboardStaffMutationInput>;
 
 export type DashboardMatchState = "por_jugar" | "finalizado";
 
