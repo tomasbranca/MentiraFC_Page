@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { FiEdit2, FiFlag, FiPlus, FiTrash2 } from "react-icons/fi";
@@ -15,7 +16,15 @@ import type { DashboardOrganizationItem } from "../../../types/dashboard";
 import { confirmDashboardAction } from "../../app/confirmDialog";
 import ErrorFallback from "../../components/errors/ErrorFallback";
 import Loader from "../../components/Loader/Loader";
+import DashboardListFilteredEmpty from "../../dashboard/DashboardListFilteredEmpty";
+import DashboardListFilters from "../../dashboard/DashboardListFilters";
+import { DASHBOARD_STATUS_FILTER_OPTIONS } from "../../dashboard/dashboardListFilters.utils";
 import { formatDateTime } from "../../utils/date.utils";
+import {
+  defaultDashboardOrganizationsListFilters,
+  filterDashboardOrganizationsList,
+  hasActiveDashboardOrganizationsListFilters,
+} from "./dashboardOrganizationsList.filters";
 import {
   getOrganizationColorLabel,
   getOrganizationReferenceCount,
@@ -154,6 +163,7 @@ const DeleteOrganizationButton = ({
 };
 
 const DashboardOrganizationsList = () => {
+  const [filters, setFilters] = useState(defaultDashboardOrganizationsListFilters);
   const queryClient = useQueryClient();
   const organizationsQuery = useQuery({
     queryKey: queryKeys.dashboard.organizations.all,
@@ -206,6 +216,18 @@ const DashboardOrganizationsList = () => {
     }
   };
 
+  const allOrganizations = organizationsQuery.data;
+  const organizations = useMemo(
+    () => filterDashboardOrganizationsList(allOrganizations ?? [], filters),
+    [allOrganizations, filters]
+  );
+  const totalOrganizations = allOrganizations?.length ?? 0;
+  const hasActiveFilters = hasActiveDashboardOrganizationsListFilters(filters);
+  const countLabel =
+    hasActiveFilters && organizations.length !== totalOrganizations
+      ? `${organizations.length} de ${totalOrganizations} cargados`
+      : `${totalOrganizations} cargados`;
+
   if (organizationsQuery.isLoading) {
     return <Loader />;
   }
@@ -220,8 +242,6 @@ const DashboardOrganizationsList = () => {
     );
   }
 
-  const organizations = organizationsQuery.data ?? [];
-
   return (
     <div>
       <header className="border-b border-white/10 bg-[#151518] p-4 sm:p-6">
@@ -235,7 +255,7 @@ const DashboardOrganizationsList = () => {
                 Organizadores
               </h2>
               <span className="rounded-[3px] border border-white/10 bg-white/[0.035] px-2.5 py-1.5 text-xs font-medium text-violet-100/70">
-                {organizations.length} cargados
+                {countLabel}
               </span>
             </div>
             <p className="mt-2 text-sm text-violet-100/65">
@@ -254,11 +274,61 @@ const DashboardOrganizationsList = () => {
         </div>
       </header>
 
-      {organizations.length === 0 ? (
+      {totalOrganizations === 0 ? (
         <div className="p-6 text-sm text-violet-100/75">
           Todavia no hay organizadores ni borradores cargados.
         </div>
       ) : (
+        <>
+          <DashboardListFilters
+            searchId="dashboard-organizations-search"
+            searchLabel="Buscar organizadores"
+            searchPlaceholder="Nombre o color..."
+            searchValue={filters.search}
+            onSearchChange={(search) =>
+              setFilters((current) => ({ ...current, search }))
+            }
+            selects={[
+              {
+                id: "dashboard-organizations-status",
+                label: "Estado",
+                value: filters.status,
+                onChange: (status) =>
+                  setFilters((current) => ({
+                    ...current,
+                    status: status as typeof filters.status,
+                  })),
+                options: DASHBOARD_STATUS_FILTER_OPTIONS,
+              },
+              {
+                id: "dashboard-organizations-usage",
+                label: "Uso en torneos",
+                value: filters.usage,
+                onChange: (usage) =>
+                  setFilters((current) => ({
+                    ...current,
+                    usage: usage as typeof filters.usage,
+                  })),
+                options: [
+                  { value: "all", label: "Todos" },
+                  { value: "with_references", label: "Con torneos" },
+                  { value: "without_references", label: "Sin torneos" },
+                ],
+              },
+            ]}
+            showClear={hasActiveFilters}
+            onClear={() => setFilters(defaultDashboardOrganizationsListFilters())}
+            filteredCount={organizations.length}
+            totalCount={totalOrganizations}
+          />
+
+          {organizations.length === 0 ? (
+            <DashboardListFilteredEmpty
+              onClear={() =>
+                setFilters(defaultDashboardOrganizationsListFilters())
+              }
+            />
+          ) : (
         <div className="p-3 sm:p-5">
           <div className="overflow-hidden rounded-sm border border-white/10 bg-[#16161a]">
             <div className="divide-y divide-white/8 md:hidden">
@@ -268,7 +338,7 @@ const DashboardOrganizationsList = () => {
                     <p className="min-w-0 truncate text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-violet-100/50">
                       {getOrganizationDateLabel(item)}
                     </p>
-                    <p className="shrink-0 text-[0.58rem] font-semibold uppercase tracking-[0.1em] text-violet-100/45">
+                    <p className="shrink-0 text-[0.58rem] font-semibold uppercase tracking-widest text-violet-100/45">
                       {getOrganizationReferenceCount(item.referenceCounts)} usos
                     </p>
                   </div>
@@ -372,6 +442,8 @@ const DashboardOrganizationsList = () => {
             </table>
           </div>
         </div>
+          )}
+        </>
       )}
     </div>
   );

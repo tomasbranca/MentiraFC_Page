@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { FiAward, FiEdit2, FiPlus, FiTrash2 } from "react-icons/fi";
@@ -15,7 +16,15 @@ import type { DashboardTournamentItem } from "../../../types/dashboard";
 import { confirmDashboardAction } from "../../app/confirmDialog";
 import ErrorFallback from "../../components/errors/ErrorFallback";
 import Loader from "../../components/Loader/Loader";
+import DashboardListFilteredEmpty from "../../dashboard/DashboardListFilteredEmpty";
+import DashboardListFilters from "../../dashboard/DashboardListFilters";
+import { DASHBOARD_STATUS_FILTER_OPTIONS } from "../../dashboard/dashboardListFilters.utils";
 import { formatDateTime } from "../../utils/date.utils";
+import {
+  defaultDashboardTournamentsListFilters,
+  filterDashboardTournamentsList,
+  hasActiveDashboardTournamentsListFilters,
+} from "./dashboardTournamentsList.filters";
 import { getTournamentReferenceCount } from "./dashboardTournaments.utils";
 
 const TournamentThumbnail = ({ item }: { item: DashboardTournamentItem }) => {
@@ -148,6 +157,7 @@ const DeleteTournamentButton = ({
 };
 
 const DashboardTournamentsList = () => {
+  const [filters, setFilters] = useState(defaultDashboardTournamentsListFilters);
   const queryClient = useQueryClient();
   const tournamentsQuery = useQuery({
     queryKey: queryKeys.dashboard.tournaments.all,
@@ -204,6 +214,18 @@ const DashboardTournamentsList = () => {
     }
   };
 
+  const allTournaments = tournamentsQuery.data;
+  const tournaments = useMemo(
+    () => filterDashboardTournamentsList(allTournaments ?? [], filters),
+    [allTournaments, filters]
+  );
+  const totalTournaments = allTournaments?.length ?? 0;
+  const hasActiveFilters = hasActiveDashboardTournamentsListFilters(filters);
+  const countLabel =
+    hasActiveFilters && tournaments.length !== totalTournaments
+      ? `${tournaments.length} de ${totalTournaments} cargados`
+      : `${totalTournaments} cargados`;
+
   if (tournamentsQuery.isLoading) {
     return <Loader />;
   }
@@ -218,8 +240,6 @@ const DashboardTournamentsList = () => {
     );
   }
 
-  const tournaments = tournamentsQuery.data ?? [];
-
   return (
     <div>
       <header className="border-b border-white/10 bg-[#151518] p-4 sm:p-6">
@@ -231,7 +251,7 @@ const DashboardTournamentsList = () => {
             <div className="mt-3 flex flex-wrap items-end gap-2.5">
               <h2 className="text-3xl font-black text-white">Torneos</h2>
               <span className="rounded-[3px] border border-white/10 bg-white/[0.035] px-2.5 py-1.5 text-xs font-medium text-violet-100/70">
-                {tournaments.length} cargados
+                {countLabel}
               </span>
             </div>
             <p className="mt-2 text-sm text-violet-100/65">
@@ -251,11 +271,59 @@ const DashboardTournamentsList = () => {
         </div>
       </header>
 
-      {tournaments.length === 0 ? (
+      {totalTournaments === 0 ? (
         <div className="p-6 text-sm text-violet-100/75">
           Todavia no hay torneos ni borradores cargados.
         </div>
       ) : (
+        <>
+          <DashboardListFilters
+            searchId="dashboard-tournaments-search"
+            searchLabel="Buscar torneos"
+            searchPlaceholder="Organizador, nombre o participantes..."
+            searchValue={filters.search}
+            onSearchChange={(search) =>
+              setFilters((current) => ({ ...current, search }))
+            }
+            selects={[
+              {
+                id: "dashboard-tournaments-status",
+                label: "Estado",
+                value: filters.status,
+                onChange: (status) =>
+                  setFilters((current) => ({
+                    ...current,
+                    status: status as typeof filters.status,
+                  })),
+                options: DASHBOARD_STATUS_FILTER_OPTIONS,
+              },
+              {
+                id: "dashboard-tournaments-active",
+                label: "Vigencia",
+                value: filters.active,
+                onChange: (active) =>
+                  setFilters((current) => ({
+                    ...current,
+                    active: active as typeof filters.active,
+                  })),
+                options: [
+                  { value: "all", label: "Todos" },
+                  { value: "active", label: "Activos" },
+                  { value: "inactive", label: "Inactivos" },
+                ],
+              },
+            ]}
+            showClear={hasActiveFilters}
+            onClear={() => setFilters(defaultDashboardTournamentsListFilters())}
+            filteredCount={tournaments.length}
+            totalCount={totalTournaments}
+          />
+
+          {tournaments.length === 0 ? (
+            <DashboardListFilteredEmpty
+              onClear={() => setFilters(defaultDashboardTournamentsListFilters())}
+            />
+          ) : (
         <div className="p-3 sm:p-5">
           <div className="overflow-hidden rounded-sm border border-white/10 bg-[#16161a]">
             <div className="divide-y divide-white/8 md:hidden">
@@ -265,7 +333,7 @@ const DashboardTournamentsList = () => {
                     <p className="min-w-0 truncate text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-violet-100/50">
                       {getTournamentDateLabel(item)}
                     </p>
-                    <p className="shrink-0 text-[0.58rem] font-semibold uppercase tracking-[0.1em] text-violet-100/45">
+                    <p className="shrink-0 text-[0.58rem] font-semibold uppercase tracking-widest text-violet-100/45">
                       {item.participants.length} equipos
                     </p>
                   </div>
@@ -372,6 +440,8 @@ const DashboardTournamentsList = () => {
             </table>
           </div>
         </div>
+          )}
+        </>
       )}
     </div>
   );
