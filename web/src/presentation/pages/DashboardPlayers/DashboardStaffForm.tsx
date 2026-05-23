@@ -577,10 +577,10 @@ const DashboardStaffForm = () => {
                 <img
                   src={photoPreviewSrc}
                   alt={`Foto de ${displayName}`}
-                  className="aspect-[4/5] w-full object-cover object-top"
+                  className="aspect-4/5 w-full object-cover object-top"
                 />
               ) : (
-                <div className="flex aspect-[4/5] w-full items-center justify-center bg-[#0f0f13] text-center text-xs font-black uppercase tracking-[0.2em] text-violet-100/45">
+                <div className="flex aspect-4/5 w-full items-center justify-center bg-[#0f0f13] text-center text-xs font-black uppercase tracking-[0.2em] text-violet-100/45">
                   Sin foto
                 </div>
               )}

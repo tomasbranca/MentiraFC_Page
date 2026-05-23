@@ -1,7 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
-import { FiEdit2, FiPlus, FiTrash2, FiUserPlus } from "react-icons/fi";
+import { FaUserTie } from "react-icons/fa";
+import { GiSoccerBall } from "react-icons/gi";
+import { FiEdit2, FiTrash2 } from "react-icons/fi";
 
 import {
   deleteDashboardPlayer,
@@ -182,33 +184,14 @@ const DeleteStaffButton = ({
   </button>
 );
 
-const SectionTitle = ({
-  title,
-  count,
-  addHref,
-  addLabel,
-}: {
-  title: string;
-  count: number;
-  addHref: string;
-  addLabel: string;
-}) => (
-  <div className="flex flex-col gap-3 border-b border-white/10 bg-white/[0.025] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-    <div className="flex flex-wrap items-center gap-2.5">
-      <h3 className="text-base font-black uppercase tracking-wide text-white">
-        {title}
-      </h3>
-      <span className="rounded-[3px] border border-white/10 bg-black/15 px-2.5 py-1 text-xs font-medium text-violet-100/70">
-        {count}
-      </span>
-    </div>
-    <Link
-      to={addHref}
-      className="inline-flex min-h-10 w-fit items-center justify-center gap-2 rounded-[3px] border border-violet-200/25 bg-violet-100 px-3.5 py-2 text-sm font-semibold text-violet-950 transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/40"
-    >
-      <FiUserPlus className="size-4" aria-hidden="true" />
-      {addLabel}
-    </Link>
+const SectionTitle = ({ title, count }: { title: string; count: number }) => (
+  <div className="flex flex-wrap items-center gap-2.5 border-b border-white/10 bg-white/2.5 px-4 py-3">
+    <h3 className="text-base font-black uppercase tracking-wide text-white">
+      {title}
+    </h3>
+    <span className="rounded-[3px] border border-white/10 bg-black/15 px-2.5 py-1 text-xs font-medium text-violet-100/70">
+      {count}
+    </span>
   </div>
 );
 
@@ -357,7 +340,7 @@ const DashboardPlayersList = () => {
               aria-label="Crear jugador"
               title="Crear jugador"
             >
-              <FiPlus className="size-5" aria-hidden="true" />
+              <GiSoccerBall className="size-5" aria-hidden="true" />
             </Link>
             <Link
               to={ROUTES.DASHBOARD_STAFF_NEW}
@@ -365,7 +348,7 @@ const DashboardPlayersList = () => {
               aria-label="Crear integrante del cuerpo tecnico"
               title="Crear integrante del cuerpo tecnico"
             >
-              <FiUserPlus className="size-5" aria-hidden="true" />
+              <FaUserTie className="size-5" aria-hidden="true" />
             </Link>
           </div>
         </div>
@@ -378,12 +361,7 @@ const DashboardPlayersList = () => {
       ) : (
         <div className="space-y-5 p-3 sm:p-5">
           <section className="overflow-hidden rounded-sm border border-white/10 bg-[#16161a]">
-            <SectionTitle
-              title="Jugadores"
-              count={players.length}
-              addHref={ROUTES.DASHBOARD_PLAYERS_NEW}
-              addLabel="Nuevo jugador"
-            />
+            <SectionTitle title="Jugadores" count={players.length} />
 
             {players.length === 0 ? (
               <div className="p-5 text-sm text-violet-100/75">
@@ -512,12 +490,7 @@ const DashboardPlayersList = () => {
           </section>
 
           <section className="overflow-hidden rounded-sm border border-white/10 bg-[#16161a]">
-            <SectionTitle
-              title="Cuerpo tecnico"
-              count={staff.length}
-              addHref={ROUTES.DASHBOARD_STAFF_NEW}
-              addLabel="Nuevo integrante"
-            />
+            <SectionTitle title="Cuerpo tecnico" count={staff.length} />
 
             {staff.length === 0 ? (
               <div className="p-5 text-sm text-violet-100/75">
