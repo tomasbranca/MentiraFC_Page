@@ -4,12 +4,8 @@ import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { FiEdit2, FiFlag, FiPlus, FiShield, FiTrash2 } from "react-icons/fi";
 
-import {
-  deleteDashboardTeam,
-  fetchDashboardTeams,
-} from "../../../data/dashboardTeams";
+import { deleteDashboardTeam } from "../../../data/dashboardTeams";
 import { getImageSrcSet, getImageUrl } from "../../../data/imageService";
-import { queryKeys } from "../../../data/queryKeys";
 import { reportError } from "../../../lib/errors/errorLogger";
 import { ROUTES } from "../../../shared/routing";
 import type { DashboardTeamItem } from "../../../types/dashboard";
@@ -26,6 +22,10 @@ import {
   filterDashboardTeamsList,
   hasActiveDashboardTeamsListFilters,
 } from "./dashboardTeamsList.filters";
+import {
+  dashboardTeamsListQueryOptions,
+  invalidateDashboardTeamPublishDependencies,
+} from "./dashboardTeams.queries";
 import { getTeamReferenceCount, getTeamUsageLabel } from "./dashboardTeams.utils";
 
 const TeamThumbnail = ({ item }: { item: DashboardTeamItem }) => {
@@ -154,42 +154,10 @@ const DashboardTeamsList = () => {
   const canCreateTeam = useDashboardPermission("teams", "create");
   const canEditTeam = useDashboardPermission("teams", "edit");
   const canDeleteTeam = useDashboardPermission("teams", "delete");
-  const teamsQuery = useQuery({
-    queryKey: queryKeys.dashboard.teams.all,
-    queryFn: async () => {
-      try {
-        return await fetchDashboardTeams();
-      } catch (error) {
-        reportError(error, {
-          page: "DashboardTeamsList",
-          action: "load_teams",
-        });
-        throw error;
-      }
-    },
-  });
-  const invalidateTeamQueries = async () => {
-    await Promise.all([
-      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.teams.all }),
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.dashboard.matches.options,
-      }),
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.dashboard.tournaments.options,
-      }),
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.dashboard.table.options,
-      }),
-      queryClient.invalidateQueries({ queryKey: queryKeys.teams.all }),
-      queryClient.invalidateQueries({ queryKey: queryKeys.games.all }),
-      queryClient.invalidateQueries({ queryKey: queryKeys.games.latest }),
-      queryClient.invalidateQueries({ queryKey: queryKeys.games.finished }),
-      queryClient.invalidateQueries({ queryKey: queryKeys.tournaments.current }),
-    ]);
-  };
+  const teamsQuery = useQuery(dashboardTeamsListQueryOptions());
   const deleteMutation = useMutation({
     mutationFn: deleteDashboardTeam,
-    onSuccess: invalidateTeamQueries,
+    onSuccess: () => invalidateDashboardTeamPublishDependencies(queryClient),
   });
 
   const handleDeleteTeam = async (itemId: string) => {

@@ -11,13 +11,11 @@ import toast from "react-hot-toast";
 import { FiArrowLeft, FiSave, FiTrash2, FiUpload } from "react-icons/fi";
 
 import {
-  fetchDashboardPlayerById,
   publishDashboardPlayer,
   publishDashboardPlayerById,
   saveDashboardPlayerDraft,
 } from "../../../data/dashboardPlayers";
 import { getImageUrl } from "../../../data/imageService";
-import { queryKeys } from "../../../data/queryKeys";
 import { reportError } from "../../../lib/errors/errorLogger";
 import { ROUTES } from "../../../shared/routing";
 import {
@@ -33,6 +31,12 @@ import ErrorFallback from "../../components/errors/ErrorFallback";
 import DashboardContentLoader from "../../dashboard/DashboardContentLoader";
 import { formatDate } from "../../utils/date.utils";
 import { Field, SelectField } from "./DashboardPlayersFields";
+import {
+  cacheDashboardPlayer,
+  dashboardPlayerDetailQueryOptions,
+  invalidateDashboardPlayerPublishDependencies,
+  invalidateDashboardPlayersList,
+} from "./dashboardPlayers.queries";
 import {
   FIELD_RATING_FIELDS,
   GOALKEEPER_RATING_FIELDS,
@@ -168,20 +172,8 @@ const DashboardPlayersForm = () => {
   const [removePhoto, setRemovePhoto] = useState(false);
 
   const playerQuery = useQuery({
-    queryKey: queryKeys.dashboard.players.byId(id ?? "new"),
+    ...dashboardPlayerDetailQueryOptions(id ?? "new"),
     enabled: isEditing,
-    queryFn: async () => {
-      try {
-        return await fetchDashboardPlayerById(id ?? "");
-      } catch (error) {
-        reportError(error, {
-          page: "DashboardPlayersForm",
-          action: "load_player",
-          id,
-        });
-        throw error;
-      }
-    },
   });
 
   useEffect(() => {
@@ -235,13 +227,8 @@ const DashboardPlayersForm = () => {
         id
       ),
     onSuccess: async (savedPlayer) => {
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.dashboard.players.all,
-      });
-      queryClient.setQueryData(
-        queryKeys.dashboard.players.byId(savedPlayer.id),
-        savedPlayer
-      );
+      await invalidateDashboardPlayersList(queryClient);
+      cacheDashboardPlayer(queryClient, savedPlayer);
       applySavedPlayer(savedPlayer);
 
       if (!isEditing) {
@@ -266,21 +253,8 @@ const DashboardPlayersForm = () => {
             removePhoto,
           }),
     onSuccess: async (savedPlayer) => {
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.dashboard.players.all,
-        }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.players.all }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.dashboard.matches.options,
-        }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.games.all }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.events.goals() }),
-      ]);
-      queryClient.setQueryData(
-        queryKeys.dashboard.players.byId(savedPlayer.id),
-        savedPlayer
-      );
+      await invalidateDashboardPlayerPublishDependencies(queryClient);
+      cacheDashboardPlayer(queryClient, savedPlayer);
       navigate(ROUTES.DASHBOARD_PLAYERS);
     },
   });

@@ -11,13 +11,11 @@ import toast from "react-hot-toast";
 import { FiArrowLeft, FiSave, FiTrash2, FiUpload } from "react-icons/fi";
 
 import {
-  fetchDashboardStaffById,
   publishDashboardStaff,
   publishDashboardStaffById,
   saveDashboardStaffDraft,
 } from "../../../data/dashboardStaff";
 import { getImageUrl } from "../../../data/imageService";
-import { queryKeys } from "../../../data/queryKeys";
 import { reportError } from "../../../lib/errors/errorLogger";
 import { ROUTES } from "../../../shared/routing";
 import {
@@ -41,6 +39,12 @@ import {
   validateDashboardStaffImageFile,
   validateDashboardStaffInput,
 } from "./dashboardStaff.utils";
+import {
+  cacheDashboardStaff,
+  dashboardStaffDetailQueryOptions,
+  invalidateDashboardStaffList,
+  invalidateDashboardStaffPublishDependencies,
+} from "./dashboardStaff.queries";
 
 const createInitialValues = (): DashboardStaffInput => ({
   name: "",
@@ -105,20 +109,8 @@ const DashboardStaffForm = () => {
   const [removePhoto, setRemovePhoto] = useState(false);
 
   const staffQuery = useQuery({
-    queryKey: queryKeys.dashboard.staff.byId(id ?? "new"),
+    ...dashboardStaffDetailQueryOptions(id ?? "new"),
     enabled: isEditing,
-    queryFn: async () => {
-      try {
-        return await fetchDashboardStaffById(id ?? "");
-      } catch (error) {
-        reportError(error, {
-          page: "DashboardStaffForm",
-          action: "load_staff",
-          id,
-        });
-        throw error;
-      }
-    },
   });
 
   useEffect(() => {
@@ -170,13 +162,8 @@ const DashboardStaffForm = () => {
         id
       ),
     onSuccess: async (savedStaff) => {
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.dashboard.staff.all,
-      });
-      queryClient.setQueryData(
-        queryKeys.dashboard.staff.byId(savedStaff.id),
-        savedStaff
-      );
+      await invalidateDashboardStaffList(queryClient);
+      cacheDashboardStaff(queryClient, savedStaff);
       applySavedStaff(savedStaff);
 
       if (!isEditing) {
@@ -201,16 +188,8 @@ const DashboardStaffForm = () => {
             removePhoto,
           }),
     onSuccess: async (savedStaff) => {
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.dashboard.staff.all,
-        }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.staff.all }),
-      ]);
-      queryClient.setQueryData(
-        queryKeys.dashboard.staff.byId(savedStaff.id),
-        savedStaff
-      );
+      await invalidateDashboardStaffPublishDependencies(queryClient);
+      cacheDashboardStaff(queryClient, savedStaff);
       navigate(ROUTES.DASHBOARD_PLAYERS);
     },
   });

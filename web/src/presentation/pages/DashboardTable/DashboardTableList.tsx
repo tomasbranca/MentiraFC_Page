@@ -4,12 +4,8 @@ import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { FiBarChart2, FiEdit2, FiPlus, FiTrash2 } from "react-icons/fi";
 
-import {
-  deleteDashboardTable,
-  fetchDashboardTables,
-} from "../../../data/dashboardTable";
+import { deleteDashboardTable } from "../../../data/dashboardTable";
 import { getImageSrcSet, getImageUrl } from "../../../data/imageService";
-import { queryKeys } from "../../../data/queryKeys";
 import { reportError } from "../../../lib/errors/errorLogger";
 import { ROUTES } from "../../../shared/routing";
 import type { DashboardTableItem } from "../../../types/dashboard";
@@ -26,6 +22,10 @@ import {
   filterDashboardTableList,
   hasActiveDashboardTableListFilters,
 } from "./dashboardTableList.filters";
+import {
+  dashboardTablesListQueryOptions,
+  invalidateDashboardTablePublishDependencies,
+} from "./dashboardTable.queries";
 
 const TableThumbnail = ({ item }: { item: DashboardTableItem }) => {
   const imageUrl = getImageUrl(item.tournamentImageUrl, {
@@ -145,32 +145,10 @@ const DashboardTableList = () => {
   const canCreateTable = useDashboardPermission("table", "create");
   const canEditTable = useDashboardPermission("table", "edit");
   const canDeleteTable = useDashboardPermission("table", "delete");
-  const tablesQuery = useQuery({
-    queryKey: queryKeys.dashboard.table.all,
-    queryFn: async () => {
-      try {
-        return await fetchDashboardTables();
-      } catch (error) {
-        reportError(error, {
-          page: "DashboardTableList",
-          action: "load_tables",
-        });
-        throw error;
-      }
-    },
-  });
+  const tablesQuery = useQuery(dashboardTablesListQueryOptions());
   const deleteMutation = useMutation({
     mutationFn: deleteDashboardTable,
-    onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.dashboard.table.all,
-        }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.tournaments.current,
-        }),
-      ]);
-    },
+    onSuccess: () => invalidateDashboardTablePublishDependencies(queryClient),
   });
 
   const handleDeleteTable = async (itemId: string) => {

@@ -8,15 +8,12 @@ import { FiEdit2, FiEye, FiEyeOff, FiTrash2 } from "react-icons/fi";
 
 import {
   deleteDashboardPlayer,
-  fetchDashboardPlayers,
   setDashboardPlayerActiveStatus,
 } from "../../../data/dashboardPlayers";
 import {
   deleteDashboardStaff,
-  fetchDashboardStaff,
 } from "../../../data/dashboardStaff";
 import { getImageSrcSet, getImageUrl } from "../../../data/imageService";
-import { queryKeys } from "../../../data/queryKeys";
 import { reportError } from "../../../lib/errors/errorLogger";
 import { ROUTES } from "../../../shared/routing";
 import type {
@@ -32,6 +29,10 @@ import { DASHBOARD_STATUS_FILTER_OPTIONS } from "../../dashboard/dashboardListFi
 import { useDashboardPermission } from "../../hooks/usePermission";
 import { formatDate } from "../../utils/date.utils";
 import {
+  dashboardPlayersListQueryOptions,
+  invalidateDashboardPlayerPublishDependencies,
+} from "./dashboardPlayers.queries";
+import {
   defaultDashboardPlayersListFilters,
   filterDashboardPlayersList,
   filterDashboardStaffList,
@@ -44,6 +45,10 @@ import {
   shouldConfirmDashboardPlayerActiveStatusChange,
 } from "./dashboardPlayers.utils";
 import { getDashboardStaffRoleLabel } from "./dashboardStaff.utils";
+import {
+  dashboardStaffListQueryOptions,
+  invalidateDashboardStaffPublishDependencies,
+} from "./dashboardStaff.queries";
 
 const thumbnailClassName =
   "h-18 w-14 shrink-0 rounded-[3px] border border-white/10 object-cover object-top";
@@ -341,50 +346,12 @@ const DashboardPlayersList = () => {
   const canCreateStaff = useDashboardPermission("staff", "create");
   const canEditStaff = useDashboardPermission("staff", "edit");
   const canDeleteStaff = useDashboardPermission("staff", "delete");
-  const playersQuery = useQuery({
-    queryKey: queryKeys.dashboard.players.all,
-    queryFn: async () => {
-      try {
-        return await fetchDashboardPlayers();
-      } catch (error) {
-        reportError(error, {
-          page: "DashboardPlayersList",
-          action: "load_players",
-        });
-        throw error;
-      }
-    },
-  });
-  const staffQuery = useQuery({
-    queryKey: queryKeys.dashboard.staff.all,
-    queryFn: async () => {
-      try {
-        return await fetchDashboardStaff();
-      } catch (error) {
-        reportError(error, {
-          page: "DashboardPlayersList",
-          action: "load_staff",
-        });
-        throw error;
-      }
-    },
-  });
-  const invalidatePlayerQueries = async () => {
-    await Promise.all([
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.dashboard.players.all,
-      }),
-      queryClient.invalidateQueries({ queryKey: queryKeys.players.all }),
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.dashboard.matches.options,
-      }),
-      queryClient.invalidateQueries({ queryKey: queryKeys.games.all }),
-      queryClient.invalidateQueries({ queryKey: queryKeys.events.goals() }),
-    ]);
-  };
+  const playersQuery = useQuery(dashboardPlayersListQueryOptions());
+  const staffQuery = useQuery(dashboardStaffListQueryOptions());
   const deletePlayerMutation = useMutation({
     mutationFn: deleteDashboardPlayer,
-    onSuccess: invalidatePlayerQueries,
+    onSuccess: () =>
+      invalidateDashboardPlayerPublishDependencies(queryClient),
   });
   const activeStatusMutation = useMutation({
     mutationFn: ({
@@ -394,18 +361,12 @@ const DashboardPlayersList = () => {
       id: string;
       isActive: boolean;
     }) => setDashboardPlayerActiveStatus(id, isActive),
-    onSuccess: invalidatePlayerQueries,
+    onSuccess: () =>
+      invalidateDashboardPlayerPublishDependencies(queryClient),
   });
   const deleteStaffMutation = useMutation({
     mutationFn: deleteDashboardStaff,
-    onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.dashboard.staff.all,
-        }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.staff.all }),
-      ]);
-    },
+    onSuccess: () => invalidateDashboardStaffPublishDependencies(queryClient),
   });
 
   const handleTogglePlayerActiveStatus = async (

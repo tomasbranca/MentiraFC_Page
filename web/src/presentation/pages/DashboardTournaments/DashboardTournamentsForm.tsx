@@ -17,14 +17,11 @@ import {
 } from "react-icons/fi";
 
 import {
-  fetchDashboardTournamentById,
-  fetchDashboardTournamentOptions,
   publishDashboardTournament,
   publishDashboardTournamentById,
   saveDashboardTournamentDraft,
 } from "../../../data/dashboardTournaments";
 import { getImageSrcSet, getImageUrl } from "../../../data/imageService";
-import { queryKeys } from "../../../data/queryKeys";
 import { reportError } from "../../../lib/errors/errorLogger";
 import { ROUTES } from "../../../shared/routing";
 import type {
@@ -47,6 +44,13 @@ import {
   getTournamentReferenceCount,
   validateDashboardTournamentInput,
 } from "./dashboardTournaments.utils";
+import {
+  cacheDashboardTournament,
+  dashboardTournamentDetailQueryOptions,
+  dashboardTournamentOptionsQueryOptions,
+  invalidateDashboardTournamentsList,
+  invalidateDashboardTournamentPublishDependencies,
+} from "./dashboardTournaments.queries";
 
 type SavedTournamentSnapshot = {
   valuesJson: string;
@@ -205,36 +209,11 @@ const DashboardTournamentsForm = () => {
     () => new Set()
   );
 
-  const optionsQuery = useQuery({
-    queryKey: queryKeys.dashboard.tournaments.options,
-    queryFn: async () => {
-      try {
-        return await fetchDashboardTournamentOptions();
-      } catch (error) {
-        reportError(error, {
-          page: "DashboardTournamentsForm",
-          action: "load_tournament_options",
-        });
-        throw error;
-      }
-    },
-  });
+  const optionsQuery = useQuery(dashboardTournamentOptionsQueryOptions());
 
   const tournamentQuery = useQuery({
-    queryKey: queryKeys.dashboard.tournaments.byId(id ?? "new"),
+    ...dashboardTournamentDetailQueryOptions(id ?? "new"),
     enabled: isEditing,
-    queryFn: async () => {
-      try {
-        return await fetchDashboardTournamentById(id ?? "");
-      } catch (error) {
-        reportError(error, {
-          page: "DashboardTournamentsForm",
-          action: "load_tournament",
-          id,
-        });
-        throw error;
-      }
-    },
   });
 
   useEffect(() => {
@@ -273,13 +252,8 @@ const DashboardTournamentsForm = () => {
       input: ReturnType<typeof buildDashboardTournamentDraftInput>
     ) => saveDashboardTournamentDraft(input, id),
     onSuccess: async (savedTournament) => {
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.dashboard.tournaments.all,
-      });
-      queryClient.setQueryData(
-        queryKeys.dashboard.tournaments.byId(savedTournament.id),
-        savedTournament
-      );
+      await invalidateDashboardTournamentsList(queryClient);
+      cacheDashboardTournament(queryClient, savedTournament);
 
       const nextValues = getValuesFromTournament(savedTournament);
       setValues(nextValues);
@@ -299,27 +273,8 @@ const DashboardTournamentsForm = () => {
         ? publishDashboardTournamentById(id, input)
         : publishDashboardTournament(input),
     onSuccess: async (savedTournament) => {
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.dashboard.tournaments.all,
-        }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.dashboard.tournaments.options,
-        }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.dashboard.matches.options,
-        }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.dashboard.table.options,
-        }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.tournaments.current,
-        }),
-      ]);
-      queryClient.setQueryData(
-        queryKeys.dashboard.tournaments.byId(savedTournament.id),
-        savedTournament
-      );
+      await invalidateDashboardTournamentPublishDependencies(queryClient);
+      cacheDashboardTournament(queryClient, savedTournament);
       navigate(ROUTES.DASHBOARD_TOURNAMENTS);
     },
   });

@@ -11,13 +11,11 @@ import toast from "react-hot-toast";
 import { FiArrowLeft, FiSave, FiTrash2, FiUpload } from "react-icons/fi";
 
 import {
-  fetchDashboardTeamById,
   publishDashboardTeam,
   publishDashboardTeamById,
   saveDashboardTeamDraft,
 } from "../../../data/dashboardTeams";
 import { getImageUrl } from "../../../data/imageService";
-import { queryKeys } from "../../../data/queryKeys";
 import { reportError } from "../../../lib/errors/errorLogger";
 import { ROUTES } from "../../../shared/routing";
 import {
@@ -41,6 +39,12 @@ import {
   validateDashboardTeamInput,
   type DashboardTeamErrors,
 } from "./dashboardTeams.utils";
+import {
+  cacheDashboardTeam,
+  dashboardTeamDetailQueryOptions,
+  invalidateDashboardTeamsList,
+  invalidateDashboardTeamPublishDependencies,
+} from "./dashboardTeams.queries";
 
 const createInitialValues = (): DashboardTeamInput => ({
   name: "",
@@ -96,20 +100,8 @@ const DashboardTeamsForm = () => {
   const [removeLogo, setRemoveLogo] = useState(false);
 
   const teamQuery = useQuery({
-    queryKey: queryKeys.dashboard.teams.byId(id ?? "new"),
+    ...dashboardTeamDetailQueryOptions(id ?? "new"),
     enabled: isEditing,
-    queryFn: async () => {
-      try {
-        return await fetchDashboardTeamById(id ?? "");
-      } catch (error) {
-        reportError(error, {
-          page: "DashboardTeamsForm",
-          action: "load_team",
-          id,
-        });
-        throw error;
-      }
-    },
   });
 
   useEffect(() => {
@@ -150,35 +142,6 @@ const DashboardTeamsForm = () => {
     setLogoError(null);
   };
 
-  const invalidateTeamQueries = async () => {
-    await Promise.all([
-      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.teams.all }),
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.dashboard.matches.all,
-      }),
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.dashboard.matches.options,
-      }),
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.dashboard.tournaments.all,
-      }),
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.dashboard.tournaments.options,
-      }),
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.dashboard.table.all,
-      }),
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.dashboard.table.options,
-      }),
-      queryClient.invalidateQueries({ queryKey: queryKeys.teams.all }),
-      queryClient.invalidateQueries({ queryKey: queryKeys.games.all }),
-      queryClient.invalidateQueries({ queryKey: queryKeys.games.latest }),
-      queryClient.invalidateQueries({ queryKey: queryKeys.games.finished }),
-      queryClient.invalidateQueries({ queryKey: queryKeys.tournaments.current }),
-    ]);
-  };
-
   const saveDraftMutation = useMutation({
     mutationFn: async (input: ReturnType<typeof buildDashboardTeamDraftInput>) =>
       saveDashboardTeamDraft(
@@ -190,10 +153,8 @@ const DashboardTeamsForm = () => {
         id
       ),
     onSuccess: async (savedTeam) => {
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.dashboard.teams.all,
-      });
-      queryClient.setQueryData(queryKeys.dashboard.teams.byId(savedTeam.id), savedTeam);
+      await invalidateDashboardTeamsList(queryClient);
+      cacheDashboardTeam(queryClient, savedTeam);
       applySavedTeam(savedTeam);
 
       if (!isEditing) {
@@ -218,8 +179,8 @@ const DashboardTeamsForm = () => {
             removeLogo,
           }),
     onSuccess: async (savedTeam) => {
-      await invalidateTeamQueries();
-      queryClient.setQueryData(queryKeys.dashboard.teams.byId(savedTeam.id), savedTeam);
+      await invalidateDashboardTeamPublishDependencies(queryClient);
+      cacheDashboardTeam(queryClient, savedTeam);
       navigate(ROUTES.DASHBOARD_TEAMS);
     },
   });

@@ -11,13 +11,11 @@ import toast from "react-hot-toast";
 import { FiArrowLeft, FiSave, FiTrash2, FiUpload } from "react-icons/fi";
 
 import {
-  fetchDashboardNewsById,
   publishDashboardNews,
   publishDashboardNewsById,
   saveDashboardNewsDraft,
 } from "../../../data/dashboardNews";
 import { getImageUrl } from "../../../data/imageService";
-import { queryKeys } from "../../../data/queryKeys";
 import { reportError } from "../../../lib/errors/errorLogger";
 import { confirmDashboardAction } from "../../app/confirmDialog";
 import {
@@ -49,6 +47,12 @@ import {
   type DashboardNewsEditorBlock,
   validateDashboardNewsEditorBlocks,
 } from "./dashboardNewsContent.utils";
+import {
+  cacheDashboardNews,
+  dashboardNewsDetailQueryOptions,
+  invalidateDashboardNewsList,
+  invalidateDashboardNewsPublishDependencies,
+} from "./dashboardNews.queries";
 
 const createInitialValues = (): DashboardNewsInput => ({
   title: "",
@@ -157,20 +161,8 @@ const DashboardNewsForm = () => {
   const [contentError, setContentError] = useState<string | null>(null);
 
   const newsQuery = useQuery({
-    queryKey: queryKeys.dashboard.news.byId(id ?? "new"),
+    ...dashboardNewsDetailQueryOptions(id ?? "new"),
     enabled: isEditing,
-    queryFn: async () => {
-      try {
-        return await fetchDashboardNewsById(id ?? "");
-      } catch (error) {
-        reportError(error, {
-          page: "DashboardNewsForm",
-          action: "load_news",
-          id,
-        });
-        throw error;
-      }
-    },
   });
 
   useEffect(() => {
@@ -235,13 +227,8 @@ const DashboardNewsForm = () => {
     mutationFn: async (input: DashboardNewsDraftMutationInput) =>
       saveDashboardNewsDraft(input, id),
     onSuccess: async (savedNews) => {
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.dashboard.news.all,
-      });
-      queryClient.setQueryData(
-        queryKeys.dashboard.news.byId(savedNews.id),
-        savedNews
-      );
+      await invalidateDashboardNewsList(queryClient);
+      cacheDashboardNews(queryClient, savedNews);
       applySavedNews(savedNews);
 
       if (!isEditing) {
@@ -256,16 +243,8 @@ const DashboardNewsForm = () => {
         ? publishDashboardNewsById(id, input)
         : publishDashboardNews(input),
     onSuccess: async (savedNews) => {
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.dashboard.news.all,
-        }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.news.all }),
-      ]);
-      queryClient.setQueryData(
-        queryKeys.dashboard.news.byId(savedNews.id),
-        savedNews
-      );
+      await invalidateDashboardNewsPublishDependencies(queryClient);
+      cacheDashboardNews(queryClient, savedNews);
       navigate(ROUTES.DASHBOARD_NEWS);
     },
   });
