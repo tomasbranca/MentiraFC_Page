@@ -43,9 +43,9 @@ describe("getHybridTournamentTable", () => {
     ];
 
     const games = [
-      { state: "finalizado", result: { goalsFor: 2, goalsAgainst: 1 } },
-      { state: "finalizado", result: { goalsFor: 0, goalsAgainst: 0 } },
-      { state: "programado", result: { goalsFor: 9, goalsAgainst: 0 } },
+      { state: "finalizado" as const, result: { goalsFor: 2, goalsAgainst: 1 } },
+      { state: "finalizado" as const, result: { goalsFor: 0, goalsAgainst: 0 } },
+      { state: "por_jugar" as const, result: { goalsFor: 9, goalsAgainst: 0 } },
     ];
 
     const table = getHybridTournamentTable({

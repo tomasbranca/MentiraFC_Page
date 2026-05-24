@@ -1,3 +1,4 @@
+import type { GameState, KnownGameState } from "../domain/games";
 import type {
   DominantFoot,
   FieldPlayerRatings,
@@ -251,7 +252,7 @@ export type DashboardOrganizationMutationInput = {
 export type DashboardOrganizationDraftMutationInput =
   Partial<DashboardOrganizationMutationInput>;
 
-export type DashboardMatchState = "por_jugar" | "finalizado";
+export type DashboardMatchState = KnownGameState;
 
 export type DashboardMatchCompetition = "Torneo" | "Copa" | "Amistoso";
 
@@ -299,7 +300,7 @@ export type DashboardMatchItem = {
   hasPublishedVersion: boolean;
   date?: string | null;
   updatedAt?: string | null;
-  state?: DashboardMatchState | string | null;
+  state?: GameState | null;
   location?: string | null;
   competition?: DashboardMatchCompetition | string | null;
   tournamentId?: string | null;

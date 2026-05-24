@@ -4,6 +4,11 @@ import GameEmpty from "./GameEmpty/GameEmpty";
 
 import { getImageUrl } from "../../../../data/imageService";
 import { SoccerBallIcon } from "../../../components/icons/InlineIcons";
+import {
+  isFinishedGameState,
+  isScheduledGameState,
+  isUnknownGameState,
+} from "../../../../domain/games";
 import { isGameInProgress, getScorers, getShortName } from "./game.utils";
 import {
   SITE_LOGO_ASSETS,
@@ -60,7 +65,7 @@ const Game = ({ game, loading }: GameProps) => {
 
           {/* CENTRO */}
           <div className="w-[30%] sm:w-[70%] flex flex-col items-center text-center gap-3">
-            {game.state === "por_jugar" && !isInProgress && (
+            {isScheduledGameState(game.state) && !isInProgress && (
               <>
                 <span className="uppercase text-xs tracking-widest opacity-70">
                   Próximo partido
@@ -68,6 +73,13 @@ const Game = ({ game, loading }: GameProps) => {
 
                 <div className="text-3xl font-semibold">VS</div>
 
+                <p className="text-xs sm:text-sm opacity-80">{formatted}</p>
+              </>
+            )}
+
+            {isUnknownGameState(game.state) && (
+              <>
+                <div className="text-3xl font-semibold">VS</div>
                 <p className="text-xs sm:text-sm opacity-80">{formatted}</p>
               </>
             )}
@@ -86,7 +98,7 @@ const Game = ({ game, loading }: GameProps) => {
               </>
             )}
 
-            {game.state === "finalizado" && (
+            {isFinishedGameState(game.state) && (
               <>
                 <p className="opacity-70 text-xs sm:text-sm uppercase tracking-wider">
                   Finalizado
@@ -149,7 +161,7 @@ const Game = ({ game, loading }: GameProps) => {
         </div>
 
         {/* GOLEADORES MOBILE */}
-        {game.state === "finalizado" && scorers.length > 0 && (
+        {isFinishedGameState(game.state) && scorers.length > 0 && (
           <div className="sm:hidden mt-6 text-center">
             <button
               onClick={() => setShowScorers(!showScorers)}

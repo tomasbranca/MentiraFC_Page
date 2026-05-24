@@ -8,6 +8,7 @@ import {
   matchesDashboardSearchQuery,
   matchesDashboardStatusFilter,
 } from "../../dashboard/dashboardListFilters.utils";
+import { isFinishedGameState } from "../../../domain/games";
 import {
   getDashboardMatchCompetitionLabel,
   getDashboardMatchStateLabel,
@@ -62,7 +63,7 @@ export const filterDashboardMatchesList = (
     const competitionLabel = getDashboardMatchCompetitionLabel(item.competition);
     const stateLabel = getDashboardMatchStateLabel(item.state);
     const scoreLabel =
-      item.state === "finalizado"
+      item.state != null && isFinishedGameState(item.state)
         ? `${item.result?.goalsFor ?? 0}-${item.result?.goalsAgainst ?? 0}`
         : "";
 

@@ -1,3 +1,4 @@
+import { isScheduledGameState } from "../../../../domain/games";
 import type { Game, MatchEvent } from "../../../../types/models";
 
 type Scorer = {
@@ -11,7 +12,7 @@ export const isGameInProgress = (game: Game | null): boolean => {
   const now = new Date();
   const gameDate = new Date(game.date);
 
-  return game.state === "por_jugar" && gameDate <= now;
+  return isScheduledGameState(game.state) && gameDate <= now;
 };
 
 export const getScorers = (events: MatchEvent[] = []): Scorer[] => {

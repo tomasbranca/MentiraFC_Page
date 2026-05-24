@@ -6,6 +6,7 @@ import {
   hasCompleteDeferredHomeData,
   isDeferredHomeDataPending,
   resolveHomeData,
+  type DeferredHomeData,
 } from "./useHomeData.utils";
 import type { InitialDataPayload } from "../../../../data/getInitialData";
 
@@ -157,7 +158,7 @@ describe("useHomeData.utils", () => {
 
   it("usa el bloque diferido completo cuando ya esta disponible", () => {
     const initialData = createInitialData();
-    const deferredData = {
+    const deferredData: DeferredHomeData = {
       players: [{ id: "p-2", fullName: "Belen Ruiz", name: "Belen", lastName: "Ruiz" }],
       goalEvents: [
         {
@@ -165,24 +166,6 @@ describe("useHomeData.utils", () => {
           type: "goal",
           game: { id: "g-2", date: "2025-03-20" },
           player: { id: "p-2", name: "Belen", lastName: "Ruiz" },
-        },
-      ],
-      games: [
-        {
-          id: "g-2",
-          date: "2025-03-20",
-          state: "finalizado",
-          tournamentId: "t-2",
-          rival: { id: "r-2", name: "Rival 2" },
-          result: { goalsFor: 2, goalsAgainst: 0 },
-          playedPlayers: [],
-          events: [
-            {
-              id: "e-2",
-              type: "goal",
-              player: { id: "p-2", name: "Belen", lastName: "Ruiz" },
-            },
-          ],
         },
       ],
       tournament: {

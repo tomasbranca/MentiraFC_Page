@@ -188,7 +188,7 @@ Campos:
 | `location` | `string` | Si | Ubicacion del partido. |
 | `competition` | `string` | Si | Tipo de competencia. Valores: `Torneo`, `Copa`, `Amistoso`. |
 | `tournament` | `reference -> tournaments` | Si para `Torneo` | Torneo asociado. Se oculta si `competition !== "Torneo"`. |
-| `state` | `string` | Si | Estado del partido. Valores: `por_jugar`, `finalizado`. |
+| `state` | `string` | Si | Estado del partido. Valores conocidos: `por_jugar`, `finalizado`. Valores desconocidos se normalizan a `desconocido` en la web. |
 | `result` | `object` | Si cuando esta finalizado | Resultado del partido. Se oculta si `state !== "finalizado"`. |
 | `result.goalsFor` | `number` | Si | Goles de Mentira FC. Minimo `0`. |
 | `result.goalsAgainst` | `number` | Si | Goles del rival. Minimo `0`. |

@@ -1,6 +1,8 @@
 import type { PortableTextBlock, TypedObject } from "@portabletext/types";
 
-export type GameState = "por_jugar" | "finalizado" | string;
+import type { GameState, KnownGameState } from "../domain/games";
+
+export type { GameState, KnownGameState };
 export type BootstrapScope =
   | "empty"
   | "bootstrap-error"

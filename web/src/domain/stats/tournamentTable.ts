@@ -1,3 +1,4 @@
+import { isFinishedGameState } from "../games";
 import type { Game, StandingsRow, TeamRef } from "../../types/models";
 
 type StandingsRowType = NonNullable<StandingsRow["type"]>;
@@ -89,7 +90,11 @@ const getFinishedGamesThroughDate = (
   cutoffDate?: string | null
 ): GameInput[] => {
   return (games || []).filter(
-    (game) => game?.state === "finalizado" && isGameBeforeOrAt(game, cutoffDate)
+    (game) =>
+      game != null &&
+      game.state != null &&
+      isFinishedGameState(game.state) &&
+      isGameBeforeOrAt(game, cutoffDate)
   );
 };
 

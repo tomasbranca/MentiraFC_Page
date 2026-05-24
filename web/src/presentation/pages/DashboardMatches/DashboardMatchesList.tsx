@@ -10,6 +10,7 @@ import {
 } from "../../../data/dashboardMatches";
 import { getImageSrcSet, getImageUrl } from "../../../data/imageService";
 import { queryKeys } from "../../../data/queryKeys";
+import { isFinishedGameState } from "../../../domain/games";
 import { reportError } from "../../../lib/errors/errorLogger";
 import type { DashboardMatchItem } from "../../../types/dashboard";
 import { ROUTES } from "../../../shared/routing";
@@ -102,7 +103,7 @@ const getMatchDateLabel = (item: DashboardMatchItem): string => {
 };
 
 const getMatchScoreLabel = (item: DashboardMatchItem): string => {
-  if (item.state !== "finalizado") {
+  if (item.state == null || !isFinishedGameState(item.state)) {
     return "VS";
   }
 
