@@ -100,6 +100,8 @@ const dashboardPlayerItemSchema = z.object({
   status: z.enum(["published", "draft"]),
   hasDraft: z.boolean(),
   hasPublishedVersion: z.boolean(),
+  isActive: z.boolean(),
+  canManageActiveStatus: z.boolean(),
   name: z.string(),
   lastName: z.string(),
   fullName: z.string(),
@@ -315,6 +317,18 @@ export const parseDashboardPlayerDraftRequestInput = async (
   }
 
   return parseDashboardPlayerDraftInput(await request.json());
+};
+
+export const parseDashboardPlayerActiveStatusInput = (
+  input: unknown
+): boolean | null => {
+  const parsed = z
+    .object({
+      isActive: z.boolean(),
+    })
+    .safeParse(input);
+
+  return parsed.success ? parsed.data.isActive : null;
 };
 
 export const adaptDashboardPlayerItem = (input: unknown): DashboardPlayerItem =>

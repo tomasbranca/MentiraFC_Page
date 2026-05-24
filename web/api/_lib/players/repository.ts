@@ -28,6 +28,7 @@ type DashboardPlayerDocument = {
   number?: number | null;
   position?: string | null;
   dominantFoot?: string | null;
+  isActive?: boolean | null;
   fieldRatings?: Record<string, number | null> | null;
   goalkeeperRatings?: Record<string, number | null> | null;
   birthDate?: string | null;
@@ -143,13 +144,17 @@ const adaptDashboardPlayerPair = (
   const lastName = normalizeString(selectedDocument?.lastName);
   const fullName = [name, lastName].filter(Boolean).join(" ").trim();
 
+  const hasPublishedVersion = Boolean(pair.published);
+
   return adaptDashboardPlayerItem({
     id: pair.canonicalId,
     publishedId: pair.published?.id ?? null,
     draftId: pair.draft?.id ?? null,
     status: pair.draft ? "draft" : "published",
     hasDraft: Boolean(pair.draft),
-    hasPublishedVersion: Boolean(pair.published),
+    hasPublishedVersion,
+    isActive: hasPublishedVersion ? pair.published?.isActive !== false : false,
+    canManageActiveStatus: hasPublishedVersion,
     name,
     lastName,
     fullName: fullName || "Jugador sin nombre",
@@ -216,7 +221,10 @@ const compactRatings = (
 const buildPlayerDocument = async (
   id: string,
   input: DashboardPlayerMutationInput | DashboardPlayerDraftMutationInput,
-  previousDocument?: DashboardPlayerDocument
+  previousDocument?: DashboardPlayerDocument,
+  options?: {
+    isActive?: boolean;
+  }
 ) => {
   const photo = await resolveNextPlayerPhoto(
     input,
@@ -229,6 +237,7 @@ const buildPlayerDocument = async (
     lastName: input.lastName,
   });
   const isGoalkeeper = input.position === "arq";
+  const isPublishedDocument = !id.startsWith(DRAFT_PREFIX);
 
   return {
     document: {
@@ -239,6 +248,11 @@ const buildPlayerDocument = async (
       number: input.number,
       position: input.position,
       dominantFoot: input.dominantFoot,
+      ...(isPublishedDocument
+        ? {
+            isActive: options?.isActive !== false,
+          }
+        : {}),
       fieldRatings: isGoalkeeper ? undefined : compactRatings(input.fieldRatings),
       goalkeeperRatings:
         input.position && !isGoalkeeper
@@ -388,11 +402,9 @@ export const publishDashboardPlayer = async (
   const canonicalId = id ? getCanonicalPlayerId(id) : createCanonicalPlayerId();
   const previousPair = await getDashboardPlayerPairById(canonicalId);
   const previousSelected = previousPair?.draft ?? previousPair?.published;
-  const published = await buildPlayerDocument(
-    canonicalId,
-    input,
-    previousSelected
-  );
+  const published = await buildPlayerDocument(canonicalId, input, previousSelected, {
+    isActive: previousPair?.published?.isActive !== false,
+  });
 
   try {
     await mutateSanity<unknown>([
@@ -429,6 +441,37 @@ export const publishDashboardPlayer = async (
       safelyDeletePlayerPhotoAsset(assetId)
     )
   );
+
+  return player;
+};
+
+export const setDashboardPlayerActiveStatus = async (
+  id: string,
+  isActive: boolean
+): Promise<DashboardPlayerItem> => {
+  const canonicalId = getCanonicalPlayerId(id);
+  const pair = await getDashboardPlayerPairById(canonicalId);
+
+  if (!pair?.published) {
+    throw new Error("Player must be published before changing active status.");
+  }
+
+  await mutateSanity<unknown>([
+    {
+      patch: {
+        id: canonicalId,
+        set: {
+          isActive,
+        },
+      },
+    },
+  ]);
+
+  const player = await getDashboardPlayerById(canonicalId);
+
+  if (!player) {
+    throw new Error("Updated player could not be reloaded.");
+  }
 
   return player;
 };

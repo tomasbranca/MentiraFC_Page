@@ -51,12 +51,13 @@ Campos:
 | `dominantFoot` | `string` | No | Pie habil. Valores: `right`, `left`. |
 | `birthDate` | `date` | No | Fecha de nacimiento. |
 | `photo` | `image` | No | Foto del jugador, con hotspot. |
+| `isActive` | `boolean` | No | Controla si el jugador aparece en el plantel publico. Por defecto `true`. Los documentos inactivos conservan referencias historicas. |
 | `slug` | `slug` | Si | Slug canonico para URL publica. Se genera desde nombre y apellido. |
 
 Uso en web:
 
-- Query principal: `PLAYERS_QUERY`
-- Query de detalle: `PLAYER_BY_SLUG_OR_ID_QUERY`
+- Query principal: `PLAYERS_QUERY` (solo jugadores con `isActive != false`)
+- Query de detalle: `PLAYER_BY_SLUG_OR_ID_QUERY` (sin filtrar por `isActive`, para conservar URLs historicas)
 - Modelo de dominio: `Player`
 - La web deriva `fullName` como `${name} ${lastName}`.
 - Las estadisticas de goles no viven en `players`; se calculan desde `events` de tipo `goal`.

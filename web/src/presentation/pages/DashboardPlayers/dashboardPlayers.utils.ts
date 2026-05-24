@@ -6,6 +6,7 @@ import {
   type DashboardPlayerFieldRatingsInput,
   type DashboardPlayerGoalkeeperRatingsInput,
   type DashboardPlayerInput,
+  type DashboardPlayerItem,
   type DashboardPlayerMutationInput,
   type DashboardPlayerPosition,
 } from "../../../types/dashboard";
@@ -230,3 +231,32 @@ export const readDashboardPlayerImageDimensions = (
     };
     image.src = previewUrl;
   });
+
+export const affectsPublicRosterVisibility = (
+  item: Pick<DashboardPlayerItem, "canManageActiveStatus" | "isActive">
+): boolean => item.canManageActiveStatus;
+
+export const shouldConfirmDashboardPlayerActiveStatusChange = (
+  item: DashboardPlayerItem,
+  nextIsActive: boolean
+): boolean =>
+  affectsPublicRosterVisibility(item) && item.isActive !== nextIsActive;
+
+export const getDashboardPlayerActiveStatusConfirmCopy = (
+  item: DashboardPlayerItem,
+  nextIsActive: boolean
+): { title: string; text: string; confirmText: string } => {
+  if (nextIsActive) {
+    return {
+      title: "Activar jugador en el plantel",
+      text: `"${item.fullName}" volvera a mostrarse en el plantel publico del sitio.`,
+      confirmText: "Activar",
+    };
+  }
+
+  return {
+    title: "Desactivar jugador del plantel",
+    text: `"${item.fullName}" dejara de mostrarse en el plantel publico, pero conservara referencias en partidos y estadisticas.`,
+    confirmText: "Desactivar",
+  };
+};

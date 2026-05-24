@@ -6,6 +6,7 @@ const dashboardPlayerProjection = `{
   number,
   position,
   dominantFoot,
+  isActive,
   fieldRatings,
   goalkeeperRatings,
   birthDate,

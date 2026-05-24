@@ -3,11 +3,14 @@ import { describe, expect, it } from "vitest";
 import {
   buildDashboardPlayerDraftInput,
   buildDashboardPlayerMutationInput,
+  getDashboardPlayerActiveStatusConfirmCopy,
+  shouldConfirmDashboardPlayerActiveStatusChange,
   validateDashboardPlayerImageDimensions,
   validateDashboardPlayerImageFile,
   validateDashboardPlayerInput,
   validateDashboardPlayerRatings,
 } from "./dashboardPlayers.utils";
+import type { DashboardPlayerItem } from "../../../types/dashboard";
 
 const createValues = () => ({
   name: "Tomas",
@@ -94,5 +97,55 @@ describe("dashboard players utils", () => {
     expect(
       validateDashboardPlayerImageDimensions({ width: 16000, height: 16001 })
     ).toBe("La foto supera el limite de 256 megapixeles de Sanity.");
+  });
+});
+
+const createDashboardPlayerItem = (
+  overrides: Partial<DashboardPlayerItem> = {}
+): DashboardPlayerItem => ({
+  id: "players-1",
+  status: "published",
+  hasDraft: false,
+  hasPublishedVersion: true,
+  isActive: true,
+  canManageActiveStatus: true,
+  name: "Tomas",
+  lastName: "Mentira",
+  fullName: "Tomas Mentira",
+  slug: "tomas-mentira",
+  ...overrides,
+});
+
+describe("dashboard player active status", () => {
+  it("pide confirmacion cuando el cambio afecta el plantel publico", () => {
+    const item = createDashboardPlayerItem();
+
+    expect(
+      shouldConfirmDashboardPlayerActiveStatusChange(item, false)
+    ).toBe(true);
+    expect(
+      shouldConfirmDashboardPlayerActiveStatusChange(item, true)
+    ).toBe(false);
+    expect(
+      shouldConfirmDashboardPlayerActiveStatusChange(
+        createDashboardPlayerItem({ canManageActiveStatus: false }),
+        false
+      )
+    ).toBe(false);
+  });
+
+  it("describe el impacto al activar o desactivar", () => {
+    expect(
+      getDashboardPlayerActiveStatusConfirmCopy(
+        createDashboardPlayerItem(),
+        false
+      ).confirmText
+    ).toBe("Desactivar");
+    expect(
+      getDashboardPlayerActiveStatusConfirmCopy(
+        createDashboardPlayerItem({ isActive: false }),
+        true
+      ).title
+    ).toContain("Activar");
   });
 });

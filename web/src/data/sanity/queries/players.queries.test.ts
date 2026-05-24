@@ -26,4 +26,8 @@ describe("players queries", () => {
     expect(PLAYER_BY_SLUG_OR_ID_QUERY).toContain("fieldRatings");
     expect(PLAYER_BY_SLUG_OR_ID_QUERY).toContain("goalkeeperRatings");
   });
+
+  it("excluye jugadores inactivos del listado publico", () => {
+    expect(PLAYERS_QUERY).toContain("coalesce(isActive, true) == true");
+  });
 });

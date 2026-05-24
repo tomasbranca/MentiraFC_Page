@@ -13,10 +13,13 @@ import { getDashboardStaffRoleLabel } from "./dashboardStaff.utils";
 
 export type DashboardPlayerPositionFilter = "all" | DashboardPlayerPosition;
 
+export type DashboardPlayerRosterFilter = "all" | "active" | "inactive";
+
 export type DashboardPlayersListFilters = {
   search: string;
   status: DashboardDocumentStatusFilter;
   position: DashboardPlayerPositionFilter;
+  roster: DashboardPlayerRosterFilter;
 };
 
 export const defaultDashboardPlayersListFilters =
@@ -24,6 +27,7 @@ export const defaultDashboardPlayersListFilters =
     search: "",
     status: "all",
     position: "all",
+    roster: "all",
   });
 
 export const hasActiveDashboardPlayersListFilters = (
@@ -31,7 +35,23 @@ export const hasActiveDashboardPlayersListFilters = (
 ): boolean =>
   filters.search.trim() !== "" ||
   filters.status !== "all" ||
-  filters.position !== "all";
+  filters.position !== "all" ||
+  filters.roster !== "all";
+
+const matchesDashboardPlayerRosterFilter = (
+  item: DashboardPlayerItem,
+  filter: DashboardPlayerRosterFilter
+): boolean => {
+  if (filter === "all") {
+    return true;
+  }
+
+  if (!item.canManageActiveStatus) {
+    return filter === "inactive";
+  }
+
+  return filter === "active" ? item.isActive : !item.isActive;
+};
 
 export const filterDashboardPlayersList = (
   items: DashboardPlayerItem[],
@@ -43,6 +63,10 @@ export const filterDashboardPlayersList = (
     }
 
     if (filters.position !== "all" && item.position !== filters.position) {
+      return false;
+    }
+
+    if (!matchesDashboardPlayerRosterFilter(item, filters.roster)) {
       return false;
     }
 

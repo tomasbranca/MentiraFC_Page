@@ -1,14 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { FaUserTie } from "react-icons/fa";
 import { GiSoccerBall } from "react-icons/gi";
-import { FiEdit2, FiTrash2 } from "react-icons/fi";
+import { FiEdit2, FiEye, FiEyeOff, FiTrash2 } from "react-icons/fi";
 
 import {
   deleteDashboardPlayer,
   fetchDashboardPlayers,
+  setDashboardPlayerActiveStatus,
 } from "../../../data/dashboardPlayers";
 import {
   deleteDashboardStaff,
@@ -36,8 +37,10 @@ import {
   hasActiveDashboardPlayersListFilters,
 } from "./dashboardPlayersList.filters";
 import {
+  getDashboardPlayerActiveStatusConfirmCopy,
   getDashboardPlayerPositionLabel,
   PLAYER_POSITION_OPTIONS,
+  shouldConfirmDashboardPlayerActiveStatusChange,
 } from "./dashboardPlayers.utils";
 import { getDashboardStaffRoleLabel } from "./dashboardStaff.utils";
 
@@ -89,6 +92,38 @@ const PlantelThumbnail = ({
   );
 };
 
+const PlantelRosterBadge = ({
+  canManageActiveStatus,
+  isActive,
+  compact = false,
+}: {
+  canManageActiveStatus: boolean;
+  isActive: boolean;
+  compact?: boolean;
+}) => {
+  if (!canManageActiveStatus) {
+    return (
+      <span className="inline-flex rounded-[3px] border border-white/10 bg-white/3 px-2.5 py-1 text-xs font-medium text-violet-100/55">
+        {compact ? "Sin publicar" : "Sin version publica"}
+      </span>
+    );
+  }
+
+  if (isActive) {
+    return (
+      <span className="inline-flex rounded-[3px] border border-sky-300/15 bg-sky-300/10 px-2.5 py-1 text-xs font-medium text-sky-100">
+        {compact ? "Activo" : "Activo en plantel"}
+      </span>
+    );
+  }
+
+  return (
+    <span className="inline-flex rounded-[3px] border border-neutral-300/15 bg-neutral-300/10 px-2.5 py-1 text-xs font-medium text-neutral-200">
+      {compact ? "Inactivo" : "Inactivo en plantel"}
+    </span>
+  );
+};
+
 const PlantelStatusBadge = ({
   status,
   hasPublishedVersion,
@@ -126,6 +161,42 @@ const deleteToastOptions = {
     minWidth: "16rem",
   },
 } as const;
+
+const TogglePlayerActiveButton = ({
+  item,
+  isUpdating,
+  onToggle,
+}: {
+  item: DashboardPlayerItem;
+  isUpdating: boolean;
+  onToggle: (item: DashboardPlayerItem, nextIsActive: boolean) => void | Promise<void>;
+}) => {
+  const nextIsActive = !item.isActive;
+  const label = item.isActive ? "Desactivar del plantel" : "Activar en el plantel";
+
+  return (
+    <button
+      type="button"
+      className={`${actionButtonClassName} border-white/10 text-violet-50 hover:border-violet-200/35 hover:bg-white/8`}
+      disabled={!item.canManageActiveStatus || isUpdating}
+      aria-label={label}
+      title={
+        item.canManageActiveStatus
+          ? label
+          : "Publica el jugador para activarlo o desactivarlo en el plantel"
+      }
+      onClick={() => {
+        void onToggle(item, nextIsActive);
+      }}
+    >
+      {item.isActive ? (
+        <FiEyeOff className="size-4" aria-hidden="true" />
+      ) : (
+        <FiEye className="size-4" aria-hidden="true" />
+      )}
+    </button>
+  );
+};
 
 const DeletePlayerButton = ({
   item,
@@ -208,6 +279,54 @@ const SectionTitle = ({ title, count }: { title: string; count: number }) => (
   </div>
 );
 
+const DashboardPlantelMobileCard = ({
+  metaLeft,
+  metaRight,
+  thumbnail,
+  title,
+  subtitle,
+  badges,
+  actions,
+}: {
+  metaLeft: ReactNode;
+  metaRight: ReactNode;
+  thumbnail: ReactNode;
+  title: string;
+  subtitle?: string;
+  badges: ReactNode;
+  actions: ReactNode;
+}) => (
+  <article className="p-3 text-sm text-violet-50 sm:p-4">
+    <div className="mb-3 flex min-w-0 items-center justify-between gap-3">
+      <div className="min-w-0 truncate text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-violet-100/50">
+        {metaLeft}
+      </div>
+      <div className="shrink-0 text-[0.58rem] font-semibold uppercase tracking-widest text-violet-100/45">
+        {metaRight}
+      </div>
+    </div>
+
+    <div className="grid min-w-0 grid-cols-[3.5rem_minmax(0,1fr)] items-center gap-3">
+      {thumbnail}
+      <div className="min-w-0">
+        <h4 className="line-clamp-2 text-base font-black uppercase leading-tight text-white">
+          {title}
+        </h4>
+        {subtitle ? (
+          <p className="mt-1 text-xs leading-snug text-violet-100/55">{subtitle}</p>
+        ) : null}
+      </div>
+    </div>
+
+    <div className="mt-4 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-t border-white/8 pt-3">
+      <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+        {badges}
+      </div>
+      <div className="ml-auto flex shrink-0 items-center gap-2">{actions}</div>
+    </div>
+  </article>
+);
+
 const DashboardPlayersList = () => {
   const [filters, setFilters] = useState(defaultDashboardPlayersListFilters);
   const queryClient = useQueryClient();
@@ -239,21 +358,32 @@ const DashboardPlayersList = () => {
       }
     },
   });
+  const invalidatePlayerQueries = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.dashboard.players.all,
+      }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.players.all }),
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.dashboard.matches.options,
+      }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.games.all }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.events.goals() }),
+    ]);
+  };
   const deletePlayerMutation = useMutation({
     mutationFn: deleteDashboardPlayer,
-    onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.dashboard.players.all,
-        }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.players.all }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.dashboard.matches.options,
-        }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.games.all }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.events.goals() }),
-      ]);
-    },
+    onSuccess: invalidatePlayerQueries,
+  });
+  const activeStatusMutation = useMutation({
+    mutationFn: ({
+      id,
+      isActive,
+    }: {
+      id: string;
+      isActive: boolean;
+    }) => setDashboardPlayerActiveStatus(id, isActive),
+    onSuccess: invalidatePlayerQueries,
   });
   const deleteStaffMutation = useMutation({
     mutationFn: deleteDashboardStaff,
@@ -266,6 +396,55 @@ const DashboardPlayersList = () => {
       ]);
     },
   });
+
+  const handleTogglePlayerActiveStatus = async (
+    item: DashboardPlayerItem,
+    nextIsActive: boolean
+  ) => {
+    const runToggle = async () => {
+      try {
+        await toast.promise(
+          activeStatusMutation.mutateAsync({
+            id: item.id,
+            isActive: nextIsActive,
+          }),
+          {
+            loading: nextIsActive
+              ? "Activando jugador en el plantel..."
+              : "Desactivando jugador del plantel...",
+            success: nextIsActive
+              ? "Jugador activado en el plantel publico."
+              : "Jugador desactivado del plantel publico.",
+            error: "No pudimos actualizar el estado del jugador.",
+          },
+          deleteToastOptions
+        );
+      } catch (error) {
+        reportError(error, {
+          page: "DashboardPlayersList",
+          action: "toggle_player_active_status",
+          id: item.id,
+          nextIsActive,
+        });
+      }
+    };
+
+    if (!shouldConfirmDashboardPlayerActiveStatusChange(item, nextIsActive)) {
+      await runToggle();
+      return;
+    }
+
+    const copy = getDashboardPlayerActiveStatusConfirmCopy(item, nextIsActive);
+    const confirmed = await confirmDashboardAction({
+      ...copy,
+      icon: "warning",
+      variant: nextIsActive ? "primary" : "danger",
+    });
+
+    if (confirmed) {
+      await runToggle();
+    }
+  };
 
   const handleDeletePlayer = async (itemId: string) => {
     try {
@@ -428,6 +607,21 @@ const DashboardPlayersList = () => {
                   ...PLAYER_POSITION_OPTIONS,
                 ],
               },
+              {
+                id: "dashboard-players-roster",
+                label: "Plantel publico (jugadores)",
+                value: filters.roster,
+                onChange: (roster) =>
+                  setFilters((current) => ({
+                    ...current,
+                    roster: roster as typeof filters.roster,
+                  })),
+                options: [
+                  { value: "all", label: "Todos" },
+                  { value: "active", label: "Activos" },
+                  { value: "inactive", label: "Inactivos" },
+                ],
+              },
             ]}
             showClear={hasActiveFilters}
             onClear={() => setFilters(defaultDashboardPlayersListFilters())}
@@ -456,38 +650,43 @@ const DashboardPlayersList = () => {
               <>
                 <div className="divide-y divide-white/8 md:hidden">
                   {players.map((item) => (
-                    <article
+                    <DashboardPlantelMobileCard
                       key={item.id}
-                      className="p-3 text-sm text-violet-50 sm:p-4"
-                    >
-                      <div className="mb-3 flex min-w-0 justify-end">
-                        <p className="truncate text-[0.58rem] font-semibold uppercase tracking-wide text-violet-100/45">
-                          {getDashboardPlayerPositionLabel(item.position)}
-                        </p>
-                      </div>
-
-                      <div className="grid min-w-0 grid-cols-[3.5rem_minmax(0,1fr)] items-center gap-3">
+                      metaLeft={getDashboardPlayerPositionLabel(item.position)}
+                      metaRight={getPlayerNumberLabel(item)}
+                      thumbnail={
                         <PlantelThumbnail
                           imageUrl={item.imageUrl}
                           alt={`Foto de ${item.fullName}`}
                           fallbackLabel="Integrante sin foto"
                         />
-                        <div className="min-w-0">
-                          <h4 className="line-clamp-2 text-base font-black uppercase leading-tight text-white">
-                            {item.fullName}
-                          </h4>
-                          <p className="mt-1 text-xs font-semibold text-violet-100/55">
-                            {getPlayerNumberLabel(item)}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-white/8 pt-3">
-                        <PlantelStatusBadge
-                          status={item.status}
-                          hasPublishedVersion={item.hasPublishedVersion}
-                        />
-                        <div className="flex gap-2">
+                      }
+                      title={item.fullName}
+                      subtitle={
+                        item.birthDate
+                          ? `Nac. ${formatDate(item.birthDate)}`
+                          : undefined
+                      }
+                      badges={
+                        <>
+                          <PlantelStatusBadge
+                            status={item.status}
+                            hasPublishedVersion={item.hasPublishedVersion}
+                          />
+                          <PlantelRosterBadge
+                            canManageActiveStatus={item.canManageActiveStatus}
+                            isActive={item.isActive}
+                            compact
+                          />
+                        </>
+                      }
+                      actions={
+                        <>
+                          <TogglePlayerActiveButton
+                            item={item}
+                            isUpdating={activeStatusMutation.isPending}
+                            onToggle={handleTogglePlayerActiveStatus}
+                          />
                           <Link
                             to={ROUTES.DASHBOARD_PLAYERS_EDIT(item.id)}
                             className={`${actionButtonClassName} border-violet-200/20 bg-violet-300/10 hover:border-violet-200/45 hover:bg-violet-300/16`}
@@ -501,9 +700,9 @@ const DashboardPlayersList = () => {
                             isDeleting={deletePlayerMutation.isPending}
                             onDelete={handleDeletePlayer}
                           />
-                        </div>
-                      </div>
-                    </article>
+                        </>
+                      }
+                    />
                   ))}
                 </div>
 
@@ -514,6 +713,7 @@ const DashboardPlayersList = () => {
                       <th className="px-5 py-4">Posicion</th>
                       <th className="px-5 py-4">Nacimiento</th>
                       <th className="px-5 py-4">Estado</th>
+                      <th className="px-5 py-4">Plantel</th>
                       <th className="px-5 py-4 text-right">Acciones</th>
                     </tr>
                   </thead>
@@ -550,7 +750,18 @@ const DashboardPlayersList = () => {
                           />
                         </td>
                         <td className="px-5 py-4">
+                          <PlantelRosterBadge
+                            canManageActiveStatus={item.canManageActiveStatus}
+                            isActive={item.isActive}
+                          />
+                        </td>
+                        <td className="px-5 py-4">
                           <div className="flex justify-end gap-2">
+                            <TogglePlayerActiveButton
+                              item={item}
+                              isUpdating={activeStatusMutation.isPending}
+                              onToggle={handleTogglePlayerActiveStatus}
+                            />
                             <Link
                               to={ROUTES.DASHBOARD_PLAYERS_EDIT(item.id)}
                               className={`${actionButtonClassName} border-violet-200/20 bg-violet-300/10 hover:border-violet-200/45 hover:bg-violet-300/16`}
@@ -591,38 +802,28 @@ const DashboardPlayersList = () => {
               <>
                 <div className="divide-y divide-white/8 md:hidden">
                   {staff.map((item) => (
-                    <article
+                    <DashboardPlantelMobileCard
                       key={item.id}
-                      className="p-3 text-sm text-violet-50 sm:p-4"
-                    >
-                      <div className="mb-3 flex min-w-0 justify-end">
-                        <p className="truncate text-[0.58rem] font-semibold uppercase tracking-wide text-violet-100/45">
-                          {getDashboardStaffRoleLabel(item.role)}
-                        </p>
-                      </div>
-
-                      <div className="grid min-w-0 grid-cols-[3.5rem_minmax(0,1fr)] items-center gap-3">
+                      metaLeft={getDashboardStaffRoleLabel(item.role)}
+                      metaRight={
+                        item.birthDate ? formatDate(item.birthDate) : "Sin fecha"
+                      }
+                      thumbnail={
                         <PlantelThumbnail
                           imageUrl={item.imageUrl}
                           alt={`Foto de ${item.fullName}`}
                           fallbackLabel="Integrante sin foto"
                         />
-                        <div className="min-w-0">
-                          <h4 className="line-clamp-2 text-base font-black uppercase leading-tight text-white">
-                            {item.fullName}
-                          </h4>
-                          <p className="mt-1 text-xs font-semibold text-violet-100/55">
-                            {getDashboardStaffRoleLabel(item.role)}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-white/8 pt-3">
+                      }
+                      title={item.fullName}
+                      badges={
                         <PlantelStatusBadge
                           status={item.status}
                           hasPublishedVersion={item.hasPublishedVersion}
                         />
-                        <div className="flex gap-2">
+                      }
+                      actions={
+                        <>
                           <Link
                             to={ROUTES.DASHBOARD_STAFF_EDIT(item.id)}
                             className={`${actionButtonClassName} border-violet-200/20 bg-violet-300/10 hover:border-violet-200/45 hover:bg-violet-300/16`}
@@ -636,9 +837,9 @@ const DashboardPlayersList = () => {
                             isDeleting={deleteStaffMutation.isPending}
                             onDelete={handleDeleteStaff}
                           />
-                        </div>
-                      </div>
-                    </article>
+                        </>
+                      }
+                    />
                   ))}
                 </div>
 

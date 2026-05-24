@@ -136,6 +136,8 @@ export type DashboardPlayerItem = {
   status: DashboardDocumentStatus;
   hasDraft: boolean;
   hasPublishedVersion: boolean;
+  isActive: boolean;
+  canManageActiveStatus: boolean;
   name: string;
   lastName: string;
   fullName: string;

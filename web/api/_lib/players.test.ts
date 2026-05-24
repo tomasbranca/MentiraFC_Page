@@ -6,6 +6,7 @@ import {
   dashboardPlayerReferenceUsageQuery,
   parseDashboardPlayerDraftFormData,
   parseDashboardPlayerDraftInput,
+  parseDashboardPlayerActiveStatusInput,
   parseDashboardPlayerFormData,
   parseDashboardPlayerInput,
   validateDashboardPlayerImageFile,
@@ -180,5 +181,24 @@ describe("dashboard players api input", () => {
         },
       },
     ]);
+  });
+});
+
+describe("dashboard player active status input", () => {
+  it("parsea el estado activo desde JSON", () => {
+    expect(parseDashboardPlayerActiveStatusInput({ isActive: false })).toBe(
+      false
+    );
+    expect(parseDashboardPlayerActiveStatusInput({ isActive: true })).toBe(
+      true
+    );
+    expect(parseDashboardPlayerActiveStatusInput({ isActive: "true" })).toBe(
+      null
+    );
+  });
+
+  it("incluye isActive en las queries del dashboard", () => {
+    expect(dashboardPlayerListQuery).toContain("isActive");
+    expect(dashboardPlayerByIdQuery).toContain("isActive");
   });
 });
