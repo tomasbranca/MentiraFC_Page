@@ -30,7 +30,7 @@ import {
 } from "../../../types/dashboard";
 import { confirmDashboardAction } from "../../app/confirmDialog";
 import ErrorFallback from "../../components/errors/ErrorFallback";
-import Loader from "../../components/Loader/Loader";
+import DashboardContentLoader from "../../dashboard/DashboardContentLoader";
 import { formatDate } from "../../utils/date.utils";
 import { Field, SelectField } from "./DashboardPlayersFields";
 import {
@@ -320,7 +320,7 @@ const DashboardPlayersForm = () => {
   const isSaving = saveDraftMutation.isPending || publishMutation.isPending;
 
   if (playerQuery.isLoading) {
-    return <Loader />;
+    return <DashboardContentLoader />;
   }
 
   if (playerQuery.isError) {
@@ -554,7 +554,7 @@ const DashboardPlayersForm = () => {
             <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-violet-200/80">
               Plantel
             </p>
-            <h2 className="mt-3 text-3xl font-black text-white">
+            <h2 className="mt-3 text-2xl font-black text-white sm:text-3xl">
               {isEditing ? "Editar jugador" : "Nuevo jugador"}
             </h2>
             <p className="mt-2 text-sm text-violet-100/65">
@@ -564,10 +564,10 @@ const DashboardPlayersForm = () => {
 
           <Link
             to={ROUTES.DASHBOARD_PLAYERS}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[3px] border border-white/10 px-4 py-3 text-sm text-white transition hover:border-violet-200/35 hover:bg-white/4.5"
+            className="order-first inline-flex min-h-10 w-fit items-center justify-center gap-2 self-start rounded-[3px] border border-white/10 px-3 py-2 text-xs font-semibold text-white transition hover:border-violet-200/35 hover:bg-white/4.5 sm:order-none sm:min-h-11 sm:self-auto sm:px-4 sm:py-3 sm:text-sm"
           >
             <FiArrowLeft className="size-4" aria-hidden="true" />
-            Volver
+            Volver a la lista
           </Link>
         </div>
       </header>

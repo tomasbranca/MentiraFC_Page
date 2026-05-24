@@ -29,7 +29,7 @@ import type {
 import { ROUTES } from "../../../shared/routing";
 import { confirmDashboardAction } from "../../app/confirmDialog";
 import ErrorFallback from "../../components/errors/ErrorFallback";
-import Loader from "../../components/Loader/Loader";
+import DashboardContentLoader from "../../dashboard/DashboardContentLoader";
 import { formatDateTime } from "../../utils/date.utils";
 import { Field, SelectField } from "./DashboardMatchesFields";
 import type { DashboardMatchErrors } from "./dashboardMatches.utils";
@@ -70,6 +70,9 @@ const saveToastOptions = {
   },
 } as const;
 
+const GUEST_GOAL_SCORER_VALUE = "__guest_goal_scorer__";
+const OPPONENT_OWN_GOAL_VALUE = "__opponent_own_goal__";
+
 type SavedMatchSnapshot = {
   valuesJson: string;
 };
@@ -84,9 +87,9 @@ const dirtyFieldLabels = {
   goalsFor: "Goles Mentira FC",
   goalsAgainst: "Goles rival",
   playedPlayerIds: "Jugadores",
-  goalScorers: "Goleadores plantel",
-  guestGoalScorers: "Invitados",
-  opponentOwnGoals: "Goles en propia rival",
+  goalScorers: "Goles de Mentira FC",
+  guestGoalScorers: "Goles de Mentira FC",
+  opponentOwnGoals: "Goles de Mentira FC",
 } as const;
 
 type DirtyFieldKey = keyof typeof dirtyFieldLabels;
@@ -105,6 +108,12 @@ const isDashboardMatchState = (
   value?: string | null
 ): value is DashboardMatchState =>
   dashboardMatchStates.includes(value as DashboardMatchState);
+
+const isPositiveGoalCount = (value: string): boolean => {
+  const goals = Number(value);
+
+  return value.trim() !== "" && Number.isInteger(goals) && goals >= 1;
+};
 
 const serializeValues = (values: DashboardMatchInput): string =>
   JSON.stringify({
@@ -330,13 +339,15 @@ const DashboardMatchesForm = () => {
       return values[field] !== savedValues[field];
     });
   }, [currentValuesJson, savedSnapshot.valuesJson, values]);
-  const dirtyLabels = dirtyFields.map((field) => dirtyFieldLabels[field]);
+  const dirtyLabels = [
+    ...new Set(dirtyFields.map((field) => dirtyFieldLabels[field])),
+  ];
   const isDirty = (field: DirtyFieldKey): boolean =>
     dirtyFields.includes(field);
   const isSaving = saveDraftMutation.isPending || publishMutation.isPending;
 
   if (optionsQuery.isLoading || matchQuery.isLoading) {
-    return <Loader />;
+    return <DashboardContentLoader />;
   }
 
   if (optionsQuery.isError || matchQuery.isError) {
@@ -370,6 +381,28 @@ const DashboardMatchesForm = () => {
     (player) =>
       !values.goalScorers.some((scorer) => scorer.playerId === player.id)
   );
+  const isGuestGoalScorerSelected =
+    selectedScorerPlayerId === GUEST_GOAL_SCORER_VALUE;
+  const isOpponentOwnGoalSelected =
+    selectedScorerPlayerId === OPPONENT_OWN_GOAL_VALUE;
+  const selectedScorerGoalsValid = isPositiveGoalCount(selectedScorerGoals);
+  const selectedGuestGoalsValid = isPositiveGoalCount(selectedGuestGoals);
+  const canAddGoalEvent = isGuestGoalScorerSelected
+    ? selectedGuestName.trim().length > 0 && selectedGuestGoalsValid
+    : isOpponentOwnGoalSelected
+      ? selectedScorerGoalsValid
+      : selectedScorerPlayerId.length > 0 && selectedScorerGoalsValid;
+  const opponentOwnGoalsCount = parseOpponentOwnGoalCount(
+    values.opponentOwnGoals
+  );
+  const hasGoalEvents =
+    values.goalScorers.length > 0 ||
+    values.guestGoalScorers.length > 0 ||
+    opponentOwnGoalsCount > 0;
+  const goalEventsDirty =
+    isDirty("goalScorers") ||
+    isDirty("guestGoalScorers") ||
+    isDirty("opponentOwnGoals");
 
   const handleChange = (
     event: ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -444,7 +477,39 @@ const DashboardMatchesForm = () => {
     setStatus(null);
   };
 
+  function clearGoalValidationErrors() {
+    setErrors((currentErrors) => ({
+      ...currentErrors,
+      goalScorers: undefined,
+    }));
+    setStatus(null);
+  }
+
   const handleAddGoalScorer = () => {
+    if (isGuestGoalScorerSelected) {
+      handleAddGuestGoalScorer();
+      return;
+    }
+
+    if (isOpponentOwnGoalSelected) {
+      const goals = Number(selectedScorerGoals);
+
+      if (!Number.isInteger(goals) || goals < 1) {
+        return;
+      }
+
+      setValues((currentValues) => ({
+        ...currentValues,
+        opponentOwnGoals: String(
+          parseOpponentOwnGoalCount(currentValues.opponentOwnGoals) + goals
+        ),
+      }));
+      setSelectedScorerPlayerId("");
+      setSelectedScorerGoals("1");
+      clearGoalValidationErrors();
+      return;
+    }
+
     const goals = Number(selectedScorerGoals);
 
     if (
@@ -467,11 +532,7 @@ const DashboardMatchesForm = () => {
     }));
     setSelectedScorerPlayerId("");
     setSelectedScorerGoals("1");
-    setErrors((currentErrors) => ({
-      ...currentErrors,
-      goalScorers: undefined,
-    }));
-    setStatus(null);
+    clearGoalValidationErrors();
   };
 
   const handleGoalScorerGoalsChange = (
@@ -503,19 +564,7 @@ const DashboardMatchesForm = () => {
         (scorer) => scorer.playerId !== playerId
       ),
     }));
-    setErrors((currentErrors) => ({
-      ...currentErrors,
-      goalScorers: undefined,
-    }));
-    setStatus(null);
-  };
-
-  const clearGoalValidationErrors = () => {
-    setErrors((currentErrors) => ({
-      ...currentErrors,
-      goalScorers: undefined,
-    }));
-    setStatus(null);
+    clearGoalValidationErrors();
   };
 
   const handleAddGuestGoalScorer = () => {
@@ -536,6 +585,7 @@ const DashboardMatchesForm = () => {
         },
       ],
     }));
+    setSelectedScorerPlayerId("");
     setSelectedGuestName("");
     setSelectedGuestGoals("1");
     clearGoalValidationErrors();
@@ -552,6 +602,22 @@ const DashboardMatchesForm = () => {
             }
           : scorer
       ),
+    }));
+    clearGoalValidationErrors();
+  };
+
+  const handleOpponentOwnGoalsChange = (nextGoals: string) => {
+    setValues((currentValues) => ({
+      ...currentValues,
+      opponentOwnGoals: nextGoals,
+    }));
+    clearGoalValidationErrors();
+  };
+
+  const handleRemoveOpponentOwnGoals = () => {
+    setValues((currentValues) => ({
+      ...currentValues,
+      opponentOwnGoals: "0",
     }));
     clearGoalValidationErrors();
   };
@@ -655,7 +721,7 @@ const DashboardMatchesForm = () => {
             <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-violet-200/80">
               Partidos
             </p>
-            <h2 className="mt-3 text-3xl font-black text-white">
+            <h2 className="mt-3 text-2xl font-black text-white sm:text-3xl">
               {isEditing ? "Editar partido" : "Nuevo partido"}
             </h2>
             <p className="mt-2 text-sm text-violet-100/65">
@@ -665,10 +731,10 @@ const DashboardMatchesForm = () => {
 
           <Link
             to={ROUTES.DASHBOARD_MATCHES}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[3px] border border-white/10 px-4 py-3 text-sm text-white transition hover:border-violet-200/35 hover:bg-white/4.5"
+            className="order-first inline-flex min-h-10 w-fit items-center justify-center gap-2 self-start rounded-[3px] border border-white/10 px-3 py-2 text-xs font-semibold text-white transition hover:border-violet-200/35 hover:bg-white/4.5 sm:order-none sm:min-h-11 sm:self-auto sm:px-4 sm:py-3 sm:text-sm"
           >
             <FiArrowLeft className="size-4" aria-hidden="true" />
-            Volver
+            Volver a la lista
           </Link>
         </div>
       </header>
@@ -828,13 +894,16 @@ const DashboardMatchesForm = () => {
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <div className="flex items-center gap-2 text-sm font-medium text-violet-100">
-                      <span>Plantel</span>
-                      {isDirty("goalScorers") && (
+                      <span>Goles de Mentira FC</span>
+                      {goalEventsDirty && (
                         <span className="rounded-[3px] border border-amber-200/20 bg-amber-200/10 px-2 py-0.5 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-amber-100">
                           Editado
                         </span>
                       )}
                     </div>
+                    <p className="mt-1 text-xs text-violet-100/45">
+                      Elegí jugadores del plantel, invitados o goles en propia.
+                    </p>
                   </div>
                   <span
                     className={`w-fit rounded-[3px] border px-2.5 py-1 text-xs font-medium ${
@@ -857,7 +926,13 @@ const DashboardMatchesForm = () => {
                   </p>
                 )}
 
-                <div className="grid gap-2 rounded-[3px] border border-white/10 bg-[#0f0f13] p-2 sm:grid-cols-[minmax(0,1fr)_7rem_2.75rem] sm:border-0 sm:bg-transparent sm:p-0">
+                <div
+                  className={`grid gap-2 rounded-[3px] border border-white/10 bg-[#0f0f13] p-2 sm:border-0 sm:bg-transparent sm:p-0 ${
+                    isGuestGoalScorerSelected
+                      ? "sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_7rem_2.75rem]"
+                      : "sm:grid-cols-[minmax(0,1fr)_7rem_2.75rem]"
+                  }`}
+                >
                   <select
                     value={selectedScorerPlayerId}
                     onChange={(event) =>
@@ -867,6 +942,10 @@ const DashboardMatchesForm = () => {
                     aria-label="Goleador"
                   >
                     <option value="">Elegir goleador</option>
+                    <option value={GUEST_GOAL_SCORER_VALUE}>Invitado</option>
+                    <option value={OPPONENT_OWN_GOAL_VALUE}>
+                      Gol en propia
+                    </option>
                     {availableScorerPlayers.map((player) => (
                       <option key={player.id} value={player.id}>
                         {player.number != null ? `#${player.number} ` : ""}
@@ -874,22 +953,44 @@ const DashboardMatchesForm = () => {
                       </option>
                     ))}
                   </select>
+                  {isGuestGoalScorerSelected && (
+                    <input
+                      type="text"
+                      value={selectedGuestName}
+                      onChange={(event) =>
+                        setSelectedGuestName(event.target.value)
+                      }
+                      placeholder="Nombre del invitado"
+                      className="min-h-11 w-full min-w-0 rounded-[3px] border border-white/10 bg-[#0f0f13] px-3 py-2.5 text-sm text-white outline-none transition focus:border-violet-300/80 focus:ring-2 focus:ring-violet-500/20"
+                      aria-label="Nombre del invitado"
+                    />
+                  )}
                   <input
                     type="number"
                     min={1}
-                    value={selectedScorerGoals}
+                    value={
+                      isGuestGoalScorerSelected
+                        ? selectedGuestGoals
+                        : selectedScorerGoals
+                    }
                     onChange={(event) =>
-                      setSelectedScorerGoals(event.target.value)
+                      isGuestGoalScorerSelected
+                        ? setSelectedGuestGoals(event.target.value)
+                        : setSelectedScorerGoals(event.target.value)
                     }
                     className="min-h-11 w-full min-w-0 rounded-[3px] border border-white/10 bg-[#0f0f13] px-3 py-2.5 text-sm text-white outline-none transition focus:border-violet-300/80 focus:ring-2 focus:ring-violet-500/20"
-                    aria-label="Cantidad de goles"
+                    aria-label={
+                      isOpponentOwnGoalSelected
+                        ? "Cantidad de goles en propia"
+                        : "Cantidad de goles"
+                    }
                   />
                   <button
                     type="button"
                     className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[3px] border border-violet-200/25 bg-violet-100 px-3 text-sm font-semibold text-violet-950 transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/40 disabled:cursor-not-allowed disabled:opacity-45 sm:h-11 sm:w-11 sm:px-0"
-                    disabled={!selectedScorerPlayerId}
-                    aria-label="Agregar goleador"
-                    title="Agregar goleador"
+                    disabled={!canAddGoalEvent}
+                    aria-label="Agregar gol"
+                    title="Agregar gol"
                     onClick={handleAddGoalScorer}
                   >
                     <FiPlus className="size-4" aria-hidden="true" />
@@ -897,7 +998,7 @@ const DashboardMatchesForm = () => {
                   </button>
                 </div>
 
-                {values.goalScorers.length > 0 ? (
+                {hasGoalEvents ? (
                   <div className="space-y-2">
                     {values.goalScorers.map((scorer) => {
                       const player = players.find(
@@ -917,7 +1018,7 @@ const DashboardMatchesForm = () => {
                               {player?.fullName ?? "Jugador"}
                             </p>
                             <p className="text-xs text-violet-100/45">
-                              Evento de gol
+                              Plantel
                             </p>
                           </div>
                           <input
@@ -931,89 +1032,36 @@ const DashboardMatchesForm = () => {
                               )
                             }
                             className="min-h-11 w-full min-w-0 rounded-[3px] border border-white/10 bg-[#151518] px-3 py-2.5 text-sm text-white outline-none transition focus:border-violet-300/80 focus:ring-2 focus:ring-violet-500/20"
-                            aria-label={`Goles de ${player?.fullName ?? "jugador"}`}
+                            aria-label={`Goles de ${
+                              player?.fullName ?? "jugador"
+                            }`}
                           />
                           <button
                             type="button"
                             className="absolute right-3 top-3 inline-flex size-9 items-center justify-center rounded-[3px] border border-red-300/20 text-red-100 transition hover:border-red-200/45 hover:bg-red-400/10 focus:outline-none focus:ring-2 focus:ring-violet-500/40 sm:static sm:size-11"
                             aria-label="Quitar goleador"
                             title="Quitar goleador"
-                            onClick={() => handleRemoveGoalScorer(scorer.playerId)}
+                            onClick={() =>
+                              handleRemoveGoalScorer(scorer.playerId)
+                            }
                           >
                             <FiTrash2 className="size-4" aria-hidden="true" />
                           </button>
                         </div>
                       );
                     })}
-                  </div>
-                ) : (
-                  <p className="rounded-[3px] border border-dashed border-white/10 px-3 py-3 text-sm text-violet-100/55">
-                    {Number(values.goalsFor) > 0
-                      ? "Sin goles del plantel cargados."
-                      : "Sin goles del plantel cargados."}
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-3 rounded-[3px] border border-white/10 bg-[#151518] p-3">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
-                    <div className="flex items-center gap-2 text-sm font-medium text-violet-100">
-                      <span>Invitados al partido</span>
-                      {isDirty("guestGoalScorers") && (
-                        <span className="rounded-[3px] border border-amber-200/20 bg-amber-200/10 px-2 py-0.5 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-amber-100">
-                          Editado
-                        </span>
-                      )}
-                    </div>
-                    <p className="mt-1 text-xs text-violet-100/45">
-                      No forman parte del plantel habitual.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid gap-2 rounded-[3px] border border-white/10 bg-[#0f0f13] p-2 sm:grid-cols-[minmax(0,1fr)_7rem_2.75rem] sm:border-0 sm:bg-transparent sm:p-0">
-                  <input
-                    type="text"
-                    value={selectedGuestName}
-                    onChange={(event) => setSelectedGuestName(event.target.value)}
-                    placeholder="Nombre del invitado"
-                    className="min-h-11 w-full min-w-0 rounded-[3px] border border-white/10 bg-[#0f0f13] px-3 py-2.5 text-sm text-white outline-none transition focus:border-violet-300/80 focus:ring-2 focus:ring-violet-500/20"
-                    aria-label="Nombre del invitado"
-                  />
-                  <input
-                    type="number"
-                    min={1}
-                    value={selectedGuestGoals}
-                    onChange={(event) => setSelectedGuestGoals(event.target.value)}
-                    className="min-h-11 w-full min-w-0 rounded-[3px] border border-white/10 bg-[#0f0f13] px-3 py-2.5 text-sm text-white outline-none transition focus:border-violet-300/80 focus:ring-2 focus:ring-violet-500/20"
-                    aria-label="Cantidad de goles del invitado"
-                  />
-                  <button
-                    type="button"
-                    className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[3px] border border-violet-200/25 bg-violet-100 px-3 text-sm font-semibold text-violet-950 transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/40 disabled:cursor-not-allowed disabled:opacity-45 sm:h-11 sm:w-11 sm:px-0"
-                    disabled={!selectedGuestName.trim()}
-                    aria-label="Agregar invitado goleador"
-                    title="Agregar invitado goleador"
-                    onClick={handleAddGuestGoalScorer}
-                  >
-                    <FiPlus className="size-4" aria-hidden="true" />
-                    <span className="sm:sr-only">Agregar</span>
-                  </button>
-                </div>
-
-                {values.guestGoalScorers.length > 0 ? (
-                  <div className="space-y-2">
                     {values.guestGoalScorers.map((scorer) => (
                       <div
-                        key={scorer.name}
+                        key={`guest-${scorer.name}`}
                         className="relative grid gap-3 rounded-[3px] border border-white/10 bg-[#0f0f13] p-3 sm:grid-cols-[minmax(0,1fr)_6rem_2.75rem] sm:items-center sm:p-2"
                       >
                         <div className="min-w-0 pr-12 sm:pr-0">
                           <p className="truncate text-sm font-medium text-white">
                             {scorer.name}
                           </p>
-                          <p className="text-xs text-violet-100/45">Invitado</p>
+                          <p className="text-xs text-violet-100/45">
+                            Invitado
+                          </p>
                         </div>
                         <input
                           type="number"
@@ -1033,45 +1081,51 @@ const DashboardMatchesForm = () => {
                           className="absolute right-3 top-3 inline-flex size-9 items-center justify-center rounded-[3px] border border-red-300/20 text-red-100 transition hover:border-red-200/45 hover:bg-red-400/10 focus:outline-none focus:ring-2 focus:ring-violet-500/40 sm:static sm:size-11"
                           aria-label={`Quitar goles de ${scorer.name}`}
                           title={`Quitar goles de ${scorer.name}`}
-                          onClick={() => handleRemoveGuestGoalScorer(scorer.name)}
+                          onClick={() =>
+                            handleRemoveGuestGoalScorer(scorer.name)
+                          }
                         >
                           <FiTrash2 className="size-4" aria-hidden="true" />
                         </button>
                       </div>
                     ))}
+                    {opponentOwnGoalsCount > 0 && (
+                      <div className="relative grid gap-3 rounded-[3px] border border-white/10 bg-[#0f0f13] p-3 sm:grid-cols-[minmax(0,1fr)_6rem_2.75rem] sm:items-center sm:p-2">
+                        <div className="min-w-0 pr-12 sm:pr-0">
+                          <p className="truncate text-sm font-medium text-white">
+                            Gol en propia
+                          </p>
+                          <p className="text-xs text-violet-100/45">
+                            Rival a favor de Mentira FC
+                          </p>
+                        </div>
+                        <input
+                          type="number"
+                          min={1}
+                          value={values.opponentOwnGoals}
+                          onChange={(event) =>
+                            handleOpponentOwnGoalsChange(event.target.value)
+                          }
+                          className="min-h-11 w-full min-w-0 rounded-[3px] border border-white/10 bg-[#151518] px-3 py-2.5 text-sm text-white outline-none transition focus:border-violet-300/80 focus:ring-2 focus:ring-violet-500/20"
+                          aria-label="Goles en propia del rival"
+                        />
+                        <button
+                          type="button"
+                          className="absolute right-3 top-3 inline-flex size-9 items-center justify-center rounded-[3px] border border-red-300/20 text-red-100 transition hover:border-red-200/45 hover:bg-red-400/10 focus:outline-none focus:ring-2 focus:ring-violet-500/40 sm:static sm:size-11"
+                          aria-label="Quitar goles en propia"
+                          title="Quitar goles en propia"
+                          onClick={handleRemoveOpponentOwnGoals}
+                        >
+                          <FiTrash2 className="size-4" aria-hidden="true" />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <p className="rounded-[3px] border border-dashed border-white/10 px-3 py-3 text-sm text-violet-100/55">
-                    Sin goles de invitados cargados.
+                    Sin eventos de gol cargados.
                   </p>
                 )}
-              </div>
-
-              <div className="rounded-[3px] border border-white/10 bg-[#151518] p-3">
-                <div className="flex items-center gap-2 text-sm font-medium text-violet-100">
-                  <span>Goles en propia del rival</span>
-                  {isDirty("opponentOwnGoals") && (
-                    <span className="rounded-[3px] border border-amber-200/20 bg-amber-200/10 px-2 py-0.5 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-amber-100">
-                      Editado
-                    </span>
-                  )}
-                </div>
-                <p className="mt-1 text-xs text-violet-100/45">
-                  Cuentan a favor de Mentira FC. No se cargan goleadores del
-                  equipo rival.
-                </p>
-                <div className="mt-3 max-w-40">
-                  <input
-                    id="dashboard-match-opponent-own-goals"
-                    name="opponentOwnGoals"
-                    type="number"
-                    min={0}
-                    value={values.opponentOwnGoals}
-                    onChange={handleChange}
-                    className="min-h-11 w-full min-w-0 rounded-[3px] border border-white/10 bg-[#0f0f13] px-3 py-2.5 text-sm text-white outline-none transition focus:border-violet-300/80 focus:ring-2 focus:ring-violet-500/20"
-                    aria-label="Goles en propia del rival a favor de Mentira FC"
-                  />
-                </div>
               </div>
 
               <div>

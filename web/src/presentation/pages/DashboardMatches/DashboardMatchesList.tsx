@@ -16,7 +16,7 @@ import type { DashboardMatchItem } from "../../../types/dashboard";
 import { ROUTES } from "../../../shared/routing";
 import { confirmDashboardAction } from "../../app/confirmDialog";
 import ErrorFallback from "../../components/errors/ErrorFallback";
-import Loader from "../../components/Loader/Loader";
+import DashboardContentLoader from "../../dashboard/DashboardContentLoader";
 import DashboardListFilteredEmpty from "../../dashboard/DashboardListFilteredEmpty";
 import DashboardListFilters from "../../dashboard/DashboardListFilters";
 import { useDashboardPermission } from "../../hooks/usePermission";
@@ -244,7 +244,7 @@ const DashboardMatchesList = () => {
   const hasRowActions = canEditMatch || canDeleteMatch;
 
   if (matchesQuery.isLoading) {
-    return <Loader />;
+    return <DashboardContentLoader />;
   }
 
   if (matchesQuery.isError) {
