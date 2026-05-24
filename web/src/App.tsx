@@ -12,8 +12,9 @@ import { ROUTES } from "./shared/routing";
 import RouteHead from "./presentation/seo/RouteHead";
 import Home from "./presentation/pages/Home/Home";
 import RequireAuth from "./presentation/routing/RequireAuth";
+import RequireDashboardPermission from "./presentation/routing/RequireDashboardPermission";
 import RequirePermission from "./presentation/routing/RequirePermission";
-import { DASHBOARD_RESOURCE_PERMISSIONS } from "./domain/auth/permissions";
+import { PERMISSIONS } from "./domain/auth/permissions";
 
 import { lazyWithReload } from "./lib/lazyWithReload";
 
@@ -200,7 +201,7 @@ function App({ initialData }: AppProps) {
                 <Route
                   path={ROUTES.DASHBOARD}
                   element={
-                    <RequirePermission permission="view_dashboard">
+                    <RequirePermission permission={PERMISSIONS.viewDashboard}>
                       <DashboardLayout />
                     </RequirePermission>
                   }
@@ -209,243 +210,233 @@ function App({ initialData }: AppProps) {
                   <Route
                     path="noticias"
                     element={
-                      <RequirePermission
-                        permission={DASHBOARD_RESOURCE_PERMISSIONS.news.view}
-                      >
+                      <RequireDashboardPermission resource="news" action="view">
                         <DashboardNewsList />
-                      </RequirePermission>
+                      </RequireDashboardPermission>
                     }
                   />
                   <Route
                     path="noticias/nueva"
                     element={
-                      <RequirePermission
-                        permission={DASHBOARD_RESOURCE_PERMISSIONS.news.create}
+                      <RequireDashboardPermission
+                        resource="news"
+                        action="create"
                       >
                         <DashboardNewsForm />
-                      </RequirePermission>
+                      </RequireDashboardPermission>
                     }
                   />
                   <Route
                     path="noticias/:id"
                     element={
-                      <RequirePermission
-                        permission={DASHBOARD_RESOURCE_PERMISSIONS.news.edit}
-                      >
+                      <RequireDashboardPermission resource="news" action="edit">
                         <DashboardNewsForm />
-                      </RequirePermission>
+                      </RequireDashboardPermission>
                     }
                   />
                   <Route
                     path="partidos"
                     element={
-                      <RequirePermission
-                        permission={DASHBOARD_RESOURCE_PERMISSIONS.matches.view}
+                      <RequireDashboardPermission
+                        resource="matches"
+                        action="view"
                       >
                         <DashboardMatchesList />
-                      </RequirePermission>
+                      </RequireDashboardPermission>
                     }
                   />
                   <Route
                     path="partidos/nuevo"
                     element={
-                      <RequirePermission
-                        permission={DASHBOARD_RESOURCE_PERMISSIONS.matches.create}
+                      <RequireDashboardPermission
+                        resource="matches"
+                        action="create"
                       >
                         <DashboardMatchesForm />
-                      </RequirePermission>
+                      </RequireDashboardPermission>
                     }
                   />
                   <Route
                     path="partidos/:id"
                     element={
-                      <RequirePermission
-                        permission={DASHBOARD_RESOURCE_PERMISSIONS.matches.edit}
+                      <RequireDashboardPermission
+                        resource="matches"
+                        action="edit"
                       >
                         <DashboardMatchesForm />
-                      </RequirePermission>
+                      </RequireDashboardPermission>
                     }
                   />
                   <Route
                     path="tabla"
                     element={
-                      <RequirePermission
-                        permission={DASHBOARD_RESOURCE_PERMISSIONS.table.view}
-                      >
+                      <RequireDashboardPermission resource="table" action="view">
                         <DashboardTableList />
-                      </RequirePermission>
+                      </RequireDashboardPermission>
                     }
                   />
                   <Route
                     path="tabla/nueva"
                     element={
-                      <RequirePermission
-                        permission={DASHBOARD_RESOURCE_PERMISSIONS.table.create}
+                      <RequireDashboardPermission
+                        resource="table"
+                        action="create"
                       >
                         <DashboardTableForm />
-                      </RequirePermission>
+                      </RequireDashboardPermission>
                     }
                   />
                   <Route
                     path="tabla/:id"
                     element={
-                      <RequirePermission
-                        permission={DASHBOARD_RESOURCE_PERMISSIONS.table.edit}
-                      >
+                      <RequireDashboardPermission resource="table" action="edit">
                         <DashboardTableForm />
-                      </RequirePermission>
+                      </RequireDashboardPermission>
                     }
                   />
                   <Route
                     path="torneos"
                     element={
-                      <RequirePermission
-                        permission={
-                          DASHBOARD_RESOURCE_PERMISSIONS.tournaments.view
-                        }
+                      <RequireDashboardPermission
+                        resource="tournaments"
+                        action="view"
                       >
                         <DashboardTournamentsList />
-                      </RequirePermission>
+                      </RequireDashboardPermission>
                     }
                   />
                   <Route
                     path="torneos/nuevo"
                     element={
-                      <RequirePermission
-                        permission={
-                          DASHBOARD_RESOURCE_PERMISSIONS.tournaments.create
-                        }
+                      <RequireDashboardPermission
+                        resource="tournaments"
+                        action="create"
                       >
                         <DashboardTournamentsForm />
-                      </RequirePermission>
+                      </RequireDashboardPermission>
                     }
                   />
                   <Route
                     path="torneos/:id"
                     element={
-                      <RequirePermission
-                        permission={
-                          DASHBOARD_RESOURCE_PERMISSIONS.tournaments.edit
-                        }
+                      <RequireDashboardPermission
+                        resource="tournaments"
+                        action="edit"
                       >
                         <DashboardTournamentsForm />
-                      </RequirePermission>
+                      </RequireDashboardPermission>
                     }
                   />
                   <Route
                     path="organizadores"
                     element={
-                      <RequirePermission
-                        permission={
-                          DASHBOARD_RESOURCE_PERMISSIONS.organizations.view
-                        }
+                      <RequireDashboardPermission
+                        resource="organizations"
+                        action="view"
                       >
                         <DashboardOrganizationsList />
-                      </RequirePermission>
+                      </RequireDashboardPermission>
                     }
                   />
                   <Route
                     path="organizadores/nuevo"
                     element={
-                      <RequirePermission
-                        permission={
-                          DASHBOARD_RESOURCE_PERMISSIONS.organizations.create
-                        }
+                      <RequireDashboardPermission
+                        resource="organizations"
+                        action="create"
                       >
                         <DashboardOrganizationsForm />
-                      </RequirePermission>
+                      </RequireDashboardPermission>
                     }
                   />
                   <Route
                     path="organizadores/:id"
                     element={
-                      <RequirePermission
-                        permission={
-                          DASHBOARD_RESOURCE_PERMISSIONS.organizations.edit
-                        }
+                      <RequireDashboardPermission
+                        resource="organizations"
+                        action="edit"
                       >
                         <DashboardOrganizationsForm />
-                      </RequirePermission>
+                      </RequireDashboardPermission>
                     }
                   />
                   <Route
                     path="clubes"
                     element={
-                      <RequirePermission
-                        permission={DASHBOARD_RESOURCE_PERMISSIONS.teams.view}
-                      >
+                      <RequireDashboardPermission resource="teams" action="view">
                         <DashboardTeamsList />
-                      </RequirePermission>
+                      </RequireDashboardPermission>
                     }
                   />
                   <Route
                     path="clubes/nuevo"
                     element={
-                      <RequirePermission
-                        permission={DASHBOARD_RESOURCE_PERMISSIONS.teams.create}
+                      <RequireDashboardPermission
+                        resource="teams"
+                        action="create"
                       >
                         <DashboardTeamsForm />
-                      </RequirePermission>
+                      </RequireDashboardPermission>
                     }
                   />
                   <Route
                     path="clubes/:id"
                     element={
-                      <RequirePermission
-                        permission={DASHBOARD_RESOURCE_PERMISSIONS.teams.edit}
-                      >
+                      <RequireDashboardPermission resource="teams" action="edit">
                         <DashboardTeamsForm />
-                      </RequirePermission>
+                      </RequireDashboardPermission>
                     }
                   />
                   <Route
                     path="jugadores"
                     element={
-                      <RequirePermission
-                        permission={DASHBOARD_RESOURCE_PERMISSIONS.players.view}
+                      <RequireDashboardPermission
+                        resource="players"
+                        action="view"
                       >
                         <DashboardPlayersList />
-                      </RequirePermission>
+                      </RequireDashboardPermission>
                     }
                   />
                   <Route
                     path="jugadores/nuevo"
                     element={
-                      <RequirePermission
-                        permission={DASHBOARD_RESOURCE_PERMISSIONS.players.create}
+                      <RequireDashboardPermission
+                        resource="players"
+                        action="create"
                       >
                         <DashboardPlayersForm />
-                      </RequirePermission>
+                      </RequireDashboardPermission>
                     }
                   />
                   <Route
                     path="jugadores/staff/nuevo"
                     element={
-                      <RequirePermission
-                        permission={DASHBOARD_RESOURCE_PERMISSIONS.staff.create}
+                      <RequireDashboardPermission
+                        resource="staff"
+                        action="create"
                       >
                         <DashboardStaffForm />
-                      </RequirePermission>
+                      </RequireDashboardPermission>
                     }
                   />
                   <Route
                     path="jugadores/staff/:id"
                     element={
-                      <RequirePermission
-                        permission={DASHBOARD_RESOURCE_PERMISSIONS.staff.edit}
-                      >
+                      <RequireDashboardPermission resource="staff" action="edit">
                         <DashboardStaffForm />
-                      </RequirePermission>
+                      </RequireDashboardPermission>
                     }
                   />
                   <Route
                     path="jugadores/:id"
                     element={
-                      <RequirePermission
-                        permission={DASHBOARD_RESOURCE_PERMISSIONS.players.edit}
+                      <RequireDashboardPermission
+                        resource="players"
+                        action="edit"
                       >
                         <DashboardPlayersForm />
-                      </RequirePermission>
+                      </RequireDashboardPermission>
                     }
                   />
                 </Route>

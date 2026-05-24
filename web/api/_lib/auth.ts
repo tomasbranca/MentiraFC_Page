@@ -2,9 +2,14 @@ import process from "node:process";
 import { createClient } from "@supabase/supabase-js";
 
 import {
+  getDashboardRequestPermission,
+  getDashboardResourcePermission,
   hasPermission,
+  isAppRole,
   type AppPermission,
   type AppRole,
+  type DashboardPermissionResource,
+  type DashboardResourcePermissionAction,
 } from "../../shared/auth/permissions.js";
 import { errorJson } from "./responses.js";
 
@@ -71,7 +76,11 @@ export const authorizeDashboardUser = async (
     return errorJson("No pudimos validar la cuenta.", 403);
   }
 
-  const role = account.role as AppRole;
+  if (!isAppRole(account.role)) {
+    return errorJson("No pudimos validar los permisos de la cuenta.", 403);
+  }
+
+  const role = account.role;
 
   if (!account.is_active) {
     return errorJson("Tu usuario ha sido baneado.", 403);
@@ -90,3 +99,24 @@ export const authorizeDashboardUser = async (
     role,
   };
 };
+
+export const authorizeDashboardAction = async <
+  Resource extends DashboardPermissionResource,
+>(
+  request: Request,
+  resource: Resource,
+  action: DashboardResourcePermissionAction<Resource>
+): Promise<AuthorizedDashboardUser | Response> =>
+  authorizeDashboardUser(
+    request,
+    getDashboardResourcePermission(resource, action)
+  );
+
+export const authorizeDashboardRequest = async (
+  request: Request,
+  resource: DashboardPermissionResource
+): Promise<AuthorizedDashboardUser | Response> =>
+  authorizeDashboardUser(
+    request,
+    getDashboardRequestPermission(resource, request.method)
+  );

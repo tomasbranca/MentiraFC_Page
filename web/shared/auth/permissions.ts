@@ -1,209 +1,208 @@
-export type AppRole =
-  | "user"
-  | "team_member"
-  | "editor"
-  | "moderator"
-  | "admin";
-
-const DASHBOARD_RESOURCE_PERMISSION_LIST = [
-  "view_dashboard_news",
-  "create_dashboard_news",
-  "edit_dashboard_news",
-  "delete_dashboard_news",
-  "view_dashboard_matches",
-  "create_dashboard_matches",
-  "edit_dashboard_matches",
-  "delete_dashboard_matches",
-  "view_dashboard_table",
-  "create_dashboard_table",
-  "edit_dashboard_table",
-  "delete_dashboard_table",
-  "view_dashboard_tournaments",
-  "create_dashboard_tournaments",
-  "edit_dashboard_tournaments",
-  "delete_dashboard_tournaments",
-  "view_dashboard_organizations",
-  "create_dashboard_organizations",
-  "edit_dashboard_organizations",
-  "delete_dashboard_organizations",
-  "view_dashboard_teams",
-  "create_dashboard_teams",
-  "edit_dashboard_teams",
-  "delete_dashboard_teams",
-  "view_dashboard_players",
-  "create_dashboard_players",
-  "edit_dashboard_players",
-  "delete_dashboard_players",
-  "update_dashboard_player_active_status",
-  "view_dashboard_staff",
-  "create_dashboard_staff",
-  "edit_dashboard_staff",
-  "delete_dashboard_staff",
+export const APP_ROLES = [
+  "user",
+  "team_member",
+  "editor",
+  "moderator",
+  "admin",
 ] as const;
 
-export type DashboardResourcePermission =
-  (typeof DASHBOARD_RESOURCE_PERMISSION_LIST)[number];
+export type AppRole = (typeof APP_ROLES)[number];
 
-export type AppPermission =
-  | "comment_news"
-  | "participate_public_votes"
-  | "view_private_posts"
-  | "participate_private_votes"
-  | "manage_news"
-  | "manage_matches"
-  | "manage_tables"
-  | "manage_team_members"
-  | "manage_events"
-  | "delete_others_comments"
-  | "ban_users"
-  | "assign_team_member_or_editor_roles"
-  | "manage_all_roles"
-  | "view_dashboard"
-  | "view_admin_panel"
-  | DashboardResourcePermission;
+export const PERMISSIONS = {
+  commentNews: "comment_news",
+  participatePublicVotes: "participate_public_votes",
+  viewPrivatePosts: "view_private_posts",
+  participatePrivateVotes: "participate_private_votes",
+  manageNews: "manage_news",
+  manageMatches: "manage_matches",
+  manageTables: "manage_tables",
+  manageTeamMembers: "manage_team_members",
+  manageEvents: "manage_events",
+  deleteOthersComments: "delete_others_comments",
+  banUsers: "ban_users",
+  assignTeamMemberOrEditorRoles: "assign_team_member_or_editor_roles",
+  manageAllRoles: "manage_all_roles",
+  viewDashboard: "view_dashboard",
+  viewAdminPanel: "view_admin_panel",
+} as const;
+
+export type CorePermission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
+
+export const DASHBOARD_PERMISSION_RESOURCES = [
+  "news",
+  "matches",
+  "table",
+  "tournaments",
+  "organizations",
+  "teams",
+  "players",
+  "staff",
+] as const;
 
 export type DashboardPermissionResource =
-  | "news"
-  | "matches"
-  | "table"
-  | "tournaments"
-  | "organizations"
-  | "teams"
-  | "players"
-  | "staff";
+  (typeof DASHBOARD_PERMISSION_RESOURCES)[number];
 
-type DashboardResourcePermissionSet = {
-  view: DashboardResourcePermission;
-  create: DashboardResourcePermission;
-  edit: DashboardResourcePermission;
-  delete: DashboardResourcePermission;
-  updateActiveStatus?: DashboardResourcePermission;
+export const DASHBOARD_PERMISSION_ACTIONS = [
+  "view",
+  "create",
+  "edit",
+  "delete",
+] as const;
+
+export type DashboardPermissionAction =
+  (typeof DASHBOARD_PERMISSION_ACTIONS)[number];
+
+type ValueOf<T> = T[keyof T];
+
+type DashboardPermissionName<
+  Action extends DashboardPermissionAction,
+  Resource extends DashboardPermissionResource,
+> = `${Action}_dashboard_${Resource}`;
+
+type DashboardCrudPermissionSet<Resource extends DashboardPermissionResource> = {
+  [Action in DashboardPermissionAction]: DashboardPermissionName<
+    Action,
+    Resource
+  >;
 };
 
+const createDashboardPermission = <
+  Action extends DashboardPermissionAction,
+  Resource extends DashboardPermissionResource,
+>(
+  action: Action,
+  resource: Resource
+): DashboardPermissionName<Action, Resource> =>
+  `${action}_dashboard_${resource}` as DashboardPermissionName<
+    Action,
+    Resource
+  >;
+
+const createDashboardResourcePermissions = <
+  Resource extends DashboardPermissionResource,
+>(
+  resource: Resource
+): DashboardCrudPermissionSet<Resource> => ({
+  view: createDashboardPermission("view", resource),
+  create: createDashboardPermission("create", resource),
+  edit: createDashboardPermission("edit", resource),
+  delete: createDashboardPermission("delete", resource),
+});
+
 export const DASHBOARD_RESOURCE_PERMISSIONS = {
-  news: {
-    view: "view_dashboard_news",
-    create: "create_dashboard_news",
-    edit: "edit_dashboard_news",
-    delete: "delete_dashboard_news",
-  },
-  matches: {
-    view: "view_dashboard_matches",
-    create: "create_dashboard_matches",
-    edit: "edit_dashboard_matches",
-    delete: "delete_dashboard_matches",
-  },
-  table: {
-    view: "view_dashboard_table",
-    create: "create_dashboard_table",
-    edit: "edit_dashboard_table",
-    delete: "delete_dashboard_table",
-  },
-  tournaments: {
-    view: "view_dashboard_tournaments",
-    create: "create_dashboard_tournaments",
-    edit: "edit_dashboard_tournaments",
-    delete: "delete_dashboard_tournaments",
-  },
-  organizations: {
-    view: "view_dashboard_organizations",
-    create: "create_dashboard_organizations",
-    edit: "edit_dashboard_organizations",
-    delete: "delete_dashboard_organizations",
-  },
-  teams: {
-    view: "view_dashboard_teams",
-    create: "create_dashboard_teams",
-    edit: "edit_dashboard_teams",
-    delete: "delete_dashboard_teams",
-  },
+  news: createDashboardResourcePermissions("news"),
+  matches: createDashboardResourcePermissions("matches"),
+  table: createDashboardResourcePermissions("table"),
+  tournaments: createDashboardResourcePermissions("tournaments"),
+  organizations: createDashboardResourcePermissions("organizations"),
+  teams: createDashboardResourcePermissions("teams"),
   players: {
-    view: "view_dashboard_players",
-    create: "create_dashboard_players",
-    edit: "edit_dashboard_players",
-    delete: "delete_dashboard_players",
+    ...createDashboardResourcePermissions("players"),
     updateActiveStatus: "update_dashboard_player_active_status",
   },
-  staff: {
-    view: "view_dashboard_staff",
-    create: "create_dashboard_staff",
-    edit: "edit_dashboard_staff",
-    delete: "delete_dashboard_staff",
-  },
-} as const satisfies Record<
-  DashboardPermissionResource,
-  DashboardResourcePermissionSet
->;
+  staff: createDashboardResourcePermissions("staff"),
+} as const;
+
+type DashboardResourcePermissionMap = typeof DASHBOARD_RESOURCE_PERMISSIONS;
+
+export type DashboardResourcePermission = ValueOf<{
+  [Resource in DashboardPermissionResource]: ValueOf<
+    DashboardResourcePermissionMap[Resource]
+  >;
+}>;
+
+export type DashboardResourcePermissionAction<
+  Resource extends DashboardPermissionResource = DashboardPermissionResource,
+> = Resource extends DashboardPermissionResource
+  ? Extract<keyof DashboardResourcePermissionMap[Resource], string>
+  : never;
+
+export type AppPermission = CorePermission | DashboardResourcePermission;
+
+export const getDashboardResourcePermission = <
+  Resource extends DashboardPermissionResource,
+  Action extends DashboardResourcePermissionAction<Resource>,
+>(
+  resource: Resource,
+  action: Action
+): DashboardResourcePermission =>
+  DASHBOARD_RESOURCE_PERMISSIONS[resource][action] as DashboardResourcePermission;
+
+const DASHBOARD_PERMISSION_ACTION_BY_METHOD = {
+  GET: "view",
+  POST: "create",
+  PUT: "edit",
+  DELETE: "delete",
+} as const satisfies Record<string, DashboardPermissionAction>;
+
+export const getDashboardRequestPermission = (
+  resource: DashboardPermissionResource,
+  method: string
+): DashboardResourcePermission => {
+  const normalizedMethod = method.toUpperCase();
+
+  if (resource === "players" && normalizedMethod === "PATCH") {
+    return DASHBOARD_RESOURCE_PERMISSIONS.players.updateActiveStatus;
+  }
+
+  const action =
+    DASHBOARD_PERMISSION_ACTION_BY_METHOD[
+      normalizedMethod as keyof typeof DASHBOARD_PERMISSION_ACTION_BY_METHOD
+    ] ?? "view";
+
+  return getDashboardResourcePermission(resource, action);
+};
+
+export const DASHBOARD_RESOURCE_PERMISSION_LIST =
+  DASHBOARD_PERMISSION_RESOURCES.flatMap(
+    (resource) =>
+      Object.values(
+        DASHBOARD_RESOURCE_PERMISSIONS[resource]
+      ) as DashboardResourcePermission[]
+  ) as readonly DashboardResourcePermission[];
+
+export const APP_PERMISSIONS = [
+  ...(Object.values(PERMISSIONS) as CorePermission[]),
+  ...DASHBOARD_RESOURCE_PERMISSION_LIST,
+] as readonly AppPermission[];
 
 const USER_PERMISSIONS = [
-  "comment_news",
-  "participate_public_votes",
+  PERMISSIONS.commentNews,
+  PERMISSIONS.participatePublicVotes,
 ] as const satisfies readonly AppPermission[];
 
 const TEAM_MEMBER_PERMISSIONS = [
   ...USER_PERMISSIONS,
-  "view_private_posts",
-  "participate_private_votes",
+  PERMISSIONS.viewPrivatePosts,
+  PERMISSIONS.participatePrivateVotes,
 ] as const satisfies readonly AppPermission[];
 
 const DASHBOARD_EDITOR_PERMISSIONS = [
-  "view_dashboard",
-  "view_dashboard_news",
-  "create_dashboard_news",
-  "edit_dashboard_news",
-  "delete_dashboard_news",
-  "view_dashboard_matches",
-  "create_dashboard_matches",
-  "edit_dashboard_matches",
-  "delete_dashboard_matches",
-  "view_dashboard_table",
-  "create_dashboard_table",
-  "edit_dashboard_table",
-  "delete_dashboard_table",
-  "view_dashboard_tournaments",
-  "create_dashboard_tournaments",
-  "edit_dashboard_tournaments",
-  "delete_dashboard_tournaments",
-  "view_dashboard_organizations",
-  "create_dashboard_organizations",
-  "edit_dashboard_organizations",
-  "delete_dashboard_organizations",
-  "view_dashboard_teams",
-  "create_dashboard_teams",
-  "edit_dashboard_teams",
-  "delete_dashboard_teams",
-  "view_dashboard_players",
-  "create_dashboard_players",
-  "edit_dashboard_players",
-  "delete_dashboard_players",
-  "update_dashboard_player_active_status",
-  "view_dashboard_staff",
-  "create_dashboard_staff",
-  "edit_dashboard_staff",
-  "delete_dashboard_staff",
+  PERMISSIONS.viewDashboard,
+  ...DASHBOARD_RESOURCE_PERMISSION_LIST,
 ] as const satisfies readonly AppPermission[];
 
 const EDITOR_PERMISSIONS = [
   ...TEAM_MEMBER_PERMISSIONS,
-  "manage_news",
-  "manage_matches",
-  "manage_tables",
-  "manage_team_members",
-  "manage_events",
+  PERMISSIONS.manageNews,
+  PERMISSIONS.manageMatches,
+  PERMISSIONS.manageTables,
+  PERMISSIONS.manageTeamMembers,
+  PERMISSIONS.manageEvents,
   ...DASHBOARD_EDITOR_PERMISSIONS,
 ] as const satisfies readonly AppPermission[];
 
 const MODERATOR_PERMISSIONS = [
   ...EDITOR_PERMISSIONS,
-  "delete_others_comments",
-  "ban_users",
-  "assign_team_member_or_editor_roles",
+  PERMISSIONS.deleteOthersComments,
+  PERMISSIONS.banUsers,
+  PERMISSIONS.assignTeamMemberOrEditorRoles,
 ] as const satisfies readonly AppPermission[];
 
 const ADMIN_PERMISSIONS = [
   ...MODERATOR_PERMISSIONS,
-  "manage_all_roles",
-  "view_admin_panel",
+  PERMISSIONS.manageAllRoles,
+  PERMISSIONS.viewAdminPanel,
 ] as const satisfies readonly AppPermission[];
 
 export const ROLE_PERMISSIONS = {
@@ -214,25 +213,65 @@ export const ROLE_PERMISSIONS = {
   admin: ADMIN_PERMISSIONS,
 } as const satisfies Record<AppRole, readonly AppPermission[]>;
 
+export const isAppRole = (role: unknown): role is AppRole =>
+  typeof role === "string" && APP_ROLES.includes(role as AppRole);
+
+export const getRolePermissions = (
+  role: AppRole | null | undefined
+): readonly AppPermission[] => (role ? ROLE_PERMISSIONS[role] : []);
+
 export const hasPermission = (
   role: AppRole | null | undefined,
   permission: AppPermission
-): boolean => {
-  if (!role) {
-    return false;
-  }
+): boolean => getRolePermissions(role).includes(permission);
 
-  const rolePermissions = ROLE_PERMISSIONS[role] as
-    | readonly AppPermission[]
-    | undefined;
+export const hasAnyPermission = (
+  role: AppRole | null | undefined,
+  permissions: readonly AppPermission[]
+): boolean => permissions.some((permission) => hasPermission(role, permission));
 
-  return Boolean(rolePermissions?.includes(permission));
+export const hasEveryPermission = (
+  role: AppRole | null | undefined,
+  permissions: readonly AppPermission[]
+): boolean => permissions.every((permission) => hasPermission(role, permission));
+
+export const hasDashboardResourcePermission = <
+  Resource extends DashboardPermissionResource,
+  Action extends DashboardResourcePermissionAction<Resource>,
+>(
+  role: AppRole | null | undefined,
+  resource: Resource,
+  action: Action
+): boolean =>
+  hasPermission(role, getDashboardResourcePermission(resource, action));
+
+export type PermissionChecker = {
+  can: (permission: AppPermission) => boolean;
+  canAny: (permissions: readonly AppPermission[]) => boolean;
+  canEvery: (permissions: readonly AppPermission[]) => boolean;
+  canDashboard: <
+    Resource extends DashboardPermissionResource,
+    Action extends DashboardResourcePermissionAction<Resource>,
+  >(
+    resource: Resource,
+    action: Action
+  ) => boolean;
 };
+
+export const createPermissionChecker = (
+  role: AppRole | null | undefined
+): PermissionChecker => ({
+  can: (permission) => hasPermission(role, permission),
+  canAny: (permissions) => hasAnyPermission(role, permissions),
+  canEvery: (permissions) => hasEveryPermission(role, permissions),
+  canDashboard: (resource, action) =>
+    hasDashboardResourcePermission(role, resource, action),
+});
 
 export const canAccessDashboard = (
   role: AppRole | null | undefined
-): boolean => hasPermission(role, "view_dashboard");
+): boolean => hasPermission(role, PERMISSIONS.viewDashboard);
 
 export const canAccessAdminPanel = (
   role: AppRole | null | undefined
-): boolean => hasPermission(role, "view_admin_panel");
+): boolean => hasPermission(role, PERMISSIONS.viewAdminPanel);

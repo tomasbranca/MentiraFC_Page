@@ -1,4 +1,4 @@
-import { readdirSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { dirname, join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
@@ -22,6 +22,23 @@ const getRouteFiles = (directory: string): string[] =>
     return isRouteFile ? [relative(dashboardApiDir, fullPath)] : [];
   });
 
+const apiDir = join(dashboardApiDir, "..");
+
+const getApiSourceFiles = (directory: string): string[] =>
+  readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const fullPath = join(directory, entry.name);
+
+    if (entry.isDirectory()) {
+      return getApiSourceFiles(fullPath);
+    }
+
+    return entry.isFile() &&
+      entry.name.endsWith(".ts") &&
+      !entry.name.endsWith(".test.ts")
+      ? [fullPath]
+      : [];
+  });
+
 describe("dashboard api function budget", () => {
   it("mantiene una sola Function por recurso para el plan Hobby de Vercel", () => {
     const routeFiles = getRouteFiles(dashboardApiDir);
@@ -34,5 +51,21 @@ describe("dashboard api function budget", () => {
     );
     expect(routeFiles).toHaveLength(8);
     expect(routeFiles.length).toBeLessThanOrEqual(12);
+  });
+
+  it("evita imports de directorios que rompen el runtime ESM de Vercel", () => {
+    const directoryImports = getApiSourceFiles(apiDir).flatMap((filePath) => {
+      const source = readFileSync(filePath, "utf8");
+      const imports = source.matchAll(
+        /from\s+["'](?<specifier>[^"']*src\/domain\/games)["']/g
+      );
+
+      return [...imports].map((match) => ({
+        filePath: relative(apiDir, filePath),
+        specifier: match.groups?.specifier,
+      }));
+    });
+
+    expect(directoryImports).toEqual([]);
   });
 });

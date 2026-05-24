@@ -10,7 +10,6 @@ import {
 } from "../../../data/dashboardMatches";
 import { getImageSrcSet, getImageUrl } from "../../../data/imageService";
 import { queryKeys } from "../../../data/queryKeys";
-import { DASHBOARD_RESOURCE_PERMISSIONS } from "../../../domain/auth/permissions";
 import { isFinishedGameState } from "../../../domain/games";
 import { reportError } from "../../../lib/errors/errorLogger";
 import type { DashboardMatchItem } from "../../../types/dashboard";
@@ -20,7 +19,7 @@ import ErrorFallback from "../../components/errors/ErrorFallback";
 import Loader from "../../components/Loader/Loader";
 import DashboardListFilteredEmpty from "../../dashboard/DashboardListFilteredEmpty";
 import DashboardListFilters from "../../dashboard/DashboardListFilters";
-import { usePermission } from "../../hooks/usePermission";
+import { useDashboardPermission } from "../../hooks/usePermission";
 import { DASHBOARD_STATUS_FILTER_OPTIONS } from "../../dashboard/dashboardListFilters.utils";
 import { formatDateTime } from "../../utils/date.utils";
 import {
@@ -177,13 +176,9 @@ const DeleteMatchButton = ({
 const DashboardMatchesList = () => {
   const [filters, setFilters] = useState(defaultDashboardMatchesListFilters);
   const queryClient = useQueryClient();
-  const canCreateMatch = usePermission(
-    DASHBOARD_RESOURCE_PERMISSIONS.matches.create
-  );
-  const canEditMatch = usePermission(DASHBOARD_RESOURCE_PERMISSIONS.matches.edit);
-  const canDeleteMatch = usePermission(
-    DASHBOARD_RESOURCE_PERMISSIONS.matches.delete
-  );
+  const canCreateMatch = useDashboardPermission("matches", "create");
+  const canEditMatch = useDashboardPermission("matches", "edit");
+  const canDeleteMatch = useDashboardPermission("matches", "delete");
   const matchesQuery = useQuery({
     queryKey: queryKeys.dashboard.matches.all,
     queryFn: async () => {

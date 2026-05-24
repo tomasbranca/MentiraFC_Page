@@ -17,7 +17,6 @@ import {
 } from "../../../data/dashboardStaff";
 import { getImageSrcSet, getImageUrl } from "../../../data/imageService";
 import { queryKeys } from "../../../data/queryKeys";
-import { DASHBOARD_RESOURCE_PERMISSIONS } from "../../../domain/auth/permissions";
 import { reportError } from "../../../lib/errors/errorLogger";
 import { ROUTES } from "../../../shared/routing";
 import type {
@@ -30,7 +29,7 @@ import Loader from "../../components/Loader/Loader";
 import DashboardListFilteredEmpty from "../../dashboard/DashboardListFilteredEmpty";
 import DashboardListFilters from "../../dashboard/DashboardListFilters";
 import { DASHBOARD_STATUS_FILTER_OPTIONS } from "../../dashboard/dashboardListFilters.utils";
-import { usePermission } from "../../hooks/usePermission";
+import { useDashboardPermission } from "../../hooks/usePermission";
 import { formatDate } from "../../utils/date.utils";
 import {
   defaultDashboardPlayersListFilters,
@@ -332,19 +331,16 @@ const DashboardPlantelMobileCard = ({
 const DashboardPlayersList = () => {
   const [filters, setFilters] = useState(defaultDashboardPlayersListFilters);
   const queryClient = useQueryClient();
-  const canCreatePlayer = usePermission(
-    DASHBOARD_RESOURCE_PERMISSIONS.players.create
+  const canCreatePlayer = useDashboardPermission("players", "create");
+  const canEditPlayer = useDashboardPermission("players", "edit");
+  const canDeletePlayer = useDashboardPermission("players", "delete");
+  const canUpdatePlayerStatus = useDashboardPermission(
+    "players",
+    "updateActiveStatus"
   );
-  const canEditPlayer = usePermission(DASHBOARD_RESOURCE_PERMISSIONS.players.edit);
-  const canDeletePlayer = usePermission(
-    DASHBOARD_RESOURCE_PERMISSIONS.players.delete
-  );
-  const canUpdatePlayerStatus = usePermission(
-    DASHBOARD_RESOURCE_PERMISSIONS.players.updateActiveStatus
-  );
-  const canCreateStaff = usePermission(DASHBOARD_RESOURCE_PERMISSIONS.staff.create);
-  const canEditStaff = usePermission(DASHBOARD_RESOURCE_PERMISSIONS.staff.edit);
-  const canDeleteStaff = usePermission(DASHBOARD_RESOURCE_PERMISSIONS.staff.delete);
+  const canCreateStaff = useDashboardPermission("staff", "create");
+  const canEditStaff = useDashboardPermission("staff", "edit");
+  const canDeleteStaff = useDashboardPermission("staff", "delete");
   const playersQuery = useQuery({
     queryKey: queryKeys.dashboard.players.all,
     queryFn: async () => {

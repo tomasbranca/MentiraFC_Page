@@ -1,19 +1,92 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  APP_PERMISSIONS,
+  APP_ROLES,
   canAccessAdminPanel,
   canAccessDashboard,
-  DASHBOARD_RESOURCE_PERMISSIONS,
+  createPermissionChecker,
+  DASHBOARD_RESOURCE_PERMISSION_LIST,
+  getDashboardRequestPermission,
+  getDashboardResourcePermission,
+  hasDashboardResourcePermission,
   hasPermission,
+  isAppRole,
+  PERMISSIONS,
+  ROLE_PERMISSIONS,
+  type AppPermission,
+  type AppRole,
 } from "./permissions";
 
+const USER_EXPECTED_PERMISSIONS = [
+  PERMISSIONS.commentNews,
+  PERMISSIONS.participatePublicVotes,
+] as const satisfies readonly AppPermission[];
+
+const TEAM_MEMBER_EXPECTED_PERMISSIONS = [
+  ...USER_EXPECTED_PERMISSIONS,
+  PERMISSIONS.viewPrivatePosts,
+  PERMISSIONS.participatePrivateVotes,
+] as const satisfies readonly AppPermission[];
+
+const EDITOR_EXPECTED_PERMISSIONS = [
+  ...TEAM_MEMBER_EXPECTED_PERMISSIONS,
+  PERMISSIONS.manageNews,
+  PERMISSIONS.manageMatches,
+  PERMISSIONS.manageTables,
+  PERMISSIONS.manageTeamMembers,
+  PERMISSIONS.manageEvents,
+  PERMISSIONS.viewDashboard,
+  ...DASHBOARD_RESOURCE_PERMISSION_LIST,
+] as const satisfies readonly AppPermission[];
+
+const MODERATOR_EXPECTED_PERMISSIONS = [
+  ...EDITOR_EXPECTED_PERMISSIONS,
+  PERMISSIONS.deleteOthersComments,
+  PERMISSIONS.banUsers,
+  PERMISSIONS.assignTeamMemberOrEditorRoles,
+] as const satisfies readonly AppPermission[];
+
+const ADMIN_EXPECTED_PERMISSIONS = [
+  ...MODERATOR_EXPECTED_PERMISSIONS,
+  PERMISSIONS.manageAllRoles,
+  PERMISSIONS.viewAdminPanel,
+] as const satisfies readonly AppPermission[];
+
+const EXPECTED_ROLE_PERMISSIONS = {
+  user: USER_EXPECTED_PERMISSIONS,
+  team_member: TEAM_MEMBER_EXPECTED_PERMISSIONS,
+  editor: EDITOR_EXPECTED_PERMISSIONS,
+  moderator: MODERATOR_EXPECTED_PERMISSIONS,
+  admin: ADMIN_EXPECTED_PERMISSIONS,
+} as const satisfies Record<AppRole, readonly AppPermission[]>;
+
 describe("auth permissions", () => {
-  it("hereda permisos de los roles inferiores", () => {
-    expect(hasPermission("team_member", "comment_news")).toBe(true);
-    expect(hasPermission("editor", "view_private_posts")).toBe(true);
-    expect(hasPermission("moderator", "manage_events")).toBe(true);
-    expect(hasPermission("admin", "ban_users")).toBe(true);
+  it("mantiene una lista unica de permisos sin duplicados", () => {
+    expect(new Set(APP_PERMISSIONS).size).toBe(APP_PERMISSIONS.length);
+    expect(APP_PERMISSIONS).toContain(PERMISSIONS.viewDashboard);
+    expect(APP_PERMISSIONS).toContain(
+      getDashboardResourcePermission("players", "updateActiveStatus")
+    );
   });
+
+  it.each(APP_ROLES)("define la matriz exacta para %s", (role) => {
+    expect(ROLE_PERMISSIONS[role]).toEqual(EXPECTED_ROLE_PERMISSIONS[role]);
+  });
+
+  it.each(APP_ROLES)(
+    "evalua todos los permisos registrados para %s",
+    (role) => {
+      const expectedPermissions: readonly AppPermission[] =
+        EXPECTED_ROLE_PERMISSIONS[role];
+
+      for (const permission of APP_PERMISSIONS) {
+        expect(hasPermission(role, permission)).toBe(
+          expectedPermissions.includes(permission)
+        );
+      }
+    }
+  );
 
   it("separa dashboard y panel admin por rol", () => {
     expect(canAccessDashboard("user")).toBe(false);
@@ -26,50 +99,50 @@ describe("auth permissions", () => {
     expect(canAccessAdminPanel("admin")).toBe(true);
   });
 
-  it("expone permisos especificos por ruta y accion del dashboard", () => {
-    expect(hasPermission("editor", DASHBOARD_RESOURCE_PERMISSIONS.news.view)).toBe(
+  it("resuelve permisos de dashboard por recurso, accion y metodo HTTP", () => {
+    expect(hasDashboardResourcePermission("editor", "news", "delete")).toBe(
       true
     );
     expect(
-      hasPermission("editor", DASHBOARD_RESOURCE_PERMISSIONS.news.create)
-    ).toBe(true);
-    expect(
-      hasPermission("editor", DASHBOARD_RESOURCE_PERMISSIONS.news.edit)
-    ).toBe(true);
-    expect(
-      hasPermission("editor", DASHBOARD_RESOURCE_PERMISSIONS.news.delete)
-    ).toBe(true);
-    expect(
-      hasPermission(
-        "editor",
-        DASHBOARD_RESOURCE_PERMISSIONS.players.updateActiveStatus
-      )
-    ).toBe(true);
-    expect(
-      hasPermission("editor", DASHBOARD_RESOURCE_PERMISSIONS.teams.view)
-    ).toBe(true);
-    expect(
-      hasPermission("editor", DASHBOARD_RESOURCE_PERMISSIONS.teams.create)
-    ).toBe(true);
-    expect(
-      hasPermission("editor", DASHBOARD_RESOURCE_PERMISSIONS.teams.edit)
-    ).toBe(true);
-    expect(
-      hasPermission("editor", DASHBOARD_RESOURCE_PERMISSIONS.teams.delete)
-    ).toBe(true);
+      hasDashboardResourcePermission("team_member", "news", "delete")
+    ).toBe(false);
+    expect(getDashboardRequestPermission("news", "POST")).toBe(
+      getDashboardResourcePermission("news", "create")
+    );
+    expect(getDashboardRequestPermission("players", "PATCH")).toBe(
+      getDashboardResourcePermission("players", "updateActiveStatus")
+    );
+    expect(getDashboardRequestPermission("matches", "OPTIONS")).toBe(
+      getDashboardResourcePermission("matches", "view")
+    );
   });
 
-  it("no habilita acciones de dashboard por estar logueado sin permisos", () => {
-    expect(hasPermission("team_member", "view_dashboard")).toBe(false);
+  it("crea verificadores reutilizables para componentes y acciones", () => {
+    const editorChecker = createPermissionChecker("editor");
+    const guestChecker = createPermissionChecker(null);
+
+    expect(editorChecker.can(PERMISSIONS.viewDashboard)).toBe(true);
+    expect(editorChecker.canDashboard("players", "updateActiveStatus")).toBe(
+      true
+    );
     expect(
-      hasPermission("team_member", DASHBOARD_RESOURCE_PERMISSIONS.news.view)
-    ).toBe(false);
+      editorChecker.canAny([
+        PERMISSIONS.viewAdminPanel,
+        getDashboardResourcePermission("news", "edit"),
+      ])
+    ).toBe(true);
     expect(
-      hasPermission("team_member", DASHBOARD_RESOURCE_PERMISSIONS.news.delete)
-    ).toBe(false);
+      editorChecker.canEvery([
+        PERMISSIONS.viewDashboard,
+        getDashboardResourcePermission("news", "edit"),
+      ])
+    ).toBe(true);
+    expect(guestChecker.can(PERMISSIONS.viewDashboard)).toBe(false);
   });
 
-  it("niega permisos cuando no hay rol", () => {
-    expect(hasPermission(null, "view_dashboard")).toBe(false);
+  it("valida roles conocidos y niega permisos cuando no hay rol", () => {
+    expect(isAppRole("editor")).toBe(true);
+    expect(isAppRole("owner")).toBe(false);
+    expect(hasPermission(null, PERMISSIONS.viewDashboard)).toBe(false);
   });
 });

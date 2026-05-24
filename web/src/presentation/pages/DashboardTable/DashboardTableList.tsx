@@ -10,7 +10,6 @@ import {
 } from "../../../data/dashboardTable";
 import { getImageSrcSet, getImageUrl } from "../../../data/imageService";
 import { queryKeys } from "../../../data/queryKeys";
-import { DASHBOARD_RESOURCE_PERMISSIONS } from "../../../domain/auth/permissions";
 import { reportError } from "../../../lib/errors/errorLogger";
 import { ROUTES } from "../../../shared/routing";
 import type { DashboardTableItem } from "../../../types/dashboard";
@@ -19,7 +18,7 @@ import ErrorFallback from "../../components/errors/ErrorFallback";
 import Loader from "../../components/Loader/Loader";
 import DashboardListFilteredEmpty from "../../dashboard/DashboardListFilteredEmpty";
 import DashboardListFilters from "../../dashboard/DashboardListFilters";
-import { usePermission } from "../../hooks/usePermission";
+import { useDashboardPermission } from "../../hooks/usePermission";
 import { DASHBOARD_STATUS_FILTER_OPTIONS } from "../../dashboard/dashboardListFilters.utils";
 import { formatDateTime } from "../../utils/date.utils";
 import {
@@ -143,9 +142,9 @@ const DeleteTableButton = ({
 const DashboardTableList = () => {
   const [filters, setFilters] = useState(defaultDashboardTableListFilters);
   const queryClient = useQueryClient();
-  const canCreateTable = usePermission(DASHBOARD_RESOURCE_PERMISSIONS.table.create);
-  const canEditTable = usePermission(DASHBOARD_RESOURCE_PERMISSIONS.table.edit);
-  const canDeleteTable = usePermission(DASHBOARD_RESOURCE_PERMISSIONS.table.delete);
+  const canCreateTable = useDashboardPermission("table", "create");
+  const canEditTable = useDashboardPermission("table", "edit");
+  const canDeleteTable = useDashboardPermission("table", "delete");
   const tablesQuery = useQuery({
     queryKey: queryKeys.dashboard.table.all,
     queryFn: async () => {

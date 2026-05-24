@@ -7,9 +7,8 @@ import {
   setDashboardPlayerActiveStatus,
   parseDashboardPlayerActiveStatusInput,
 } from "../../_lib/players.js";
-import { authorizeDashboardUser } from "../../_lib/auth.js";
+import { authorizeDashboardRequest } from "../../_lib/auth.js";
 import { errorJson, json } from "../../_lib/responses.js";
-import { DASHBOARD_RESOURCE_PERMISSIONS } from "../../../shared/auth/permissions.js";
 import {
   validateDashboardPlayerDraftMutation,
   validateDashboardPlayerMutation,
@@ -25,32 +24,9 @@ const getIntentFromRequest = (request: Request): "draft" | "publish" => {
   return intent === "draft" ? "draft" : "publish";
 };
 
-const getRequiredPermission = (request: Request) => {
-  if (request.method === "POST") {
-    return DASHBOARD_RESOURCE_PERMISSIONS.players.create;
-  }
-
-  if (request.method === "PUT") {
-    return DASHBOARD_RESOURCE_PERMISSIONS.players.edit;
-  }
-
-  if (request.method === "PATCH") {
-    return DASHBOARD_RESOURCE_PERMISSIONS.players.updateActiveStatus;
-  }
-
-  if (request.method === "DELETE") {
-    return DASHBOARD_RESOURCE_PERMISSIONS.players.delete;
-  }
-
-  return DASHBOARD_RESOURCE_PERMISSIONS.players.view;
-};
-
 const dashboardPlayersHandler = async (request: Request): Promise<Response> => {
   try {
-    const authorization = await authorizeDashboardUser(
-      request,
-      getRequiredPermission(request)
-    );
+    const authorization = await authorizeDashboardRequest(request, "players");
 
     if (authorization instanceof Response) {
       return authorization;

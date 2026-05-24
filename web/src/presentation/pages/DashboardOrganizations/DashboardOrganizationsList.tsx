@@ -10,7 +10,6 @@ import {
 } from "../../../data/dashboardOrganizations";
 import { getImageSrcSet, getImageUrl } from "../../../data/imageService";
 import { queryKeys } from "../../../data/queryKeys";
-import { DASHBOARD_RESOURCE_PERMISSIONS } from "../../../domain/auth/permissions";
 import { reportError } from "../../../lib/errors/errorLogger";
 import { ROUTES } from "../../../shared/routing";
 import type { DashboardOrganizationItem } from "../../../types/dashboard";
@@ -19,7 +18,7 @@ import ErrorFallback from "../../components/errors/ErrorFallback";
 import Loader from "../../components/Loader/Loader";
 import DashboardListFilteredEmpty from "../../dashboard/DashboardListFilteredEmpty";
 import DashboardListFilters from "../../dashboard/DashboardListFilters";
-import { usePermission } from "../../hooks/usePermission";
+import { useDashboardPermission } from "../../hooks/usePermission";
 import { DASHBOARD_STATUS_FILTER_OPTIONS } from "../../dashboard/dashboardListFilters.utils";
 import { formatDateTime } from "../../utils/date.utils";
 import {
@@ -167,14 +166,14 @@ const DeleteOrganizationButton = ({
 const DashboardOrganizationsList = () => {
   const [filters, setFilters] = useState(defaultDashboardOrganizationsListFilters);
   const queryClient = useQueryClient();
-  const canCreateOrganization = usePermission(
-    DASHBOARD_RESOURCE_PERMISSIONS.organizations.create
+  const canCreateOrganization = useDashboardPermission(
+    "organizations",
+    "create"
   );
-  const canEditOrganization = usePermission(
-    DASHBOARD_RESOURCE_PERMISSIONS.organizations.edit
-  );
-  const canDeleteOrganization = usePermission(
-    DASHBOARD_RESOURCE_PERMISSIONS.organizations.delete
+  const canEditOrganization = useDashboardPermission("organizations", "edit");
+  const canDeleteOrganization = useDashboardPermission(
+    "organizations",
+    "delete"
   );
   const organizationsQuery = useQuery({
     queryKey: queryKeys.dashboard.organizations.all,

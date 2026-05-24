@@ -10,7 +10,6 @@ import {
 } from "../../../data/dashboardTournaments";
 import { getImageSrcSet, getImageUrl } from "../../../data/imageService";
 import { queryKeys } from "../../../data/queryKeys";
-import { DASHBOARD_RESOURCE_PERMISSIONS } from "../../../domain/auth/permissions";
 import { reportError } from "../../../lib/errors/errorLogger";
 import { ROUTES } from "../../../shared/routing";
 import type { DashboardTournamentItem } from "../../../types/dashboard";
@@ -19,7 +18,7 @@ import ErrorFallback from "../../components/errors/ErrorFallback";
 import Loader from "../../components/Loader/Loader";
 import DashboardListFilteredEmpty from "../../dashboard/DashboardListFilteredEmpty";
 import DashboardListFilters from "../../dashboard/DashboardListFilters";
-import { usePermission } from "../../hooks/usePermission";
+import { useDashboardPermission } from "../../hooks/usePermission";
 import { DASHBOARD_STATUS_FILTER_OPTIONS } from "../../dashboard/dashboardListFilters.utils";
 import { formatDateTime } from "../../utils/date.utils";
 import {
@@ -161,15 +160,9 @@ const DeleteTournamentButton = ({
 const DashboardTournamentsList = () => {
   const [filters, setFilters] = useState(defaultDashboardTournamentsListFilters);
   const queryClient = useQueryClient();
-  const canCreateTournament = usePermission(
-    DASHBOARD_RESOURCE_PERMISSIONS.tournaments.create
-  );
-  const canEditTournament = usePermission(
-    DASHBOARD_RESOURCE_PERMISSIONS.tournaments.edit
-  );
-  const canDeleteTournament = usePermission(
-    DASHBOARD_RESOURCE_PERMISSIONS.tournaments.delete
-  );
+  const canCreateTournament = useDashboardPermission("tournaments", "create");
+  const canEditTournament = useDashboardPermission("tournaments", "edit");
+  const canDeleteTournament = useDashboardPermission("tournaments", "delete");
   const tournamentsQuery = useQuery({
     queryKey: queryKeys.dashboard.tournaments.all,
     queryFn: async () => {

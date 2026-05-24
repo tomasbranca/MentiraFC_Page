@@ -1,4 +1,5 @@
 import { getSupabaseClient } from "../lib/supabase";
+import { APP_ROLES } from "../../shared/auth/permissions";
 import type { CurrentAccount } from "../types/auth";
 import { z, zodParseOptions } from "./zodRuntime";
 
@@ -6,7 +7,7 @@ const currentAccountRowSchema = z.object({
   id: z.string().uuid(),
   first_name: z.string().trim().min(1),
   last_name: z.string().trim().min(1),
-  role: z.enum(["user", "team_member", "editor", "moderator", "admin"]),
+  role: z.enum(APP_ROLES),
   is_active: z.boolean(),
 });
 
