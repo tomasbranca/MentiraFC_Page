@@ -142,6 +142,7 @@ describe("dashboard matches api input", () => {
     expect(dashboardMatchByIdQuery).toContain('"goalEvents"');
     expect(dashboardMatchGoalEventsQuery).toContain('type == "goal"');
     expect(dashboardMatchOptionsQuery).toContain('"teams"');
+    expect(dashboardMatchOptionsQuery).toContain('!(_id in path("drafts.**"))');
     expect(dashboardMatchOptionsQuery).toContain('"players"');
     expect(dashboardMatchOptionsQuery).toContain('"tournaments"');
   });

@@ -32,7 +32,7 @@ describe("dashboard api function budget", () => {
     expect(routeFiles.every((filePath) => filePath.endsWith(`${sep}index.ts`))).toBe(
       true
     );
-    expect(routeFiles).toHaveLength(7);
+    expect(routeFiles).toHaveLength(8);
     expect(routeFiles.length).toBeLessThanOrEqual(12);
   });
 });

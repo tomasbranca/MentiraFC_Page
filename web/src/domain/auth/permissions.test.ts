@@ -45,6 +45,18 @@ describe("auth permissions", () => {
         DASHBOARD_RESOURCE_PERMISSIONS.players.updateActiveStatus
       )
     ).toBe(true);
+    expect(
+      hasPermission("editor", DASHBOARD_RESOURCE_PERMISSIONS.teams.view)
+    ).toBe(true);
+    expect(
+      hasPermission("editor", DASHBOARD_RESOURCE_PERMISSIONS.teams.create)
+    ).toBe(true);
+    expect(
+      hasPermission("editor", DASHBOARD_RESOURCE_PERMISSIONS.teams.edit)
+    ).toBe(true);
+    expect(
+      hasPermission("editor", DASHBOARD_RESOURCE_PERMISSIONS.teams.delete)
+    ).toBe(true);
   });
 
   it("no habilita acciones de dashboard por estar logueado sin permisos", () => {

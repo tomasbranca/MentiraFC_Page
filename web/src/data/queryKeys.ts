@@ -48,6 +48,10 @@ export const queryKeys = {
       all: ["dashboard", "organizations"] as const,
       byId: (id: string) => ["dashboard", "organizations", id] as const,
     },
+    teams: {
+      all: ["dashboard", "teams"] as const,
+      byId: (id: string) => ["dashboard", "teams", id] as const,
+    },
     table: {
       all: ["dashboard", "table"] as const,
       byId: (id: string) => ["dashboard", "table", id] as const,

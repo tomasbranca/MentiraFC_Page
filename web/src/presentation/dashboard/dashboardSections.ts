@@ -39,6 +39,12 @@ export const DASHBOARD_SECTIONS = [
     permission: DASHBOARD_RESOURCE_PERMISSIONS.organizations.view,
   },
   {
+    resource: "teams",
+    label: "Clubes",
+    route: ROUTES.DASHBOARD_TEAMS,
+    permission: DASHBOARD_RESOURCE_PERMISSIONS.teams.view,
+  },
+  {
     resource: "tournaments",
     label: "Torneos",
     route: ROUTES.DASHBOARD_TOURNAMENTS,

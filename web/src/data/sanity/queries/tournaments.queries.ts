@@ -7,7 +7,11 @@ export const TOURNAMENT_QUERY = `
       primaryColor
     },
     name,
-    "mainTeam": *[_type == "teams" && isMain == true][0]{
+    "mainTeam": *[
+      _type == "teams" &&
+      !(_id in path("drafts.**")) &&
+      isMain == true
+    ][0]{
       _id,
       name,
       logo,

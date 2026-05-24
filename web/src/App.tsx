@@ -68,6 +68,12 @@ const DashboardOrganizationsList = lazyWithReload(
 const DashboardOrganizationsForm = lazyWithReload(
   () => import("./presentation/pages/DashboardOrganizations/DashboardOrganizationsForm")
 );
+const DashboardTeamsList = lazyWithReload(
+  () => import("./presentation/pages/DashboardTeams/DashboardTeamsList")
+);
+const DashboardTeamsForm = lazyWithReload(
+  () => import("./presentation/pages/DashboardTeams/DashboardTeamsForm")
+);
 const DashboardPlayersList = lazyWithReload(
   () => import("./presentation/pages/DashboardPlayers/DashboardPlayersList")
 );
@@ -359,6 +365,36 @@ function App({ initialData }: AppProps) {
                         }
                       >
                         <DashboardOrganizationsForm />
+                      </RequirePermission>
+                    }
+                  />
+                  <Route
+                    path="clubes"
+                    element={
+                      <RequirePermission
+                        permission={DASHBOARD_RESOURCE_PERMISSIONS.teams.view}
+                      >
+                        <DashboardTeamsList />
+                      </RequirePermission>
+                    }
+                  />
+                  <Route
+                    path="clubes/nuevo"
+                    element={
+                      <RequirePermission
+                        permission={DASHBOARD_RESOURCE_PERMISSIONS.teams.create}
+                      >
+                        <DashboardTeamsForm />
+                      </RequirePermission>
+                    }
+                  />
+                  <Route
+                    path="clubes/:id"
+                    element={
+                      <RequirePermission
+                        permission={DASHBOARD_RESOURCE_PERMISSIONS.teams.edit}
+                      >
+                        <DashboardTeamsForm />
                       </RequirePermission>
                     }
                   />

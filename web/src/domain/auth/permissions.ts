@@ -21,6 +21,10 @@ const DASHBOARD_RESOURCE_PERMISSION_LIST = [
   "create_dashboard_organizations",
   "edit_dashboard_organizations",
   "delete_dashboard_organizations",
+  "view_dashboard_teams",
+  "create_dashboard_teams",
+  "edit_dashboard_teams",
+  "delete_dashboard_teams",
   "view_dashboard_players",
   "create_dashboard_players",
   "edit_dashboard_players",
@@ -59,6 +63,7 @@ export type DashboardPermissionResource =
   | "table"
   | "tournaments"
   | "organizations"
+  | "teams"
   | "players"
   | "staff";
 
@@ -100,6 +105,12 @@ export const DASHBOARD_RESOURCE_PERMISSIONS = {
     create: "create_dashboard_organizations",
     edit: "edit_dashboard_organizations",
     delete: "delete_dashboard_organizations",
+  },
+  teams: {
+    view: "view_dashboard_teams",
+    create: "create_dashboard_teams",
+    edit: "edit_dashboard_teams",
+    delete: "delete_dashboard_teams",
   },
   players: {
     view: "view_dashboard_players",
@@ -152,6 +163,10 @@ const DASHBOARD_EDITOR_PERMISSIONS = [
   "create_dashboard_organizations",
   "edit_dashboard_organizations",
   "delete_dashboard_organizations",
+  "view_dashboard_teams",
+  "create_dashboard_teams",
+  "edit_dashboard_teams",
+  "delete_dashboard_teams",
   "view_dashboard_players",
   "create_dashboard_players",
   "edit_dashboard_players",

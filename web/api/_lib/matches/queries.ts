@@ -63,7 +63,7 @@ export const dashboardMatchGoalEventsQuery = `*[
 }`;
 
 export const dashboardMatchOptionsQuery = `{
-  "teams": *[_type == "teams"] | order(name asc) {
+  "teams": *[_type == "teams" && !(_id in path("drafts.**"))] | order(name asc) {
     "id": _id,
     name,
     isMain,
