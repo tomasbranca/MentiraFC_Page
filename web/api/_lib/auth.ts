@@ -4,8 +4,8 @@ import { createClient } from "@supabase/supabase-js";
 import {
   hasPermission,
   type AppPermission,
-} from "../../src/domain/auth/permissions";
-import type { AppRole } from "../../src/types/auth";
+  type AppRole,
+} from "../../shared/auth/permissions.js";
 import { errorJson } from "./responses.js";
 
 type AuthorizedDashboardUser = {

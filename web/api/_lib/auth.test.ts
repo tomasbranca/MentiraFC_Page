@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createClient } from "@supabase/supabase-js";
 
-import { DASHBOARD_RESOURCE_PERMISSIONS } from "../../src/domain/auth/permissions";
+import { DASHBOARD_RESOURCE_PERMISSIONS } from "../../shared/auth/permissions";
 import { authorizeDashboardUser } from "./auth";
 
 const supabaseMocks = vi.hoisted(() => ({

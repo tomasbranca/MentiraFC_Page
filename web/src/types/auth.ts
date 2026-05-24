@@ -1,9 +1,6 @@
-export type AppRole =
-  | "user"
-  | "team_member"
-  | "editor"
-  | "moderator"
-  | "admin";
+import type { AppRole } from "../../shared/auth/permissions";
+
+export type { AppRole } from "../../shared/auth/permissions";
 
 export type CurrentAccount = {
   id: string;
