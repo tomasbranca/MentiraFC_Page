@@ -193,7 +193,7 @@ function App({ initialData }: AppProps) {
                 <Route
                   path={ROUTES.ACCOUNT}
                   element={
-                    <RequireAuth>
+                    <RequireAuth requireAccount={false}>
                       <Account />
                     </RequireAuth>
                   }
