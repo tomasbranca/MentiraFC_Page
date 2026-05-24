@@ -4,12 +4,8 @@ import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { FiEdit2, FiPlus, FiTrash2 } from "react-icons/fi";
 
-import {
-  deleteDashboardMatch,
-  fetchDashboardMatches,
-} from "../../../data/dashboardMatches";
+import { deleteDashboardMatch } from "../../../data/dashboardMatches";
 import { getImageSrcSet, getImageUrl } from "../../../data/imageService";
-import { queryKeys } from "../../../data/queryKeys";
 import { isFinishedGameState } from "../../../domain/games";
 import { reportError } from "../../../lib/errors/errorLogger";
 import type { DashboardMatchItem } from "../../../types/dashboard";
@@ -33,6 +29,10 @@ import {
   MATCH_COMPETITION_OPTIONS,
   MATCH_STATE_OPTIONS,
 } from "./dashboardMatches.utils";
+import {
+  dashboardMatchesListQueryOptions,
+  invalidateDashboardMatchPublishDependencies,
+} from "./dashboardMatches.queries";
 
 const MatchThumbnail = ({ item }: { item: DashboardMatchItem }) => {
   const imageUrl = getImageUrl(item.rivalImageUrl, {
@@ -179,35 +179,10 @@ const DashboardMatchesList = () => {
   const canCreateMatch = useDashboardPermission("matches", "create");
   const canEditMatch = useDashboardPermission("matches", "edit");
   const canDeleteMatch = useDashboardPermission("matches", "delete");
-  const matchesQuery = useQuery({
-    queryKey: queryKeys.dashboard.matches.all,
-    queryFn: async () => {
-      try {
-        return await fetchDashboardMatches();
-      } catch (error) {
-        reportError(error, {
-          page: "DashboardMatchesList",
-          action: "load_matches",
-        });
-        throw error;
-      }
-    },
-  });
+  const matchesQuery = useQuery(dashboardMatchesListQueryOptions());
   const deleteMutation = useMutation({
     mutationFn: deleteDashboardMatch,
-    onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.dashboard.matches.all,
-        }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.games.latest }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.games.finished }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.games.tournamentFinished,
-        }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.events.goals() }),
-      ]);
-    },
+    onSuccess: () => invalidateDashboardMatchPublishDependencies(queryClient),
   });
 
   const handleDeleteMatch = async (itemId: string) => {

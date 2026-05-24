@@ -17,14 +17,11 @@ import {
 } from "react-icons/fi";
 
 import {
-  fetchDashboardTableById,
-  fetchDashboardTableOptions,
   publishDashboardTable,
   publishDashboardTableById,
   saveDashboardTableDraft,
 } from "../../../data/dashboardTable";
 import { getImageSrcSet, getImageUrl } from "../../../data/imageService";
-import { queryKeys } from "../../../data/queryKeys";
 import { reportError } from "../../../lib/errors/errorLogger";
 import { ROUTES } from "../../../shared/routing";
 import type {
@@ -49,6 +46,13 @@ import {
   toDatetimeLocalValue,
   validateDashboardTableInput,
 } from "./dashboardTable.utils";
+import {
+  cacheDashboardTable,
+  dashboardTableDetailQueryOptions,
+  dashboardTableOptionsQueryOptions,
+  invalidateDashboardTablesList,
+  invalidateDashboardTablePublishDependencies,
+} from "./dashboardTable.queries";
 
 type SavedTableSnapshot = {
   valuesJson: string;
@@ -217,36 +221,11 @@ const DashboardTableForm = () => {
   const [errors, setErrors] = useState<DashboardTableErrors>({});
   const [status, setStatus] = useState<string | null>(null);
 
-  const optionsQuery = useQuery({
-    queryKey: queryKeys.dashboard.table.options,
-    queryFn: async () => {
-      try {
-        return await fetchDashboardTableOptions();
-      } catch (error) {
-        reportError(error, {
-          page: "DashboardTableForm",
-          action: "load_table_options",
-        });
-        throw error;
-      }
-    },
-  });
+  const optionsQuery = useQuery(dashboardTableOptionsQueryOptions());
 
   const tableQuery = useQuery({
-    queryKey: queryKeys.dashboard.table.byId(id ?? "new"),
+    ...dashboardTableDetailQueryOptions(id ?? "new"),
     enabled: isEditing,
-    queryFn: async () => {
-      try {
-        return await fetchDashboardTableById(id ?? "");
-      } catch (error) {
-        reportError(error, {
-          page: "DashboardTableForm",
-          action: "load_table",
-          id,
-        });
-        throw error;
-      }
-    },
   });
 
   const selectedTournament = optionsQuery.data?.tournaments.find(
@@ -301,13 +280,8 @@ const DashboardTableForm = () => {
     mutationFn: async (input: ReturnType<typeof buildDashboardTableDraftInput>) =>
       saveDashboardTableDraft(input, id),
     onSuccess: async (savedTable) => {
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.dashboard.table.all,
-      });
-      queryClient.setQueryData(
-        queryKeys.dashboard.table.byId(savedTable.id),
-        savedTable
-      );
+      await invalidateDashboardTablesList(queryClient);
+      cacheDashboardTable(queryClient, savedTable);
 
       const nextValues = getValuesFromTable(savedTable);
       setValues(nextValues);
@@ -327,18 +301,8 @@ const DashboardTableForm = () => {
         ? publishDashboardTableById(id, input)
         : publishDashboardTable(input),
     onSuccess: async (savedTable) => {
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.dashboard.table.all,
-        }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.tournaments.current,
-        }),
-      ]);
-      queryClient.setQueryData(
-        queryKeys.dashboard.table.byId(savedTable.id),
-        savedTable
-      );
+      await invalidateDashboardTablePublishDependencies(queryClient);
+      cacheDashboardTable(queryClient, savedTable);
       navigate(ROUTES.DASHBOARD_TABLE);
     },
   });

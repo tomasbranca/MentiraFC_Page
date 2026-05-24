@@ -11,13 +11,10 @@ import toast from "react-hot-toast";
 import { FiArrowLeft, FiPlus, FiSave, FiTrash2 } from "react-icons/fi";
 
 import {
-  fetchDashboardMatchById,
-  fetchDashboardMatchOptions,
   publishDashboardMatch,
   publishDashboardMatchById,
   saveDashboardMatchDraft,
 } from "../../../data/dashboardMatches";
-import { queryKeys } from "../../../data/queryKeys";
 import { reportError } from "../../../lib/errors/errorLogger";
 import type {
   DashboardMatchCompetition,
@@ -48,6 +45,13 @@ import {
   toDatetimeLocalValue,
   validateDashboardMatchInput,
 } from "./dashboardMatches.utils";
+import {
+  cacheDashboardMatch,
+  dashboardMatchDetailQueryOptions,
+  dashboardMatchOptionsQueryOptions,
+  invalidateDashboardMatchesList,
+  invalidateDashboardMatchPublishDependencies,
+} from "./dashboardMatches.queries";
 
 const createInitialValues = (): DashboardMatchInput => ({
   rivalId: "",
@@ -173,36 +177,11 @@ const DashboardMatchesForm = () => {
   const [selectedGuestName, setSelectedGuestName] = useState("");
   const [selectedGuestGoals, setSelectedGuestGoals] = useState("1");
 
-  const optionsQuery = useQuery({
-    queryKey: queryKeys.dashboard.matches.options,
-    queryFn: async () => {
-      try {
-        return await fetchDashboardMatchOptions();
-      } catch (error) {
-        reportError(error, {
-          page: "DashboardMatchesForm",
-          action: "load_match_options",
-        });
-        throw error;
-      }
-    },
-  });
+  const optionsQuery = useQuery(dashboardMatchOptionsQueryOptions());
 
   const matchQuery = useQuery({
-    queryKey: queryKeys.dashboard.matches.byId(id ?? "new"),
+    ...dashboardMatchDetailQueryOptions(id ?? "new"),
     enabled: isEditing,
-    queryFn: async () => {
-      try {
-        return await fetchDashboardMatchById(id ?? "");
-      } catch (error) {
-        reportError(error, {
-          page: "DashboardMatchesForm",
-          action: "load_match",
-          id,
-        });
-        throw error;
-      }
-    },
   });
 
   useEffect(() => {
@@ -254,13 +233,8 @@ const DashboardMatchesForm = () => {
     mutationFn: async (input: ReturnType<typeof buildDashboardMatchDraftInput>) =>
       saveDashboardMatchDraft(input, id),
     onSuccess: async (savedMatch) => {
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.dashboard.matches.all,
-      });
-      queryClient.setQueryData(
-        queryKeys.dashboard.matches.byId(savedMatch.id),
-        savedMatch
-      );
+      await invalidateDashboardMatchesList(queryClient);
+      cacheDashboardMatch(queryClient, savedMatch);
 
       const nextValues = getValuesFromMatch(savedMatch);
       setValues(nextValues);
@@ -280,20 +254,8 @@ const DashboardMatchesForm = () => {
         ? publishDashboardMatchById(id, input)
         : publishDashboardMatch(input),
     onSuccess: async (savedMatch) => {
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.dashboard.matches.all,
-        }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.games.latest }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.games.finished }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.games.tournamentFinished,
-        }),
-      ]);
-      queryClient.setQueryData(
-        queryKeys.dashboard.matches.byId(savedMatch.id),
-        savedMatch
-      );
+      await invalidateDashboardMatchPublishDependencies(queryClient);
+      cacheDashboardMatch(queryClient, savedMatch);
       navigate(ROUTES.DASHBOARD_MATCHES);
     },
   });

@@ -4,12 +4,8 @@ import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { FiAward, FiEdit2, FiPlus, FiTrash2 } from "react-icons/fi";
 
-import {
-  deleteDashboardTournament,
-  fetchDashboardTournaments,
-} from "../../../data/dashboardTournaments";
+import { deleteDashboardTournament } from "../../../data/dashboardTournaments";
 import { getImageSrcSet, getImageUrl } from "../../../data/imageService";
-import { queryKeys } from "../../../data/queryKeys";
 import { reportError } from "../../../lib/errors/errorLogger";
 import { ROUTES } from "../../../shared/routing";
 import type { DashboardTournamentItem } from "../../../types/dashboard";
@@ -26,6 +22,10 @@ import {
   filterDashboardTournamentsList,
   hasActiveDashboardTournamentsListFilters,
 } from "./dashboardTournamentsList.filters";
+import {
+  dashboardTournamentsListQueryOptions,
+  invalidateDashboardTournamentPublishDependencies,
+} from "./dashboardTournaments.queries";
 import { getTournamentReferenceCount } from "./dashboardTournaments.utils";
 
 const TournamentThumbnail = ({ item }: { item: DashboardTournamentItem }) => {
@@ -163,38 +163,11 @@ const DashboardTournamentsList = () => {
   const canCreateTournament = useDashboardPermission("tournaments", "create");
   const canEditTournament = useDashboardPermission("tournaments", "edit");
   const canDeleteTournament = useDashboardPermission("tournaments", "delete");
-  const tournamentsQuery = useQuery({
-    queryKey: queryKeys.dashboard.tournaments.all,
-    queryFn: async () => {
-      try {
-        return await fetchDashboardTournaments();
-      } catch (error) {
-        reportError(error, {
-          page: "DashboardTournamentsList",
-          action: "load_tournaments",
-        });
-        throw error;
-      }
-    },
-  });
+  const tournamentsQuery = useQuery(dashboardTournamentsListQueryOptions());
   const deleteMutation = useMutation({
     mutationFn: deleteDashboardTournament,
-    onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.dashboard.tournaments.all,
-        }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.dashboard.matches.options,
-        }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.dashboard.table.options,
-        }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.tournaments.current,
-        }),
-      ]);
-    },
+    onSuccess: () =>
+      invalidateDashboardTournamentPublishDependencies(queryClient),
   });
 
   const handleDeleteTournament = async (itemId: string) => {

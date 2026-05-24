@@ -4,12 +4,8 @@ import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { FiEdit2, FiFlag, FiPlus, FiTrash2 } from "react-icons/fi";
 
-import {
-  deleteDashboardOrganization,
-  fetchDashboardOrganizations,
-} from "../../../data/dashboardOrganizations";
+import { deleteDashboardOrganization } from "../../../data/dashboardOrganizations";
 import { getImageSrcSet, getImageUrl } from "../../../data/imageService";
-import { queryKeys } from "../../../data/queryKeys";
 import { reportError } from "../../../lib/errors/errorLogger";
 import { ROUTES } from "../../../shared/routing";
 import type { DashboardOrganizationItem } from "../../../types/dashboard";
@@ -26,6 +22,10 @@ import {
   filterDashboardOrganizationsList,
   hasActiveDashboardOrganizationsListFilters,
 } from "./dashboardOrganizationsList.filters";
+import {
+  dashboardOrganizationsListQueryOptions,
+  invalidateDashboardOrganizationPublishDependencies,
+} from "./dashboardOrganizations.queries";
 import {
   getOrganizationColorLabel,
   getOrganizationReferenceCount,
@@ -175,32 +175,11 @@ const DashboardOrganizationsList = () => {
     "organizations",
     "delete"
   );
-  const organizationsQuery = useQuery({
-    queryKey: queryKeys.dashboard.organizations.all,
-    queryFn: async () => {
-      try {
-        return await fetchDashboardOrganizations();
-      } catch (error) {
-        reportError(error, {
-          page: "DashboardOrganizationsList",
-          action: "load_organizations",
-        });
-        throw error;
-      }
-    },
-  });
+  const organizationsQuery = useQuery(dashboardOrganizationsListQueryOptions());
   const deleteMutation = useMutation({
     mutationFn: deleteDashboardOrganization,
-    onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.dashboard.organizations.all,
-        }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.dashboard.tournaments.options,
-        }),
-      ]);
-    },
+    onSuccess: () =>
+      invalidateDashboardOrganizationPublishDependencies(queryClient),
   });
 
   const handleDeleteOrganization = async (itemId: string) => {

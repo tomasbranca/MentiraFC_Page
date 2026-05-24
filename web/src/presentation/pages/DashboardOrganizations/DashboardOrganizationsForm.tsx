@@ -11,13 +11,11 @@ import toast from "react-hot-toast";
 import { FiArrowLeft, FiSave, FiTrash2, FiUpload } from "react-icons/fi";
 
 import {
-  fetchDashboardOrganizationById,
   publishDashboardOrganization,
   publishDashboardOrganizationById,
   saveDashboardOrganizationDraft,
 } from "../../../data/dashboardOrganizations";
 import { getImageUrl } from "../../../data/imageService";
-import { queryKeys } from "../../../data/queryKeys";
 import { reportError } from "../../../lib/errors/errorLogger";
 import { ROUTES } from "../../../shared/routing";
 import {
@@ -42,6 +40,12 @@ import {
   validateDashboardOrganizationInput,
   type DashboardOrganizationErrors,
 } from "./dashboardOrganizations.utils";
+import {
+  cacheDashboardOrganization,
+  dashboardOrganizationDetailQueryOptions,
+  invalidateDashboardOrganizationsList,
+  invalidateDashboardOrganizationPublishDependencies,
+} from "./dashboardOrganizations.queries";
 
 const createInitialValues = (): DashboardOrganizationInput => ({
   name: "",
@@ -103,20 +107,8 @@ const DashboardOrganizationsForm = () => {
   const [removeLogo, setRemoveLogo] = useState(false);
 
   const organizationQuery = useQuery({
-    queryKey: queryKeys.dashboard.organizations.byId(id ?? "new"),
+    ...dashboardOrganizationDetailQueryOptions(id ?? "new"),
     enabled: isEditing,
-    queryFn: async () => {
-      try {
-        return await fetchDashboardOrganizationById(id ?? "");
-      } catch (error) {
-        reportError(error, {
-          page: "DashboardOrganizationsForm",
-          action: "load_organization",
-          id,
-        });
-        throw error;
-      }
-    },
   });
 
   useEffect(() => {
@@ -172,13 +164,8 @@ const DashboardOrganizationsForm = () => {
         id
       ),
     onSuccess: async (savedOrganization) => {
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.dashboard.organizations.all,
-      });
-      queryClient.setQueryData(
-        queryKeys.dashboard.organizations.byId(savedOrganization.id),
-        savedOrganization
-      );
+      await invalidateDashboardOrganizationsList(queryClient);
+      cacheDashboardOrganization(queryClient, savedOrganization);
       applySavedOrganization(savedOrganization);
 
       if (!isEditing) {
@@ -203,30 +190,8 @@ const DashboardOrganizationsForm = () => {
             removeLogo,
           }),
     onSuccess: async (savedOrganization) => {
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.dashboard.organizations.all,
-        }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.dashboard.tournaments.all,
-        }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.dashboard.tournaments.options,
-        }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.dashboard.matches.options,
-        }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.dashboard.table.options,
-        }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.tournaments.current,
-        }),
-      ]);
-      queryClient.setQueryData(
-        queryKeys.dashboard.organizations.byId(savedOrganization.id),
-        savedOrganization
-      );
+      await invalidateDashboardOrganizationPublishDependencies(queryClient);
+      cacheDashboardOrganization(queryClient, savedOrganization);
       navigate(ROUTES.DASHBOARD_ORGANIZATIONS);
     },
   });

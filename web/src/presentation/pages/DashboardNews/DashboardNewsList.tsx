@@ -4,12 +4,8 @@ import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { FiEdit2, FiPlus, FiTrash2 } from "react-icons/fi";
 
-import {
-  deleteDashboardNews,
-  fetchDashboardNews,
-} from "../../../data/dashboardNews";
+import { deleteDashboardNews } from "../../../data/dashboardNews";
 import { getImageSrcSet, getImageUrl } from "../../../data/imageService";
-import { queryKeys } from "../../../data/queryKeys";
 import { reportError } from "../../../lib/errors/errorLogger";
 import type { DashboardNewsItem } from "../../../types/dashboard";
 import { confirmDashboardAction } from "../../app/confirmDialog";
@@ -26,6 +22,10 @@ import {
   filterDashboardNewsList,
   hasActiveDashboardNewsListFilters,
 } from "./dashboardNewsList.filters";
+import {
+  dashboardNewsListQueryOptions,
+  invalidateDashboardNewsPublishDependencies,
+} from "./dashboardNews.queries";
 
 const NewsThumbnail = ({ item }: { item: DashboardNewsItem }) => {
   const imageUrl = getImageUrl(item.imageUrl, {
@@ -150,28 +150,10 @@ const DashboardNewsList = () => {
   const canCreateNews = useDashboardPermission("news", "create");
   const canEditNews = useDashboardPermission("news", "edit");
   const canDeleteNews = useDashboardPermission("news", "delete");
-  const newsQuery = useQuery({
-    queryKey: queryKeys.dashboard.news.all,
-    queryFn: async () => {
-      try {
-        return await fetchDashboardNews();
-      } catch (error) {
-        reportError(error, {
-          page: "DashboardNewsList",
-          action: "load_news",
-        });
-        throw error;
-      }
-    },
-  });
+  const newsQuery = useQuery(dashboardNewsListQueryOptions());
   const deleteMutation = useMutation({
     mutationFn: deleteDashboardNews,
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.dashboard.news.all,
-      });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.news.all });
-    },
+    onSuccess: () => invalidateDashboardNewsPublishDependencies(queryClient),
   });
 
   const handleDeleteNews = async (itemId: string) => {
