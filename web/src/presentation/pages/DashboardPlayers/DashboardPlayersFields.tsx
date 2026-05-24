@@ -50,6 +50,12 @@ type FieldProps = {
   onChange: (event: ChangeEvent<HTMLInputElement>) => void;
 };
 
+const inputClassName =
+  "min-h-11 w-full min-w-0 max-w-full rounded-[3px] border border-white/10 bg-[#0f0f13] px-3 py-2.5 text-sm text-white outline-none transition focus:border-violet-300/80 focus:ring-2 focus:ring-violet-500/20 sm:px-3.5";
+
+const fieldInputClassName = (type: FieldProps["type"]) =>
+  type === "date" ? `dashboard-date-input ${inputClassName}` : inputClassName;
+
 export const Field = ({
   id,
   name,
@@ -76,7 +82,7 @@ export const Field = ({
         onChange={onChange}
         aria-invalid={Boolean(error)}
         aria-describedby={errorId}
-        className="min-h-11 w-full min-w-0 max-w-full rounded-[3px] border border-white/10 bg-[#0f0f13] px-3 py-2.5 text-sm text-white outline-none transition focus:border-violet-300/80 focus:ring-2 focus:ring-violet-500/20 sm:px-3.5"
+        className={fieldInputClassName(type)}
       />
     </FieldFrame>
   );

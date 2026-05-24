@@ -27,7 +27,7 @@ export const Field = ({
 
   const inputClassName =
     type === "datetime-local"
-      ? "min-h-11 w-full min-w-0 max-w-full rounded-[3px] border border-white/10 bg-[#0f0f13] px-3 py-2.5 text-sm text-white outline-none transition focus:border-violet-300/80 focus:ring-2 focus:ring-violet-500/20 sm:px-3.5 [&::-webkit-datetime-edit-fields-wrapper]:min-w-0 [&::-webkit-datetime-edit]:min-w-0"
+      ? "dashboard-date-input min-h-11 w-full min-w-0 max-w-full rounded-[3px] border border-white/10 bg-[#0f0f13] px-3 py-2.5 text-sm text-white outline-none transition focus:border-violet-300/80 focus:ring-2 focus:ring-violet-500/20 sm:px-3.5"
       : "min-h-11 w-full min-w-0 max-w-full rounded-[3px] border border-white/10 bg-[#0f0f13] px-3 py-2.5 text-sm text-white outline-none transition focus:border-violet-300/80 focus:ring-2 focus:ring-violet-500/20 sm:px-3.5";
 
   const input = (
@@ -53,11 +53,7 @@ export const Field = ({
           </span>
         )}
       </span>
-      {type === "datetime-local" ? (
-        <div className="min-w-0 overflow-hidden">{input}</div>
-      ) : (
-        input
-      )}
+      {input}
       {error && (
         <span id={errorId} className="mt-2 block text-sm text-red-300">
           {error}
