@@ -8,9 +8,13 @@ import { useAuth } from "../context/useAuth";
 
 type RequireAuthProps = {
   children: ReactNode;
+  requireAccount?: boolean;
 };
 
-const RequireAuth = ({ children }: RequireAuthProps) => {
+const RequireAuth = ({
+  children,
+  requireAccount = true,
+}: RequireAuthProps) => {
   const location = useLocation();
   const {
     user,
@@ -21,7 +25,7 @@ const RequireAuth = ({ children }: RequireAuthProps) => {
     refreshAccount,
   } = useAuth();
 
-  if (isLoading || isAccountLoading) {
+  if (isLoading || (requireAccount && isAccountLoading)) {
     return <Loader />;
   }
 
@@ -29,7 +33,7 @@ const RequireAuth = ({ children }: RequireAuthProps) => {
     return <Navigate to={ROUTES.LOGIN} replace state={{ from: location }} />;
   }
 
-  if (accountError) {
+  if (requireAccount && accountError) {
     return (
       <ErrorFallback
         title="No pudimos cargar tu cuenta"
@@ -39,7 +43,7 @@ const RequireAuth = ({ children }: RequireAuthProps) => {
     );
   }
 
-  if (!account) {
+  if (requireAccount && !account) {
     return (
       <ErrorFallback
         title="No encontramos tu cuenta"
