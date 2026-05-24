@@ -5,7 +5,10 @@ import type {
   Session,
 } from "@supabase/supabase-js";
 
-import { getSupabaseClient } from "../lib/supabase";
+import {
+  buildPasswordResetRedirectUrl,
+  getSupabaseClient,
+} from "../lib/supabase";
 
 type AuthServiceResult = {
   error: AuthError | Error | null;
@@ -101,6 +104,36 @@ export const signUpWithEmailPassword = async ({
     session: data.session,
     error,
   };
+};
+
+export const requestPasswordResetEmail = async (
+  email: string
+): Promise<AuthServiceResult> => {
+  const supabase = getSupabaseClient();
+
+  if (!supabase) {
+    return { error: new Error("Supabase is not configured.") };
+  }
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: buildPasswordResetRedirectUrl(),
+  });
+
+  return { error };
+};
+
+export const updateAuthPassword = async (
+  password: string
+): Promise<AuthServiceResult> => {
+  const supabase = getSupabaseClient();
+
+  if (!supabase) {
+    return { error: new Error("Supabase is not configured.") };
+  }
+
+  const { error } = await supabase.auth.updateUser({ password });
+
+  return { error };
 };
 
 export const signOutFromAuth = async (): Promise<AuthServiceResult> => {

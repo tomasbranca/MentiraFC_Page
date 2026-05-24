@@ -85,6 +85,12 @@ describe("seo metadata", () => {
   it("marks missing dynamic pages as noindex", () => {
     expect(buildMissingNewsHead("no-existe").robots).toBe("noindex, follow");
     expect(STATIC_PAGE_HEAD.login.robots).toBe("noindex, nofollow");
+    expect(STATIC_PAGE_HEAD.passwordResetRequest.robots).toBe(
+      "noindex, nofollow"
+    );
+    expect(STATIC_PAGE_HEAD.passwordResetUpdate.robots).toBe(
+      "noindex, nofollow"
+    );
     expect(STATIC_PAGE_HEAD.account.robots).toBe("noindex, nofollow");
     expect(STATIC_PAGE_HEAD.dashboard.robots).toBe("noindex, nofollow");
   });
@@ -95,6 +101,12 @@ describe("seo metadata", () => {
     );
     expect(getStaticPageHeadByPathname("/dashboard/noticias/123")).toBe(
       STATIC_PAGE_HEAD.dashboard
+    );
+    expect(getStaticPageHeadByPathname("/recuperar-contrasena")).toBe(
+      STATIC_PAGE_HEAD.passwordResetRequest
+    );
+    expect(getStaticPageHeadByPathname("/nueva-contrasena")).toBe(
+      STATIC_PAGE_HEAD.passwordResetUpdate
     );
     expect(getStaticPageHeadByPathname("/plantel/tomas-brancatisano")).toBeNull();
   });

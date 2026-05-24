@@ -6,6 +6,8 @@ export const ROUTES = {
   TABLE: "/tabla",
   RECORD: "/historial",
   LOGIN: "/ingresar",
+  PASSWORD_RESET_REQUEST: "/recuperar-contrasena",
+  PASSWORD_RESET_UPDATE: "/nueva-contrasena",
   ACCOUNT: "/mi-cuenta",
   DASHBOARD: "/dashboard",
   DASHBOARD_NEWS: "/dashboard/noticias",

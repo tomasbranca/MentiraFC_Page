@@ -104,6 +104,20 @@ export const STATIC_PAGE_HEAD = {
     canonicalUrl: canonicalUrl(ROUTES.LOGIN),
     robots: "noindex, nofollow",
   },
+  passwordResetRequest: {
+    ...DEFAULT_HEAD,
+    title: withSiteName("Recuperar contraseña"),
+    description: "Recuperación de acceso a la cuenta de Mentira FC.",
+    canonicalUrl: canonicalUrl(ROUTES.PASSWORD_RESET_REQUEST),
+    robots: "noindex, nofollow",
+  },
+  passwordResetUpdate: {
+    ...DEFAULT_HEAD,
+    title: withSiteName("Nueva contraseña"),
+    description: "Actualización segura de contraseña de Mentira FC.",
+    canonicalUrl: canonicalUrl(ROUTES.PASSWORD_RESET_UPDATE),
+    robots: "noindex, nofollow",
+  },
   account: {
     ...DEFAULT_HEAD,
     title: withSiteName("Mi cuenta"),
@@ -155,6 +169,10 @@ export const getStaticPageHeadByPathname = (
       return STATIC_PAGE_HEAD.record;
     case ROUTES.LOGIN:
       return STATIC_PAGE_HEAD.login;
+    case ROUTES.PASSWORD_RESET_REQUEST:
+      return STATIC_PAGE_HEAD.passwordResetRequest;
+    case ROUTES.PASSWORD_RESET_UPDATE:
+      return STATIC_PAGE_HEAD.passwordResetUpdate;
     case ROUTES.ACCOUNT:
       return STATIC_PAGE_HEAD.account;
     default:
