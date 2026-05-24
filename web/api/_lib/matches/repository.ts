@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { normalizeGoalScorerKind } from "../../../src/domain/games";
+import { normalizeGoalScorerKind } from "../../../src/domain/games/matchGoalEvents.js";
 import type {
   DashboardMatchDraftMutationInput,
   DashboardMatchItem,

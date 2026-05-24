@@ -2,10 +2,10 @@ import { z } from "zod";
 
 import {
   KNOWN_GAME_STATES,
-  countMentiraGoalsRecorded,
   isKnownGameState,
   normalizeGameState,
-} from "../../../src/domain/games";
+} from "../../../src/domain/games/gameState.js";
+import { countMentiraGoalsRecorded } from "../../../src/domain/games/matchGoals.js";
 import type {
   DashboardMatchCompetition,
   DashboardMatchDraftMutationInput,
