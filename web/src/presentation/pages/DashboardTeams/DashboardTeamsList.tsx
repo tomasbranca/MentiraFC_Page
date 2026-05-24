@@ -15,7 +15,7 @@ import { ROUTES } from "../../../shared/routing";
 import type { DashboardTeamItem } from "../../../types/dashboard";
 import { confirmDashboardAction } from "../../app/confirmDialog";
 import ErrorFallback from "../../components/errors/ErrorFallback";
-import Loader from "../../components/Loader/Loader";
+import DashboardContentLoader from "../../dashboard/DashboardContentLoader";
 import DashboardListFilteredEmpty from "../../dashboard/DashboardListFilteredEmpty";
 import DashboardListFilters from "../../dashboard/DashboardListFilters";
 import { useDashboardPermission } from "../../hooks/usePermission";
@@ -227,7 +227,7 @@ const DashboardTeamsList = () => {
   const hasRowActions = canEditTeam || canDeleteTeam;
 
   if (teamsQuery.isLoading) {
-    return <Loader />;
+    return <DashboardContentLoader />;
   }
 
   if (teamsQuery.isError) {

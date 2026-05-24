@@ -25,7 +25,7 @@ import type {
 } from "../../../types/dashboard";
 import { confirmDashboardAction } from "../../app/confirmDialog";
 import ErrorFallback from "../../components/errors/ErrorFallback";
-import Loader from "../../components/Loader/Loader";
+import DashboardContentLoader from "../../dashboard/DashboardContentLoader";
 import DashboardListFilteredEmpty from "../../dashboard/DashboardListFilteredEmpty";
 import DashboardListFilters from "../../dashboard/DashboardListFilters";
 import { DASHBOARD_STATUS_FILTER_OPTIONS } from "../../dashboard/dashboardListFilters.utils";
@@ -525,7 +525,7 @@ const DashboardPlayersList = () => {
   const hasStaffRowActions = canEditStaff || canDeleteStaff;
 
   if (playersQuery.isLoading || staffQuery.isLoading) {
-    return <Loader />;
+    return <DashboardContentLoader />;
   }
 
   if (playersQuery.isError || staffQuery.isError) {

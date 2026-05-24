@@ -14,7 +14,7 @@ import { reportError } from "../../../lib/errors/errorLogger";
 import type { DashboardNewsItem } from "../../../types/dashboard";
 import { confirmDashboardAction } from "../../app/confirmDialog";
 import ErrorFallback from "../../components/errors/ErrorFallback";
-import Loader from "../../components/Loader/Loader";
+import DashboardContentLoader from "../../dashboard/DashboardContentLoader";
 import { useDashboardPermission } from "../../hooks/usePermission";
 import { ROUTES } from "../../../shared/routing";
 import DashboardListFilteredEmpty from "../../dashboard/DashboardListFilteredEmpty";
@@ -208,7 +208,7 @@ const DashboardNewsList = () => {
   const hasRowActions = canEditNews || canDeleteNews;
 
   if (newsQuery.isLoading) {
-    return <Loader />;
+    return <DashboardContentLoader />;
   }
 
   if (newsQuery.isError) {
