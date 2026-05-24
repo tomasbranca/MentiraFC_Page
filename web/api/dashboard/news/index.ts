@@ -7,7 +7,7 @@ import {
 } from "../../_lib/news.js";
 import { authorizeDashboardUser } from "../../_lib/auth.js";
 import { errorJson, json } from "../../_lib/responses.js";
-import { DASHBOARD_RESOURCE_PERMISSIONS } from "../../../src/domain/auth/permissions";
+import { DASHBOARD_RESOURCE_PERMISSIONS } from "../../../shared/auth/permissions.js";
 import {
   validateDashboardNewsDraftMutation,
   validateDashboardNewsMutation,
