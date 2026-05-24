@@ -110,6 +110,14 @@ export default {
       options: {hotspot: true},
     },
     {
+      name: 'isActive',
+      title: 'Activo en plantel',
+      type: 'boolean',
+      description:
+        'Si esta desactivado, el jugador no aparece en el plantel publico pero conserva referencias historicas.',
+      initialValue: true,
+    },
+    {
       name: 'slug',
       title: 'Slug',
       type: 'slug',

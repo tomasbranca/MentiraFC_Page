@@ -61,6 +61,16 @@ describe("games.adapter", () => {
     ).toEqual([]);
   });
 
+  it("normaliza estados desconocidos de Sanity", () => {
+    const game = adaptGame(
+      createSanityGame({
+        state: "suspendido",
+      })
+    );
+
+    expect(game?.state).toBe("desconocido");
+  });
+
   it("adapta proximos partidos no asociados a un torneo", () => {
     const game = adaptGame(
       createSanityGame({

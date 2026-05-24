@@ -1,3 +1,4 @@
+import { normalizeGameState } from "../../../domain/games";
 import type { Game, MatchEvent, Player } from "../../../types/models";
 import {
   sanityEventSchema,
@@ -56,7 +57,7 @@ export const adaptGame = (game: unknown): Game | null => {
   return {
     id: validated._id,
     date: validated.date,
-    state: validated.state,
+    state: normalizeGameState(validated.state),
     location: validated.location,
     competition: validated.competition,
     tournamentId: validated.tournament?._id || null,

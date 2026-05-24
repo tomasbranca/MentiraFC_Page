@@ -4,6 +4,7 @@ export {
   listDashboardPlayers,
   publishDashboardPlayer,
   saveDashboardPlayerDraft,
+  setDashboardPlayerActiveStatus,
 } from "./players/repository.js";
 export {
   dashboardPlayerByIdQuery,
@@ -17,6 +18,7 @@ export {
   parseDashboardPlayerDraftRequestInput,
   parseDashboardPlayerFormData,
   parseDashboardPlayerInput,
+  parseDashboardPlayerActiveStatusInput,
   parseDashboardPlayerRequestInput,
   validateDashboardPlayerImageFile,
 } from "./players/validation.js";

@@ -1,3 +1,8 @@
+import {
+  isFinishedGameState,
+  isKnownGameState,
+  type GameState,
+} from "../../../domain/games";
 import type {
   DashboardMatchCompetition,
   DashboardMatchDraftMutationInput,
@@ -117,7 +122,7 @@ export const validateDashboardMatchInput = (
     errors.tournamentId = "Elegi el torneo.";
   }
 
-  if (values.state === "finalizado") {
+  if (isFinishedGameState(values.state)) {
     if (!isValidScore(values.goalsFor)) {
       errors.goalsFor = "Carga los goles de Mentira FC.";
     }
@@ -133,7 +138,7 @@ export const validateDashboardMatchInput = (
 export const buildDashboardMatchMutationInput = (
   values: DashboardMatchInput
 ): DashboardMatchMutationInput => {
-  const isFinished = values.state === "finalizado";
+  const isFinished = isFinishedGameState(values.state);
 
   return {
     rivalId: values.rivalId.trim(),
@@ -155,8 +160,12 @@ export const buildDashboardMatchDraftInput = (
 ): DashboardMatchDraftMutationInput => buildDashboardMatchMutationInput(values);
 
 export const getDashboardMatchStateLabel = (
-  state?: string | null
+  state?: GameState | string | null
 ): string => {
+  if (!isKnownGameState(state)) {
+    return "Sin estado";
+  }
+
   const option = MATCH_STATE_OPTIONS.find((item) => item.value === state);
   return option?.label ?? "Sin estado";
 };

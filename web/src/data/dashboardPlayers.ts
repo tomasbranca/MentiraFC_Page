@@ -29,6 +29,8 @@ const dashboardPlayerSchema = z.object({
   status: z.enum(["published", "draft"]),
   hasDraft: z.boolean(),
   hasPublishedVersion: z.boolean(),
+  isActive: z.boolean(),
+  canManageActiveStatus: z.boolean(),
   name: z.string(),
   lastName: z.string(),
   fullName: z.string(),
@@ -204,6 +206,24 @@ export const saveDashboardPlayerDraft = async (
     {
       method: id ? "PUT" : "POST",
       body: buildDashboardPlayerFormData(input),
+    }
+  );
+
+  return dashboardPlayerSchema.parse(
+    data,
+    zodParseOptions
+  ) as DashboardPlayerItem;
+};
+
+export const setDashboardPlayerActiveStatus = async (
+  id: string,
+  isActive: boolean
+): Promise<DashboardPlayerItem> => {
+  const data = await fetchDashboardApi<unknown>(
+    buildDashboardPlayerItemApiPath(id),
+    {
+      method: "PATCH",
+      body: JSON.stringify({ isActive }),
     }
   );
 

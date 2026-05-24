@@ -1,5 +1,5 @@
 export const PLAYERS_QUERY = `
-  *[_type == "players"] | order(number asc) {
+  *[_type == "players" && coalesce(isActive, true) == true] | order(number asc) {
     _id,
     name,
     lastName,

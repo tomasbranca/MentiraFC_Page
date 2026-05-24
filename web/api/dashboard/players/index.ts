@@ -4,6 +4,8 @@ import {
   listDashboardPlayers,
   publishDashboardPlayer,
   saveDashboardPlayerDraft,
+  setDashboardPlayerActiveStatus,
+  parseDashboardPlayerActiveStatusInput,
 } from "../../_lib/players.js";
 import { authorizeDashboardUser } from "../../_lib/auth.js";
 import { errorJson, json } from "../../_lib/responses.js";
@@ -87,6 +89,37 @@ const dashboardPlayersHandler = async (request: Request): Promise<Response> => {
       }
 
       return json(await publishDashboardPlayer(id, validation.input));
+    }
+
+    if (request.method === "PATCH") {
+      if (!id) {
+        return errorJson("Falta el identificador del jugador.", 400);
+      }
+
+      const isActive = parseDashboardPlayerActiveStatusInput(
+        await request.json().catch(() => null)
+      );
+
+      if (isActive === null) {
+        return errorJson("El estado activo del jugador no es valido.", 400);
+      }
+
+      try {
+        return json(await setDashboardPlayerActiveStatus(id, isActive));
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          error.message ===
+            "Player must be published before changing active status."
+        ) {
+          return errorJson(
+            "Solo podes cambiar el estado de jugadores publicados.",
+            409
+          );
+        }
+
+        throw error;
+      }
     }
 
     if (request.method === "DELETE") {

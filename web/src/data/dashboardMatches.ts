@@ -1,3 +1,4 @@
+import { normalizeGameState } from "../domain/games";
 import { getCurrentAccessToken } from "./auth";
 import type {
   DashboardMatchDraftMutationInput,
@@ -25,7 +26,12 @@ const dashboardMatchSchema = z.object({
   hasPublishedVersion: z.boolean(),
   date: z.string().nullable().optional(),
   updatedAt: z.string().nullable().optional(),
-  state: z.string().nullable().optional(),
+  state: z
+    .union([z.string(), z.null()])
+    .optional()
+    .transform((value) =>
+      value == null || value === "" ? null : normalizeGameState(value)
+    ),
   location: z.string().nullable().optional(),
   competition: z.string().nullable().optional(),
   tournamentId: z.string().nullable().optional(),

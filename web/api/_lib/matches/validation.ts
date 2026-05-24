@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+import {
+  KNOWN_GAME_STATES,
+  isKnownGameState,
+  normalizeGameState,
+} from "../../../src/domain/games";
 import type {
   DashboardMatchCompetition,
   DashboardMatchDraftMutationInput,
@@ -11,7 +16,7 @@ import type {
 } from "../../../src/types/dashboard";
 
 const dashboardMatchCompetitionValues = ["Torneo", "Copa", "Amistoso"] as const;
-const dashboardMatchStateValues = ["por_jugar", "finalizado"] as const;
+const dashboardMatchStateValues = KNOWN_GAME_STATES;
 
 const dashboardMatchCompetitionSchema = z.enum(
   dashboardMatchCompetitionValues
@@ -106,7 +111,12 @@ const dashboardMatchItemSchema = z.object({
   hasPublishedVersion: z.boolean(),
   date: z.string().nullable().optional(),
   updatedAt: z.string().nullable().optional(),
-  state: z.string().nullable().optional(),
+  state: z
+    .union([z.string(), z.null()])
+    .optional()
+    .transform((value) =>
+      value == null || value === "" ? null : normalizeGameState(value)
+    ),
   location: z.string().nullable().optional(),
   competition: z.string().nullable().optional(),
   tournamentId: z.string().nullable().optional(),
@@ -181,7 +191,7 @@ const isMatchCompetition = (
   );
 
 const isMatchState = (value?: string): value is DashboardMatchState =>
-  dashboardMatchStateValues.includes(value as DashboardMatchState);
+  isKnownGameState(value);
 
 export const parseDashboardMatchInput = (
   input: unknown

@@ -6,6 +6,11 @@ import {
 } from "../../constants/assets.constants";
 import { GameWidgetSkeleton } from "../Skeletons/SectionSkeletons";
 
+import {
+  isFinishedGameState,
+  isScheduledGameState,
+  isUnknownGameState,
+} from "../../../domain/games";
 import { useGame } from "../../context/useGame";
 import { useCountdown } from "../../hooks/useCountDown";
 import { getGameWidgetVisualState } from "./GameWidget.utils";
@@ -25,9 +30,15 @@ const GameWidget = ({ compact = false }: GameWidgetProps) => {
   const gameDate = game ? new Date(game.date) : null;
 
   const isUpcoming =
-    game?.state === "por_jugar" && gameDate !== null && gameDate > now;
+    game != null &&
+    isScheduledGameState(game.state) &&
+    gameDate !== null &&
+    gameDate > now;
   const isInProgress =
-    game?.state === "por_jugar" && gameDate !== null && gameDate <= now;
+    game != null &&
+    isScheduledGameState(game.state) &&
+    gameDate !== null &&
+    gameDate <= now;
 
   const timeLeft = useCountdown(game?.date, isUpcoming);
 
@@ -117,13 +128,17 @@ const GameWidget = ({ compact = false }: GameWidgetProps) => {
           </span>
         )}
 
-        {game.state === "finalizado" && (
+        {isFinishedGameState(game.state) && (
           <>
             <p className="text-lg">
               {game.result.goalsFor} - {game.result.goalsAgainst}
             </p>
             <p className="text-xs mt-0.5">Finalizado</p>
           </>
+        )}
+
+        {isUnknownGameState(game.state) && (
+          <p className="text-lg font-semibold">VS</p>
         )}
       </div>
     </div>
