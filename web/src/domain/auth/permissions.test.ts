@@ -3,17 +3,27 @@ import { describe, expect, it } from "vitest";
 import {
   APP_PERMISSIONS,
   APP_ROLES,
+  canAssignAppRole,
   canAccessAdminPanel,
   canAccessDashboard,
+  compareAppRoles,
   createPermissionChecker,
   DASHBOARD_RESOURCE_PERMISSION_LIST,
+  getAssignableAppRoles,
   getDashboardRequestPermission,
   getDashboardResourcePermission,
+  getRoleRank,
   hasDashboardResourcePermission,
   hasPermission,
+  HIGH_PRIVILEGE_ROLES,
   isAppRole,
+  isHighPrivilegeRole,
+  isRoleAtLeast,
+  isSelfRoleElevation,
   PERMISSIONS,
+  ROLE_HIERARCHY,
   ROLE_PERMISSIONS,
+  STANDARD_ASSIGNABLE_ROLES,
   type AppPermission,
   type AppRole,
 } from "./permissions";
@@ -144,5 +154,128 @@ describe("auth permissions", () => {
     expect(isAppRole("editor")).toBe(true);
     expect(isAppRole("owner")).toBe(false);
     expect(hasPermission(null, PERMISSIONS.viewDashboard)).toBe(false);
+  });
+
+  it("mantiene una jerarquia explicita para comparar roles", () => {
+    expect(ROLE_HIERARCHY).toEqual({
+      user: 0,
+      team_member: 1,
+      editor: 2,
+      moderator: 3,
+      admin: 4,
+    });
+    expect(APP_ROLES.map(getRoleRank)).toEqual([0, 1, 2, 3, 4]);
+    expect(compareAppRoles("admin", "editor")).toBeGreaterThan(0);
+    expect(compareAppRoles("user", "team_member")).toBeLessThan(0);
+    expect(isRoleAtLeast("moderator", "moderator")).toBe(true);
+    expect(isRoleAtLeast("editor", "moderator")).toBe(false);
+    expect(STANDARD_ASSIGNABLE_ROLES).toEqual(["user", "team_member", "editor"]);
+    expect(HIGH_PRIVILEGE_ROLES).toEqual(["moderator", "admin"]);
+    expect(isHighPrivilegeRole("moderator")).toBe(true);
+    expect(isHighPrivilegeRole("editor")).toBe(false);
+  });
+
+  it("permite que solo admin asigne roles altos desde la UI", () => {
+    expect(
+      canAssignAppRole({
+        actorRole: "moderator",
+        targetRole: "editor",
+      })
+    ).toBe(true);
+    expect(
+      canAssignAppRole({
+        actorRole: "moderator",
+        targetRole: "moderator",
+      })
+    ).toBe(false);
+    expect(
+      canAssignAppRole({
+        actorRole: "moderator",
+        targetRole: "admin",
+      })
+    ).toBe(false);
+    expect(
+      canAssignAppRole({
+        actorRole: "admin",
+        targetRole: "moderator",
+      })
+    ).toBe(true);
+    expect(
+      canAssignAppRole({
+        actorRole: "admin",
+        targetRole: "admin",
+      })
+    ).toBe(true);
+  });
+
+  it("expone los roles asignables para combos de administracion", () => {
+    expect(getAssignableAppRoles({ actorRole: "editor" })).toEqual([]);
+    expect(getAssignableAppRoles({ actorRole: "moderator" })).toEqual([
+      "user",
+      "team_member",
+      "editor",
+    ]);
+    expect(getAssignableAppRoles({ actorRole: "admin" })).toEqual(APP_ROLES);
+  });
+
+  it("bloquea que cualquier usuario eleve su propio rol desde la UI", () => {
+    const selfChange = {
+      actorUserId: "6deef514-2b87-4bff-85df-a669860a9990",
+      targetUserId: "6deef514-2b87-4bff-85df-a669860a9990",
+    };
+
+    expect(
+      isSelfRoleElevation({
+        ...selfChange,
+        actorRole: "editor",
+        targetCurrentRole: "editor",
+        targetRole: "moderator",
+      })
+    ).toBe(true);
+    expect(
+      canAssignAppRole({
+        ...selfChange,
+        actorRole: "admin",
+        targetCurrentRole: "moderator",
+        targetRole: "admin",
+      })
+    ).toBe(false);
+    expect(
+      canAssignAppRole({
+        ...selfChange,
+        actorRole: "admin",
+        targetCurrentRole: "admin",
+        targetRole: "moderator",
+      })
+    ).toBe(true);
+    expect(
+      canAssignAppRole({
+        ...selfChange,
+        actorRole: "admin",
+        targetCurrentRole: "admin",
+        targetRole: "admin",
+      })
+    ).toBe(true);
+  });
+
+  it("incluye la regla de roles en el verificador reutilizable", () => {
+    const moderatorChecker = createPermissionChecker("moderator");
+    const adminChecker = createPermissionChecker("admin");
+
+    expect(
+      moderatorChecker.canAssignRole({
+        targetRole: "admin",
+      })
+    ).toBe(false);
+    expect(moderatorChecker.getAssignableRoles()).toEqual([
+      "user",
+      "team_member",
+      "editor",
+    ]);
+    expect(
+      adminChecker.canAssignRole({
+        targetRole: "admin",
+      })
+    ).toBe(true);
   });
 });

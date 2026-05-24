@@ -8,6 +8,27 @@ export const APP_ROLES = [
 
 export type AppRole = (typeof APP_ROLES)[number];
 
+export const ROLE_HIERARCHY = {
+  user: 0,
+  team_member: 1,
+  editor: 2,
+  moderator: 3,
+  admin: 4,
+} as const satisfies Record<AppRole, number>;
+
+export const STANDARD_ASSIGNABLE_ROLES = [
+  "user",
+  "team_member",
+  "editor",
+] as const satisfies readonly AppRole[];
+
+export const HIGH_PRIVILEGE_ROLES = [
+  "moderator",
+  "admin",
+] as const satisfies readonly AppRole[];
+
+export type HighPrivilegeRole = (typeof HIGH_PRIVILEGE_ROLES)[number];
+
 export const PERMISSIONS = {
   commentNews: "comment_news",
   participatePublicVotes: "participate_public_votes",
@@ -216,6 +237,21 @@ export const ROLE_PERMISSIONS = {
 export const isAppRole = (role: unknown): role is AppRole =>
   typeof role === "string" && APP_ROLES.includes(role as AppRole);
 
+export const getRoleRank = (role: AppRole): number => ROLE_HIERARCHY[role];
+
+export const compareAppRoles = (leftRole: AppRole, rightRole: AppRole): number =>
+  getRoleRank(leftRole) - getRoleRank(rightRole);
+
+export const isRoleAtLeast = (
+  role: AppRole,
+  minimumRole: AppRole
+): boolean => compareAppRoles(role, minimumRole) >= 0;
+
+export const isHighPrivilegeRole = (
+  role: AppRole
+): role is HighPrivilegeRole =>
+  HIGH_PRIVILEGE_ROLES.includes(role as HighPrivilegeRole);
+
 export const getRolePermissions = (
   role: AppRole | null | undefined
 ): readonly AppPermission[] => (role ? ROLE_PERMISSIONS[role] : []);
@@ -245,6 +281,65 @@ export const hasDashboardResourcePermission = <
 ): boolean =>
   hasPermission(role, getDashboardResourcePermission(resource, action));
 
+export type RoleAssignmentContext = {
+  actorRole: AppRole | null | undefined;
+  actorUserId?: string | null | undefined;
+  targetUserId?: string | null | undefined;
+  targetCurrentRole?: AppRole | null | undefined;
+  targetRole: AppRole;
+};
+
+export type AssignableRolesContext = Omit<RoleAssignmentContext, "targetRole">;
+
+const isSameUser = (
+  actorUserId: string | null | undefined,
+  targetUserId: string | null | undefined
+): boolean => Boolean(actorUserId && targetUserId && actorUserId === targetUserId);
+
+export const isSelfRoleElevation = ({
+  actorRole,
+  actorUserId,
+  targetUserId,
+  targetCurrentRole,
+  targetRole,
+}: RoleAssignmentContext): boolean => {
+  if (!actorRole || !isSameUser(actorUserId, targetUserId)) {
+    return false;
+  }
+
+  return compareAppRoles(targetRole, targetCurrentRole ?? actorRole) > 0;
+};
+
+// UI guard for role controls. Server authorization and RLS still own enforcement.
+export const canAssignAppRole = (
+  context: RoleAssignmentContext
+): boolean => {
+  const { actorRole, targetRole } = context;
+
+  if (!actorRole || isSelfRoleElevation(context)) {
+    return false;
+  }
+
+  if (isHighPrivilegeRole(targetRole)) {
+    return actorRole === "admin";
+  }
+
+  return hasAnyPermission(actorRole, [
+    PERMISSIONS.assignTeamMemberOrEditorRoles,
+    PERMISSIONS.manageAllRoles,
+  ]);
+};
+
+export const getAssignableAppRoles = (
+  context: AssignableRolesContext
+): readonly AppRole[] =>
+  APP_ROLES.filter((targetRole) =>
+    canAssignAppRole({
+      ...context,
+      targetRole,
+    })
+  );
+
 export type PermissionChecker = {
   can: (permission: AppPermission) => boolean;
   canAny: (permissions: readonly AppPermission[]) => boolean;
@@ -256,6 +351,10 @@ export type PermissionChecker = {
     resource: Resource,
     action: Action
   ) => boolean;
+  canAssignRole: (context: Omit<RoleAssignmentContext, "actorRole">) => boolean;
+  getAssignableRoles: (
+    context?: Omit<AssignableRolesContext, "actorRole">
+  ) => readonly AppRole[];
 };
 
 export const createPermissionChecker = (
@@ -266,6 +365,16 @@ export const createPermissionChecker = (
   canEvery: (permissions) => hasEveryPermission(role, permissions),
   canDashboard: (resource, action) =>
     hasDashboardResourcePermission(role, resource, action),
+  canAssignRole: (context) =>
+    canAssignAppRole({
+      ...context,
+      actorRole: role,
+    }),
+  getAssignableRoles: (context = {}) =>
+    getAssignableAppRoles({
+      ...context,
+      actorRole: role,
+    }),
 });
 
 export const canAccessDashboard = (
