@@ -31,6 +31,10 @@ const dashboardMatchProjection = `{
   ] | order(order asc, _createdAt asc) {
     "id": _id,
     order,
+    scorerKind,
+    scorerSide,
+    scorerSource,
+    guestName,
     player->${dashboardMatchPlayerProjection}
   }
 }`;

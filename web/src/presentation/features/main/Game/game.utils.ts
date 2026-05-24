@@ -1,8 +1,13 @@
-import { isScheduledGameState } from "../../../../domain/games";
+import {
+  formatMatchGoalScorerLabel,
+  getMentiraMatchGoalScorerLines,
+  isScheduledGameState,
+} from "../../../../domain/games";
 import type { Game, MatchEvent } from "../../../../types/models";
 
-type Scorer = {
-  player: NonNullable<MatchEvent["player"]>;
+export type ScorerLine = {
+  key: string;
+  label: string;
   goals: number;
 };
 
@@ -15,28 +20,12 @@ export const isGameInProgress = (game: Game | null): boolean => {
   return isScheduledGameState(game.state) && gameDate <= now;
 };
 
-export const getScorers = (events: MatchEvent[] = []): Scorer[] => {
-  return Object.values(
-    events.reduce<Record<string, Scorer>>((acc, event) => {
-      const player = event.player;
-
-      if (!player) return acc;
-
-      const key = `${player.name}-${player.lastName}`;
-
-      if (!acc[key]) {
-        acc[key] = {
-          player,
-          goals: 0,
-        };
-      }
-
-      acc[key].goals += 1;
-
-      return acc;
-    }, {})
-  );
-};
+export const getScorers = (events: MatchEvent[] = []): ScorerLine[] =>
+  getMentiraMatchGoalScorerLines(events).map((line) => ({
+    key: line.key,
+    label: formatMatchGoalScorerLabel(line),
+    goals: line.goals,
+  }));
 
 export const getShortName = (
   name?: string,

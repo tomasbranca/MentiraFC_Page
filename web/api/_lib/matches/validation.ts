@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import {
   KNOWN_GAME_STATES,
+  countMentiraGoalsRecorded,
   isKnownGameState,
   normalizeGameState,
 } from "../../../src/domain/games";
@@ -33,6 +34,11 @@ const dashboardMatchGoalScorerSchema = z.object({
   goals: scorerGoalSchema,
 });
 
+const dashboardMatchGuestGoalScorerSchema = z.object({
+  name: z.string().trim().min(1),
+  goals: scorerGoalSchema,
+});
+
 const dashboardMatchInputSchema = z
   .object({
     rivalId: z.string().trim().min(1),
@@ -45,6 +51,8 @@ const dashboardMatchInputSchema = z
     goalsAgainst: optionalScoreSchema,
     playedPlayerIds: z.array(z.string().trim().min(1)).optional(),
     goalScorers: z.array(dashboardMatchGoalScorerSchema).optional(),
+    guestGoalScorers: z.array(dashboardMatchGuestGoalScorerSchema).optional(),
+    opponentOwnGoals: optionalScoreSchema,
   })
   .superRefine((input, context) => {
     if (input.competition === "Torneo" && !input.tournamentId?.trim()) {
@@ -71,6 +79,22 @@ const dashboardMatchInputSchema = z
           message: "Goals against are required for finished matches.",
         });
       }
+
+      if (typeof input.goalsFor === "number") {
+        const recordedGoals = countMentiraGoalsRecorded(
+          input.goalScorers ?? [],
+          input.guestGoalScorers ?? [],
+          input.opponentOwnGoals ?? 0
+        );
+
+        if (recordedGoals !== input.goalsFor) {
+          context.addIssue({
+            code: "custom",
+            path: ["goalScorers"],
+            message: `Recorded goals (${recordedGoals}) must match goals for (${input.goalsFor}).`,
+          });
+        }
+      }
     }
   });
 
@@ -91,6 +115,8 @@ const dashboardMatchDraftInputSchema = z.object({
   goalsAgainst: optionalScoreSchema,
   playedPlayerIds: z.array(z.string().trim().min(1)).optional(),
   goalScorers: z.array(dashboardMatchGoalScorerSchema).optional(),
+  guestGoalScorers: z.array(dashboardMatchGuestGoalScorerSchema).optional(),
+  opponentOwnGoals: optionalScoreSchema,
 });
 
 const dashboardMatchPlayerSchema = z.object({
@@ -138,6 +164,13 @@ const dashboardMatchItemSchema = z.object({
       goals: z.number(),
     })
   ),
+  guestGoalScorers: z.array(
+    z.object({
+      name: z.string(),
+      goals: z.number(),
+    })
+  ),
+  opponentOwnGoals: z.number().int().min(0).default(0),
 });
 
 const dashboardMatchOptionsSchema = z.object({
@@ -162,7 +195,7 @@ const dashboardMatchOptionsSchema = z.object({
 
 const uniqueIds = (ids: string[] = []): string[] => [...new Set(ids)];
 
-const normalizeGoalScorers = (
+const normalizePlayerGoalScorers = (
   scorers: Array<{ playerId: string; goals: number }> = []
 ): Array<{ playerId: string; goals: number }> => {
   const goalsByPlayer = new Map<string, number>();
@@ -179,6 +212,27 @@ const normalizeGoalScorers = (
 
   return [...goalsByPlayer.entries()].map(([playerId, goals]) => ({
     playerId,
+    goals,
+  }));
+};
+
+const normalizeGuestGoalScorers = (
+  scorers: Array<{ name: string; goals: number }> = []
+): Array<{ name: string; goals: number }> => {
+  const goalsByGuest = new Map<string, number>();
+
+  for (const scorer of scorers) {
+    const name = scorer.name.trim();
+
+    if (!name || scorer.goals < 1) {
+      continue;
+    }
+
+    goalsByGuest.set(name, (goalsByGuest.get(name) ?? 0) + scorer.goals);
+  }
+
+  return [...goalsByGuest.entries()].map(([name, goals]) => ({
+    name,
     goals,
   }));
 };
@@ -216,7 +270,11 @@ export const parseDashboardMatchInput = (
     goalsFor: isFinished ? data.goalsFor : undefined,
     goalsAgainst: isFinished ? data.goalsAgainst : undefined,
     playedPlayerIds: isFinished ? uniqueIds(data.playedPlayerIds) : [],
-    goalScorers: isFinished ? normalizeGoalScorers(data.goalScorers) : [],
+    goalScorers: isFinished ? normalizePlayerGoalScorers(data.goalScorers) : [],
+    guestGoalScorers: isFinished
+      ? normalizeGuestGoalScorers(data.guestGoalScorers)
+      : [],
+    opponentOwnGoals: isFinished ? data.opponentOwnGoals ?? 0 : 0,
   };
 };
 
@@ -243,7 +301,9 @@ export const parseDashboardMatchDraftInput = (
     goalsFor: data.goalsFor,
     goalsAgainst: data.goalsAgainst,
     playedPlayerIds: uniqueIds(data.playedPlayerIds),
-    goalScorers: normalizeGoalScorers(data.goalScorers),
+    goalScorers: normalizePlayerGoalScorers(data.goalScorers),
+    guestGoalScorers: normalizeGuestGoalScorers(data.guestGoalScorers),
+    opponentOwnGoals: data.opponentOwnGoals ?? 0,
   };
 };
 

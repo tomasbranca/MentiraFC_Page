@@ -1,8 +1,8 @@
 import type { PortableTextBlock, TypedObject } from "@portabletext/types";
 
-import type { GameState, KnownGameState } from "../domain/games";
+import type { GameState, GoalScorerKind, KnownGameState } from "../domain/games";
 
-export type { GameState, KnownGameState };
+export type { GameState, GoalScorerKind, KnownGameState };
 export type BootstrapScope =
   | "empty"
   | "bootstrap-error"
@@ -72,6 +72,8 @@ export interface MatchEvent {
   id: string;
   type: string;
   order?: number;
+  scorerKind?: GoalScorerKind;
+  guestName?: string | null;
   player: Pick<Player, "id" | "name" | "lastName" | "slug"> | null;
 }
 
@@ -199,6 +201,8 @@ export interface GoalEvent {
   id: string;
   type: string;
   order?: number;
+  scorerKind?: GoalScorerKind;
+  guestName?: string | null;
   game: { id: string; date: string } | null;
   player: Pick<Player, "id" | "name" | "lastName" | "slug"> | null;
 }

@@ -1,8 +1,13 @@
+import {
+  formatMatchGoalScorerLabel,
+  getMentiraMatchGoalScorerLines,
+} from "../../../domain/games";
 import type { Game, MatchEvent } from "../../../types/models";
 
 type MatchResult = "win" | "loss" | "draw";
-type Scorer = {
-  player: MatchEvent["player"];
+export type ScorerLine = {
+  key: string;
+  label: string;
   goals: number;
 };
 
@@ -37,23 +42,9 @@ export const getMatchResult = (game: Game): MatchResult => {
   return "draw";
 };
 
-export const getScorers = (events: MatchEvent[] = []): Scorer[] => {
-  return Object.values(
-    events.reduce<Record<string, Scorer>>((acc, event) => {
-      if (!event.player) return acc;
-
-      const key = `${event.player?.name}-${event.player?.lastName}`;
-
-      if (!acc[key]) {
-        acc[key] = {
-          player: event.player,
-          goals: 0,
-        };
-      }
-
-      acc[key].goals += 1;
-
-      return acc;
-    }, {})
-  );
-};
+export const getScorers = (events: MatchEvent[] = []): ScorerLine[] =>
+  getMentiraMatchGoalScorerLines(events).map((line) => ({
+    key: line.key,
+    label: formatMatchGoalScorerLabel(line),
+    goals: line.goals,
+  }));

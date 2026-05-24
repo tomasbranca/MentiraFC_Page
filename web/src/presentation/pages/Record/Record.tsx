@@ -189,10 +189,9 @@ const Record = () => {
                           </p>
 
                           <ul className="space-y-1">
-                            {scorers.map((scorer, i) => (
-                              <li key={`${scorer.player?.name}-${i}`}>
-                                {scorer.player?.name} {scorer.player?.lastName}{" "}
-                                ({scorer.goals})
+                            {scorers.map((scorer) => (
+                              <li key={scorer.key}>
+                                {scorer.label} ({scorer.goals})
                               </li>
                             ))}
                           </ul>

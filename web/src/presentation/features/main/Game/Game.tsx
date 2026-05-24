@@ -9,7 +9,7 @@ import {
   isScheduledGameState,
   isUnknownGameState,
 } from "../../../../domain/games";
-import { isGameInProgress, getScorers, getShortName } from "./game.utils";
+import { isGameInProgress, getScorers } from "./game.utils";
 import {
   SITE_LOGO_ASSETS,
   SITE_LOGO_SIZES,
@@ -115,17 +115,12 @@ const Game = ({ game, loading }: GameProps) => {
                 {/* GOLEADORES DESKTOP */}
                 <div className="hidden sm:flex justify-start w-full mt-2">
                   <div className="w-1/2 flex flex-wrap gap-x-3 gap-y-1 text-xs sm:text-sm">
-                    {scorers.map((scorer, index) => (
+                    {scorers.map((scorer) => (
                       <div
-                        key={index}
+                        key={scorer.key}
                         className="flex items-center gap-1 whitespace-nowrap"
                       >
-                        <span>
-                          {getShortName(
-                            scorer.player?.name,
-                            scorer.player?.lastName
-                          )}
-                        </span>
+                        <span>{scorer.label}</span>
 
                         <span className="flex gap-1">
                           {renderFootballs(scorer.goals)}
@@ -172,14 +167,9 @@ const Game = ({ game, loading }: GameProps) => {
 
             {showScorers && (
               <div className="mt-4 flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs">
-                {scorers.map((scorer, index) => (
-                  <div key={index} className="flex items-center gap-1">
-                    <span>
-                      {getShortName(
-                        scorer.player?.name,
-                        scorer.player?.lastName
-                      )}
-                    </span>
+                {scorers.map((scorer) => (
+                  <div key={scorer.key} className="flex items-center gap-1">
+                    <span>{scorer.label}</span>
 
                     <span className="flex gap-1">
                       {renderFootballs(scorer.goals)}

@@ -1,6 +1,8 @@
 import {
+  getFinishedMatchGoalsMismatchMessage,
   isFinishedGameState,
   isKnownGameState,
+  parseOpponentOwnGoalCount,
   type GameState,
 } from "../../../domain/games";
 import type {
@@ -79,7 +81,7 @@ const parseScore = (value: string): number | undefined =>
 
 const uniqueIds = (ids: string[]): string[] => [...new Set(ids)];
 
-const normalizeGoalScorers = (
+const normalizePlayerGoalScorers = (
   scorers: DashboardMatchInput["goalScorers"]
 ): DashboardMatchMutationInput["goalScorers"] => {
   const goalsByPlayer = new Map<string, number>();
@@ -97,6 +99,28 @@ const normalizeGoalScorers = (
 
   return [...goalsByPlayer.entries()].map(([playerId, goals]) => ({
     playerId,
+    goals,
+  }));
+};
+
+const normalizeGuestGoalScorers = (
+  scorers: DashboardMatchInput["guestGoalScorers"]
+): DashboardMatchMutationInput["guestGoalScorers"] => {
+  const goalsByGuest = new Map<string, number>();
+
+  for (const scorer of scorers) {
+    const name = scorer.name.trim();
+    const goals = Number(scorer.goals);
+
+    if (!name || !Number.isInteger(goals) || goals < 1) {
+      continue;
+    }
+
+    goalsByGuest.set(name, (goalsByGuest.get(name) ?? 0) + goals);
+  }
+
+  return [...goalsByGuest.entries()].map(([name, goals]) => ({
+    name,
     goals,
   }));
 };
@@ -130,6 +154,21 @@ export const validateDashboardMatchInput = (
     if (!isValidScore(values.goalsAgainst)) {
       errors.goalsAgainst = "Carga los goles del rival.";
     }
+
+    if (isValidScore(values.goalsFor)) {
+      const goalsFor = Number(values.goalsFor);
+      const opponentOwnGoals = parseOpponentOwnGoalCount(values.opponentOwnGoals);
+      const goalsMismatchMessage = getFinishedMatchGoalsMismatchMessage(
+        goalsFor,
+        values.goalScorers,
+        values.guestGoalScorers,
+        opponentOwnGoals
+      );
+
+      if (goalsMismatchMessage) {
+        errors.goalScorers = goalsMismatchMessage;
+      }
+    }
   }
 
   return errors;
@@ -151,7 +190,13 @@ export const buildDashboardMatchMutationInput = (
     goalsFor: isFinished ? parseScore(values.goalsFor) : undefined,
     goalsAgainst: isFinished ? parseScore(values.goalsAgainst) : undefined,
     playedPlayerIds: isFinished ? uniqueIds(values.playedPlayerIds) : [],
-    goalScorers: isFinished ? normalizeGoalScorers(values.goalScorers) : [],
+    goalScorers: isFinished ? normalizePlayerGoalScorers(values.goalScorers) : [],
+    guestGoalScorers: isFinished
+      ? normalizeGuestGoalScorers(values.guestGoalScorers)
+      : [],
+    opponentOwnGoals: isFinished
+      ? parseOpponentOwnGoalCount(values.opponentOwnGoals)
+      : 0,
   };
 };
 

@@ -32,6 +32,10 @@ export const GAME_PROJECTION = `{
       _id,
       type,
       order,
+      scorerKind,
+      scorerSide,
+      scorerSource,
+      guestName,
       player->{
         _id,
         name,
@@ -105,6 +109,10 @@ export const FINISHED_GAMES_QUERY = `
       _id,
       type,
       order,
+      scorerKind,
+      scorerSide,
+      scorerSource,
+      guestName,
       player->{
         _id,
         name,
@@ -157,6 +165,10 @@ export const FINISHED_TOURNAMENT_GAMES_QUERY = `
       _id,
       type,
       order,
+      scorerKind,
+      scorerSide,
+      scorerSource,
+      guestName,
       player->{
         _id,
         name,

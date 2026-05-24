@@ -77,6 +77,45 @@ describe("galleries.adapter", () => {
     expect(gallery?.heroImage.id).toBe("photo-1");
   });
 
+  it("no descarta galerias cuando el partido tiene goles sin jugador del plantel", () => {
+    const gallery = adaptSingleGallery(
+      createSanityGallery({
+        game: {
+          ...createSanityGallery().game,
+          events: [
+            {
+              _id: "event-guest",
+              type: "goal",
+              scorerKind: "guest",
+              guestName: "Invitado",
+              player: null,
+            },
+            {
+              _id: "event-own-goal",
+              type: "goal",
+              scorerKind: "opponent_own_goal",
+              player: null,
+            },
+          ],
+        },
+      })
+    );
+
+    expect(gallery?.game.events).toMatchObject([
+      {
+        id: "event-guest",
+        scorerKind: "guest",
+        guestName: "Invitado",
+        player: null,
+      },
+      {
+        id: "event-own-goal",
+        scorerKind: "opponent_own_goal",
+        player: null,
+      },
+    ]);
+  });
+
   it("descarta galerias sin fotos validas", () => {
     expect(adaptSingleGallery(createSanityGallery({ photos: [] }))).toBeNull();
   });
