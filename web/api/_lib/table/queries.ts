@@ -53,7 +53,11 @@ export const dashboardTableOptionsQuery = `{
 }`;
 
 export const dashboardTableTournamentValidationQuery = `{
-  "mainTeam": *[_type == "teams" && isMain == true][0]{
+  "mainTeam": *[
+    _type == "teams" &&
+    !(_id in path("drafts.**")) &&
+    isMain == true
+  ][0]{
     "id": _id,
     name,
     isMain

@@ -1,5 +1,5 @@
 export const TEAMS_QUERY = `
-  *[_type == "teams"] | order(name asc) {
+  *[_type == "teams" && !(_id in path("drafts.**"))] | order(name asc) {
     _id,
     name,
     isMain,

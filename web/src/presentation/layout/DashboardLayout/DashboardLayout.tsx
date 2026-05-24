@@ -8,6 +8,7 @@ import {
   FiCalendar,
   FiFileText,
   FiFlag,
+  FiShield,
   FiUsers,
 } from "react-icons/fi";
 
@@ -24,6 +25,7 @@ const sectionIcons = {
   matches: FiCalendar,
   players: FiUsers,
   organizations: FiFlag,
+  teams: FiShield,
   tournaments: FiAward,
   table: FiBarChart2,
   staff: FiUsers,

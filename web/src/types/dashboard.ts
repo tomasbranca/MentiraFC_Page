@@ -58,6 +58,19 @@ export const DASHBOARD_ORGANIZATION_IMAGE_MAX_BYTES = 4 * 1024 * 1024;
 
 export const DASHBOARD_ORGANIZATION_IMAGE_MAX_MEGAPIXELS = 256;
 
+export const DASHBOARD_TEAM_IMAGE_ACCEPTED_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+] as const;
+
+export const DASHBOARD_TEAM_IMAGE_ACCEPTED_EXTENSIONS =
+  ".jpg,.jpeg,.png,.webp";
+
+export const DASHBOARD_TEAM_IMAGE_MAX_BYTES = 4 * 1024 * 1024;
+
+export const DASHBOARD_TEAM_IMAGE_MAX_MEGAPIXELS = 256;
+
 export type DashboardNewsStatus = "published" | "draft";
 
 export type DashboardNewsItem = {
@@ -251,6 +264,43 @@ export type DashboardOrganizationMutationInput = {
 
 export type DashboardOrganizationDraftMutationInput =
   Partial<DashboardOrganizationMutationInput>;
+
+export type DashboardTeamReferenceCounts = {
+  matches: number;
+  tournaments: number;
+  tables: number;
+  snapshots: number;
+};
+
+export type DashboardTeamItem = {
+  id: string;
+  publishedId?: string | null;
+  draftId?: string | null;
+  status: DashboardDocumentStatus;
+  hasDraft: boolean;
+  hasPublishedVersion: boolean;
+  name: string;
+  isMain: boolean;
+  updatedAt?: string | null;
+  logoAssetId?: string | null;
+  logoUrl?: string | null;
+  referenceCounts: DashboardTeamReferenceCounts;
+};
+
+export type DashboardTeamInput = {
+  name: string;
+  isMain: boolean;
+};
+
+export type DashboardTeamMutationInput = {
+  name: string;
+  isMain: boolean;
+  logoImage?: File | null;
+  removeLogo?: boolean;
+};
+
+export type DashboardTeamDraftMutationInput =
+  Partial<DashboardTeamMutationInput>;
 
 export type DashboardMatchState = KnownGameState;
 
