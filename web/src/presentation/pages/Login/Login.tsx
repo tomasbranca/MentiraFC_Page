@@ -7,8 +7,10 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 
 import {
+  requestPasswordResetEmail,
   signInWithEmailPassword,
   signUpWithEmailPassword,
+  updateAuthPassword,
 } from "../../../data/auth";
 import { reportError } from "../../../lib/errors/errorLogger";
 import Button from "../../components/Button/Button";
@@ -20,7 +22,14 @@ import {
   type AuthFormValues,
   type AuthMode,
   createEmptyAuthFormValues,
+  getPasswordRecoveryRedirectErrorMessage,
+  getPasswordResetRequestErrorMessage,
+  getPasswordResetUpdateErrorMessage,
   getSignUpErrorMessage,
+  PASSWORD_RESET_REQUEST_SUCCESS_MESSAGE,
+  PASSWORD_RESET_UPDATE_SESSION_MESSAGE,
+  PASSWORD_RESET_UPDATE_SUCCESS_MESSAGE,
+  shouldMaskPasswordResetRequestError,
   validateAuthForm,
 } from "./login.utils";
 import { AuthField, PasswordField } from "./LoginFields";
@@ -48,7 +57,11 @@ const PANEL_CONTENT: Record<
   },
   resetPassword: {
     title: "Recuperá tu acceso",
-    description: "La recuperación de contraseña se conectará en una próxima etapa.",
+    description: "Te enviamos un enlace seguro para establecer una nueva contraseña.",
+  },
+  updatePassword: {
+    title: "Establecé una nueva contraseña",
+    description: "Usá el enlace de recuperación para proteger tu cuenta.",
   },
 };
 
@@ -76,8 +89,15 @@ const FORM_CONTENT: Record<
   resetPassword: {
     eyebrow: "Recuperar acceso",
     title: "Restablecer contraseña",
-    description: "Este flujo quedará disponible en una próxima etapa.",
-    submitLabel: "Continuar",
+    description:
+      "Ingresá tu correo y, si corresponde a una cuenta, vas a recibir un enlace de recuperación.",
+    submitLabel: "Enviar enlace",
+  },
+  updatePassword: {
+    eyebrow: "Nueva contraseña",
+    title: "Establecer contraseña",
+    description: "Elegí una contraseña nueva para tu cuenta de Mentira FC.",
+    submitLabel: "Actualizar contraseña",
   },
 };
 
@@ -99,6 +119,11 @@ const Login = ({ initialMode = "signIn" }: LoginProps) => {
     authNotice,
     clearAuthNotice,
   } = useAuth();
+  const [passwordRecoveryRedirectError] = useState(() =>
+    initialMode === "updatePassword"
+      ? getPasswordRecoveryRedirectErrorMessage()
+      : null
+  );
   const [mode, setMode] = useState<AuthMode>(initialMode);
   const [showPassword, setShowPassword] = useState(false);
   const [values, setValues] = useState<AuthFormValues>(
@@ -111,18 +136,41 @@ const Login = ({ initialMode = "signIn" }: LoginProps) => {
           tone: "error",
           message: BANNED_ACCOUNT_MESSAGE,
         }
+      : passwordRecoveryRedirectError
+        ? {
+            tone: "error",
+            message: passwordRecoveryRedirectError,
+          }
       : null
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const panelContent = PANEL_CONTENT[mode];
   const formContent = FORM_CONTENT[mode];
-  const isFormDisabled = isSubmitting || isAuthLoading;
+  const hasMissingRecoverySession =
+    mode === "updatePassword" && !isAuthLoading && !user;
+  const hasPasswordRecoveryRedirectError =
+    mode === "updatePassword" && Boolean(passwordRecoveryRedirectError);
+  const isPasswordUpdated =
+    mode === "updatePassword" && status?.tone === "success";
+  const visibleStatus =
+    hasMissingRecoverySession && !status
+      ? {
+          tone: "error" as const,
+          message: PASSWORD_RESET_UPDATE_SESSION_MESSAGE,
+        }
+      : status;
+  const isFormDisabled =
+    isSubmitting ||
+    isAuthLoading ||
+    hasMissingRecoverySession ||
+    hasPasswordRecoveryRedirectError ||
+    isPasswordUpdated;
 
   useEffect(() => {
-    if (!isAuthLoading && user) {
+    if (!isAuthLoading && user && mode !== "updatePassword") {
       navigate(ROUTES.HOME, { replace: true });
     }
-  }, [isAuthLoading, navigate, user]);
+  }, [isAuthLoading, mode, navigate, user]);
 
   useEffect(() => {
     if (authNotice) {
@@ -148,6 +196,14 @@ const Login = ({ initialMode = "signIn" }: LoginProps) => {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    if (mode === "updatePassword" && !user) {
+      setStatus({
+        tone: "error",
+        message: PASSWORD_RESET_UPDATE_SESSION_MESSAGE,
+      });
+      return;
+    }
+
     const nextErrors = validateAuthForm(mode, values);
     setErrors(nextErrors);
     setStatus(null);
@@ -156,18 +212,59 @@ const Login = ({ initialMode = "signIn" }: LoginProps) => {
       return;
     }
 
-    if (mode === "resetPassword") {
-      setStatus({
-        tone: "info",
-        message:
-          "La recuperación de contraseña se conectará en una próxima etapa.",
-      });
-      return;
-    }
-
     setIsSubmitting(true);
 
     try {
+      if (mode === "resetPassword") {
+        const { error } = await requestPasswordResetEmail(values.email.trim());
+
+        if (error && !shouldMaskPasswordResetRequestError(error)) {
+          reportError(error, {
+            scope: "Login",
+            action: "password_reset_request",
+          });
+          setStatus({
+            tone: "error",
+            message: getPasswordResetRequestErrorMessage(error),
+          });
+          return;
+        }
+
+        setStatus({
+          tone: "success",
+          message: PASSWORD_RESET_REQUEST_SUCCESS_MESSAGE,
+        });
+        return;
+      }
+
+      if (mode === "updatePassword") {
+        const { error } = await updateAuthPassword(values.password);
+
+        if (error) {
+          reportError(error, {
+            scope: "Login",
+            action: "password_reset_update",
+          });
+          setStatus({
+            tone: "error",
+            message: getPasswordResetUpdateErrorMessage(error),
+          });
+          return;
+        }
+
+        setShowPassword(false);
+        setValues((currentValues) => ({
+          ...currentValues,
+          password: "",
+          confirmPassword: "",
+        }));
+        setStatus({
+          tone: "success",
+          message: PASSWORD_RESET_UPDATE_SUCCESS_MESSAGE,
+        });
+        return;
+      }
+
       if (mode === "signIn") {
         const { error } = await signInWithEmailPassword(
           values.email.trim(),
@@ -226,14 +323,25 @@ const Login = ({ initialMode = "signIn" }: LoginProps) => {
     } catch (error) {
       reportError(error, {
         scope: "Login",
-        action: mode === "signIn" ? "sign_in" : "sign_up",
+        action:
+          mode === "signIn"
+            ? "sign_in"
+            : mode === "signUp"
+              ? "sign_up"
+              : mode === "resetPassword"
+                ? "password_reset_request"
+                : "password_reset_update",
       });
       setStatus({
         tone: "error",
         message:
           mode === "signIn"
             ? SIGN_IN_ERROR_MESSAGE
-            : getSignUpErrorMessage(error),
+            : mode === "signUp"
+              ? getSignUpErrorMessage(error)
+              : mode === "resetPassword"
+                ? getPasswordResetRequestErrorMessage(error)
+                : getPasswordResetUpdateErrorMessage(error),
       });
     } finally {
       setIsSubmitting(false);
@@ -253,7 +361,7 @@ const Login = ({ initialMode = "signIn" }: LoginProps) => {
   };
 
   return (
-    <section className="relative isolate flex min-h-screen items-center justify-center overflow-hidden px-4 py-4 sm:px-6 sm:py-8 lg:px-8">
+    <section className="relative isolate flex min-h-screen w-full max-w-full items-center justify-center overflow-hidden px-4 py-4 sm:px-6 sm:py-8 lg:px-8">
       <div
         aria-hidden="true"
         className="absolute inset-0 bg-linear-to-br from-violet-950 via-neutral-950 to-neutral-900"
@@ -263,7 +371,10 @@ const Login = ({ initialMode = "signIn" }: LoginProps) => {
         className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.28),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(76,29,149,0.3),transparent_38%)]"
       />
 
-      <div className="relative w-full max-w-5xl">
+      <div
+        className="relative min-w-0"
+        style={{ width: "min(64rem, calc(100vw - 2rem))" }}
+      >
         <Link
           to={ROUTES.HOME}
           className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-violet-100 transition hover:text-white"
@@ -272,9 +383,9 @@ const Login = ({ initialMode = "signIn" }: LoginProps) => {
           Volver al sitio
         </Link>
 
-        <div className="overflow-hidden border border-violet-200 bg-white shadow-2xl shadow-black/35">
-          <div className="grid lg:min-h-148 lg:grid-cols-[minmax(0,0.96fr)_minmax(24rem,1.04fr)]">
-            <div className="relative overflow-hidden bg-violet-900 p-5 text-violet-50 sm:p-8 lg:flex lg:flex-col lg:justify-between lg:p-10">
+        <div className="w-full overflow-hidden border border-violet-200 bg-white shadow-2xl shadow-black/35">
+          <div className="grid min-w-0 lg:min-h-148 lg:grid-cols-[minmax(0,0.96fr)_minmax(24rem,1.04fr)]">
+            <div className="relative min-w-0 overflow-hidden bg-violet-900 p-5 text-violet-50 sm:p-8 lg:flex lg:flex-col lg:justify-between lg:p-10">
               <div
                 aria-hidden="true"
                 className="absolute -left-12 top-10 h-52 w-52 rounded-full bg-violet-400/20 blur-3xl"
@@ -298,12 +409,12 @@ const Login = ({ initialMode = "signIn" }: LoginProps) => {
                   />
                 </Link>
 
-                <div>
+                <div className="min-w-0">
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-violet-200 sm:text-xs lg:mt-8">
                     Mentira FC
                   </p>
 
-                  <h1 className="mt-2 max-w-sm text-xl font-black leading-tight text-white sm:text-3xl lg:mt-4 lg:text-4xl">
+                  <h1 className="mt-2 max-w-sm break-words text-xl font-black leading-tight text-white sm:text-3xl lg:mt-4 lg:text-4xl">
                     Tu acceso al club, con la identidad de siempre
                   </h1>
 
@@ -318,7 +429,7 @@ const Login = ({ initialMode = "signIn" }: LoginProps) => {
               </div>
             </div>
 
-            <div className="flex flex-col justify-center bg-white p-5 text-neutral-900 sm:p-8 lg:p-10">
+            <div className="flex min-w-0 flex-col justify-center bg-white p-5 text-neutral-900 sm:p-8 lg:p-10">
               <div
                 key={`form-${mode}`}
                 className="login-mode-form mx-auto w-full max-w-md"
@@ -327,7 +438,7 @@ const Login = ({ initialMode = "signIn" }: LoginProps) => {
                   <p className="text-xs font-semibold uppercase tracking-[0.28em] text-violet-600">
                     {formContent.eyebrow}
                   </p>
-                  <h2 className="mt-3 text-3xl font-black text-neutral-900">
+                  <h2 className="mt-3 break-words text-3xl font-black text-neutral-900">
                     {formContent.title}
                   </h2>
                   <p className="mt-3 text-sm text-neutral-500 sm:text-base">
@@ -365,18 +476,20 @@ const Login = ({ initialMode = "signIn" }: LoginProps) => {
                     </div>
                   )}
 
-                  <AuthField
-                    id="email"
-                    name="email"
-                    label="Correo electrónico"
-                    type="email"
-                    placeholder="ejemplo@correo.com"
-                    autoComplete="email"
-                    value={values.email}
-                    error={errors.email}
-                    disabled={isFormDisabled}
-                    onChange={handleFieldChange}
-                  />
+                  {mode !== "updatePassword" && (
+                    <AuthField
+                      id="email"
+                      name="email"
+                      label="Correo electrónico"
+                      type="email"
+                      placeholder="ejemplo@correo.com"
+                      autoComplete="email"
+                      value={values.email}
+                      error={errors.email}
+                      disabled={isFormDisabled}
+                      onChange={handleFieldChange}
+                    />
+                  )}
 
                   {mode !== "resetPassword" && (
                     <PasswordField
@@ -394,7 +507,7 @@ const Login = ({ initialMode = "signIn" }: LoginProps) => {
                     />
                   )}
 
-                  {mode === "signUp" && (
+                  {(mode === "signUp" || mode === "updatePassword") && (
                     <AuthField
                       id="confirm-password"
                       name="confirmPassword"
@@ -420,13 +533,12 @@ const Login = ({ initialMode = "signIn" }: LoginProps) => {
                         <span>Recordarme</span>
                       </label>
 
-                      <button
-                        type="button"
-                        onClick={() => changeMode("resetPassword")}
+                      <Link
+                        to={ROUTES.PASSWORD_RESET_REQUEST}
                         className="w-fit font-medium text-violet-700 transition hover:text-violet-900"
                       >
                         ¿Olvidaste tu contraseña?
-                      </button>
+                      </Link>
                     </div>
                   )}
 
@@ -442,16 +554,16 @@ const Login = ({ initialMode = "signIn" }: LoginProps) => {
 
                 <div
                   className={`mt-5 min-h-6 text-sm ${
-                    status?.tone === "error"
+                    visibleStatus?.tone === "error"
                       ? "text-red-700"
-                      : status?.tone === "success"
+                      : visibleStatus?.tone === "success"
                         ? "text-emerald-700"
                         : "text-violet-700"
                   }`}
                   aria-live="polite"
-                  role={status?.tone === "error" ? "alert" : "status"}
+                  role={visibleStatus?.tone === "error" ? "alert" : "status"}
                 >
-                  {status?.message}
+                  {visibleStatus?.message}
                 </div>
 
                 <div className="mt-8 text-center text-sm text-neutral-500">
@@ -484,13 +596,30 @@ const Login = ({ initialMode = "signIn" }: LoginProps) => {
                   {mode === "resetPassword" && (
                     <p>
                       ¿Recordaste la contraseña?{" "}
-                      <button
-                        type="button"
-                        onClick={() => changeMode("signIn")}
+                      <Link
+                        to={ROUTES.LOGIN}
                         className="font-semibold text-violet-700 transition hover:text-violet-900"
                       >
                         Volvé a ingresar
-                      </button>
+                      </Link>
+                    </p>
+                  )}
+
+                  {mode === "updatePassword" && (
+                    <p>
+                      {isPasswordUpdated ? "¿Querés continuar?" : "¿Necesitás otro enlace?"}{" "}
+                      <Link
+                        to={
+                          isPasswordUpdated
+                            ? ROUTES.ACCOUNT
+                            : ROUTES.PASSWORD_RESET_REQUEST
+                        }
+                        className="font-semibold text-violet-700 transition hover:text-violet-900"
+                      >
+                        {isPasswordUpdated
+                          ? "Ir a mi cuenta"
+                          : "Solicitá uno nuevo"}
+                      </Link>
                     </p>
                   )}
                 </div>

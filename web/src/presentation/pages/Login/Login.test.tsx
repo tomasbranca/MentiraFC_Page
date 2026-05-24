@@ -1,29 +1,36 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router-dom";
+import type { User } from "@supabase/supabase-js";
 import { describe, expect, it, vi } from "vitest";
 
 import { AuthContext } from "../../context/AuthContext";
 import Login from "./Login";
 
 vi.mock("../../../data/auth", () => ({
+  requestPasswordResetEmail: vi.fn(),
   signInWithEmailPassword: vi.fn(),
   signUpWithEmailPassword: vi.fn(),
+  updateAuthPassword: vi.fn(),
 }));
 
 const renderLogin = ({
   initialMode,
   authNotice = null,
+  user = null,
+  isLoading = false,
 }: {
-  initialMode?: "signIn" | "signUp" | "resetPassword";
+  initialMode?: "signIn" | "signUp" | "resetPassword" | "updatePassword";
   authNotice?: "banned" | null;
+  user?: User | null;
+  isLoading?: boolean;
 } = {}) =>
   renderToStaticMarkup(
     <MemoryRouter>
       <AuthContext.Provider
         value={{
-          session: null,
-          user: null,
-          isLoading: false,
+          session: user ? ({ user } as never) : null,
+          user,
+          isLoading,
           account: null,
           isAccountLoading: false,
           accountError: null,
@@ -66,5 +73,23 @@ describe("Login", () => {
     const markup = renderLogin({ authNotice: "banned" });
 
     expect(markup).toContain("Tu usuario ha sido baneado.");
+  });
+
+  it("renderiza la pantalla para solicitar recuperación por email", () => {
+    const markup = renderLogin({ initialMode: "resetPassword" });
+
+    expect(markup).toContain("Recuperar acceso");
+    expect(markup).toContain("Enviar enlace");
+    expect(markup).toContain("Correo electrónico");
+    expect(markup).not.toContain("Recordarme");
+  });
+
+  it("renderiza un estado seguro si falta la sesión de recuperación", () => {
+    const markup = renderLogin({ initialMode: "updatePassword" });
+
+    expect(markup).toContain("Nueva contraseña");
+    expect(markup).toContain("Establecer contraseña");
+    expect(markup).toContain("El enlace de recuperación no es válido o expiró.");
+    expect(markup).toContain("Solicitá uno nuevo");
   });
 });

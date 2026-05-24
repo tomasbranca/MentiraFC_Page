@@ -181,13 +181,20 @@ const getStaffDetailInitialData = async (
 export const getRouteInitialData = async (
   pathname: string
 ): Promise<InitialDataPayload> => {
+  const normalizedPathname =
+    pathname === ROUTES.HOME ? pathname : pathname.replace(/\/+$/, "");
+
   // Each route gets the smallest useful bootstrap payload; generic pages fall
   // back to the full dataset because they depend on shared widgets.
-  if (pathname === ROUTES.LOGIN) {
+  if (
+    normalizedPathname === ROUTES.LOGIN ||
+    normalizedPathname === ROUTES.PASSWORD_RESET_REQUEST ||
+    normalizedPathname === ROUTES.PASSWORD_RESET_UPDATE
+  ) {
     return createEmptyInitialData();
   }
 
-  if (pathname === ROUTES.HOME) {
+  if (normalizedPathname === ROUTES.HOME) {
     return getHomeCriticalData();
   }
 

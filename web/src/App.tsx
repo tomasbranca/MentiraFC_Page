@@ -30,6 +30,16 @@ const Team = lazyWithReload(() => import("./presentation/pages/Team/Team"));
 const Table = lazyWithReload(() => import("./presentation/pages/Table/Table"));
 const Record = lazyWithReload(() => import("./presentation/pages/Record/Record"));
 const Login = lazyWithReload(() => import("./presentation/pages/Login/Login"));
+const PasswordResetRequest = lazyWithReload(() =>
+  import("./presentation/pages/Login/Login").then(({ default: LoginPage }) => ({
+    default: () => <LoginPage initialMode="resetPassword" />,
+  }))
+);
+const PasswordResetUpdate = lazyWithReload(() =>
+  import("./presentation/pages/Login/Login").then(({ default: LoginPage }) => ({
+    default: () => <LoginPage initialMode="updatePassword" />,
+  }))
+);
 const Account = lazyWithReload(
   () => import("./presentation/pages/Account/Account")
 );
@@ -109,11 +119,17 @@ const SpeedInsights = lazyWithReload(() =>
 
 function App({ initialData }: AppProps) {
   const { pathname } = useLocation();
+  const normalizedPathname =
+    pathname === ROUTES.HOME ? pathname : pathname.replace(/\/+$/, "");
   const enableAnalytics =
     import.meta.env.VITE_ENABLE_ANALYTICS === "true";
   const [shouldLoadAnalytics, setShouldLoadAnalytics] = useState(false);
   const hasBootstrapError = initialData.bootstrapScope === "bootstrap-error";
-  const isAuthRoute = pathname === ROUTES.LOGIN;
+  const isAuthRoute = [
+    ROUTES.LOGIN,
+    ROUTES.PASSWORD_RESET_REQUEST,
+    ROUTES.PASSWORD_RESET_UPDATE,
+  ].includes(normalizedPathname);
 
   useEffect(() => {
     const loadDeferredStyles = () => {
@@ -190,6 +206,14 @@ function App({ initialData }: AppProps) {
                 <Route path={ROUTES.TABLE} element={<Table />} />
                 <Route path={ROUTES.RECORD} element={<Record />} />
                 <Route path={ROUTES.LOGIN} element={<Login />} />
+                <Route
+                  path={ROUTES.PASSWORD_RESET_REQUEST}
+                  element={<PasswordResetRequest />}
+                />
+                <Route
+                  path={ROUTES.PASSWORD_RESET_UPDATE}
+                  element={<PasswordResetUpdate />}
+                />
                 <Route
                   path={ROUTES.ACCOUNT}
                   element={

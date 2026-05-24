@@ -2,7 +2,12 @@ import { describe, expect, it } from "vitest";
 
 import {
   createEmptyAuthFormValues,
+  getPasswordRecoveryRedirectErrorMessage,
+  getPasswordResetRequestErrorMessage,
+  PASSWORD_RESET_REQUEST_ERROR_MESSAGE,
+  PASSWORD_RESET_UPDATE_SESSION_MESSAGE,
   getSignUpErrorMessage,
+  PASSWORD_RESET_UNAVAILABLE_MESSAGE,
   SIGN_UP_INVALID_DATA_MESSAGE,
   SIGN_UP_RATE_LIMIT_MESSAGE,
   validateAuthForm,
@@ -48,6 +53,31 @@ describe("validateAuthForm", () => {
 
     expect(errors).toEqual({});
   });
+
+  it("para recuperar contraseña solo exige un correo válido", () => {
+    const errors = validateAuthForm("resetPassword", {
+      ...createEmptyAuthFormValues(),
+      email: "mail-invalido",
+    });
+
+    expect(errors).toEqual({
+      email: "Ingresá un correo electrónico válido.",
+    });
+  });
+
+  it("para actualizar contraseña no exige correo y valida confirmación", () => {
+    const errors = validateAuthForm("updatePassword", {
+      ...createEmptyAuthFormValues(),
+      password: "mentira",
+      confirmPassword: "otra",
+    });
+
+    expect(errors).toEqual({
+      password:
+        "Usá al menos 8 caracteres, con una mayúscula, una minúscula y un número.",
+      confirmPassword: "Las contraseñas no coinciden.",
+    });
+  });
 });
 
 describe("getSignUpErrorMessage", () => {
@@ -75,5 +105,33 @@ describe("getSignUpErrorMessage", () => {
         status: 400,
       })
     ).toBe(SIGN_UP_INVALID_DATA_MESSAGE);
+  });
+});
+
+describe("password reset messages", () => {
+  it("no expone detalles cuando Supabase no encuentra el usuario", () => {
+    expect(
+      getPasswordResetRequestErrorMessage({
+        code: "user_not_found",
+        status: 400,
+      })
+    ).toBe(PASSWORD_RESET_REQUEST_ERROR_MESSAGE);
+  });
+
+  it("muestra un error claro cuando Supabase no está configurado", () => {
+    expect(
+      getPasswordResetRequestErrorMessage(
+        new Error("Supabase is not configured.")
+      )
+    ).toBe(PASSWORD_RESET_UNAVAILABLE_MESSAGE);
+  });
+
+  it("muestra un mensaje seguro para enlaces rechazados por Supabase", () => {
+    expect(
+      getPasswordRecoveryRedirectErrorMessage(
+        "?error=access_denied&error_code=otp_expired",
+        ""
+      )
+    ).toBe(PASSWORD_RESET_UPDATE_SESSION_MESSAGE);
   });
 });
