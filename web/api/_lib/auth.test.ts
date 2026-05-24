@@ -1,8 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createClient } from "@supabase/supabase-js";
 
-import { DASHBOARD_RESOURCE_PERMISSIONS } from "../../shared/auth/permissions";
-import { authorizeDashboardUser } from "./auth";
+import { getDashboardResourcePermission } from "../../shared/auth/permissions";
+import {
+  authorizeDashboardAction,
+  authorizeDashboardRequest,
+  authorizeDashboardUser,
+} from "./auth";
 
 const supabaseMocks = vi.hoisted(() => ({
   from: vi.fn(),
@@ -62,9 +66,10 @@ describe("dashboard API authorization", () => {
       error: null,
     });
 
-    const result = await authorizeDashboardUser(
+    const result = await authorizeDashboardAction(
       createAuthorizedRequest(),
-      DASHBOARD_RESOURCE_PERMISSIONS.news.delete
+      "news",
+      "delete"
     );
 
     expect(result).toEqual({
@@ -92,9 +97,14 @@ describe("dashboard API authorization", () => {
       error: null,
     });
 
-    const result = await authorizeDashboardUser(
-      createAuthorizedRequest(),
-      DASHBOARD_RESOURCE_PERMISSIONS.news.delete
+    const result = await authorizeDashboardRequest(
+      new Request("https://mentirafc.vercel.app/api/dashboard/news", {
+        headers: {
+          authorization: "Bearer access-token",
+        },
+        method: "DELETE",
+      }),
+      "news"
     );
 
     expect(result).toBeInstanceOf(Response);
@@ -102,8 +112,34 @@ describe("dashboard API authorization", () => {
     const response = result as Response;
 
     await expect(response.json()).resolves.toEqual({
-      error:
-        "No tenes permisos para realizar esta accion del dashboard (delete_dashboard_news).",
+      error: `No tenes permisos para realizar esta accion del dashboard (${getDashboardResourcePermission(
+        "news",
+        "delete"
+      )}).`,
+    });
+    expect(response.status).toBe(403);
+  });
+
+  it("niega cuentas con roles desconocidos antes de autorizar permisos", async () => {
+    supabaseMocks.maybeSingle.mockResolvedValue({
+      data: {
+        role: "owner",
+        is_active: true,
+      },
+      error: null,
+    });
+
+    const result = await authorizeDashboardUser(
+      createAuthorizedRequest(),
+      getDashboardResourcePermission("news", "view")
+    );
+
+    expect(result).toBeInstanceOf(Response);
+
+    const response = result as Response;
+
+    await expect(response.json()).resolves.toEqual({
+      error: "No pudimos validar los permisos de la cuenta.",
     });
     expect(response.status).toBe(403);
   });

@@ -10,13 +10,12 @@ import {
 } from "../../../data/dashboardNews";
 import { getImageSrcSet, getImageUrl } from "../../../data/imageService";
 import { queryKeys } from "../../../data/queryKeys";
-import { DASHBOARD_RESOURCE_PERMISSIONS } from "../../../domain/auth/permissions";
 import { reportError } from "../../../lib/errors/errorLogger";
 import type { DashboardNewsItem } from "../../../types/dashboard";
 import { confirmDashboardAction } from "../../app/confirmDialog";
 import ErrorFallback from "../../components/errors/ErrorFallback";
 import Loader from "../../components/Loader/Loader";
-import { usePermission } from "../../hooks/usePermission";
+import { useDashboardPermission } from "../../hooks/usePermission";
 import { ROUTES } from "../../../shared/routing";
 import DashboardListFilteredEmpty from "../../dashboard/DashboardListFilteredEmpty";
 import DashboardListFilters from "../../dashboard/DashboardListFilters";
@@ -148,9 +147,9 @@ const DeleteNewsButton = ({
 const DashboardNewsList = () => {
   const [filters, setFilters] = useState(defaultDashboardNewsListFilters);
   const queryClient = useQueryClient();
-  const canCreateNews = usePermission(DASHBOARD_RESOURCE_PERMISSIONS.news.create);
-  const canEditNews = usePermission(DASHBOARD_RESOURCE_PERMISSIONS.news.edit);
-  const canDeleteNews = usePermission(DASHBOARD_RESOURCE_PERMISSIONS.news.delete);
+  const canCreateNews = useDashboardPermission("news", "create");
+  const canEditNews = useDashboardPermission("news", "edit");
+  const canDeleteNews = useDashboardPermission("news", "delete");
   const newsQuery = useQuery({
     queryKey: queryKeys.dashboard.news.all,
     queryFn: async () => {

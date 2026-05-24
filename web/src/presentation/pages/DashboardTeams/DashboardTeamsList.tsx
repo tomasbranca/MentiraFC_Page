@@ -10,7 +10,6 @@ import {
 } from "../../../data/dashboardTeams";
 import { getImageSrcSet, getImageUrl } from "../../../data/imageService";
 import { queryKeys } from "../../../data/queryKeys";
-import { DASHBOARD_RESOURCE_PERMISSIONS } from "../../../domain/auth/permissions";
 import { reportError } from "../../../lib/errors/errorLogger";
 import { ROUTES } from "../../../shared/routing";
 import type { DashboardTeamItem } from "../../../types/dashboard";
@@ -19,7 +18,7 @@ import ErrorFallback from "../../components/errors/ErrorFallback";
 import Loader from "../../components/Loader/Loader";
 import DashboardListFilteredEmpty from "../../dashboard/DashboardListFilteredEmpty";
 import DashboardListFilters from "../../dashboard/DashboardListFilters";
-import { usePermission } from "../../hooks/usePermission";
+import { useDashboardPermission } from "../../hooks/usePermission";
 import { DASHBOARD_STATUS_FILTER_OPTIONS } from "../../dashboard/dashboardListFilters.utils";
 import { formatDateTime } from "../../utils/date.utils";
 import {
@@ -152,9 +151,9 @@ const DeleteTeamButton = ({
 const DashboardTeamsList = () => {
   const [filters, setFilters] = useState(defaultDashboardTeamsListFilters);
   const queryClient = useQueryClient();
-  const canCreateTeam = usePermission(DASHBOARD_RESOURCE_PERMISSIONS.teams.create);
-  const canEditTeam = usePermission(DASHBOARD_RESOURCE_PERMISSIONS.teams.edit);
-  const canDeleteTeam = usePermission(DASHBOARD_RESOURCE_PERMISSIONS.teams.delete);
+  const canCreateTeam = useDashboardPermission("teams", "create");
+  const canEditTeam = useDashboardPermission("teams", "edit");
+  const canDeleteTeam = useDashboardPermission("teams", "delete");
   const teamsQuery = useQuery({
     queryKey: queryKeys.dashboard.teams.all,
     queryFn: async () => {

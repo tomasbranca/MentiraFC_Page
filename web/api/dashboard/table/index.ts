@@ -7,9 +7,8 @@ import {
   publishDashboardTable,
   saveDashboardTableDraft,
 } from "../../_lib/table.js";
-import { authorizeDashboardUser } from "../../_lib/auth.js";
+import { authorizeDashboardRequest } from "../../_lib/auth.js";
 import { errorJson, json } from "../../_lib/responses.js";
-import { DASHBOARD_RESOURCE_PERMISSIONS } from "../../../shared/auth/permissions.js";
 import {
   validateDashboardTableDraftMutation,
   validateDashboardTableMutation,
@@ -28,28 +27,9 @@ const getIntentFromRequest = (request: Request): "draft" | "publish" => {
 const shouldLoadOptions = (request: Request): boolean =>
   new URL(request.url).searchParams.get("options") === "1";
 
-const getRequiredPermission = (request: Request) => {
-  if (request.method === "POST") {
-    return DASHBOARD_RESOURCE_PERMISSIONS.table.create;
-  }
-
-  if (request.method === "PUT") {
-    return DASHBOARD_RESOURCE_PERMISSIONS.table.edit;
-  }
-
-  if (request.method === "DELETE") {
-    return DASHBOARD_RESOURCE_PERMISSIONS.table.delete;
-  }
-
-  return DASHBOARD_RESOURCE_PERMISSIONS.table.view;
-};
-
 const dashboardTableHandler = async (request: Request): Promise<Response> => {
   try {
-    const authorization = await authorizeDashboardUser(
-      request,
-      getRequiredPermission(request)
-    );
+    const authorization = await authorizeDashboardRequest(request, "table");
 
     if (authorization instanceof Response) {
       return authorization;
