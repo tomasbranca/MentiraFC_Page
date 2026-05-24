@@ -7,6 +7,7 @@ import {
 } from "../../_lib/staff.js";
 import { authorizeDashboardUser } from "../../_lib/auth.js";
 import { errorJson, json } from "../../_lib/responses.js";
+import { DASHBOARD_RESOURCE_PERMISSIONS } from "../../../src/domain/auth/permissions";
 import {
   validateDashboardStaffDraftMutation,
   validateDashboardStaffMutation,
@@ -22,9 +23,28 @@ const getIntentFromRequest = (request: Request): "draft" | "publish" => {
   return intent === "draft" ? "draft" : "publish";
 };
 
+const getRequiredPermission = (request: Request) => {
+  if (request.method === "POST") {
+    return DASHBOARD_RESOURCE_PERMISSIONS.staff.create;
+  }
+
+  if (request.method === "PUT") {
+    return DASHBOARD_RESOURCE_PERMISSIONS.staff.edit;
+  }
+
+  if (request.method === "DELETE") {
+    return DASHBOARD_RESOURCE_PERMISSIONS.staff.delete;
+  }
+
+  return DASHBOARD_RESOURCE_PERMISSIONS.staff.view;
+};
+
 const dashboardStaffHandler = async (request: Request): Promise<Response> => {
   try {
-    const authorization = await authorizeDashboardUser(request);
+    const authorization = await authorizeDashboardUser(
+      request,
+      getRequiredPermission(request)
+    );
 
     if (authorization instanceof Response) {
       return authorization;

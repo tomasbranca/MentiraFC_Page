@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   canAccessAdminPanel,
   canAccessDashboard,
+  DASHBOARD_RESOURCE_PERMISSIONS,
   hasPermission,
 } from "./permissions";
 
@@ -23,6 +24,37 @@ describe("auth permissions", () => {
 
     expect(canAccessAdminPanel("moderator")).toBe(false);
     expect(canAccessAdminPanel("admin")).toBe(true);
+  });
+
+  it("expone permisos especificos por ruta y accion del dashboard", () => {
+    expect(hasPermission("editor", DASHBOARD_RESOURCE_PERMISSIONS.news.view)).toBe(
+      true
+    );
+    expect(
+      hasPermission("editor", DASHBOARD_RESOURCE_PERMISSIONS.news.create)
+    ).toBe(true);
+    expect(
+      hasPermission("editor", DASHBOARD_RESOURCE_PERMISSIONS.news.edit)
+    ).toBe(true);
+    expect(
+      hasPermission("editor", DASHBOARD_RESOURCE_PERMISSIONS.news.delete)
+    ).toBe(true);
+    expect(
+      hasPermission(
+        "editor",
+        DASHBOARD_RESOURCE_PERMISSIONS.players.updateActiveStatus
+      )
+    ).toBe(true);
+  });
+
+  it("no habilita acciones de dashboard por estar logueado sin permisos", () => {
+    expect(hasPermission("team_member", "view_dashboard")).toBe(false);
+    expect(
+      hasPermission("team_member", DASHBOARD_RESOURCE_PERMISSIONS.news.view)
+    ).toBe(false);
+    expect(
+      hasPermission("team_member", DASHBOARD_RESOURCE_PERMISSIONS.news.delete)
+    ).toBe(false);
   });
 
   it("niega permisos cuando no hay rol", () => {

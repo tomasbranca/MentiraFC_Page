@@ -10,11 +10,13 @@ import {
 } from "../../../data/dashboardNews";
 import { getImageSrcSet, getImageUrl } from "../../../data/imageService";
 import { queryKeys } from "../../../data/queryKeys";
+import { DASHBOARD_RESOURCE_PERMISSIONS } from "../../../domain/auth/permissions";
 import { reportError } from "../../../lib/errors/errorLogger";
 import type { DashboardNewsItem } from "../../../types/dashboard";
 import { confirmDashboardAction } from "../../app/confirmDialog";
 import ErrorFallback from "../../components/errors/ErrorFallback";
 import Loader from "../../components/Loader/Loader";
+import { usePermission } from "../../hooks/usePermission";
 import { ROUTES } from "../../../shared/routing";
 import DashboardListFilteredEmpty from "../../dashboard/DashboardListFilteredEmpty";
 import DashboardListFilters from "../../dashboard/DashboardListFilters";
@@ -146,6 +148,9 @@ const DeleteNewsButton = ({
 const DashboardNewsList = () => {
   const [filters, setFilters] = useState(defaultDashboardNewsListFilters);
   const queryClient = useQueryClient();
+  const canCreateNews = usePermission(DASHBOARD_RESOURCE_PERMISSIONS.news.create);
+  const canEditNews = usePermission(DASHBOARD_RESOURCE_PERMISSIONS.news.edit);
+  const canDeleteNews = usePermission(DASHBOARD_RESOURCE_PERMISSIONS.news.delete);
   const newsQuery = useQuery({
     queryKey: queryKeys.dashboard.news.all,
     queryFn: async () => {
@@ -201,6 +206,7 @@ const DashboardNewsList = () => {
     hasActiveFilters && news.length !== totalNews
       ? `${news.length} de ${totalNews} noticias`
       : `${totalNews} noticias`;
+  const hasRowActions = canEditNews || canDeleteNews;
 
   if (newsQuery.isLoading) {
     return <Loader />;
@@ -235,14 +241,16 @@ const DashboardNewsList = () => {
             </p>
           </div>
 
-          <Link
-            to={ROUTES.DASHBOARD_NEWS_NEW}
-            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[3px] border border-violet-200/30 bg-violet-100 text-violet-950 transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/40"
-            aria-label="Crear noticia"
-            title="Crear noticia"
-          >
-            <FiPlus className="size-5" aria-hidden="true" />
-          </Link>
+          {canCreateNews ? (
+            <Link
+              to={ROUTES.DASHBOARD_NEWS_NEW}
+              className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[3px] border border-violet-200/30 bg-violet-100 text-violet-950 transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/40"
+              aria-label="Crear noticia"
+              title="Crear noticia"
+            >
+              <FiPlus className="size-5" aria-hidden="true" />
+            </Link>
+          ) : null}
         </div>
       </header>
 
@@ -313,22 +321,28 @@ const DashboardNewsList = () => {
 
                   <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-white/8 pt-3">
                     <NewsStatusBadge item={item} />
-                    <div className="flex gap-2">
-                      <Link
-                        to={ROUTES.DASHBOARD_NEWS_EDIT(item.id)}
-                        className={`${actionButtonClassName} border-violet-200/20 bg-violet-300/10 hover:border-violet-200/45 hover:bg-violet-300/16`}
-                        aria-label="Editar noticia"
-                        title="Editar noticia"
-                      >
-                        <FiEdit2 className="size-4" aria-hidden="true" />
-                      </Link>
-                      <DeleteNewsButton
-                        itemId={item.id}
-                        itemTitle={getNewsTitle(item)}
-                        isDeleting={deleteMutation.isPending}
-                        onDelete={handleDeleteNews}
-                      />
-                    </div>
+                    {hasRowActions ? (
+                      <div className="flex gap-2">
+                        {canEditNews ? (
+                          <Link
+                            to={ROUTES.DASHBOARD_NEWS_EDIT(item.id)}
+                            className={`${actionButtonClassName} border-violet-200/20 bg-violet-300/10 hover:border-violet-200/45 hover:bg-violet-300/16`}
+                            aria-label="Editar noticia"
+                            title="Editar noticia"
+                          >
+                            <FiEdit2 className="size-4" aria-hidden="true" />
+                          </Link>
+                        ) : null}
+                        {canDeleteNews ? (
+                          <DeleteNewsButton
+                            itemId={item.id}
+                            itemTitle={getNewsTitle(item)}
+                            isDeleting={deleteMutation.isPending}
+                            onDelete={handleDeleteNews}
+                          />
+                        ) : null}
+                      </div>
+                    ) : null}
                   </div>
                 </article>
               ))}
@@ -370,20 +384,24 @@ const DashboardNewsList = () => {
                     </td>
                     <td className="px-5 py-4">
                       <div className="flex justify-end gap-2">
-                        <Link
-                          to={ROUTES.DASHBOARD_NEWS_EDIT(item.id)}
-                          className={`${actionButtonClassName} border-violet-200/20 bg-violet-300/10 hover:border-violet-200/45 hover:bg-violet-300/16`}
-                          aria-label="Editar noticia"
-                          title="Editar noticia"
-                        >
-                          <FiEdit2 className="size-4" aria-hidden="true" />
-                        </Link>
-                        <DeleteNewsButton
-                          itemId={item.id}
-                          itemTitle={getNewsTitle(item)}
-                          isDeleting={deleteMutation.isPending}
-                          onDelete={handleDeleteNews}
-                        />
+                        {canEditNews ? (
+                          <Link
+                            to={ROUTES.DASHBOARD_NEWS_EDIT(item.id)}
+                            className={`${actionButtonClassName} border-violet-200/20 bg-violet-300/10 hover:border-violet-200/45 hover:bg-violet-300/16`}
+                            aria-label="Editar noticia"
+                            title="Editar noticia"
+                          >
+                            <FiEdit2 className="size-4" aria-hidden="true" />
+                          </Link>
+                        ) : null}
+                        {canDeleteNews ? (
+                          <DeleteNewsButton
+                            itemId={item.id}
+                            itemTitle={getNewsTitle(item)}
+                            isDeleting={deleteMutation.isPending}
+                            onDelete={handleDeleteNews}
+                          />
+                        ) : null}
                       </div>
                     </td>
                   </tr>

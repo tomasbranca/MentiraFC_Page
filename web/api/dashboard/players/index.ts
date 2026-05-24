@@ -9,6 +9,7 @@ import {
 } from "../../_lib/players.js";
 import { authorizeDashboardUser } from "../../_lib/auth.js";
 import { errorJson, json } from "../../_lib/responses.js";
+import { DASHBOARD_RESOURCE_PERMISSIONS } from "../../../src/domain/auth/permissions";
 import {
   validateDashboardPlayerDraftMutation,
   validateDashboardPlayerMutation,
@@ -24,9 +25,32 @@ const getIntentFromRequest = (request: Request): "draft" | "publish" => {
   return intent === "draft" ? "draft" : "publish";
 };
 
+const getRequiredPermission = (request: Request) => {
+  if (request.method === "POST") {
+    return DASHBOARD_RESOURCE_PERMISSIONS.players.create;
+  }
+
+  if (request.method === "PUT") {
+    return DASHBOARD_RESOURCE_PERMISSIONS.players.edit;
+  }
+
+  if (request.method === "PATCH") {
+    return DASHBOARD_RESOURCE_PERMISSIONS.players.updateActiveStatus;
+  }
+
+  if (request.method === "DELETE") {
+    return DASHBOARD_RESOURCE_PERMISSIONS.players.delete;
+  }
+
+  return DASHBOARD_RESOURCE_PERMISSIONS.players.view;
+};
+
 const dashboardPlayersHandler = async (request: Request): Promise<Response> => {
   try {
-    const authorization = await authorizeDashboardUser(request);
+    const authorization = await authorizeDashboardUser(
+      request,
+      getRequiredPermission(request)
+    );
 
     if (authorization instanceof Response) {
       return authorization;

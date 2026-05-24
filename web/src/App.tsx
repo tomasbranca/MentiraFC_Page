@@ -13,6 +13,7 @@ import RouteHead from "./presentation/seo/RouteHead";
 import Home from "./presentation/pages/Home/Home";
 import RequireAuth from "./presentation/routing/RequireAuth";
 import RequirePermission from "./presentation/routing/RequirePermission";
+import { DASHBOARD_RESOURCE_PERMISSIONS } from "./domain/auth/permissions";
 
 import { lazyWithReload } from "./lib/lazyWithReload";
 
@@ -202,7 +203,9 @@ function App({ initialData }: AppProps) {
                   <Route
                     path="noticias"
                     element={
-                      <RequirePermission permission="manage_news">
+                      <RequirePermission
+                        permission={DASHBOARD_RESOURCE_PERMISSIONS.news.view}
+                      >
                         <DashboardNewsList />
                       </RequirePermission>
                     }
@@ -210,7 +213,9 @@ function App({ initialData }: AppProps) {
                   <Route
                     path="noticias/nueva"
                     element={
-                      <RequirePermission permission="manage_news">
+                      <RequirePermission
+                        permission={DASHBOARD_RESOURCE_PERMISSIONS.news.create}
+                      >
                         <DashboardNewsForm />
                       </RequirePermission>
                     }
@@ -218,7 +223,9 @@ function App({ initialData }: AppProps) {
                   <Route
                     path="noticias/:id"
                     element={
-                      <RequirePermission permission="manage_news">
+                      <RequirePermission
+                        permission={DASHBOARD_RESOURCE_PERMISSIONS.news.edit}
+                      >
                         <DashboardNewsForm />
                       </RequirePermission>
                     }
@@ -226,7 +233,9 @@ function App({ initialData }: AppProps) {
                   <Route
                     path="partidos"
                     element={
-                      <RequirePermission permission="manage_matches">
+                      <RequirePermission
+                        permission={DASHBOARD_RESOURCE_PERMISSIONS.matches.view}
+                      >
                         <DashboardMatchesList />
                       </RequirePermission>
                     }
@@ -234,7 +243,9 @@ function App({ initialData }: AppProps) {
                   <Route
                     path="partidos/nuevo"
                     element={
-                      <RequirePermission permission="manage_matches">
+                      <RequirePermission
+                        permission={DASHBOARD_RESOURCE_PERMISSIONS.matches.create}
+                      >
                         <DashboardMatchesForm />
                       </RequirePermission>
                     }
@@ -242,7 +253,9 @@ function App({ initialData }: AppProps) {
                   <Route
                     path="partidos/:id"
                     element={
-                      <RequirePermission permission="manage_matches">
+                      <RequirePermission
+                        permission={DASHBOARD_RESOURCE_PERMISSIONS.matches.edit}
+                      >
                         <DashboardMatchesForm />
                       </RequirePermission>
                     }
@@ -250,7 +263,9 @@ function App({ initialData }: AppProps) {
                   <Route
                     path="tabla"
                     element={
-                      <RequirePermission permission="manage_tables">
+                      <RequirePermission
+                        permission={DASHBOARD_RESOURCE_PERMISSIONS.table.view}
+                      >
                         <DashboardTableList />
                       </RequirePermission>
                     }
@@ -258,7 +273,9 @@ function App({ initialData }: AppProps) {
                   <Route
                     path="tabla/nueva"
                     element={
-                      <RequirePermission permission="manage_tables">
+                      <RequirePermission
+                        permission={DASHBOARD_RESOURCE_PERMISSIONS.table.create}
+                      >
                         <DashboardTableForm />
                       </RequirePermission>
                     }
@@ -266,7 +283,9 @@ function App({ initialData }: AppProps) {
                   <Route
                     path="tabla/:id"
                     element={
-                      <RequirePermission permission="manage_tables">
+                      <RequirePermission
+                        permission={DASHBOARD_RESOURCE_PERMISSIONS.table.edit}
+                      >
                         <DashboardTableForm />
                       </RequirePermission>
                     }
@@ -274,7 +293,11 @@ function App({ initialData }: AppProps) {
                   <Route
                     path="torneos"
                     element={
-                      <RequirePermission permission="manage_tables">
+                      <RequirePermission
+                        permission={
+                          DASHBOARD_RESOURCE_PERMISSIONS.tournaments.view
+                        }
+                      >
                         <DashboardTournamentsList />
                       </RequirePermission>
                     }
@@ -282,7 +305,11 @@ function App({ initialData }: AppProps) {
                   <Route
                     path="torneos/nuevo"
                     element={
-                      <RequirePermission permission="manage_tables">
+                      <RequirePermission
+                        permission={
+                          DASHBOARD_RESOURCE_PERMISSIONS.tournaments.create
+                        }
+                      >
                         <DashboardTournamentsForm />
                       </RequirePermission>
                     }
@@ -290,7 +317,11 @@ function App({ initialData }: AppProps) {
                   <Route
                     path="torneos/:id"
                     element={
-                      <RequirePermission permission="manage_tables">
+                      <RequirePermission
+                        permission={
+                          DASHBOARD_RESOURCE_PERMISSIONS.tournaments.edit
+                        }
+                      >
                         <DashboardTournamentsForm />
                       </RequirePermission>
                     }
@@ -298,7 +329,11 @@ function App({ initialData }: AppProps) {
                   <Route
                     path="organizadores"
                     element={
-                      <RequirePermission permission="manage_tables">
+                      <RequirePermission
+                        permission={
+                          DASHBOARD_RESOURCE_PERMISSIONS.organizations.view
+                        }
+                      >
                         <DashboardOrganizationsList />
                       </RequirePermission>
                     }
@@ -306,7 +341,11 @@ function App({ initialData }: AppProps) {
                   <Route
                     path="organizadores/nuevo"
                     element={
-                      <RequirePermission permission="manage_tables">
+                      <RequirePermission
+                        permission={
+                          DASHBOARD_RESOURCE_PERMISSIONS.organizations.create
+                        }
+                      >
                         <DashboardOrganizationsForm />
                       </RequirePermission>
                     }
@@ -314,7 +353,11 @@ function App({ initialData }: AppProps) {
                   <Route
                     path="organizadores/:id"
                     element={
-                      <RequirePermission permission="manage_tables">
+                      <RequirePermission
+                        permission={
+                          DASHBOARD_RESOURCE_PERMISSIONS.organizations.edit
+                        }
+                      >
                         <DashboardOrganizationsForm />
                       </RequirePermission>
                     }
@@ -322,7 +365,9 @@ function App({ initialData }: AppProps) {
                   <Route
                     path="jugadores"
                     element={
-                      <RequirePermission permission="manage_team_members">
+                      <RequirePermission
+                        permission={DASHBOARD_RESOURCE_PERMISSIONS.players.view}
+                      >
                         <DashboardPlayersList />
                       </RequirePermission>
                     }
@@ -330,7 +375,9 @@ function App({ initialData }: AppProps) {
                   <Route
                     path="jugadores/nuevo"
                     element={
-                      <RequirePermission permission="manage_team_members">
+                      <RequirePermission
+                        permission={DASHBOARD_RESOURCE_PERMISSIONS.players.create}
+                      >
                         <DashboardPlayersForm />
                       </RequirePermission>
                     }
@@ -338,7 +385,9 @@ function App({ initialData }: AppProps) {
                   <Route
                     path="jugadores/staff/nuevo"
                     element={
-                      <RequirePermission permission="manage_team_members">
+                      <RequirePermission
+                        permission={DASHBOARD_RESOURCE_PERMISSIONS.staff.create}
+                      >
                         <DashboardStaffForm />
                       </RequirePermission>
                     }
@@ -346,7 +395,9 @@ function App({ initialData }: AppProps) {
                   <Route
                     path="jugadores/staff/:id"
                     element={
-                      <RequirePermission permission="manage_team_members">
+                      <RequirePermission
+                        permission={DASHBOARD_RESOURCE_PERMISSIONS.staff.edit}
+                      >
                         <DashboardStaffForm />
                       </RequirePermission>
                     }
@@ -354,7 +405,9 @@ function App({ initialData }: AppProps) {
                   <Route
                     path="jugadores/:id"
                     element={
-                      <RequirePermission permission="manage_team_members">
+                      <RequirePermission
+                        permission={DASHBOARD_RESOURCE_PERMISSIONS.players.edit}
+                      >
                         <DashboardPlayersForm />
                       </RequirePermission>
                     }

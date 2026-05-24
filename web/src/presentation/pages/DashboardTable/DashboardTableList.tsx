@@ -10,6 +10,7 @@ import {
 } from "../../../data/dashboardTable";
 import { getImageSrcSet, getImageUrl } from "../../../data/imageService";
 import { queryKeys } from "../../../data/queryKeys";
+import { DASHBOARD_RESOURCE_PERMISSIONS } from "../../../domain/auth/permissions";
 import { reportError } from "../../../lib/errors/errorLogger";
 import { ROUTES } from "../../../shared/routing";
 import type { DashboardTableItem } from "../../../types/dashboard";
@@ -18,6 +19,7 @@ import ErrorFallback from "../../components/errors/ErrorFallback";
 import Loader from "../../components/Loader/Loader";
 import DashboardListFilteredEmpty from "../../dashboard/DashboardListFilteredEmpty";
 import DashboardListFilters from "../../dashboard/DashboardListFilters";
+import { usePermission } from "../../hooks/usePermission";
 import { DASHBOARD_STATUS_FILTER_OPTIONS } from "../../dashboard/dashboardListFilters.utils";
 import { formatDateTime } from "../../utils/date.utils";
 import {
@@ -141,6 +143,9 @@ const DeleteTableButton = ({
 const DashboardTableList = () => {
   const [filters, setFilters] = useState(defaultDashboardTableListFilters);
   const queryClient = useQueryClient();
+  const canCreateTable = usePermission(DASHBOARD_RESOURCE_PERMISSIONS.table.create);
+  const canEditTable = usePermission(DASHBOARD_RESOURCE_PERMISSIONS.table.edit);
+  const canDeleteTable = usePermission(DASHBOARD_RESOURCE_PERMISSIONS.table.delete);
   const tablesQuery = useQuery({
     queryKey: queryKeys.dashboard.table.all,
     queryFn: async () => {
@@ -200,6 +205,7 @@ const DashboardTableList = () => {
     hasActiveFilters && tables.length !== totalTables
       ? `${tables.length} de ${totalTables} actuales`
       : `${totalTables} actuales`;
+  const hasRowActions = canEditTable || canDeleteTable;
 
   if (tablesQuery.isLoading) {
     return <Loader />;
@@ -235,14 +241,16 @@ const DashboardTableList = () => {
             </p>
           </div>
 
-          <Link
-            to={ROUTES.DASHBOARD_TABLE_NEW}
-            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[3px] border border-violet-200/30 bg-violet-100 text-violet-950 transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/40"
-            aria-label="Crear tabla"
-            title="Crear tabla"
-          >
-            <FiPlus className="size-5" aria-hidden="true" />
-          </Link>
+          {canCreateTable ? (
+            <Link
+              to={ROUTES.DASHBOARD_TABLE_NEW}
+              className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[3px] border border-violet-200/30 bg-violet-100 text-violet-950 transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/40"
+              aria-label="Crear tabla"
+              title="Crear tabla"
+            >
+              <FiPlus className="size-5" aria-hidden="true" />
+            </Link>
+          ) : null}
         </div>
       </header>
 
@@ -315,21 +323,27 @@ const DashboardTableList = () => {
 
                   <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-white/8 pt-3">
                     <TableStatusBadge item={item} />
-                    <div className="flex gap-2">
-                      <Link
-                        to={ROUTES.DASHBOARD_TABLE_EDIT(item.id)}
-                        className={`${actionButtonClassName} border-violet-200/20 bg-violet-300/10 hover:border-violet-200/45 hover:bg-violet-300/16`}
-                        aria-label="Editar tabla"
-                        title="Editar tabla"
-                      >
-                        <FiEdit2 className="size-4" aria-hidden="true" />
-                      </Link>
-                      <DeleteTableButton
-                        item={item}
-                        isDeleting={deleteMutation.isPending}
-                        onDelete={handleDeleteTable}
-                      />
-                    </div>
+                    {hasRowActions ? (
+                      <div className="flex gap-2">
+                        {canEditTable ? (
+                          <Link
+                            to={ROUTES.DASHBOARD_TABLE_EDIT(item.id)}
+                            className={`${actionButtonClassName} border-violet-200/20 bg-violet-300/10 hover:border-violet-200/45 hover:bg-violet-300/16`}
+                            aria-label="Editar tabla"
+                            title="Editar tabla"
+                          >
+                            <FiEdit2 className="size-4" aria-hidden="true" />
+                          </Link>
+                        ) : null}
+                        {canDeleteTable ? (
+                          <DeleteTableButton
+                            item={item}
+                            isDeleting={deleteMutation.isPending}
+                            onDelete={handleDeleteTable}
+                          />
+                        ) : null}
+                      </div>
+                    ) : null}
                   </div>
                 </article>
               ))}
@@ -378,19 +392,23 @@ const DashboardTableList = () => {
                     </td>
                     <td className="px-5 py-4">
                       <div className="flex justify-end gap-2">
-                        <Link
-                          to={ROUTES.DASHBOARD_TABLE_EDIT(item.id)}
-                          className={`${actionButtonClassName} border-violet-200/20 bg-violet-300/10 hover:border-violet-200/45 hover:bg-violet-300/16`}
-                          aria-label="Editar tabla"
-                          title="Editar tabla"
-                        >
-                          <FiEdit2 className="size-4" aria-hidden="true" />
-                        </Link>
-                        <DeleteTableButton
-                          item={item}
-                          isDeleting={deleteMutation.isPending}
-                          onDelete={handleDeleteTable}
-                        />
+                        {canEditTable ? (
+                          <Link
+                            to={ROUTES.DASHBOARD_TABLE_EDIT(item.id)}
+                            className={`${actionButtonClassName} border-violet-200/20 bg-violet-300/10 hover:border-violet-200/45 hover:bg-violet-300/16`}
+                            aria-label="Editar tabla"
+                            title="Editar tabla"
+                          >
+                            <FiEdit2 className="size-4" aria-hidden="true" />
+                          </Link>
+                        ) : null}
+                        {canDeleteTable ? (
+                          <DeleteTableButton
+                            item={item}
+                            isDeleting={deleteMutation.isPending}
+                            onDelete={handleDeleteTable}
+                          />
+                        ) : null}
                       </div>
                     </td>
                   </tr>

@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
+import type { IconType } from "react-icons";
 import {
   FiArrowLeft,
   FiAward,
@@ -11,11 +12,34 @@ import {
 } from "react-icons/fi";
 
 import { lazyWithReload } from "../../../lib/lazyWithReload";
+import type { DashboardPermissionResource } from "../../../domain/auth/permissions";
 import { ROUTES } from "../../../shared/routing";
+import { getAllowedDashboardSections } from "../../dashboard/dashboardSections";
+import { useAuth } from "../../context/useAuth";
 
 const AppToaster = lazyWithReload(() => import("../../app/AppToaster"));
 
+const sectionIcons = {
+  news: FiFileText,
+  matches: FiCalendar,
+  players: FiUsers,
+  organizations: FiFlag,
+  tournaments: FiAward,
+  table: FiBarChart2,
+  staff: FiUsers,
+} satisfies Record<DashboardPermissionResource, IconType>;
+
+const getNavLinkClassName = (isActive: boolean) =>
+  `flex min-h-11 items-center gap-3 rounded-[3px] border px-3 py-2.5 text-sm font-semibold transition ${
+    isActive
+      ? "border-violet-300/35 bg-violet-500/15 text-white"
+      : "border-transparent text-violet-100/75 hover:border-white/10 hover:bg-white/4.5 hover:text-white"
+  }`;
+
 const DashboardLayout = () => {
+  const { account } = useAuth();
+  const allowedSections = getAllowedDashboardSections(account?.role);
+
   return (
     <section className="min-h-screen bg-[#101012] px-2 py-3 text-white sm:px-5 md:px-8 md:py-8">
       <Suspense fallback={null}>
@@ -38,89 +62,28 @@ const DashboardLayout = () => {
 
           <nav className="p-2">
             <div className="space-y-1">
-              <NavLink
-                to={ROUTES.DASHBOARD_NEWS}
-                className={({ isActive }) =>
-                  `flex min-h-11 items-center gap-3 rounded-[3px] border px-3 py-2.5 text-sm font-semibold transition ${
-                    isActive
-                      ? "border-violet-300/35 bg-violet-500/15 text-white"
-                      : "border-transparent text-violet-100/75 hover:border-white/10 hover:bg-white/4.5 hover:text-white"
-                  }`
-                }
-              >
-                <FiFileText className="size-4" aria-hidden="true" />
-                <span>Noticias</span>
-              </NavLink>
+              {allowedSections.length === 0 ? (
+                <p className="rounded-[3px] border border-amber-200/20 bg-amber-200/10 px-3 py-2.5 text-sm text-amber-100">
+                  No tenes secciones habilitadas.
+                </p>
+              ) : (
+                allowedSections.map((section) => {
+                  const Icon = sectionIcons[section.resource];
 
-              <NavLink
-                to={ROUTES.DASHBOARD_MATCHES}
-                className={({ isActive }) =>
-                  `flex min-h-11 items-center gap-3 rounded-[3px] border px-3 py-2.5 text-sm font-semibold transition ${
-                    isActive
-                      ? "border-violet-300/35 bg-violet-500/15 text-white"
-                      : "border-transparent text-violet-100/75 hover:border-white/10 hover:bg-white/4.5 hover:text-white"
-                  }`
-                }
-              >
-                <FiCalendar className="size-4" aria-hidden="true" />
-                <span>Partidos</span>
-              </NavLink>
-
-              <NavLink
-                to={ROUTES.DASHBOARD_PLAYERS}
-                className={({ isActive }) =>
-                  `flex min-h-11 items-center gap-3 rounded-[3px] border px-3 py-2.5 text-sm font-semibold transition ${
-                    isActive
-                      ? "border-violet-300/35 bg-violet-500/15 text-white"
-                      : "border-transparent text-violet-100/75 hover:border-white/10 hover:bg-white/4.5 hover:text-white"
-                  }`
-                }
-              >
-                <FiUsers className="size-4" aria-hidden="true" />
-                <span>Plantel</span>
-              </NavLink>
-
-              <NavLink
-                to={ROUTES.DASHBOARD_ORGANIZATIONS}
-                className={({ isActive }) =>
-                  `flex min-h-11 items-center gap-3 rounded-[3px] border px-3 py-2.5 text-sm font-semibold transition ${
-                    isActive
-                      ? "border-violet-300/35 bg-violet-500/15 text-white"
-                      : "border-transparent text-violet-100/75 hover:border-white/10 hover:bg-white/4.5 hover:text-white"
-                  }`
-                }
-              >
-                <FiFlag className="size-4" aria-hidden="true" />
-                <span>Organizadores</span>
-              </NavLink>
-
-              <NavLink
-                to={ROUTES.DASHBOARD_TOURNAMENTS}
-                className={({ isActive }) =>
-                  `flex min-h-11 items-center gap-3 rounded-[3px] border px-3 py-2.5 text-sm font-semibold transition ${
-                    isActive
-                      ? "border-violet-300/35 bg-violet-500/15 text-white"
-                      : "border-transparent text-violet-100/75 hover:border-white/10 hover:bg-white/4.5 hover:text-white"
-                  }`
-                }
-              >
-                <FiAward className="size-4" aria-hidden="true" />
-                <span>Torneos</span>
-              </NavLink>
-
-              <NavLink
-                to={ROUTES.DASHBOARD_TABLE}
-                className={({ isActive }) =>
-                  `flex min-h-11 items-center gap-3 rounded-[3px] border px-3 py-2.5 text-sm font-semibold transition ${
-                    isActive
-                      ? "border-violet-300/35 bg-violet-500/15 text-white"
-                      : "border-transparent text-violet-100/75 hover:border-white/10 hover:bg-white/4.5 hover:text-white"
-                  }`
-                }
-              >
-                <FiBarChart2 className="size-4" aria-hidden="true" />
-                <span>Tabla</span>
-              </NavLink>
+                  return (
+                    <NavLink
+                      key={section.resource}
+                      to={section.route}
+                      className={({ isActive }) =>
+                        getNavLinkClassName(isActive)
+                      }
+                    >
+                      <Icon className="size-4" aria-hidden="true" />
+                      <span>{section.label}</span>
+                    </NavLink>
+                  );
+                })
+              )}
             </div>
           </nav>
 
