@@ -10,6 +10,7 @@ import {
 } from "../../../data/dashboardTournaments";
 import { getImageSrcSet, getImageUrl } from "../../../data/imageService";
 import { queryKeys } from "../../../data/queryKeys";
+import { DASHBOARD_RESOURCE_PERMISSIONS } from "../../../domain/auth/permissions";
 import { reportError } from "../../../lib/errors/errorLogger";
 import { ROUTES } from "../../../shared/routing";
 import type { DashboardTournamentItem } from "../../../types/dashboard";
@@ -18,6 +19,7 @@ import ErrorFallback from "../../components/errors/ErrorFallback";
 import Loader from "../../components/Loader/Loader";
 import DashboardListFilteredEmpty from "../../dashboard/DashboardListFilteredEmpty";
 import DashboardListFilters from "../../dashboard/DashboardListFilters";
+import { usePermission } from "../../hooks/usePermission";
 import { DASHBOARD_STATUS_FILTER_OPTIONS } from "../../dashboard/dashboardListFilters.utils";
 import { formatDateTime } from "../../utils/date.utils";
 import {
@@ -159,6 +161,15 @@ const DeleteTournamentButton = ({
 const DashboardTournamentsList = () => {
   const [filters, setFilters] = useState(defaultDashboardTournamentsListFilters);
   const queryClient = useQueryClient();
+  const canCreateTournament = usePermission(
+    DASHBOARD_RESOURCE_PERMISSIONS.tournaments.create
+  );
+  const canEditTournament = usePermission(
+    DASHBOARD_RESOURCE_PERMISSIONS.tournaments.edit
+  );
+  const canDeleteTournament = usePermission(
+    DASHBOARD_RESOURCE_PERMISSIONS.tournaments.delete
+  );
   const tournamentsQuery = useQuery({
     queryKey: queryKeys.dashboard.tournaments.all,
     queryFn: async () => {
@@ -225,6 +236,7 @@ const DashboardTournamentsList = () => {
     hasActiveFilters && tournaments.length !== totalTournaments
       ? `${tournaments.length} de ${totalTournaments} cargados`
       : `${totalTournaments} cargados`;
+  const hasRowActions = canEditTournament || canDeleteTournament;
 
   if (tournamentsQuery.isLoading) {
     return <Loader />;
@@ -260,14 +272,16 @@ const DashboardTournamentsList = () => {
             </p>
           </div>
 
-          <Link
-            to={ROUTES.DASHBOARD_TOURNAMENTS_NEW}
-            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[3px] border border-violet-200/30 bg-violet-100 text-violet-950 transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/40"
-            aria-label="Crear torneo"
-            title="Crear torneo"
-          >
-            <FiPlus className="size-5" aria-hidden="true" />
-          </Link>
+          {canCreateTournament ? (
+            <Link
+              to={ROUTES.DASHBOARD_TOURNAMENTS_NEW}
+              className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[3px] border border-violet-200/30 bg-violet-100 text-violet-950 transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/40"
+              aria-label="Crear torneo"
+              title="Crear torneo"
+            >
+              <FiPlus className="size-5" aria-hidden="true" />
+            </Link>
+          ) : null}
         </div>
       </header>
 
@@ -356,21 +370,27 @@ const DashboardTournamentsList = () => {
                       <TournamentStatusBadge item={item} />
                       <ActiveBadge active={item.active} />
                     </div>
-                    <div className="flex gap-2">
-                      <Link
-                        to={ROUTES.DASHBOARD_TOURNAMENTS_EDIT(item.id)}
-                        className={`${actionButtonClassName} border-violet-200/20 bg-violet-300/10 hover:border-violet-200/45 hover:bg-violet-300/16`}
-                        aria-label="Editar torneo"
-                        title="Editar torneo"
-                      >
-                        <FiEdit2 className="size-4" aria-hidden="true" />
-                      </Link>
-                      <DeleteTournamentButton
-                        item={item}
-                        isDeleting={deleteMutation.isPending}
-                        onDelete={handleDeleteTournament}
-                      />
-                    </div>
+                    {hasRowActions ? (
+                      <div className="flex gap-2">
+                        {canEditTournament ? (
+                          <Link
+                            to={ROUTES.DASHBOARD_TOURNAMENTS_EDIT(item.id)}
+                            className={`${actionButtonClassName} border-violet-200/20 bg-violet-300/10 hover:border-violet-200/45 hover:bg-violet-300/16`}
+                            aria-label="Editar torneo"
+                            title="Editar torneo"
+                          >
+                            <FiEdit2 className="size-4" aria-hidden="true" />
+                          </Link>
+                        ) : null}
+                        {canDeleteTournament ? (
+                          <DeleteTournamentButton
+                            item={item}
+                            isDeleting={deleteMutation.isPending}
+                            onDelete={handleDeleteTournament}
+                          />
+                        ) : null}
+                      </div>
+                    ) : null}
                   </div>
                 </article>
               ))}
@@ -419,19 +439,23 @@ const DashboardTournamentsList = () => {
                     </td>
                     <td className="px-5 py-4">
                       <div className="flex justify-end gap-2">
-                        <Link
-                          to={ROUTES.DASHBOARD_TOURNAMENTS_EDIT(item.id)}
-                          className={`${actionButtonClassName} border-violet-200/20 bg-violet-300/10 hover:border-violet-200/45 hover:bg-violet-300/16`}
-                          aria-label="Editar torneo"
-                          title="Editar torneo"
-                        >
-                          <FiEdit2 className="size-4" aria-hidden="true" />
-                        </Link>
-                        <DeleteTournamentButton
-                          item={item}
-                          isDeleting={deleteMutation.isPending}
-                          onDelete={handleDeleteTournament}
-                        />
+                        {canEditTournament ? (
+                          <Link
+                            to={ROUTES.DASHBOARD_TOURNAMENTS_EDIT(item.id)}
+                            className={`${actionButtonClassName} border-violet-200/20 bg-violet-300/10 hover:border-violet-200/45 hover:bg-violet-300/16`}
+                            aria-label="Editar torneo"
+                            title="Editar torneo"
+                          >
+                            <FiEdit2 className="size-4" aria-hidden="true" />
+                          </Link>
+                        ) : null}
+                        {canDeleteTournament ? (
+                          <DeleteTournamentButton
+                            item={item}
+                            isDeleting={deleteMutation.isPending}
+                            onDelete={handleDeleteTournament}
+                          />
+                        ) : null}
                       </div>
                     </td>
                   </tr>

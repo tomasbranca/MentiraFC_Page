@@ -1,6 +1,10 @@
 import process from "node:process";
 import { createClient } from "@supabase/supabase-js";
 
+import {
+  hasPermission,
+  type AppPermission,
+} from "../../src/domain/auth/permissions";
 import type { AppRole } from "../../src/types/auth";
 import { errorJson } from "./responses.js";
 
@@ -8,8 +12,6 @@ type AuthorizedDashboardUser = {
   userId: string;
   role: AppRole;
 };
-
-const allowedRoles = new Set<AppRole>(["editor", "moderator", "admin"]);
 
 const getBearerToken = (request: Request): string | null => {
   const authorization = request.headers.get("authorization");
@@ -22,7 +24,8 @@ const getBearerToken = (request: Request): string | null => {
 };
 
 export const authorizeDashboardUser = async (
-  request: Request
+  request: Request,
+  requiredPermission: AppPermission
 ): Promise<AuthorizedDashboardUser | Response> => {
   const token = getBearerToken(request);
   const supabaseUrl = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
@@ -74,8 +77,12 @@ export const authorizeDashboardUser = async (
     return errorJson("Tu usuario ha sido baneado.", 403);
   }
 
-  if (!allowedRoles.has(role)) {
-    return errorJson("No tenés permisos para acceder a esta sección.", 403);
+  // UI/API permission checks are defense in depth; Supabase RLS must still enforce data access.
+  if (!hasPermission(role, requiredPermission)) {
+    return errorJson(
+      `No tenes permisos para realizar esta accion del dashboard (${requiredPermission}).`,
+      403
+    );
   }
 
   return {

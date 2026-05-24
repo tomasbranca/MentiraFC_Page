@@ -17,6 +17,7 @@ import {
 } from "../../../data/dashboardStaff";
 import { getImageSrcSet, getImageUrl } from "../../../data/imageService";
 import { queryKeys } from "../../../data/queryKeys";
+import { DASHBOARD_RESOURCE_PERMISSIONS } from "../../../domain/auth/permissions";
 import { reportError } from "../../../lib/errors/errorLogger";
 import { ROUTES } from "../../../shared/routing";
 import type {
@@ -29,6 +30,7 @@ import Loader from "../../components/Loader/Loader";
 import DashboardListFilteredEmpty from "../../dashboard/DashboardListFilteredEmpty";
 import DashboardListFilters from "../../dashboard/DashboardListFilters";
 import { DASHBOARD_STATUS_FILTER_OPTIONS } from "../../dashboard/dashboardListFilters.utils";
+import { usePermission } from "../../hooks/usePermission";
 import { formatDate } from "../../utils/date.utils";
 import {
   defaultDashboardPlayersListFilters,
@@ -330,6 +332,19 @@ const DashboardPlantelMobileCard = ({
 const DashboardPlayersList = () => {
   const [filters, setFilters] = useState(defaultDashboardPlayersListFilters);
   const queryClient = useQueryClient();
+  const canCreatePlayer = usePermission(
+    DASHBOARD_RESOURCE_PERMISSIONS.players.create
+  );
+  const canEditPlayer = usePermission(DASHBOARD_RESOURCE_PERMISSIONS.players.edit);
+  const canDeletePlayer = usePermission(
+    DASHBOARD_RESOURCE_PERMISSIONS.players.delete
+  );
+  const canUpdatePlayerStatus = usePermission(
+    DASHBOARD_RESOURCE_PERMISSIONS.players.updateActiveStatus
+  );
+  const canCreateStaff = usePermission(DASHBOARD_RESOURCE_PERMISSIONS.staff.create);
+  const canEditStaff = usePermission(DASHBOARD_RESOURCE_PERMISSIONS.staff.edit);
+  const canDeleteStaff = usePermission(DASHBOARD_RESOURCE_PERMISSIONS.staff.delete);
   const playersQuery = useQuery({
     queryKey: queryKeys.dashboard.players.all,
     queryFn: async () => {
@@ -509,6 +524,9 @@ const DashboardPlayersList = () => {
     hasActiveFilters && filteredMembers !== totalMembers
       ? `${filteredMembers} de ${totalMembers} integrantes`
       : `${totalMembers} integrantes`;
+  const hasPlayerRowActions =
+    canUpdatePlayerStatus || canEditPlayer || canDeletePlayer;
+  const hasStaffRowActions = canEditStaff || canDeleteStaff;
 
   if (playersQuery.isLoading || staffQuery.isLoading) {
     return <Loader />;
@@ -546,24 +564,30 @@ const DashboardPlayersList = () => {
             </p>
           </div>
 
-          <div className="flex shrink-0 gap-2">
-            <Link
-              to={ROUTES.DASHBOARD_PLAYERS_NEW}
-              className="inline-flex h-11 w-11 items-center justify-center rounded-[3px] border border-violet-200/30 bg-violet-100 text-violet-950 transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/40"
-              aria-label="Crear jugador"
-              title="Crear jugador"
-            >
-              <GiSoccerBall className="size-5" aria-hidden="true" />
-            </Link>
-            <Link
-              to={ROUTES.DASHBOARD_STAFF_NEW}
-              className="inline-flex h-11 w-11 items-center justify-center rounded-[3px] border border-white/10 bg-white/[0.035] text-white transition hover:border-violet-200/35 hover:bg-white/8 focus:outline-none focus:ring-2 focus:ring-violet-500/40"
-              aria-label="Crear integrante del cuerpo tecnico"
-              title="Crear integrante del cuerpo tecnico"
-            >
-              <FaUserTie className="size-5" aria-hidden="true" />
-            </Link>
-          </div>
+          {canCreatePlayer || canCreateStaff ? (
+            <div className="flex shrink-0 gap-2">
+              {canCreatePlayer ? (
+                <Link
+                  to={ROUTES.DASHBOARD_PLAYERS_NEW}
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-[3px] border border-violet-200/30 bg-violet-100 text-violet-950 transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/40"
+                  aria-label="Crear jugador"
+                  title="Crear jugador"
+                >
+                  <GiSoccerBall className="size-5" aria-hidden="true" />
+                </Link>
+              ) : null}
+              {canCreateStaff ? (
+                <Link
+                  to={ROUTES.DASHBOARD_STAFF_NEW}
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-[3px] border border-white/10 bg-white/[0.035] text-white transition hover:border-violet-200/35 hover:bg-white/8 focus:outline-none focus:ring-2 focus:ring-violet-500/40"
+                  aria-label="Crear integrante del cuerpo tecnico"
+                  title="Crear integrante del cuerpo tecnico"
+                >
+                  <FaUserTie className="size-5" aria-hidden="true" />
+                </Link>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       </header>
 
@@ -681,26 +705,34 @@ const DashboardPlayersList = () => {
                         </>
                       }
                       actions={
-                        <>
-                          <TogglePlayerActiveButton
-                            item={item}
-                            isUpdating={activeStatusMutation.isPending}
-                            onToggle={handleTogglePlayerActiveStatus}
-                          />
-                          <Link
-                            to={ROUTES.DASHBOARD_PLAYERS_EDIT(item.id)}
-                            className={`${actionButtonClassName} border-violet-200/20 bg-violet-300/10 hover:border-violet-200/45 hover:bg-violet-300/16`}
-                            aria-label="Editar integrante"
-                            title="Editar integrante"
-                          >
-                            <FiEdit2 className="size-4" aria-hidden="true" />
-                          </Link>
-                          <DeletePlayerButton
-                            item={item}
-                            isDeleting={deletePlayerMutation.isPending}
-                            onDelete={handleDeletePlayer}
-                          />
-                        </>
+                        hasPlayerRowActions ? (
+                          <>
+                            {canUpdatePlayerStatus ? (
+                              <TogglePlayerActiveButton
+                                item={item}
+                                isUpdating={activeStatusMutation.isPending}
+                                onToggle={handleTogglePlayerActiveStatus}
+                              />
+                            ) : null}
+                            {canEditPlayer ? (
+                              <Link
+                                to={ROUTES.DASHBOARD_PLAYERS_EDIT(item.id)}
+                                className={`${actionButtonClassName} border-violet-200/20 bg-violet-300/10 hover:border-violet-200/45 hover:bg-violet-300/16`}
+                                aria-label="Editar integrante"
+                                title="Editar integrante"
+                              >
+                                <FiEdit2 className="size-4" aria-hidden="true" />
+                              </Link>
+                            ) : null}
+                            {canDeletePlayer ? (
+                              <DeletePlayerButton
+                                item={item}
+                                isDeleting={deletePlayerMutation.isPending}
+                                onDelete={handleDeletePlayer}
+                              />
+                            ) : null}
+                          </>
+                        ) : null
                       }
                     />
                   ))}
@@ -757,24 +789,30 @@ const DashboardPlayersList = () => {
                         </td>
                         <td className="px-5 py-4">
                           <div className="flex justify-end gap-2">
-                            <TogglePlayerActiveButton
-                              item={item}
-                              isUpdating={activeStatusMutation.isPending}
-                              onToggle={handleTogglePlayerActiveStatus}
-                            />
-                            <Link
-                              to={ROUTES.DASHBOARD_PLAYERS_EDIT(item.id)}
-                              className={`${actionButtonClassName} border-violet-200/20 bg-violet-300/10 hover:border-violet-200/45 hover:bg-violet-300/16`}
-                              aria-label="Editar integrante"
-                              title="Editar integrante"
-                            >
-                              <FiEdit2 className="size-4" aria-hidden="true" />
-                            </Link>
-                            <DeletePlayerButton
-                              item={item}
-                              isDeleting={deletePlayerMutation.isPending}
-                              onDelete={handleDeletePlayer}
-                            />
+                            {canUpdatePlayerStatus ? (
+                              <TogglePlayerActiveButton
+                                item={item}
+                                isUpdating={activeStatusMutation.isPending}
+                                onToggle={handleTogglePlayerActiveStatus}
+                              />
+                            ) : null}
+                            {canEditPlayer ? (
+                              <Link
+                                to={ROUTES.DASHBOARD_PLAYERS_EDIT(item.id)}
+                                className={`${actionButtonClassName} border-violet-200/20 bg-violet-300/10 hover:border-violet-200/45 hover:bg-violet-300/16`}
+                                aria-label="Editar integrante"
+                                title="Editar integrante"
+                              >
+                                <FiEdit2 className="size-4" aria-hidden="true" />
+                              </Link>
+                            ) : null}
+                            {canDeletePlayer ? (
+                              <DeletePlayerButton
+                                item={item}
+                                isDeleting={deletePlayerMutation.isPending}
+                                onDelete={handleDeletePlayer}
+                              />
+                            ) : null}
                           </div>
                         </td>
                       </tr>
@@ -823,21 +861,27 @@ const DashboardPlayersList = () => {
                         />
                       }
                       actions={
-                        <>
-                          <Link
-                            to={ROUTES.DASHBOARD_STAFF_EDIT(item.id)}
-                            className={`${actionButtonClassName} border-violet-200/20 bg-violet-300/10 hover:border-violet-200/45 hover:bg-violet-300/16`}
-                            aria-label="Editar integrante"
-                            title="Editar integrante"
-                          >
-                            <FiEdit2 className="size-4" aria-hidden="true" />
-                          </Link>
-                          <DeleteStaffButton
-                            item={item}
-                            isDeleting={deleteStaffMutation.isPending}
-                            onDelete={handleDeleteStaff}
-                          />
-                        </>
+                        hasStaffRowActions ? (
+                          <>
+                            {canEditStaff ? (
+                              <Link
+                                to={ROUTES.DASHBOARD_STAFF_EDIT(item.id)}
+                                className={`${actionButtonClassName} border-violet-200/20 bg-violet-300/10 hover:border-violet-200/45 hover:bg-violet-300/16`}
+                                aria-label="Editar integrante"
+                                title="Editar integrante"
+                              >
+                                <FiEdit2 className="size-4" aria-hidden="true" />
+                              </Link>
+                            ) : null}
+                            {canDeleteStaff ? (
+                              <DeleteStaffButton
+                                item={item}
+                                isDeleting={deleteStaffMutation.isPending}
+                                onDelete={handleDeleteStaff}
+                              />
+                            ) : null}
+                          </>
+                        ) : null
                       }
                     />
                   ))}
@@ -887,19 +931,23 @@ const DashboardPlayersList = () => {
                         </td>
                         <td className="px-5 py-4">
                           <div className="flex justify-end gap-2">
-                            <Link
-                              to={ROUTES.DASHBOARD_STAFF_EDIT(item.id)}
-                              className={`${actionButtonClassName} border-violet-200/20 bg-violet-300/10 hover:border-violet-200/45 hover:bg-violet-300/16`}
-                              aria-label="Editar integrante"
-                              title="Editar integrante"
-                            >
-                              <FiEdit2 className="size-4" aria-hidden="true" />
-                            </Link>
-                            <DeleteStaffButton
-                              item={item}
-                              isDeleting={deleteStaffMutation.isPending}
-                              onDelete={handleDeleteStaff}
-                            />
+                            {canEditStaff ? (
+                              <Link
+                                to={ROUTES.DASHBOARD_STAFF_EDIT(item.id)}
+                                className={`${actionButtonClassName} border-violet-200/20 bg-violet-300/10 hover:border-violet-200/45 hover:bg-violet-300/16`}
+                                aria-label="Editar integrante"
+                                title="Editar integrante"
+                              >
+                                <FiEdit2 className="size-4" aria-hidden="true" />
+                              </Link>
+                            ) : null}
+                            {canDeleteStaff ? (
+                              <DeleteStaffButton
+                                item={item}
+                                isDeleting={deleteStaffMutation.isPending}
+                                onDelete={handleDeleteStaff}
+                              />
+                            ) : null}
                           </div>
                         </td>
                       </tr>

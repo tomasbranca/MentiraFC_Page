@@ -10,6 +10,7 @@ import {
 } from "../../../data/dashboardOrganizations";
 import { getImageSrcSet, getImageUrl } from "../../../data/imageService";
 import { queryKeys } from "../../../data/queryKeys";
+import { DASHBOARD_RESOURCE_PERMISSIONS } from "../../../domain/auth/permissions";
 import { reportError } from "../../../lib/errors/errorLogger";
 import { ROUTES } from "../../../shared/routing";
 import type { DashboardOrganizationItem } from "../../../types/dashboard";
@@ -18,6 +19,7 @@ import ErrorFallback from "../../components/errors/ErrorFallback";
 import Loader from "../../components/Loader/Loader";
 import DashboardListFilteredEmpty from "../../dashboard/DashboardListFilteredEmpty";
 import DashboardListFilters from "../../dashboard/DashboardListFilters";
+import { usePermission } from "../../hooks/usePermission";
 import { DASHBOARD_STATUS_FILTER_OPTIONS } from "../../dashboard/dashboardListFilters.utils";
 import { formatDateTime } from "../../utils/date.utils";
 import {
@@ -165,6 +167,15 @@ const DeleteOrganizationButton = ({
 const DashboardOrganizationsList = () => {
   const [filters, setFilters] = useState(defaultDashboardOrganizationsListFilters);
   const queryClient = useQueryClient();
+  const canCreateOrganization = usePermission(
+    DASHBOARD_RESOURCE_PERMISSIONS.organizations.create
+  );
+  const canEditOrganization = usePermission(
+    DASHBOARD_RESOURCE_PERMISSIONS.organizations.edit
+  );
+  const canDeleteOrganization = usePermission(
+    DASHBOARD_RESOURCE_PERMISSIONS.organizations.delete
+  );
   const organizationsQuery = useQuery({
     queryKey: queryKeys.dashboard.organizations.all,
     queryFn: async () => {
@@ -227,6 +238,7 @@ const DashboardOrganizationsList = () => {
     hasActiveFilters && organizations.length !== totalOrganizations
       ? `${organizations.length} de ${totalOrganizations} cargados`
       : `${totalOrganizations} cargados`;
+  const hasRowActions = canEditOrganization || canDeleteOrganization;
 
   if (organizationsQuery.isLoading) {
     return <Loader />;
@@ -263,14 +275,16 @@ const DashboardOrganizationsList = () => {
             </p>
           </div>
 
-          <Link
-            to={ROUTES.DASHBOARD_ORGANIZATIONS_NEW}
-            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[3px] border border-violet-200/30 bg-violet-100 text-violet-950 transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/40"
-            aria-label="Crear organizador"
-            title="Crear organizador"
-          >
-            <FiPlus className="size-5" aria-hidden="true" />
-          </Link>
+          {canCreateOrganization ? (
+            <Link
+              to={ROUTES.DASHBOARD_ORGANIZATIONS_NEW}
+              className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[3px] border border-violet-200/30 bg-violet-100 text-violet-950 transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/40"
+              aria-label="Crear organizador"
+              title="Crear organizador"
+            >
+              <FiPlus className="size-5" aria-hidden="true" />
+            </Link>
+          ) : null}
         </div>
       </header>
 
@@ -359,21 +373,27 @@ const DashboardOrganizationsList = () => {
 
                   <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-white/8 pt-3">
                     <OrganizationStatusBadge item={item} />
-                    <div className="flex gap-2">
-                      <Link
-                        to={ROUTES.DASHBOARD_ORGANIZATIONS_EDIT(item.id)}
-                        className={`${actionButtonClassName} border-violet-200/20 bg-violet-300/10 hover:border-violet-200/45 hover:bg-violet-300/16`}
-                        aria-label="Editar organizador"
-                        title="Editar organizador"
-                      >
-                        <FiEdit2 className="size-4" aria-hidden="true" />
-                      </Link>
-                      <DeleteOrganizationButton
-                        item={item}
-                        isDeleting={deleteMutation.isPending}
-                        onDelete={handleDeleteOrganization}
-                      />
-                    </div>
+                    {hasRowActions ? (
+                      <div className="flex gap-2">
+                        {canEditOrganization ? (
+                          <Link
+                            to={ROUTES.DASHBOARD_ORGANIZATIONS_EDIT(item.id)}
+                            className={`${actionButtonClassName} border-violet-200/20 bg-violet-300/10 hover:border-violet-200/45 hover:bg-violet-300/16`}
+                            aria-label="Editar organizador"
+                            title="Editar organizador"
+                          >
+                            <FiEdit2 className="size-4" aria-hidden="true" />
+                          </Link>
+                        ) : null}
+                        {canDeleteOrganization ? (
+                          <DeleteOrganizationButton
+                            item={item}
+                            isDeleting={deleteMutation.isPending}
+                            onDelete={handleDeleteOrganization}
+                          />
+                        ) : null}
+                      </div>
+                    ) : null}
                   </div>
                 </article>
               ))}
@@ -421,19 +441,23 @@ const DashboardOrganizationsList = () => {
                     </td>
                     <td className="px-5 py-4">
                       <div className="flex justify-end gap-2">
-                        <Link
-                          to={ROUTES.DASHBOARD_ORGANIZATIONS_EDIT(item.id)}
-                          className={`${actionButtonClassName} border-violet-200/20 bg-violet-300/10 hover:border-violet-200/45 hover:bg-violet-300/16`}
-                          aria-label="Editar organizador"
-                          title="Editar organizador"
-                        >
-                          <FiEdit2 className="size-4" aria-hidden="true" />
-                        </Link>
-                        <DeleteOrganizationButton
-                          item={item}
-                          isDeleting={deleteMutation.isPending}
-                          onDelete={handleDeleteOrganization}
-                        />
+                        {canEditOrganization ? (
+                          <Link
+                            to={ROUTES.DASHBOARD_ORGANIZATIONS_EDIT(item.id)}
+                            className={`${actionButtonClassName} border-violet-200/20 bg-violet-300/10 hover:border-violet-200/45 hover:bg-violet-300/16`}
+                            aria-label="Editar organizador"
+                            title="Editar organizador"
+                          >
+                            <FiEdit2 className="size-4" aria-hidden="true" />
+                          </Link>
+                        ) : null}
+                        {canDeleteOrganization ? (
+                          <DeleteOrganizationButton
+                            item={item}
+                            isDeleting={deleteMutation.isPending}
+                            onDelete={handleDeleteOrganization}
+                          />
+                        ) : null}
                       </div>
                     </td>
                   </tr>

@@ -10,6 +10,7 @@ import {
 } from "../../../data/dashboardMatches";
 import { getImageSrcSet, getImageUrl } from "../../../data/imageService";
 import { queryKeys } from "../../../data/queryKeys";
+import { DASHBOARD_RESOURCE_PERMISSIONS } from "../../../domain/auth/permissions";
 import { isFinishedGameState } from "../../../domain/games";
 import { reportError } from "../../../lib/errors/errorLogger";
 import type { DashboardMatchItem } from "../../../types/dashboard";
@@ -19,6 +20,7 @@ import ErrorFallback from "../../components/errors/ErrorFallback";
 import Loader from "../../components/Loader/Loader";
 import DashboardListFilteredEmpty from "../../dashboard/DashboardListFilteredEmpty";
 import DashboardListFilters from "../../dashboard/DashboardListFilters";
+import { usePermission } from "../../hooks/usePermission";
 import { DASHBOARD_STATUS_FILTER_OPTIONS } from "../../dashboard/dashboardListFilters.utils";
 import { formatDateTime } from "../../utils/date.utils";
 import {
@@ -175,6 +177,13 @@ const DeleteMatchButton = ({
 const DashboardMatchesList = () => {
   const [filters, setFilters] = useState(defaultDashboardMatchesListFilters);
   const queryClient = useQueryClient();
+  const canCreateMatch = usePermission(
+    DASHBOARD_RESOURCE_PERMISSIONS.matches.create
+  );
+  const canEditMatch = usePermission(DASHBOARD_RESOURCE_PERMISSIONS.matches.edit);
+  const canDeleteMatch = usePermission(
+    DASHBOARD_RESOURCE_PERMISSIONS.matches.delete
+  );
   const matchesQuery = useQuery({
     queryKey: queryKeys.dashboard.matches.all,
     queryFn: async () => {
@@ -237,6 +246,7 @@ const DashboardMatchesList = () => {
     hasActiveFilters && matches.length !== totalMatches
       ? `${matches.length} de ${totalMatches} partidos`
       : `${totalMatches} partidos`;
+  const hasRowActions = canEditMatch || canDeleteMatch;
 
   if (matchesQuery.isLoading) {
     return <Loader />;
@@ -271,14 +281,16 @@ const DashboardMatchesList = () => {
             </p>
           </div>
 
-          <Link
-            to={ROUTES.DASHBOARD_MATCHES_NEW}
-            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[3px] border border-violet-200/30 bg-violet-100 text-violet-950 transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/40"
-            aria-label="Crear partido"
-            title="Crear partido"
-          >
-            <FiPlus className="size-5" aria-hidden="true" />
-          </Link>
+          {canCreateMatch ? (
+            <Link
+              to={ROUTES.DASHBOARD_MATCHES_NEW}
+              className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[3px] border border-violet-200/30 bg-violet-100 text-violet-950 transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/40"
+              aria-label="Crear partido"
+              title="Crear partido"
+            >
+              <FiPlus className="size-5" aria-hidden="true" />
+            </Link>
+          ) : null}
         </div>
       </header>
 
@@ -382,22 +394,28 @@ const DashboardMatchesList = () => {
 
                   <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-white/8 pt-3">
                     <MatchStatusBadge item={item} />
-                    <div className="flex gap-2">
-                      <Link
-                        to={ROUTES.DASHBOARD_MATCHES_EDIT(item.id)}
-                        className={`${actionButtonClassName} border-violet-200/20 bg-violet-300/10 hover:border-violet-200/45 hover:bg-violet-300/16`}
-                        aria-label="Editar partido"
-                        title="Editar partido"
-                      >
-                        <FiEdit2 className="size-4" aria-hidden="true" />
-                      </Link>
-                      <DeleteMatchButton
-                        itemId={item.id}
-                        itemTitle={getMatchTitle(item)}
-                        isDeleting={deleteMutation.isPending}
-                        onDelete={handleDeleteMatch}
-                      />
-                    </div>
+                    {hasRowActions ? (
+                      <div className="flex gap-2">
+                        {canEditMatch ? (
+                          <Link
+                            to={ROUTES.DASHBOARD_MATCHES_EDIT(item.id)}
+                            className={`${actionButtonClassName} border-violet-200/20 bg-violet-300/10 hover:border-violet-200/45 hover:bg-violet-300/16`}
+                            aria-label="Editar partido"
+                            title="Editar partido"
+                          >
+                            <FiEdit2 className="size-4" aria-hidden="true" />
+                          </Link>
+                        ) : null}
+                        {canDeleteMatch ? (
+                          <DeleteMatchButton
+                            itemId={item.id}
+                            itemTitle={getMatchTitle(item)}
+                            isDeleting={deleteMutation.isPending}
+                            onDelete={handleDeleteMatch}
+                          />
+                        ) : null}
+                      </div>
+                    ) : null}
                   </div>
                 </article>
               ))}
@@ -450,20 +468,24 @@ const DashboardMatchesList = () => {
                     </td>
                     <td className="px-5 py-4">
                       <div className="flex justify-end gap-2">
-                        <Link
-                          to={ROUTES.DASHBOARD_MATCHES_EDIT(item.id)}
-                          className={`${actionButtonClassName} border-violet-200/20 bg-violet-300/10 hover:border-violet-200/45 hover:bg-violet-300/16`}
-                          aria-label="Editar partido"
-                          title="Editar partido"
-                        >
-                          <FiEdit2 className="size-4" aria-hidden="true" />
-                        </Link>
-                        <DeleteMatchButton
-                          itemId={item.id}
-                          itemTitle={getMatchTitle(item)}
-                          isDeleting={deleteMutation.isPending}
-                          onDelete={handleDeleteMatch}
-                        />
+                        {canEditMatch ? (
+                          <Link
+                            to={ROUTES.DASHBOARD_MATCHES_EDIT(item.id)}
+                            className={`${actionButtonClassName} border-violet-200/20 bg-violet-300/10 hover:border-violet-200/45 hover:bg-violet-300/16`}
+                            aria-label="Editar partido"
+                            title="Editar partido"
+                          >
+                            <FiEdit2 className="size-4" aria-hidden="true" />
+                          </Link>
+                        ) : null}
+                        {canDeleteMatch ? (
+                          <DeleteMatchButton
+                            itemId={item.id}
+                            itemTitle={getMatchTitle(item)}
+                            isDeleting={deleteMutation.isPending}
+                            onDelete={handleDeleteMatch}
+                          />
+                        ) : null}
                       </div>
                     </td>
                   </tr>

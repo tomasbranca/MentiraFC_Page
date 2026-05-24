@@ -9,6 +9,7 @@ import {
 } from "../../_lib/tournaments.js";
 import { authorizeDashboardUser } from "../../_lib/auth.js";
 import { errorJson, json } from "../../_lib/responses.js";
+import { DASHBOARD_RESOURCE_PERMISSIONS } from "../../../src/domain/auth/permissions";
 import {
   validateDashboardTournamentDraftMutation,
   validateDashboardTournamentMutation,
@@ -27,11 +28,30 @@ const getIntentFromRequest = (request: Request): "draft" | "publish" => {
 const shouldLoadOptions = (request: Request): boolean =>
   new URL(request.url).searchParams.get("options") === "1";
 
+const getRequiredPermission = (request: Request) => {
+  if (request.method === "POST") {
+    return DASHBOARD_RESOURCE_PERMISSIONS.tournaments.create;
+  }
+
+  if (request.method === "PUT") {
+    return DASHBOARD_RESOURCE_PERMISSIONS.tournaments.edit;
+  }
+
+  if (request.method === "DELETE") {
+    return DASHBOARD_RESOURCE_PERMISSIONS.tournaments.delete;
+  }
+
+  return DASHBOARD_RESOURCE_PERMISSIONS.tournaments.view;
+};
+
 const dashboardTournamentHandler = async (
   request: Request
 ): Promise<Response> => {
   try {
-    const authorization = await authorizeDashboardUser(request);
+    const authorization = await authorizeDashboardUser(
+      request,
+      getRequiredPermission(request)
+    );
 
     if (authorization instanceof Response) {
       return authorization;
