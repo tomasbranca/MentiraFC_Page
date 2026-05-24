@@ -130,3 +130,29 @@ a {
     overscroll-behavior-y: none;
   }
 }
+
+.dashboard-date-input {
+  inline-size: 100%;
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  box-sizing: border-box;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.dashboard-date-input::-webkit-date-and-time-value {
+  min-inline-size: 0;
+  text-align: left;
+}
+
+.dashboard-date-input::-webkit-datetime-edit,
+.dashboard-date-input::-webkit-datetime-edit-fields-wrapper {
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  overflow: hidden;
+}
+
+.dashboard-date-input::-webkit-calendar-picker-indicator {
+  flex: 0 0 auto;
+  margin-inline-start: 0.25rem;
+}
