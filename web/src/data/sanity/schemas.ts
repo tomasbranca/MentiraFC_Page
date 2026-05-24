@@ -84,8 +84,15 @@ export const sanityGalleryImageSchema = z.object({
 export const sanityEventSchema = z.object({
   _id: z.string(),
   type: z.string(),
-  order: z.number().optional(),
-  player: sanityPlayerRefSchema.optional(),
+  order: z.number().nullable().optional(),
+  scorerKind: z
+    .enum(["roster", "guest", "opponent_own_goal"])
+    .nullable()
+    .optional(),
+  scorerSide: z.string().nullable().optional(),
+  scorerSource: z.string().nullable().optional(),
+  guestName: z.string().nullable().optional(),
+  player: sanityPlayerRefSchema.nullable().optional(),
 });
 
 export const sanityGameSchema = z.object({
@@ -233,14 +240,22 @@ export const sanityStandingsSnapshotSchema = z.object({
 export const sanityGoalEventSchema = z.object({
   _id: z.string(),
   type: z.string(),
-  order: z.number().optional(),
+  order: z.number().nullable().optional(),
+  scorerKind: z
+    .enum(["roster", "guest", "opponent_own_goal"])
+    .nullable()
+    .optional(),
+  scorerSide: z.string().nullable().optional(),
+  scorerSource: z.string().nullable().optional(),
+  guestName: z.string().nullable().optional(),
   game: z
     .object({
       _id: z.string(),
       date: z.string(),
     })
+    .nullable()
     .optional(),
-  player: sanityPlayerRefSchema.optional(),
+  player: sanityPlayerRefSchema.nullable().optional(),
 });
 
 export type SanityNews = z.infer<typeof sanityNewsSchema>;

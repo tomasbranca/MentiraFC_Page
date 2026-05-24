@@ -19,7 +19,7 @@ describe("dashboard matches api input", () => {
         competition: "Torneo",
         tournamentId: "tournament-1",
         state: "finalizado",
-        goalsFor: "2",
+        goalsFor: "4",
         goalsAgainst: 1,
         playedPlayerIds: ["player-1", "player-1", "player-2"],
         goalScorers: [
@@ -35,14 +35,53 @@ describe("dashboard matches api input", () => {
       competition: "Torneo",
       tournamentId: "tournament-1",
       state: "finalizado",
-      goalsFor: 2,
+      goalsFor: 4,
       goalsAgainst: 1,
       playedPlayerIds: ["player-1", "player-2"],
       goalScorers: [
         { playerId: "player-1", goals: 3 },
         { playerId: "player-2", goals: 1 },
       ],
+      guestGoalScorers: [],
+      opponentOwnGoals: 0,
     });
+  });
+
+  it("acepta goles de invitados y en propia del rival dentro de goalsFor", () => {
+    expect(
+      parseDashboardMatchInput({
+        rivalId: "team-1",
+        date: "2026-05-16T21:30:00.000Z",
+        location: "Cancha 1",
+        competition: "Amistoso",
+        state: "finalizado",
+        goalsFor: 3,
+        goalsAgainst: 2,
+        goalScorers: [{ playerId: "player-1", goals: 1 }],
+        guestGoalScorers: [{ name: " Invitado ", goals: 1 }],
+        opponentOwnGoals: 1,
+      })
+    ).toMatchObject({
+      goalsFor: 3,
+      goalScorers: [{ playerId: "player-1", goals: 1 }],
+      guestGoalScorers: [{ name: "Invitado", goals: 1 }],
+      opponentOwnGoals: 1,
+    });
+  });
+
+  it("rechaza partidos finalizados si los goleadores no coinciden con goalsFor", () => {
+    expect(
+      parseDashboardMatchInput({
+        rivalId: "team-1",
+        date: "2026-05-16T21:30:00.000Z",
+        location: "Cancha 1",
+        competition: "Amistoso",
+        state: "finalizado",
+        goalsFor: 2,
+        goalsAgainst: 0,
+        goalScorers: [{ playerId: "player-1", goals: 1 }],
+      })
+    ).toBeNull();
   });
 
   it("rechaza partidos de torneo sin torneo y finalizados sin resultado", () => {
@@ -92,6 +131,8 @@ describe("dashboard matches api input", () => {
       goalsAgainst: undefined,
       playedPlayerIds: ["player-1"],
       goalScorers: [{ playerId: "player-2", goals: 2 }],
+      guestGoalScorers: [],
+      opponentOwnGoals: 0,
     });
   });
 

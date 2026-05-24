@@ -33,6 +33,8 @@ describe("dashboardMatches utils", () => {
         goalsAgainst: "-1",
         playedPlayerIds: [],
         goalScorers: [],
+        guestGoalScorers: [],
+        opponentOwnGoals: "0",
       })
     ).toEqual({
       rivalId: "Elegi un rival.",
@@ -57,6 +59,8 @@ describe("dashboardMatches utils", () => {
         goalsAgainst: "2",
         playedPlayerIds: ["player-1"],
         goalScorers: [{ playerId: "player-1", goals: "2" }],
+        guestGoalScorers: [],
+        opponentOwnGoals: "0",
       })
     ).toEqual({
       rivalId: "team-1",
@@ -69,10 +73,12 @@ describe("dashboardMatches utils", () => {
       goalsAgainst: undefined,
       playedPlayerIds: [],
       goalScorers: [],
+      guestGoalScorers: [],
+      opponentOwnGoals: 0,
     });
   });
 
-  it("normaliza goleadores sin correlacionar con el resultado", () => {
+  it("normaliza goleadores aunque no coincidan con el resultado", () => {
     expect(
       buildDashboardMatchMutationInput({
         rivalId: "team-1",
@@ -88,10 +94,67 @@ describe("dashboardMatches utils", () => {
           { playerId: "player-1", goals: "2" },
           { playerId: "player-2", goals: "1" },
         ],
+        guestGoalScorers: [],
+        opponentOwnGoals: "0",
       }).goalScorers
     ).toEqual([
       { playerId: "player-1", goals: 2 },
       { playerId: "player-2", goals: 1 },
     ]);
+  });
+
+  it("valida plantel, invitados y goles en propia del rival contra goalsFor", () => {
+    expect(
+      validateDashboardMatchInput({
+        rivalId: "team-1",
+        date: "2026-05-17T00:30:00.000Z",
+        location: "Cancha 1",
+        competition: "Amistoso",
+        tournamentId: "",
+        state: "finalizado",
+        goalsFor: "3",
+        goalsAgainst: "1",
+        playedPlayerIds: [],
+        goalScorers: [{ playerId: "player-1", goals: "1" }],
+        guestGoalScorers: [{ name: "Invitado", goals: "1" }],
+        opponentOwnGoals: "1",
+      }).goalScorers
+    ).toBeUndefined();
+  });
+
+  it("bloquea partidos finalizados si los goleadores no coinciden con el resultado", () => {
+    expect(
+      validateDashboardMatchInput({
+        rivalId: "team-1",
+        date: "2026-05-17T00:30:00.000Z",
+        location: "Cancha 1",
+        competition: "Amistoso",
+        tournamentId: "",
+        state: "finalizado",
+        goalsFor: "2",
+        goalsAgainst: "1",
+        playedPlayerIds: [],
+        goalScorers: [{ playerId: "player-1", goals: "1" }],
+        guestGoalScorers: [],
+        opponentOwnGoals: "0",
+      }).goalScorers
+    ).toContain("suman 1 gol");
+
+    expect(
+      validateDashboardMatchInput({
+        rivalId: "team-1",
+        date: "2026-05-17T00:30:00.000Z",
+        location: "Cancha 1",
+        competition: "Amistoso",
+        tournamentId: "",
+        state: "finalizado",
+        goalsFor: "0",
+        goalsAgainst: "1",
+        playedPlayerIds: [],
+        goalScorers: [],
+        guestGoalScorers: [],
+        opponentOwnGoals: "0",
+      }).goalScorers
+    ).toBeUndefined();
   });
 });

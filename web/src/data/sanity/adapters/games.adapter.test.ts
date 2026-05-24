@@ -61,6 +61,60 @@ describe("games.adapter", () => {
     ).toEqual([]);
   });
 
+  it("adapta goles de plantel, invitados y en propia sin descartar el partido", () => {
+    const game = adaptGame(
+      createSanityGame({
+        events: [
+          {
+            _id: "event-1",
+            type: "goal",
+            order: 1,
+            scorerKind: null,
+            player: {
+              _id: "player-1",
+              name: "Tomas",
+              lastName: "Garcia",
+            },
+          },
+          {
+            _id: "event-2",
+            type: "goal",
+            order: 2,
+            scorerKind: "guest",
+            guestName: "Invitado",
+            player: null,
+          },
+          {
+            _id: "event-3",
+            type: "goal",
+            order: 3,
+            scorerKind: "opponent_own_goal",
+            player: null,
+          },
+        ],
+      })
+    );
+
+    expect(game?.events).toMatchObject([
+      {
+        id: "event-1",
+        scorerKind: "roster",
+        player: { id: "player-1" },
+      },
+      {
+        id: "event-2",
+        scorerKind: "guest",
+        guestName: "Invitado",
+        player: null,
+      },
+      {
+        id: "event-3",
+        scorerKind: "opponent_own_goal",
+        player: null,
+      },
+    ]);
+  });
+
   it("normaliza estados desconocidos de Sanity", () => {
     const game = adaptGame(
       createSanityGame({

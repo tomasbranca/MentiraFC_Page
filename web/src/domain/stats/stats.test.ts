@@ -508,6 +508,35 @@ describe("getPlayerStats", () => {
     });
   });
 
+  it("ignora invitados y goles en propia para estadisticas del jugador", () => {
+    const stats = getPlayerStats(
+      [
+        {
+          id: "g1",
+          date: "2025-01-10",
+          events: [
+            { type: "goal", player: { id: "p1" }, scorerKind: "roster" },
+            { type: "goal", player: { id: "p1" }, scorerKind: "guest" },
+            {
+              type: "goal",
+              player: { id: "p1" },
+              scorerKind: "opponent_own_goal",
+            },
+          ],
+        },
+      ],
+      "p1",
+      { year: 2025 }
+    );
+
+    expect(stats).toEqual({
+      playerId: "p1",
+      goals: 1,
+      matchesWithGoals: 1,
+      matchesPlayed: 1,
+    });
+  });
+
   it("usa eventos de gol planos para no recorrer eventos anidados cuando estan disponibles", () => {
     const stats = getPlayerStats(
       [
@@ -545,6 +574,53 @@ describe("getPlayerStats", () => {
       matchesPlayed: 2,
     });
   });
+
+  it("usa solo goles de plantel desde eventos planos pero conserva partidos jugados", () => {
+    const stats = getPlayerStats(
+      [
+        {
+          id: "g1",
+          date: "2025-01-10",
+          playedPlayers: [{ id: "p1" }],
+          events: [],
+        },
+      ],
+      "p1",
+      {
+        year: 2025,
+        goalEvents: [
+          {
+            id: "e1",
+            type: "goal",
+            game: { id: "g1", date: "2025-01-10" },
+            player: { id: "p1" },
+            scorerKind: "roster",
+          },
+          {
+            id: "e2",
+            type: "goal",
+            game: { id: "g1", date: "2025-01-10" },
+            player: { id: "p1" },
+            scorerKind: "guest",
+          },
+          {
+            id: "e3",
+            type: "goal",
+            game: { id: "g1", date: "2025-01-10" },
+            player: { id: "p1" },
+            scorerKind: "opponent_own_goal",
+          },
+        ],
+      }
+    );
+
+    expect(stats).toEqual({
+      playerId: "p1",
+      goals: 1,
+      matchesWithGoals: 1,
+      matchesPlayed: 1,
+    });
+  });
 });
 
 describe("getTopScorersFromGoalEvents", () => {
@@ -579,6 +655,49 @@ describe("getTopScorersFromGoalEvents", () => {
     const topScorers = getTopScorersFromGoalEvents(goalEvents, players, {
       year: 2025,
     });
+
+    expect(topScorers.map((player) => [player.id, player.goals])).toEqual([
+      ["p1", 1],
+      ["p2", 1],
+      ["p3", 0],
+    ]);
+  });
+
+  it("no suma invitados ni goles en propia en TopScorers", () => {
+    const topScorers = getTopScorersFromGoalEvents(
+      [
+        {
+          id: "e1",
+          type: "goal",
+          game: { id: "g1", date: "2025-02-10" },
+          player: { id: "p1" },
+          scorerKind: "roster",
+        },
+        {
+          id: "e2",
+          type: "goal",
+          game: { id: "g1", date: "2025-02-10" },
+          player: { id: "p1" },
+          scorerKind: "guest",
+        },
+        {
+          id: "e3",
+          type: "goal",
+          game: { id: "g1", date: "2025-02-10" },
+          player: null,
+          scorerKind: "opponent_own_goal",
+        },
+        {
+          id: "e4",
+          type: "goal",
+          game: { id: "g1", date: "2025-02-10" },
+          player: { id: "p2" },
+          scorerKind: null,
+        },
+      ],
+      players,
+      { year: 2025 }
+    );
 
     expect(topScorers.map((player) => [player.id, player.goals])).toEqual([
       ["p1", 1],

@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 
+import { normalizeGoalScorerKind } from "../../../src/domain/games";
 import type {
   DashboardMatchDraftMutationInput,
   DashboardMatchItem,
@@ -53,6 +54,10 @@ type DashboardMatchDocument = {
   goalEvents?: Array<{
     id?: string | null;
     order?: number | null;
+    scorerKind?: string | null;
+    scorerSide?: string | null;
+    scorerSource?: string | null;
+    guestName?: string | null;
     player?: DashboardMatchDocumentPlayer | null;
   }> | null;
 };
@@ -152,15 +157,40 @@ const adaptPlayerOption = (
   };
 };
 
-const adaptGoalScorers = (
+const adaptMatchGoalEvents = (
   goalEvents: DashboardMatchDocument["goalEvents"] = []
 ) => {
-  const scorers = new Map<
+  const goalScorers = new Map<
     string,
     DashboardMatchPlayerOption & { goals: number }
   >();
+  const guestGoalScorers = new Map<string, { name: string; goals: number }>();
+  let opponentOwnGoals = 0;
 
   for (const event of goalEvents ?? []) {
+    const scorerKind = normalizeGoalScorerKind(event?.scorerKind, event);
+
+    if (scorerKind === "opponent_own_goal") {
+      opponentOwnGoals += 1;
+      continue;
+    }
+
+    if (scorerKind === "guest") {
+      const name = normalizeString(event?.guestName);
+
+      if (!name) {
+        continue;
+      }
+
+      const current = guestGoalScorers.get(name);
+
+      guestGoalScorers.set(name, {
+        name,
+        goals: (current?.goals ?? 0) + 1,
+      });
+      continue;
+    }
+
     if (!event?.player?.id) {
       continue;
     }
@@ -169,15 +199,19 @@ const adaptGoalScorers = (
       ...event.player,
       id: event.player.id,
     });
-    const current = scorers.get(player.id);
+    const current = goalScorers.get(player.id);
 
-    scorers.set(player.id, {
+    goalScorers.set(player.id, {
       ...(current ?? player),
       goals: (current?.goals ?? 0) + 1,
     });
   }
 
-  return [...scorers.values()];
+  return {
+    goalScorers: [...goalScorers.values()],
+    guestGoalScorers: [...guestGoalScorers.values()],
+    opponentOwnGoals,
+  };
 };
 
 const groupDashboardMatchDocuments = (
@@ -234,7 +268,7 @@ const adaptDashboardMatchPair = (
         Boolean(player?.id)
       )
       .map(adaptPlayerOption),
-    goalScorers: adaptGoalScorers(selectedDocument?.goalEvents),
+    ...adaptMatchGoalEvents(selectedDocument?.goalEvents),
   };
 
   return adaptDashboardMatchItem(rawItem);
@@ -331,20 +365,49 @@ const createGoalEventId = (): string => `events-${randomUUID()}`;
 
 const buildGoalEventDocuments = (
   matchId: string,
-  scorers: DashboardMatchMutationInput["goalScorers"] = []
+  input: Pick<
+    DashboardMatchMutationInput,
+    "goalScorers" | "guestGoalScorers" | "opponentOwnGoals"
+  >
 ) => {
   let order = 1;
+  const documents: Array<Record<string, unknown>> = [];
 
-  return scorers.flatMap((scorer) =>
-    Array.from({ length: scorer.goals }).map(() => ({
-      _id: createGoalEventId(),
-      _type: "events",
-      game: buildReference(matchId),
-      type: "goal",
+  const appendEvents = (
+    goals: number,
+    fields: Record<string, unknown>
+  ) => {
+    for (let index = 0; index < goals; index += 1) {
+      documents.push({
+        _id: createGoalEventId(),
+        _type: "events",
+        game: buildReference(matchId),
+        type: "goal",
+        order: order++,
+        ...fields,
+      });
+    }
+  };
+
+  for (const scorer of input.goalScorers) {
+    appendEvents(scorer.goals, {
+      scorerKind: "roster",
       player: buildReference(scorer.playerId),
-      order: order++,
-    }))
-  );
+    });
+  }
+
+  for (const scorer of input.guestGoalScorers) {
+    appendEvents(scorer.goals, {
+      scorerKind: "guest",
+      guestName: scorer.name,
+    });
+  }
+
+  appendEvents(input.opponentOwnGoals, {
+    scorerKind: "opponent_own_goal",
+  });
+
+  return documents;
 };
 
 const queryDashboardMatchGoalEvents = async ({
@@ -382,7 +445,11 @@ const buildGoalEventSyncMutations = async ({
   });
   const nextGoalEvents =
     input.state === "finalizado"
-      ? buildGoalEventDocuments(publicCanonicalId, input.goalScorers)
+      ? buildGoalEventDocuments(publicCanonicalId, {
+          goalScorers: input.goalScorers,
+          guestGoalScorers: input.guestGoalScorers,
+          opponentOwnGoals: input.opponentOwnGoals,
+        })
       : [];
 
   return [

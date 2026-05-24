@@ -1,3 +1,4 @@
+import { countsForPlayerGoalStats } from "../games";
 import type {
   Game,
   GoalEvent,
@@ -20,12 +21,18 @@ type PlayerInput = Partial<Player> & Pick<Player, "id">;
 type EventInput =
   | (Partial<MatchEvent> & {
       player?: { id?: string | null } | null;
+      scorerKind?: string | null;
+      scorerSide?: string | null;
+      scorerSource?: string | null;
     })
   | null;
 type GoalEventInput =
   | (Partial<GoalEvent> & {
       game?: { id?: string | null; date?: string | null } | null;
       player?: { id?: string | null } | null;
+      scorerKind?: string | null;
+      scorerSide?: string | null;
+      scorerSource?: string | null;
     })
   | null;
 type GameInput = Partial<Omit<Game, "events">> & {
@@ -72,7 +79,7 @@ const getGoalEventsFromGames = (
     .flatMap((game) => game.events || [])
     .filter(
       (event): event is NonNullable<EventInput> =>
-        event !== null && event.type === "goal" && Boolean(event.player?.id)
+        event !== null && event.type === "goal" && countsForPlayerGoalStats(event)
     );
 };
 
@@ -84,7 +91,7 @@ const getGoalEventsInYear = (
     (event): event is NonNullable<GoalEventInput> =>
       event !== null &&
       event.type === "goal" &&
-      Boolean(event.player?.id) &&
+      countsForPlayerGoalStats(event) &&
       isInYear(event.game?.date ?? undefined, year)
   );
 
@@ -177,7 +184,10 @@ export const getPlayerStats = (
     const matchGoalEvents = shouldUseGoalEvents
       ? []
       : (game.events || []).filter(
-          (event) => event?.type === "goal" && event?.player?.id === playerId
+          (event) =>
+            event?.type === "goal" &&
+            event?.player?.id === playerId &&
+            countsForPlayerGoalStats(event)
         );
     const matchGoals = matchGoalEvents.length;
     const playerIdsInGame = new Set(
@@ -190,7 +200,11 @@ export const getPlayerStats = (
       // Scorers necessarily played; this keeps existing goal data coherent while
       // older matches are backfilled with explicit appearance lists.
       (game.events || []).forEach((event) => {
-        if (event?.type === "goal" && event?.player?.id) {
+        if (
+          event?.type === "goal" &&
+          event?.player?.id &&
+          countsForPlayerGoalStats(event)
+        ) {
           playerIdsInGame.add(event.player.id);
         }
       });

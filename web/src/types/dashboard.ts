@@ -291,6 +291,11 @@ export type DashboardMatchGoalScorer = DashboardMatchPlayerOption & {
   goals: number;
 };
 
+export type DashboardMatchGuestGoalScorer = {
+  name: string;
+  goals: number;
+};
+
 export type DashboardMatchItem = {
   id: string;
   publishedId?: string | null;
@@ -315,6 +320,8 @@ export type DashboardMatchItem = {
   } | null;
   playedPlayers: DashboardMatchPlayedPlayer[];
   goalScorers: DashboardMatchGoalScorer[];
+  guestGoalScorers: DashboardMatchGuestGoalScorer[];
+  opponentOwnGoals: number;
 };
 
 export type DashboardMatchInput = {
@@ -331,6 +338,11 @@ export type DashboardMatchInput = {
     playerId: string;
     goals: string;
   }>;
+  guestGoalScorers: Array<{
+    name: string;
+    goals: string;
+  }>;
+  opponentOwnGoals: string;
 };
 
 export type DashboardMatchMutationInput = {
@@ -347,15 +359,33 @@ export type DashboardMatchMutationInput = {
     playerId: string;
     goals: number;
   }>;
+  guestGoalScorers: Array<{
+    name: string;
+    goals: number;
+  }>;
+  opponentOwnGoals: number;
 };
 
 export type DashboardMatchDraftMutationInput =
-  Partial<Omit<DashboardMatchMutationInput, "playedPlayerIds" | "goalScorers">> & {
+  Partial<
+    Omit<
+      DashboardMatchMutationInput,
+      | "playedPlayerIds"
+      | "goalScorers"
+      | "guestGoalScorers"
+      | "opponentOwnGoals"
+    >
+  > & {
     playedPlayerIds?: string[];
     goalScorers?: Array<{
       playerId: string;
       goals: number;
     }>;
+    guestGoalScorers?: Array<{
+      name: string;
+      goals: number;
+    }>;
+    opponentOwnGoals?: number;
   };
 
 export type DashboardTableTeamOption = {

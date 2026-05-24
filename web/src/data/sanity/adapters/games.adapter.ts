@@ -1,4 +1,7 @@
-import { normalizeGameState } from "../../../domain/games";
+import {
+  normalizeGameState,
+  normalizeGoalScorerKind,
+} from "../../../domain/games";
 import type { Game, MatchEvent, Player } from "../../../types/models";
 import {
   sanityEventSchema,
@@ -39,7 +42,9 @@ const adaptEvent = (event: unknown): MatchEvent | null => {
   return {
     id: validated._id,
     type: validated.type,
-    order: validated.order,
+    order: validated.order ?? undefined,
+    scorerKind: normalizeGoalScorerKind(validated.scorerKind, validated),
+    guestName: validated.guestName?.trim() || null,
     player: validated.player ? adaptPlayerRef(validated.player) : null,
   };
 };

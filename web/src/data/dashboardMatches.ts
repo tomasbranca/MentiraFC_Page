@@ -53,6 +53,15 @@ const dashboardMatchSchema = z.object({
       goals: z.number(),
     })
   ),
+  guestGoalScorers: z
+    .array(
+      z.object({
+        name: z.string(),
+        goals: z.number(),
+      })
+    )
+    .default([]),
+  opponentOwnGoals: z.number().int().min(0).default(0),
 });
 
 const dashboardMatchOptionsSchema = z.object({

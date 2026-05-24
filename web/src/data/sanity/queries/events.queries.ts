@@ -3,6 +3,10 @@ export const GOAL_EVENTS_QUERY = `
     _id,
     type,
     order,
+    scorerKind,
+    scorerSide,
+    scorerSource,
+    guestName,
     game->{
       _id,
       date
@@ -27,6 +31,10 @@ export const GOAL_EVENTS_BY_YEAR_QUERY = `
     _id,
     type,
     order,
+    scorerKind,
+    scorerSide,
+    scorerSource,
+    guestName,
     game->{
       _id,
       date

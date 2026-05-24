@@ -33,6 +33,10 @@ const GALLERY_GAME_PROJECTION = `
       _id,
       type,
       order,
+      scorerKind,
+      scorerSide,
+      scorerSource,
+      guestName,
       player->{
         _id,
         name,

@@ -230,8 +230,12 @@ Campos:
 |---|---|---:|---|
 | `game` | `reference -> games` | Si | Partido al que pertenece el evento. |
 | `type` | `string` | Si | Tipo de evento. Hoy solo existe `goal`. |
-| `player` | `reference -> players` | No | Jugador asociado al evento. |
+| `scorerKind` | `string` | Si | Clasificacion del gol a favor de Mentira FC: `roster` (plantel), `guest` (invitado al partido) u `opponent_own_goal` (gol en propia del rival). |
+| `player` | `reference -> players` | Condicional | Jugador del plantel cuando `scorerKind === "roster"`. |
+| `guestName` | `string` | Condicional | Nombre del invitado cuando `scorerKind === "guest"`. |
 | `order` | `number` | Si | Numero de gol en el partido. Minimo `1`. |
+
+Los eventos solo registran goles a favor de Mentira FC. Los goles del rival viven en `games.result.goalsAgainst` sin eventos asociados.
 
 Uso en web:
 
