@@ -165,6 +165,46 @@ describe("reactions api handlers", () => {
     );
   });
 
+  it("usa la misma API para reacciones de jugadores", async () => {
+    reactionMocks.setReaction.mockResolvedValueOnce({
+      targetType: "player",
+      targetId: "players-1",
+      counts: [{ emoji: "💜", count: 1 }],
+      currentUserReaction: "💜",
+    });
+
+    const response = await reactionsRoute.fetch(
+      new Request("https://mentirafc.vercel.app/api/reactions", {
+        method: "POST",
+        headers: {
+          authorization: "Bearer access-token",
+        },
+        body: JSON.stringify({
+          targetType: "player",
+          targetId: "players-1",
+          emoji: "💜",
+        }),
+      })
+    );
+
+    await expect(response.json()).resolves.toEqual({
+      data: {
+        targetType: "player",
+        targetId: "players-1",
+        counts: [{ emoji: "💜", count: 1 }],
+        currentUserReaction: "💜",
+      },
+    });
+    expect(reactionMocks.setReaction).toHaveBeenCalledWith(
+      {
+        targetType: "player",
+        targetId: "players-1",
+      },
+      "💜",
+      "access-token"
+    );
+  });
+
   it("quita la reaccion del usuario", async () => {
     const response = await reactionsRoute.fetch(
       new Request(

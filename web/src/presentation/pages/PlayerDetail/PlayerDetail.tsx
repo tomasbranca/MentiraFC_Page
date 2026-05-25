@@ -9,6 +9,7 @@ import RosterNavigation from "../../components/RosterNavigation/RosterNavigation
 import { buildRosterNavigationItems } from "../../components/RosterNavigation/rosterNavigation.utils";
 import StaffCard from "../../components/StaffCard/StaffCard";
 import Button from "../../components/Button/Button";
+import EmojiReactionBar from "../../components/EmojiReactionBar/EmojiReactionBar";
 
 import { getImageUrl } from "../../../data/imageService";
 import { usePlayerDetail } from "./hooks/usePlayerDetail";
@@ -157,6 +158,15 @@ const PlayerDetail = () => {
                   </div>
                 </div>
               )}
+
+              <EmojiReactionBar
+                className="mb-4"
+                source="PlayerDetail"
+                target={{
+                  targetType: "player",
+                  targetId: player.id,
+                }}
+              />
 
               <span className="text-4xl sm:text-5xl lg:text-6xl font-bold opacity-30">
                 #{player.number}
