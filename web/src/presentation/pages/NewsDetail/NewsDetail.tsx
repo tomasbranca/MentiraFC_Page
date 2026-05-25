@@ -5,6 +5,7 @@ import { getImageUrl } from "../../../data/imageService";
 import { lazyWithReload } from "../../../lib/lazyWithReload";
 import ErrorFallback from "../../components/errors/ErrorFallback";
 import Loader from "../../components/Loader/Loader";
+import EmojiReactionBar from "../../components/EmojiReactionBar/EmojiReactionBar";
 import NewsCard from "../../components/NewsCard/NewsCard";
 import ProgressiveMedia from "../../components/ProgressiveMedia/ProgressiveMedia";
 import { formatDate } from "../../utils/date.utils";
@@ -82,6 +83,15 @@ const NewsDetail = () => {
           <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold leading-tight text-white">
             {newsItem.title}
           </h1>
+
+          <EmojiReactionBar
+            className="mt-4"
+            source="NewsDetail"
+            target={{
+              targetType: "news",
+              targetId: newsItem.id,
+            }}
+          />
         </div>
       </header>
 
@@ -95,6 +105,7 @@ const NewsDetail = () => {
             {newsItem.description}
           </p>
         )}
+
       </section>
 
       <section className="max-w-3xl mx-auto px-4 md:px-6 mt-8 md:mt-10 mb-16 md:mb-20">
