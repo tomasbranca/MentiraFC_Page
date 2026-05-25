@@ -26,6 +26,10 @@ export const queryKeys = {
     bySlug: (slug: string) => ["news", "slug", slug] as const,
     suggested: (slug: string) => ["news", "suggested", slug] as const,
   },
+  reactions: {
+    byTarget: (targetType: string, targetId: string) =>
+      ["reactions", targetType, targetId] as const,
+  },
   dashboard: {
     news: {
       all: ["dashboard", "news"] as const,

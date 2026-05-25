@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   DASHBOARD_API_RESOURCES,
+  PUBLIC_API_ROUTES,
   createSentryReleaseConfig,
 } from "./vite.config.js";
 
@@ -17,6 +18,10 @@ describe("dashboard api dev middleware", () => {
       "teams",
       "tournaments",
     ]);
+  });
+
+  it("registra las APIs publicas locales", () => {
+    expect([...PUBLIC_API_ROUTES].sort()).toEqual(["reactions"]);
   });
 
   it("no asocia commits de Sentry salvo que se habilite explicitamente", () => {
