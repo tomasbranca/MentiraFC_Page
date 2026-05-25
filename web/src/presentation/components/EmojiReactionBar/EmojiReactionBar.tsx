@@ -33,10 +33,6 @@ const pickerProps = {
   height: 340,
 } satisfies Partial<EmojiPickerProps>;
 
-const getTotalReactionCount = (
-  counts: Array<{ count: number }> | undefined
-) => counts?.reduce((total, item) => total + item.count, 0) ?? 0;
-
 const EmojiReactionBar = ({
   target,
   source,
@@ -51,7 +47,6 @@ const EmojiReactionBar = ({
   const reactionState = reactionQuery.data;
   const currentReaction = reactionState?.currentUserReaction ?? null;
   const visibleCounts = reactionState?.counts.slice(0, 8) ?? [];
-  const totalReactions = getTotalReactionCount(reactionState?.counts);
   const isMutating =
     setReactionMutation.isPending || removeReactionMutation.isPending;
   const mutationError =
@@ -131,7 +126,7 @@ const EmojiReactionBar = ({
             }}
             className="inline-flex min-h-7 items-center rounded-full border border-white/10 bg-black/20 px-2.5 text-xs font-semibold leading-none text-violet-100/75 backdrop-blur transition hover:border-violet-400/60 hover:bg-violet-950/70 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {currentReaction ? "＋" : totalReactions > 0 ? "＋" : "🙂"}
+            +
           </button>
         </div>
       </div>
