@@ -1,4 +1,4 @@
-import { readdirSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { dirname, join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
@@ -40,5 +40,18 @@ describe("api function budget", () => {
     expect(routeFiles).toContain(`reactions${sep}index.ts`);
     expect(routeFiles).toContain(`comments${sep}index.ts`);
     expect(routeFiles.length).toBeLessThanOrEqual(12);
+  });
+
+  it("redirige subrutas de comentarios a la Function catch-all", () => {
+    const vercelConfig = JSON.parse(
+      readFileSync(join(apiDir, "..", "vercel.json"), "utf8")
+    ) as {
+      rewrites?: Array<{ source: string; destination: string }>;
+    };
+
+    expect(vercelConfig.rewrites).toContainEqual({
+      source: "/api/comments/:path*",
+      destination: "/api/comments/[...path]",
+    });
   });
 });

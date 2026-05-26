@@ -29,6 +29,11 @@ const parseJsonBody = async <T>(request: Request): Promise<T | null> => {
   }
 };
 
+const getTrimmedSearchParam = (url: URL, key: string): string | null => {
+  const value = url.searchParams.get(key)?.trim();
+  return value || null;
+};
+
 const getCommentIdFromPath = (pathname: string): string | null => {
   const segments = pathname.split("/").filter(Boolean);
   const commentsIndex = segments.lastIndexOf("comments");
@@ -46,6 +51,9 @@ const getCommentIdFromPath = (pathname: string): string | null => {
   return nextSegment;
 };
 
+const getCommentIdFromRequest = (url: URL, pathname: string): string | null =>
+  getTrimmedSearchParam(url, "commentId") ?? getCommentIdFromPath(pathname);
+
 const getReportIdFromPath = (pathname: string): string | null => {
   const segments = pathname.split("/").filter(Boolean);
   const reportsIndex = segments.lastIndexOf("reports");
@@ -57,13 +65,23 @@ const getReportIdFromPath = (pathname: string): string | null => {
   return segments[reportsIndex + 1]?.trim() || null;
 };
 
+const getReportIdFromRequest = (url: URL, pathname: string): string | null =>
+  getTrimmedSearchParam(url, "reportId") ?? getReportIdFromPath(pathname);
+
+const isModerationRequest = (url: URL, pathname: string): boolean =>
+  pathname.endsWith("/comments/moderation") ||
+  url.searchParams.get("view") === "moderation";
+
+const isCommentReportRequest = (url: URL, pathname: string): boolean =>
+  pathname.endsWith("/report") || url.searchParams.get("action") === "report";
+
 const commentsHandler = async (request: Request): Promise<Response> => {
   try {
     const token = getBearerToken(request);
     const url = new URL(request.url);
     const pathname = url.pathname;
 
-    if (pathname.endsWith("/comments/moderation")) {
+    if (isModerationRequest(url, pathname)) {
       if (request.method !== "GET") {
         return errorJson("Metodo no permitido.", 405);
       }
@@ -86,9 +104,9 @@ const commentsHandler = async (request: Request): Promise<Response> => {
       );
     }
 
-    const reportId = getReportIdFromPath(pathname);
+    const reportId = getReportIdFromRequest(url, pathname);
 
-    if (reportId && pathname.includes("/comments/reports/")) {
+    if (reportId) {
       if (request.method !== "PATCH") {
         return errorJson("Metodo no permitido.", 405);
       }
@@ -116,9 +134,13 @@ const commentsHandler = async (request: Request): Promise<Response> => {
       return json({ ok: true });
     }
 
-    const commentId = getCommentIdFromPath(pathname);
+    const commentId = getCommentIdFromRequest(url, pathname);
 
-    if (commentId && pathname.endsWith("/report")) {
+    if (isCommentReportRequest(url, pathname)) {
+      if (!commentId) {
+        return errorJson("Falta un comentario valido.", 400);
+      }
+
       if (request.method !== "POST") {
         return errorJson("Metodo no permitido.", 405);
       }

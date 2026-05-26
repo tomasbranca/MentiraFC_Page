@@ -130,6 +130,29 @@ describe("comments api handlers", () => {
     expect(commentMocks.updateOwnNewsComment).toHaveBeenCalled();
   });
 
+  it("actualiza comentario propio desde la ruta base con query params", async () => {
+    const response = await commentsRoute.fetch(
+      new Request(
+        "https://mentirafc.vercel.app/api/comments?commentId=comment-1",
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: "Bearer token",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ body: "Editado" }),
+        }
+      )
+    );
+
+    expect(response.status).toBe(200);
+    expect(commentMocks.updateOwnNewsComment).toHaveBeenCalledWith({
+      commentId: "comment-1",
+      body: "Editado",
+      token: "token",
+    });
+  });
+
   it("borra comentario como moderador", async () => {
     const response = await commentsRoute.fetch(
       new Request(
@@ -143,6 +166,24 @@ describe("comments api handlers", () => {
 
     expect(response.status).toBe(200);
     expect(commentMocks.deleteNewsCommentAsModerator).toHaveBeenCalled();
+  });
+
+  it("borra comentario como moderador desde la ruta base con query params", async () => {
+    const response = await commentsRoute.fetch(
+      new Request(
+        "https://mentirafc.vercel.app/api/comments?commentId=comment-1&as=moderator",
+        {
+          method: "DELETE",
+          headers: { Authorization: "Bearer token" },
+        }
+      )
+    );
+
+    expect(response.status).toBe(200);
+    expect(commentMocks.deleteNewsCommentAsModerator).toHaveBeenCalledWith({
+      commentId: "comment-1",
+      token: "token",
+    });
   });
 
   it("crea reporte de comentario", async () => {
@@ -161,6 +202,30 @@ describe("comments api handlers", () => {
     expect(commentMocks.createCommentReport).toHaveBeenCalled();
   });
 
+  it("crea reporte de comentario desde la ruta base con query params", async () => {
+    const response = await commentsRoute.fetch(
+      new Request(
+        "https://mentirafc.vercel.app/api/comments?commentId=comment-1&action=report",
+        {
+          method: "POST",
+          headers: {
+            Authorization: "Bearer token",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ reason: "spam" }),
+        }
+      )
+    );
+
+    expect(response.status).toBe(201);
+    expect(commentMocks.createCommentReport).toHaveBeenCalledWith({
+      commentId: "comment-1",
+      reason: "spam",
+      details: null,
+      token: "token",
+    });
+  });
+
   it("lista cola de moderacion", async () => {
     const response = await commentsRoute.fetch(
       new Request("https://mentirafc.vercel.app/api/comments/moderation", {
@@ -170,6 +235,24 @@ describe("comments api handlers", () => {
 
     expect(response.status).toBe(200);
     expect(commentMocks.listCommentModeration).toHaveBeenCalled();
+  });
+
+  it("lista cola de moderacion desde la ruta base con query params", async () => {
+    const response = await commentsRoute.fetch(
+      new Request(
+        "https://mentirafc.vercel.app/api/comments?view=moderation&limit=10",
+        {
+          headers: { Authorization: "Bearer token" },
+        }
+      )
+    );
+
+    expect(response.status).toBe(200);
+    expect(commentMocks.listCommentModeration).toHaveBeenCalledWith({
+      limit: 10,
+      cursor: null,
+      token: "token",
+    });
   });
 
   it("actualiza estado de reporte", async () => {
@@ -189,5 +272,28 @@ describe("comments api handlers", () => {
 
     expect(response.status).toBe(200);
     expect(commentMocks.updateCommentReportStatus).toHaveBeenCalled();
+  });
+
+  it("actualiza estado de reporte desde la ruta base con query params", async () => {
+    const response = await commentsRoute.fetch(
+      new Request(
+        "https://mentirafc.vercel.app/api/comments?reportId=report-1",
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: "Bearer token",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ status: "dismissed" }),
+        }
+      )
+    );
+
+    expect(response.status).toBe(200);
+    expect(commentMocks.updateCommentReportStatus).toHaveBeenCalledWith({
+      reportId: "report-1",
+      status: "dismissed",
+      token: "token",
+    });
   });
 });
