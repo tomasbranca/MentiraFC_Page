@@ -34,12 +34,14 @@ describe("api function budget", () => {
       routeFiles.every(
         (filePath) =>
           filePath.endsWith(`${sep}index.ts`) ||
+          filePath.endsWith(`${sep}[resource].ts`) ||
           filePath.endsWith(`${sep}[...path].ts`)
       )
     ).toBe(true);
+    expect(routeFiles).toContain(`dashboard${sep}[resource].ts`);
     expect(routeFiles).toContain(`reactions${sep}index.ts`);
     expect(routeFiles).toContain(`comments${sep}index.ts`);
-    expect(routeFiles.length).toBeLessThanOrEqual(12);
+    expect(routeFiles).toHaveLength(4);
   });
 
   it("redirige subrutas de comentarios a la Function catch-all", () => {

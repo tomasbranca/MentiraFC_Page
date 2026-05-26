@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import dashboardOrganizationRoute from "./index.js";
+import dashboardOrganizationRoute from "./_handler.js";
 
 describe("dashboard organizations api handlers", () => {
   it("exporta handlers compatibles con el runtime Web de Vercel", () => {

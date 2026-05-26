@@ -40,17 +40,13 @@ const getApiSourceFiles = (directory: string): string[] =>
   });
 
 describe("dashboard api function budget", () => {
-  it("mantiene una sola Function por recurso para el plan Hobby de Vercel", () => {
+  it("centraliza el dashboard en una sola Function para el plan Hobby de Vercel", () => {
     const routeFiles = getRouteFiles(dashboardApiDir);
 
     expect(routeFiles.some((filePath) => filePath.endsWith(`${sep}[id].ts`))).toBe(
       false
     );
-    expect(routeFiles.every((filePath) => filePath.endsWith(`${sep}index.ts`))).toBe(
-      true
-    );
-    expect(routeFiles).toHaveLength(8);
-    expect(routeFiles.length).toBeLessThanOrEqual(12);
+    expect(routeFiles).toEqual(["[resource].ts"]);
   });
 
   it("evita imports de directorios que rompen el runtime ESM de Vercel", () => {
