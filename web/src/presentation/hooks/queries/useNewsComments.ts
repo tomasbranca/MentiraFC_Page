@@ -84,9 +84,17 @@ export const useModeratorDeleteNewsCommentMutation = () => {
   return useMutation({
     mutationFn: (commentId: string) => deleteNewsCommentAsModerator(commentId),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.comments.moderation,
-      });
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.comments.moderation,
+        }),
+        queryClient.invalidateQueries({
+          predicate: (query) =>
+            Array.isArray(query.queryKey) &&
+            query.queryKey[0] === "comments" &&
+            query.queryKey[1] === "byNews",
+        }),
+      ]);
     },
   });
 };
