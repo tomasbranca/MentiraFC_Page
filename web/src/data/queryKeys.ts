@@ -30,6 +30,11 @@ export const queryKeys = {
     byTarget: (targetType: string, targetId: string) =>
       ["reactions", targetType, targetId] as const,
   },
+  comments: {
+    byNews: (newsId: string, sort: string) =>
+      ["comments", "news", newsId, sort] as const,
+    moderation: ["comments", "moderation"] as const,
+  },
   dashboard: {
     news: {
       all: ["dashboard", "news"] as const,

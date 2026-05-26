@@ -46,7 +46,7 @@ const dashboardConfirm = Swal.mixin({
   focusCancel: true,
 });
 
-export const confirmDashboardAction = async ({
+export const confirmAppAction = async ({
   title,
   text,
   confirmText,
@@ -66,3 +66,6 @@ export const confirmDashboardAction = async ({
 
   return result.isConfirmed;
 };
+
+/** @deprecated Use confirmAppAction */
+export const confirmDashboardAction = confirmAppAction;

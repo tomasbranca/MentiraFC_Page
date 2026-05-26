@@ -23,6 +23,7 @@ import { ROUTES } from "../../../shared/routing";
 import Button from "../../components/Button/Button";
 import { SkeletonBlock } from "../../components/Skeletons/SkeletonBlock";
 import { useAuth } from "../../context/useAuth";
+import { getProfileInitials } from "../../utils/profile.utils";
 import {
   type AccountActionId,
   ROLE_LABELS,
@@ -55,14 +56,6 @@ const ACTION_META: Record<AccountActionId, AccountActionMeta> = {
     description: "Salir de esta cuenta en este dispositivo.",
     icon: FiLogOut,
   },
-};
-
-const getInitials = (firstName: string, lastName: string): string => {
-  const firstInitial = firstName.trim().charAt(0);
-  const lastInitial = lastName.trim().charAt(0);
-  const initials = `${firstInitial}${lastInitial}`.trim();
-
-  return initials ? initials.toUpperCase() : "MC";
 };
 
 const Account = () => {
@@ -224,7 +217,7 @@ const Account = () => {
 
           <div className="mt-5 flex items-center gap-4 border-y border-violet-100/10 py-5">
             <div className="flex h-14 w-14 shrink-0 items-center justify-center border border-violet-200/25 bg-violet-500/15 text-lg font-black text-violet-50">
-              {getInitials(account.firstName, account.lastName)}
+              {getProfileInitials(account.firstName, account.lastName, "MC")}
             </div>
             <div className="min-w-0">
               <h2 className="break-words text-xl font-black leading-tight text-white">

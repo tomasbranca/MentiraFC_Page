@@ -44,7 +44,12 @@ export const DASHBOARD_API_RESOURCES = new Set([
   "staff",
 ]);
 
-export const PUBLIC_API_ROUTES = new Set(["reactions"]);
+export const PUBLIC_API_ROUTES = new Set(["reactions", "comments"]);
+
+const PUBLIC_API_ERROR_MESSAGES = {
+  reactions: "No pudimos ejecutar la API local de reacciones.",
+  comments: "No pudimos ejecutar la API local de comentarios.",
+};
 
 export const createSentryReleaseConfig = ({
   name,
@@ -131,67 +136,63 @@ const createDashboardApiDevPlugin = (env) => ({
       }
     });
 
-    server.middlewares.use("/api/reactions", async (request, response) => {
-      try {
-        if (!PUBLIC_API_ROUTES.has("reactions")) {
-          response.statusCode = 404;
+    for (const routeName of PUBLIC_API_ROUTES) {
+      server.middlewares.use(`/api/${routeName}`, async (request, response) => {
+        try {
+          const relativePath = request.url ?? "/";
+          const normalizedRelativePath = relativePath.startsWith("/")
+            ? relativePath
+            : `/${relativePath}`;
+          const requestUrl = new URL(
+            `/api/${routeName}${normalizedRelativePath}`,
+            "http://localhost"
+          );
+          const routeModule = await server.ssrLoadModule(
+            `/api/${routeName}/index.ts`
+          );
+          const routeHandler =
+            routeModule.default?.fetch ?? routeModule.default;
+
+          if (typeof routeHandler !== "function") {
+            throw new Error(`Invalid ${routeName} API route handler.`);
+          }
+
+          const body = await createNodeRequestBody(request);
+          const headers = new Headers();
+
+          Object.entries(request.headers).forEach(([key, value]) => {
+            if (Array.isArray(value)) {
+              value.forEach((item) => headers.append(key, item));
+              return;
+            }
+
+            if (typeof value === "string") {
+              headers.set(key, value);
+            }
+          });
+
+          const webRequest = new Request(requestUrl, {
+            method: request.method,
+            headers,
+            body,
+          });
+          const webResponse = await routeHandler(webRequest);
+
+          await writeWebResponse(webResponse, response);
+        } catch (error) {
+          console.error(`[vite] ${routeName} API dev error:`, error);
+          response.statusCode = 500;
           response.setHeader("Content-Type", "application/json");
           response.end(
             JSON.stringify({
-              error: "API route not found.",
+              error:
+                PUBLIC_API_ERROR_MESSAGES[routeName] ??
+                "No pudimos ejecutar la API local.",
             })
           );
-          return;
         }
-
-        const relativePath = request.url ?? "/";
-        const normalizedRelativePath = relativePath.startsWith("/")
-          ? relativePath
-          : `/${relativePath}`;
-        const requestUrl = new URL(
-          `/api/reactions${normalizedRelativePath}`,
-          "http://localhost"
-        );
-        const routeModule = await server.ssrLoadModule("/api/reactions/index.ts");
-        const routeHandler =
-          routeModule.default?.fetch ?? routeModule.default;
-
-        if (typeof routeHandler !== "function") {
-          throw new Error("Invalid reactions API route handler.");
-        }
-
-        const body = await createNodeRequestBody(request);
-        const headers = new Headers();
-
-        Object.entries(request.headers).forEach(([key, value]) => {
-          if (Array.isArray(value)) {
-            value.forEach((item) => headers.append(key, item));
-            return;
-          }
-
-          if (typeof value === "string") {
-            headers.set(key, value);
-          }
-        });
-
-        const webRequest = new Request(requestUrl, {
-          method: request.method,
-          headers,
-          body,
-        });
-        const webResponse = await routeHandler(webRequest);
-
-        await writeWebResponse(webResponse, response);
-      } catch {
-        response.statusCode = 500;
-        response.setHeader("Content-Type", "application/json");
-        response.end(
-          JSON.stringify({
-            error: "No pudimos ejecutar la API local de reacciones.",
-          })
-        );
-      }
-    });
+      });
+    }
   },
 });
 

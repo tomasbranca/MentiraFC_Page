@@ -30,10 +30,15 @@ describe("api function budget", () => {
   it("mantiene el proyecto bajo el limite Hobby de Vercel", () => {
     const routeFiles = getRouteFiles(apiDir);
 
-    expect(routeFiles.every((filePath) => filePath.endsWith(`${sep}index.ts`))).toBe(
-      true
-    );
+    expect(
+      routeFiles.every(
+        (filePath) =>
+          filePath.endsWith(`${sep}index.ts`) ||
+          filePath.endsWith(`${sep}[...path].ts`)
+      )
+    ).toBe(true);
     expect(routeFiles).toContain(`reactions${sep}index.ts`);
+    expect(routeFiles).toContain(`comments${sep}index.ts`);
     expect(routeFiles.length).toBeLessThanOrEqual(12);
   });
 });

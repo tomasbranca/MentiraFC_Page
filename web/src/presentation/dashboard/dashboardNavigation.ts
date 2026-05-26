@@ -95,6 +95,21 @@ export const getDashboardNavigationContext = (
   pathname: string
 ): DashboardNavigationContext => {
   const normalizedPathname = normalizeDashboardPathname(pathname);
+
+  if (normalizedPathname === ROUTES.DASHBOARD_COMMENTS_MODERATION) {
+    return {
+      actionLabel: "Cola de reportes",
+      breadcrumbs: [
+        { label: "Dashboard", route: ROUTES.DASHBOARD },
+        { label: "Moderacion de comentarios" },
+      ],
+      currentSection: null,
+      isFormRoute: false,
+      listRoute: ROUTES.DASHBOARD_COMMENTS_MODERATION,
+      title: "Moderacion",
+    };
+  }
+
   const currentSection =
     DASHBOARD_SECTIONS.find(
       (section) =>

@@ -21,7 +21,7 @@ describe("dashboard api dev middleware", () => {
   });
 
   it("registra las APIs publicas locales", () => {
-    expect([...PUBLIC_API_ROUTES].sort()).toEqual(["reactions"]);
+    expect([...PUBLIC_API_ROUTES].sort()).toEqual(["comments", "reactions"]);
   });
 
   it("no asocia commits de Sentry salvo que se habilite explicitamente", () => {

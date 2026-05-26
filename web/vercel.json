@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/api/comments/:path*",
+      "destination": "/api/comments/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

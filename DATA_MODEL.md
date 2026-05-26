@@ -470,7 +470,7 @@ Estas relaciones y modelos no existen hoy en Sanity. Quedan documentados como pe
 | `players` | Agregar atributos, mapa de posiciones, redes sociales y premios internos. | Enriquecer el perfil publico del jugador. |
 | `players` / `games` | Calcular partidos jugados desde la convocatoria del partido. | Evitar cargar partidos jugados manualmente y usar el partido como fuente real. |
 | `news` | Relacionar noticias con `players`, `staff`, `games`, `tournaments`, etc. | Permitir contenido relacionado y contexto deportivo dentro de cada noticia. |
-| `news` / `usuarios` | Agregar votaciones y comentarios. | Habilitar participacion de usuarios en el sitio. |
+| `news` / `usuarios` | Votaciones publicas (reacciones ya en Supabase). Comentarios implementados en Supabase (ver abajo). | Habilitar participacion de usuarios en el sitio. |
 | `staff` | Agregar redes sociales. | Enriquecer el perfil publico del staff. |
 | `games` | Agregar convocatoria al partido. | Permite mostrar convocados y contabilizar partidos jugados por jugador en el año. |
 | `events` | Agregar asistencia en eventos de gol (`assist -> players`). | Permite registrar quien asistio y calcular estadisticas de asistencias. |
@@ -503,6 +503,23 @@ La capa de dominio calcula datos derivados:
 - Partidos jugados de filas manuales: `wins + draws + losses`.
 - Diferencia de gol: `goalsFor - goalsAgainst`.
 - Posicion de tabla, movimiento contra la fecha anterior y tipo de premio segun `primaryPrizeSlots` y `secondaryPrizeSlots`.
+
+## Supabase UGC (comentarios en noticias)
+
+Los comentarios **no** viven en Sanity. Se almacenan en Postgres (Supabase) y referencian noticias publicadas por `news_id` (= Sanity `_id` publicado, sin prefijo `drafts.`).
+
+| Tabla | Proposito | RLS / acceso |
+|---|---|---|
+| `public.news_comments` | Cuerpo del comentario, autor, soft-delete (`deletion_kind`: `self` \| `moderator`) | Lectura publica de filas no borradas; escritura `authenticated` activo |
+| `public.comment_reports` | Reportes por usuario (`reason`, `status`: `open` \| `dismissed` \| `actioned`) | Insert propio; lectura propia o moderador+ |
+
+Funciones helper SQL: `is_active_user()`, `user_has_permission(text)`, `is_moderator_or_above()`.
+
+API Vercel (`/api/comments`, `/api/comments/:id`, reportes y moderacion) valida noticia en Sanity y permisos app; RLS sigue siendo la barrera final.
+
+Migracion versionada: `supabase/migrations/20260525120000_news_comments.sql`.
+
+Modelos web: `web/src/types/comments.ts`, cliente `web/src/data/comments.ts`.
 
 ## Observaciones tecnicas
 
