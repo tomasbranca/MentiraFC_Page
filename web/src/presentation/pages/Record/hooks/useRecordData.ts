@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { getAllGames } from "../../../../data/games";
 import { queryKeys } from "../../../../data/queryKeys";
+import { SANITY_FRESHNESS } from "../../../../data/sanity/freshness";
 import { reportError } from "../../../../lib/errors/errorLogger";
 import { shouldLoadRecordInitially } from "../../../hooks/loading/loadingState.utils";
 import { useInitialData } from "../../../context/useInitialData";
@@ -35,16 +36,18 @@ export const useRecordData = () => {
         throw error;
       }
     },
-    enabled: needsInitialFetch,
+    enabled: true,
     initialData: needsInitialFetch ? undefined : initialGames,
     placeholderData: needsInitialFetch ? initialGames : undefined,
-    refetchOnMount: needsInitialFetch ? "always" : false,
+    refetchInterval: SANITY_FRESHNESS.liveStats.refetchInterval,
+    refetchOnMount: "always",
+    staleTime: SANITY_FRESHNESS.liveStats.staleTime,
   });
 
   return {
     games: gamesQuery.data ?? [],
     loading: needsInitialFetch && gamesQuery.isFetching,
-    error: Boolean(gamesQuery.error),
+    error: Boolean(gamesQuery.error && typeof gamesQuery.data === "undefined"),
     refetch: async () => {
       await gamesQuery.refetch();
     },

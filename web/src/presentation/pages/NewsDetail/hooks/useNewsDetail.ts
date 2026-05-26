@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { getNewsBySlug, getSuggestedNews } from "../../../../data/news";
 import { queryKeys } from "../../../../data/queryKeys";
+import { SANITY_FRESHNESS } from "../../../../data/sanity/freshness";
 import { reportError } from "../../../../lib/errors/errorLogger";
 import { useInitialData } from "../../../context/useInitialData";
 import { selectSuggestedNews } from "../newsDetail.utils";
@@ -17,7 +18,11 @@ export const useNewsDetail = (slug: string | undefined) => {
 
   const newsItemQuery = useQuery({
     queryKey: queryKeys.news.bySlug(slug ?? ""),
-    enabled: Boolean(slug) && !canUseInitialData,
+    enabled: Boolean(slug),
+    initialData: canUseInitialData ? detailFromInitialData.newsItem : undefined,
+    placeholderData: canUseInitialData
+      ? detailFromInitialData.newsItem
+      : undefined,
     queryFn: async () => {
       try {
         return await getNewsBySlug(slug ?? "");
@@ -30,11 +35,20 @@ export const useNewsDetail = (slug: string | undefined) => {
         throw error;
       }
     },
+    refetchInterval: SANITY_FRESHNESS.news.refetchInterval,
+    refetchOnMount: "always",
+    staleTime: SANITY_FRESHNESS.news.staleTime,
   });
 
   const suggestedQuery = useQuery({
     queryKey: queryKeys.news.suggested(slug ?? ""),
-    enabled: Boolean(slug) && !canUseInitialData,
+    enabled: Boolean(slug),
+    initialData: canUseInitialData
+      ? detailFromInitialData.suggestedNews
+      : undefined,
+    placeholderData: canUseInitialData
+      ? detailFromInitialData.suggestedNews
+      : undefined,
     queryFn: async () => {
       try {
         return await getSuggestedNews(slug ?? "");
@@ -47,24 +61,23 @@ export const useNewsDetail = (slug: string | undefined) => {
         throw error;
       }
     },
+    refetchOnMount: true,
+    staleTime: SANITY_FRESHNESS.static.staleTime,
   });
 
   const suggested = useMemo(() => {
-    const suggestedSource = canUseInitialData
-      ? detailFromInitialData.suggestedNews
-      : suggestedQuery.data ?? [];
+    const suggestedSource = suggestedQuery.data ?? [];
     const selected = selectSuggestedNews(suggestedSource);
     return selected.length >= 3 ? selected : [];
-  }, [canUseInitialData, detailFromInitialData, suggestedQuery.data]);
+  }, [suggestedQuery.data]);
 
   const loading =
-    !canUseInitialData && (newsItemQuery.isLoading || suggestedQuery.isLoading);
-  const error = !canUseInitialData && (newsItemQuery.isError || suggestedQuery.isError);
+    newsItemQuery.isLoading && typeof newsItemQuery.data === "undefined";
+  const error =
+    newsItemQuery.isError && typeof newsItemQuery.data === "undefined";
 
   return {
-    newsItem: canUseInitialData
-      ? detailFromInitialData.newsItem
-      : newsItemQuery.data ?? null,
+    newsItem: newsItemQuery.data ?? null,
     suggested,
     loading,
     error,

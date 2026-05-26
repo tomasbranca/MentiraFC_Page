@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { getStaffMemberBySlug } from "../../../../data/staff";
 import { queryKeys } from "../../../../data/queryKeys";
+import { SANITY_FRESHNESS } from "../../../../data/sanity/freshness";
 import { reportError } from "../../../../lib/errors/errorLogger";
 import { useInitialData } from "../../../context/useInitialData";
 import type { StaffMember } from "../../../../types/models";
@@ -49,16 +50,18 @@ export const useStaffDetail = (slug: string | undefined) => {
         throw error;
       }
     },
-    enabled: shouldLoadStaffMember,
+    enabled: Boolean(slug),
     initialData: shouldLoadStaffMember ? undefined : initialStaffMember,
     placeholderData: shouldLoadStaffMember ? initialStaffMember : undefined,
-    refetchOnMount: shouldLoadStaffMember ? "always" : false,
+    refetchInterval: SANITY_FRESHNESS.semiDynamic.refetchInterval,
+    refetchOnMount: true,
+    staleTime: SANITY_FRESHNESS.semiDynamic.staleTime,
   });
 
   return {
     staffMember: staffQuery.data ?? null,
     loading: shouldLoadStaffMember && staffQuery.isFetching,
-    error: Boolean(staffQuery.error),
+    error: Boolean(staffQuery.error && typeof staffQuery.data === "undefined"),
     refetch: async () => {
       await staffQuery.refetch();
     },

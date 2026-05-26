@@ -8,6 +8,7 @@ import {
   fetchDashboardPlayers,
 } from "../../../data/dashboardPlayers";
 import { queryKeys } from "../../../data/queryKeys";
+import { SANITY_FRESHNESS } from "../../../data/sanity/freshness";
 import { reportError } from "../../../lib/errors/errorLogger";
 import type { DashboardPlayerItem } from "../../../types/dashboard";
 
@@ -25,6 +26,7 @@ export const dashboardPlayersListQueryOptions = () =>
         throw error;
       }
     },
+    ...SANITY_FRESHNESS.dashboard,
   });
 
 export const dashboardPlayerDetailQueryOptions = (id: string) =>
@@ -42,6 +44,7 @@ export const dashboardPlayerDetailQueryOptions = (id: string) =>
         throw error;
       }
     },
+    ...SANITY_FRESHNESS.dashboard,
   });
 
 export const invalidateDashboardPlayersList = async (
@@ -63,6 +66,7 @@ export const invalidateDashboardPlayerPublishDependencies = async (
     }),
     queryClient.invalidateQueries({ queryKey: queryKeys.games.all }),
     queryClient.invalidateQueries({ queryKey: queryKeys.events.goals() }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.home.deferred }),
   ]);
 };
 

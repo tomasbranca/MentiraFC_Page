@@ -1,3 +1,8 @@
+import {
+  resolveSanityReadClient,
+  type SanityReadClient,
+} from "./client";
+
 type SanityQueryResponse<T> = {
   result?: T;
   error?: {
@@ -8,13 +13,16 @@ type SanityQueryResponse<T> = {
 
 type SanityQueryOptions = {
   params?: Record<string, string | number | boolean>;
+  client?: SanityReadClient;
   useCdn?: boolean;
 };
 
 const getSanityQueryUrl = (
   query: string,
-  { params, useCdn = true }: SanityQueryOptions = {}
+  options: SanityQueryOptions = {}
 ): string => {
+  const { params } = options;
+  const client = resolveSanityReadClient(options);
   const projectId = import.meta.env.VITE_SANITY_PROJECT_ID;
   const dataset = import.meta.env.VITE_SANITY_DATASET;
   const apiVersion = import.meta.env.VITE_SANITY_API_VERSION;
@@ -25,7 +33,7 @@ const getSanityQueryUrl = (
 
   const url = new URL(
     `https://${projectId}.${
-      useCdn ? "apicdn" : "api"
+      client.useCdn ? "apicdn" : "api"
     }.sanity.io/v${apiVersion}/data/query/${dataset}`
   );
 
@@ -45,7 +53,10 @@ export const fetchSanityQuery = async <T>(
   query: string,
   options?: SanityQueryOptions
 ): Promise<T> => {
-  const response = await fetch(getSanityQueryUrl(query, options));
+  const client = resolveSanityReadClient(options);
+  const response = await fetch(getSanityQueryUrl(query, options), {
+    cache: client.requestCache,
+  });
   const payload = (await response.json()) as SanityQueryResponse<T>;
 
   if (!response.ok || payload.error) {

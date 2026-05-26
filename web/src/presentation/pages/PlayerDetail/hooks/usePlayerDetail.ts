@@ -5,6 +5,7 @@ import { getAllGames } from "../../../../data/games";
 import { getGoalEvents } from "../../../../data/events";
 import { getPlayerBySlug } from "../../../../data/players";
 import { queryKeys } from "../../../../data/queryKeys";
+import { SANITY_FRESHNESS } from "../../../../data/sanity/freshness";
 import { getPlayerStats } from "../../../../domain/stats";
 import { reportError } from "../../../../lib/errors/errorLogger";
 import { useInitialData } from "../../../context/useInitialData";
@@ -65,16 +66,6 @@ export const usePlayerDetail = (slug: string | undefined) => {
     detailFromInitialData?.player === null;
   const shouldLoadPlayer =
     Boolean(slug) && !detailFromInitialData && !cacheSnapshot.hasPlayer;
-  const shouldLoadGames =
-    Boolean(slug) &&
-    !detailFromInitialData &&
-    !cacheSnapshot.hasGames &&
-    !hasResolvedMissingPlayer;
-  const shouldLoadGoalEvents =
-    Boolean(slug) &&
-    !detailFromInitialData &&
-    !cacheSnapshot.hasGoalEvents &&
-    !hasResolvedMissingPlayer;
 
   const playerQuery = useQuery({
     queryKey: playerQueryKey,
@@ -90,11 +81,20 @@ export const usePlayerDetail = (slug: string | undefined) => {
         throw error;
       }
     },
-    enabled: shouldLoadPlayer,
+    enabled: Boolean(slug),
     initialData: shouldLoadPlayer ? undefined : initialPlayer,
     placeholderData: shouldLoadPlayer ? initialPlayer : undefined,
-    refetchOnMount: shouldLoadPlayer ? "always" : false,
+    refetchInterval: SANITY_FRESHNESS.semiDynamic.refetchInterval,
+    refetchOnMount: true,
+    staleTime: SANITY_FRESHNESS.semiDynamic.staleTime,
   });
+  const shouldFetchStats = Boolean(slug) && playerQuery.data != null;
+  const shouldLoadGames =
+    shouldFetchStats && !cacheSnapshot.hasGames && !hasResolvedMissingPlayer;
+  const shouldLoadGoalEvents =
+    shouldFetchStats &&
+    !cacheSnapshot.hasGoalEvents &&
+    !hasResolvedMissingPlayer;
 
   const gamesQuery = useQuery({
     queryKey: queryKeys.games.finished,
@@ -110,10 +110,12 @@ export const usePlayerDetail = (slug: string | undefined) => {
         throw error;
       }
     },
-    enabled: shouldLoadGames,
+    enabled: shouldFetchStats,
     initialData: shouldLoadGames ? undefined : initialGames,
     placeholderData: shouldLoadGames ? initialGames : undefined,
-    refetchOnMount: shouldLoadGames ? "always" : false,
+    refetchInterval: SANITY_FRESHNESS.liveStats.refetchInterval,
+    refetchOnMount: "always",
+    staleTime: SANITY_FRESHNESS.liveStats.staleTime,
   });
 
   const goalEventsQuery = useQuery({
@@ -130,14 +132,16 @@ export const usePlayerDetail = (slug: string | undefined) => {
         throw error;
       }
     },
-    enabled: shouldLoadGoalEvents,
+    enabled: shouldFetchStats,
     initialData: shouldLoadGoalEvents
       ? undefined
       : initialGoalEvents,
     placeholderData: shouldLoadGoalEvents
       ? initialGoalEvents
       : undefined,
-    refetchOnMount: shouldLoadGoalEvents ? "always" : false,
+    refetchInterval: SANITY_FRESHNESS.liveStats.refetchInterval,
+    refetchOnMount: "always",
+    staleTime: SANITY_FRESHNESS.liveStats.staleTime,
   });
 
   const player = useMemo<PlayerDetailViewModel | null>(() => {
@@ -177,12 +181,18 @@ export const usePlayerDetail = (slug: string | undefined) => {
   ]);
 
   const hasGamesForStats = gamesQuery.data !== undefined;
+  const shouldBlockForStats = !detailFromInitialData && !hasResolvedMissingPlayer;
   const loading =
     (shouldLoadPlayer && playerQuery.isFetching) ||
-    (shouldLoadGames && gamesQuery.isFetching) ||
-    (shouldLoadGoalEvents && goalEventsQuery.isFetching);
+    (shouldBlockForStats &&
+      ((shouldLoadGames && gamesQuery.isFetching) ||
+        (shouldLoadGoalEvents && goalEventsQuery.isFetching)));
   const error = Boolean(
-    playerQuery.error || gamesQuery.error || goalEventsQuery.error
+    (playerQuery.error && typeof playerQuery.data === "undefined") ||
+      (shouldBlockForStats &&
+        ((gamesQuery.error && typeof gamesQuery.data === "undefined") ||
+          (goalEventsQuery.error &&
+            typeof goalEventsQuery.data === "undefined")))
   );
 
   return {

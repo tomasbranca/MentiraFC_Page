@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { HOME_CRITICAL_QUERY } from "../queries/home.queries";
+import { sanityFreshClient } from "../client";
 import { fetchSanityQuery } from "../sanityFetch";
 import { getHomeCriticalData } from "./home.service";
 
@@ -37,7 +38,7 @@ describe("home.service", () => {
     const data = await getHomeCriticalData();
 
     expect(fetchSanityQueryMock).toHaveBeenCalledWith(HOME_CRITICAL_QUERY, {
-      useCdn: false,
+      client: sanityFreshClient,
     });
     expect(data.latestGame?.state).toBe("por_jugar");
     expect(data.latestGame?.result).toEqual({

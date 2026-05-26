@@ -3,9 +3,11 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { getTournamentGames } from "../../../../data/games";
 import { getGoalEvents } from "../../../../data/events";
+import { getHomeCriticalData } from "../../../../data/getInitialData";
 import { getNews } from "../../../../data/news";
 import { getPlayers } from "../../../../data/players";
 import { queryKeys } from "../../../../data/queryKeys";
+import { SANITY_FRESHNESS } from "../../../../data/sanity/freshness";
 import { getTournament } from "../../../../data/tournament";
 import { reportError } from "../../../../lib/errors/errorLogger";
 import { useInitialData } from "../../../context/useInitialData";
@@ -41,11 +43,43 @@ export const useHomeData = () => {
   const hasCachedDeferredHomeData = hasCompleteDeferredHomeData(
     cachedDeferredHomeData
   );
+  const initialDeferredHomeData =
+    initialData.bootstrapScope === "full" &&
+    hasCompleteDeferredHomeData(initialData)
+      ? initialData
+      : undefined;
+  const deferredHomeSeed = cachedDeferredHomeData ?? initialDeferredHomeData;
   const deferredHomeQueryBehavior =
-    getDeferredHomeQueryBehavior(cachedDeferredHomeData);
+    getDeferredHomeQueryBehavior(deferredHomeSeed);
   const shouldHydrateDeferredData =
-    initialData.bootstrapScope === "home-critical" &&
-    (shouldStartDeferredHomeData || hasCachedDeferredHomeData);
+    initialData.bootstrapScope === "full" ||
+    (initialData.bootstrapScope === "home-critical" &&
+      (shouldStartDeferredHomeData || hasCachedDeferredHomeData));
+  const hasInitialHomeCriticalData =
+    initialData.news.length > 0 || initialData.latestGame !== null;
+
+  const homeCriticalQuery = useQuery({
+    queryKey: queryKeys.home.critical,
+    queryFn: async () => {
+      try {
+        return await getHomeCriticalData();
+      } catch (error) {
+        reportError(error, {
+          page: "Home",
+          action: "refresh_home_critical_data",
+        });
+        throw error;
+      }
+    },
+    enabled:
+      initialData.bootstrapScope !== "empty" &&
+      initialData.bootstrapScope !== "bootstrap-error",
+    initialData: hasInitialHomeCriticalData ? initialData : undefined,
+    placeholderData: hasInitialHomeCriticalData ? initialData : undefined,
+    refetchInterval: SANITY_FRESHNESS.news.refetchInterval,
+    refetchOnMount: "always",
+    staleTime: SANITY_FRESHNESS.news.staleTime,
+  });
 
   useEffect(() => {
     if (initialData.bootstrapScope !== "home-critical") {
@@ -95,10 +129,13 @@ export const useHomeData = () => {
     },
     staleTime: deferredHomeQueryBehavior.staleTime,
     refetchOnMount: deferredHomeQueryBehavior.refetchOnMount,
+    refetchInterval: SANITY_FRESHNESS.liveStats.refetchInterval,
+    initialData: initialDeferredHomeData,
+    placeholderData: initialDeferredHomeData,
   });
 
   const deferredHomePayload =
-    deferredHomeQuery.data ?? cachedDeferredHomeData;
+    deferredHomeQuery.data ?? cachedDeferredHomeData ?? initialDeferredHomeData;
   const deferredHomeData = hasCompleteDeferredHomeData(deferredHomePayload)
     ? deferredHomePayload
     : null;
@@ -119,6 +156,17 @@ export const useHomeData = () => {
       deferredHomeData.tournamentGames
     );
   }, [deferredHomeData, queryClient, year]);
+
+  useEffect(() => {
+    if (!homeCriticalQuery.data) {
+      return;
+    }
+
+    queryClient.setQueryData(
+      queryKeys.games.latest,
+      homeCriticalQuery.data.latestGame
+    );
+  }, [homeCriticalQuery.data, queryClient]);
 
   useEffect(() => {
     if (initialData.bootstrapScope !== "home-critical") {
@@ -145,8 +193,17 @@ export const useHomeData = () => {
   }, [initialData.bootstrapScope, queryClient]);
 
   const homeData = useMemo(() => {
-    return resolveHomeData(initialData, deferredHomeData, year);
-  }, [deferredHomeData, initialData, year]);
+    const homeCriticalData = homeCriticalQuery.data;
+    const baseData = homeCriticalData
+      ? {
+          ...initialData,
+          news: homeCriticalData.news,
+          latestGame: homeCriticalData.latestGame,
+        }
+      : initialData;
+
+    return resolveHomeData(baseData, deferredHomeData, year);
+  }, [deferredHomeData, homeCriticalQuery.data, initialData, year]);
 
   const isDeferredHomeLoading = isDeferredHomeDataPending(
     initialData.bootstrapScope,

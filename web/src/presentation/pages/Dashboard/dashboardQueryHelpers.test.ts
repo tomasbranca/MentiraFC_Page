@@ -166,6 +166,7 @@ describe("dashboard query helpers", () => {
     ).resolves.toEqual([
       { queryKey: queryKeys.dashboard.news.all },
       { queryKey: queryKeys.news.all },
+      { queryKey: queryKeys.home.critical },
     ]);
 
     await expect(
@@ -176,6 +177,8 @@ describe("dashboard query helpers", () => {
       { queryKey: queryKeys.games.finished },
       { queryKey: queryKeys.games.tournamentFinished },
       { queryKey: queryKeys.events.goals() },
+      { queryKey: queryKeys.home.critical },
+      { queryKey: queryKeys.home.deferred },
     ]);
 
     await expect(
@@ -183,6 +186,7 @@ describe("dashboard query helpers", () => {
     ).resolves.toEqual([
       { queryKey: queryKeys.dashboard.table.all },
       { queryKey: queryKeys.tournaments.current },
+      { queryKey: queryKeys.home.deferred },
     ]);
 
     await expect(
@@ -193,6 +197,7 @@ describe("dashboard query helpers", () => {
       { queryKey: queryKeys.dashboard.matches.options },
       { queryKey: queryKeys.dashboard.table.options },
       { queryKey: queryKeys.tournaments.current },
+      { queryKey: queryKeys.home.deferred },
     ]);
 
     await expect(
@@ -204,6 +209,7 @@ describe("dashboard query helpers", () => {
       { queryKey: queryKeys.dashboard.matches.options },
       { queryKey: queryKeys.dashboard.table.options },
       { queryKey: queryKeys.tournaments.current },
+      { queryKey: queryKeys.home.deferred },
     ]);
 
     await expect(
@@ -221,6 +227,8 @@ describe("dashboard query helpers", () => {
       { queryKey: queryKeys.games.latest },
       { queryKey: queryKeys.games.finished },
       { queryKey: queryKeys.tournaments.current },
+      { queryKey: queryKeys.home.critical },
+      { queryKey: queryKeys.home.deferred },
     ]);
 
     await expect(

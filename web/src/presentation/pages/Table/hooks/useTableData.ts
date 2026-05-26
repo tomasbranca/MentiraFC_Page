@@ -5,6 +5,7 @@ import { getTournamentGames } from "../../../../data/games";
 import { queryKeys } from "../../../../data/queryKeys";
 import { getTournament } from "../../../../data/tournament";
 import { getHybridTournamentTable } from "../../../../domain/stats";
+import { SANITY_FRESHNESS } from "../../../../data/sanity/freshness";
 import { reportError } from "../../../../lib/errors/errorLogger";
 import { shouldLoadTableInitially } from "../../../hooks/loading/loadingState.utils";
 import { useInitialData } from "../../../context/useInitialData";
@@ -59,7 +60,9 @@ export const useTableData = () => {
     enabled: true,
     initialData: needsInitialFetch ? undefined : initialTournament,
     placeholderData: needsInitialFetch ? initialTournament : undefined,
+    refetchInterval: SANITY_FRESHNESS.liveStats.refetchInterval,
     refetchOnMount: "always",
+    staleTime: SANITY_FRESHNESS.liveStats.staleTime,
   });
 
   const gamesQuery = useQuery({
@@ -78,7 +81,9 @@ export const useTableData = () => {
     enabled: true,
     initialData: needsInitialFetch ? undefined : initialGames,
     placeholderData: needsInitialFetch ? initialGames : undefined,
+    refetchInterval: SANITY_FRESHNESS.liveStats.refetchInterval,
     refetchOnMount: "always",
+    staleTime: SANITY_FRESHNESS.liveStats.staleTime,
   });
 
   const tournament = useMemo(() => {
@@ -116,7 +121,8 @@ export const useTableData = () => {
     needsInitialFetch &&
     (tournamentQuery.isFetching || gamesQuery.isFetching);
   const error = Boolean(
-    tournamentQuery.error || gamesQuery.error
+    (tournamentQuery.error && typeof tournamentQuery.data === "undefined") ||
+      (gamesQuery.error && typeof gamesQuery.data === "undefined")
   );
 
   return {

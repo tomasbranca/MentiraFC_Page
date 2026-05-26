@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { getGalleryBySlug } from "../../../../data/galleries";
 import { queryKeys } from "../../../../data/queryKeys";
+import { SANITY_FRESHNESS } from "../../../../data/sanity/freshness";
 import { reportError } from "../../../../lib/errors/errorLogger";
 import { useInitialData } from "../../../context/useInitialData";
 
@@ -15,7 +16,13 @@ export const useGalleryDetail = (slug: string | undefined) => {
 
   const galleryQuery = useQuery({
     queryKey: queryKeys.galleries.bySlug(slug ?? ""),
-    enabled: Boolean(slug) && !canUseInitialData,
+    enabled: Boolean(slug),
+    initialData: canUseInitialData
+      ? galleryFromInitialData.gallery
+      : undefined,
+    placeholderData: canUseInitialData
+      ? galleryFromInitialData.gallery
+      : undefined,
     queryFn: async () => {
       try {
         return await getGalleryBySlug(slug ?? "");
@@ -28,14 +35,16 @@ export const useGalleryDetail = (slug: string | undefined) => {
         throw error;
       }
     },
+    refetchInterval: SANITY_FRESHNESS.semiDynamic.refetchInterval,
+    refetchOnMount: true,
+    staleTime: SANITY_FRESHNESS.semiDynamic.staleTime,
   });
 
   return {
-    gallery: canUseInitialData
-      ? galleryFromInitialData.gallery
-      : galleryQuery.data ?? null,
-    loading: !canUseInitialData && galleryQuery.isLoading,
-    error: !canUseInitialData && galleryQuery.isError,
+    gallery: galleryQuery.data ?? null,
+    loading:
+      galleryQuery.isLoading && typeof galleryQuery.data === "undefined",
+    error: galleryQuery.isError && typeof galleryQuery.data === "undefined",
     refetch: async () => {
       await galleryQuery.refetch();
     },
