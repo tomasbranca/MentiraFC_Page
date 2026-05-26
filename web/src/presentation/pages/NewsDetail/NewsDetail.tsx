@@ -6,6 +6,7 @@ import { lazyWithReload } from "../../../lib/lazyWithReload";
 import ErrorFallback from "../../components/errors/ErrorFallback";
 import Loader from "../../components/Loader/Loader";
 import EmojiReactionBar from "../../components/EmojiReactionBar/EmojiReactionBar";
+import NewsCommentsSection from "../../components/NewsComments/NewsCommentsSection";
 import NewsCard from "../../components/NewsCard/NewsCard";
 import ProgressiveMedia from "../../components/ProgressiveMedia/ProgressiveMedia";
 import { formatDate } from "../../utils/date.utils";
@@ -108,7 +109,7 @@ const NewsDetail = () => {
 
       </section>
 
-      <section className="max-w-3xl mx-auto px-4 md:px-6 mt-8 md:mt-10 mb-16 md:mb-20">
+      <section className="max-w-3xl mx-auto px-4 md:px-6 mt-8 md:mt-10">
         <Suspense
           fallback={
             <p className="text-sm md:text-base text-neutral-400 animate-pulse">
@@ -118,6 +119,10 @@ const NewsDetail = () => {
         >
           <NewsRichContent content={newsItem.content} />
         </Suspense>
+      </section>
+
+      <section className="max-w-3xl mx-auto px-4 md:px-6 mt-10 mb-16 md:mb-20">
+        <NewsCommentsSection newsId={newsItem.id} />
       </section>
 
       {suggested.length >= 3 && (

@@ -34,6 +34,7 @@ describe("api function budget", () => {
       true
     );
     expect(routeFiles).toContain(`reactions${sep}index.ts`);
+    expect(routeFiles).toContain(`comments${sep}index.ts`);
     expect(routeFiles.length).toBeLessThanOrEqual(12);
   });
 });

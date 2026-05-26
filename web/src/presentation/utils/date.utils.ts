@@ -66,6 +66,51 @@ export const formatLongDate = (
   });
 };
 
+export const formatCommentRelativeDate = (
+  date: string | Date | null | undefined,
+  locale = "es-AR"
+): string => {
+  const parsed = parseDate(date);
+
+  if (!parsed) {
+    return "";
+  }
+
+  const diffMs = Date.now() - parsed.getTime();
+
+  if (diffMs < 0) {
+    return "ahora";
+  }
+
+  const diffMinutes = Math.floor(diffMs / 60_000);
+
+  if (diffMinutes < 1) {
+    return "ahora";
+  }
+
+  if (diffMinutes < 60) {
+    return `hace ${diffMinutes} min`;
+  }
+
+  const diffHours = Math.floor(diffMinutes / 60);
+
+  if (diffHours < 24) {
+    return `hace ${diffHours} h`;
+  }
+
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffDays < 7) {
+    return diffDays === 1 ? "hace 1 dia" : `hace ${diffDays} dias`;
+  }
+
+  return parsed.toLocaleDateString(locale, {
+    day: "numeric",
+    month: "short",
+    year: parsed.getFullYear() !== new Date().getFullYear() ? "numeric" : undefined,
+  });
+};
+
 export const formatDateTime = (
   date: string | Date | null | undefined,
   locale = "es-AR"

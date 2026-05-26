@@ -94,6 +94,10 @@ const DashboardPlayersForm = lazyWithReload(
 const DashboardStaffForm = lazyWithReload(
   () => import("./presentation/pages/DashboardPlayers/DashboardStaffForm")
 );
+const DashboardCommentsModeration = lazyWithReload(
+  () =>
+    import("./presentation/pages/DashboardComments/DashboardCommentsModeration")
+);
 const NewsDetail = lazyWithReload(
   () => import("./presentation/pages/NewsDetail/NewsDetail"),
 );
@@ -116,6 +120,7 @@ const SpeedInsights = lazyWithReload(() =>
     default: SpeedInsights,
   }))
 );
+const AppToaster = lazyWithReload(() => import("./presentation/app/AppToaster"));
 
 function App({ initialData }: AppProps) {
   const { pathname } = useLocation();
@@ -179,6 +184,9 @@ function App({ initialData }: AppProps) {
       )}
 
       <GameProvider>
+        <Suspense fallback={null}>
+          <AppToaster />
+        </Suspense>
         <RouteHead />
         {!isAuthRoute && <NavBar />}
 
@@ -461,6 +469,16 @@ function App({ initialData }: AppProps) {
                       >
                         <DashboardPlayersForm />
                       </RequireDashboardPermission>
+                    }
+                  />
+                  <Route
+                    path="moderacion-comentarios"
+                    element={
+                      <RequirePermission
+                        permission={PERMISSIONS.deleteOthersComments}
+                      >
+                        <DashboardCommentsModeration />
+                      </RequirePermission>
                     }
                   />
                 </Route>

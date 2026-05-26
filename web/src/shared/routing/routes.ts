@@ -25,6 +25,7 @@ export const ROUTES = {
   DASHBOARD_PLAYERS: "/dashboard/jugadores",
   DASHBOARD_PLAYERS_NEW: "/dashboard/jugadores/nuevo",
   DASHBOARD_STAFF_NEW: "/dashboard/jugadores/staff/nuevo",
+  DASHBOARD_COMMENTS_MODERATION: "/dashboard/moderacion-comentarios",
 
   NEWS_DETAIL: (slug: string) => `/noticias/${slug}`,
   GALLERY_DETAIL: (slug: string) => `/galeria/${slug}`,
