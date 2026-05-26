@@ -10,17 +10,12 @@ import {
   FiFlag,
   FiHome,
   FiImage,
-  FiMessageSquare,
   FiShield,
   FiUsers,
 } from "react-icons/fi";
 
 import { lazyWithReload } from "../../../lib/lazyWithReload";
-import {
-  hasPermission,
-  PERMISSIONS,
-  type DashboardPermissionResource,
-} from "../../../domain/auth/permissions";
+import type { DashboardPermissionResource } from "../../../domain/auth/permissions";
 import { ROUTES } from "../../../shared/routing";
 import DashboardContentLoader from "../../dashboard/DashboardContentLoader";
 import { getDashboardNavigationContext } from "../../dashboard/dashboardNavigation";
@@ -52,10 +47,6 @@ const DashboardLayout = () => {
   const { account } = useAuth();
   const location = useLocation();
   const allowedSections = getAllowedDashboardSections(account?.role);
-  const canModerateComments = hasPermission(
-    account?.role,
-    PERMISSIONS.deleteOthersComments
-  );
   const navigationContext = getDashboardNavigationContext(location.pathname);
 
   return (
@@ -103,35 +94,22 @@ const DashboardLayout = () => {
                   No tenés secciones habilitadas.
                 </p>
               ) : (
-                <>
-                  {allowedSections.map((section) => {
-                    const Icon = sectionIcons[section.resource];
+                allowedSections.map((section) => {
+                  const Icon = sectionIcons[section.resource];
 
-                    return (
-                      <NavLink
-                        key={section.resource}
-                        to={section.route}
-                        className={({ isActive }) =>
-                          getNavLinkClassName(isActive)
-                        }
-                      >
-                        <Icon className="size-4" aria-hidden="true" />
-                        <span className="whitespace-nowrap">{section.label}</span>
-                      </NavLink>
-                    );
-                  })}
-                  {canModerateComments ? (
+                  return (
                     <NavLink
-                      to={ROUTES.DASHBOARD_COMMENTS_MODERATION}
+                      key={section.resource}
+                      to={section.route}
                       className={({ isActive }) =>
                         getNavLinkClassName(isActive)
                       }
                     >
-                      <FiMessageSquare className="size-4" aria-hidden="true" />
-                      <span className="whitespace-nowrap">Comentarios</span>
+                      <Icon className="size-4" aria-hidden="true" />
+                      <span className="whitespace-nowrap">{section.label}</span>
                     </NavLink>
-                  ) : null}
-                </>
+                  );
+                })
               )}
             </div>
           </nav>

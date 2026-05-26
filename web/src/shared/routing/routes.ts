@@ -9,6 +9,8 @@ export const ROUTES = {
   PASSWORD_RESET_REQUEST: "/recuperar-contrasena",
   PASSWORD_RESET_UPDATE: "/nueva-contrasena",
   ACCOUNT: "/mi-cuenta",
+  ADMIN: "/admin",
+  ADMIN_COMMENT_REPORTS: "/admin/reportes-comentarios",
   DASHBOARD: "/dashboard",
   DASHBOARD_NEWS: "/dashboard/noticias",
   DASHBOARD_NEWS_NEW: "/dashboard/noticias/nueva",

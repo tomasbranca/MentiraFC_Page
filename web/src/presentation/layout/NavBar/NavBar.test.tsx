@@ -124,5 +124,6 @@ describe("NavBar", () => {
     expect(editorMarkup).not.toContain("Panel admin");
     expect(adminMarkup).toContain("Dashboard");
     expect(adminMarkup).toContain("Panel admin");
+    expect(adminMarkup).toContain('href="/admin"');
   });
 });

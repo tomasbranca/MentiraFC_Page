@@ -54,4 +54,14 @@ describe("dashboardNavigation", () => {
     expect(context.title).toBe("Tabla");
     expect(context.actionLabel).toBe("Nueva tabla");
   });
+
+  it("no trata la ruta legacy de reportes como seccion del dashboard", () => {
+    const context = getDashboardNavigationContext(
+      ROUTES.DASHBOARD_COMMENTS_MODERATION
+    );
+
+    expect(context.title).toBe("Dashboard");
+    expect(context.currentSection).toBeNull();
+    expect(context.listRoute).toBeNull();
+  });
 });
