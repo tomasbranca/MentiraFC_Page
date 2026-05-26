@@ -1,5 +1,5 @@
 import { Suspense, useEffect, useState } from "react";
-import { Route, Routes, useLocation } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 
 import type { InitialDataPayload } from "./data/getInitialData";
 import ErrorFallback from "./presentation/components/errors/ErrorFallback";
@@ -46,6 +46,15 @@ const Account = lazyWithReload(
 const DashboardLayout = lazyWithReload(
   () => import("./presentation/layout/DashboardLayout/DashboardLayout")
 );
+const AdminLayout = lazyWithReload(
+  () => import("./presentation/layout/AdminLayout/AdminLayout")
+);
+const AdminHome = lazyWithReload(
+  () => import("./presentation/pages/Admin/AdminHome")
+);
+const AdminCommentReports = lazyWithReload(
+  () => import("./presentation/pages/AdminCommentReports/AdminCommentReports")
+);
 const DashboardHome = lazyWithReload(
   () => import("./presentation/pages/Dashboard/DashboardHome")
 );
@@ -60,6 +69,12 @@ const DashboardMatchesList = lazyWithReload(
 );
 const DashboardMatchesForm = lazyWithReload(
   () => import("./presentation/pages/DashboardMatches/DashboardMatchesForm")
+);
+const DashboardGalleriesList = lazyWithReload(
+  () => import("./presentation/pages/DashboardGalleries/DashboardGalleriesList")
+);
+const DashboardGalleriesForm = lazyWithReload(
+  () => import("./presentation/pages/DashboardGalleries/DashboardGalleriesForm")
 );
 const DashboardTableList = lazyWithReload(
   () => import("./presentation/pages/DashboardTable/DashboardTableList")
@@ -93,10 +108,6 @@ const DashboardPlayersForm = lazyWithReload(
 );
 const DashboardStaffForm = lazyWithReload(
   () => import("./presentation/pages/DashboardPlayers/DashboardStaffForm")
-);
-const DashboardCommentsModeration = lazyWithReload(
-  () =>
-    import("./presentation/pages/DashboardComments/DashboardCommentsModeration")
 );
 const NewsDetail = lazyWithReload(
   () => import("./presentation/pages/NewsDetail/NewsDetail"),
@@ -135,6 +146,10 @@ function App({ initialData }: AppProps) {
     ROUTES.PASSWORD_RESET_REQUEST,
     ROUTES.PASSWORD_RESET_UPDATE,
   ].includes(normalizedPathname);
+  const isAdminRoute =
+    normalizedPathname === ROUTES.ADMIN ||
+    normalizedPathname.startsWith(`${ROUTES.ADMIN}/`);
+  const isStandaloneRoute = isAuthRoute || isAdminRoute;
 
   useEffect(() => {
     const loadDeferredStyles = () => {
@@ -188,11 +203,11 @@ function App({ initialData }: AppProps) {
           <AppToaster />
         </Suspense>
         <RouteHead />
-        {!isAuthRoute && <NavBar />}
+        {!isStandaloneRoute && <NavBar />}
 
         <main
           className={
-            isAuthRoute
+            isStandaloneRoute
               ? "min-h-screen"
               : "border-t-96 border-t-violet-900 min-h-screen"
           }
@@ -230,6 +245,20 @@ function App({ initialData }: AppProps) {
                     </RequireAuth>
                   }
                 />
+                <Route
+                  path={ROUTES.ADMIN}
+                  element={
+                    <RequirePermission permission={PERMISSIONS.viewAdminPanel}>
+                      <AdminLayout />
+                    </RequirePermission>
+                  }
+                >
+                  <Route index element={<AdminHome />} />
+                  <Route
+                    path="reportes-comentarios"
+                    element={<AdminCommentReports />}
+                  />
+                </Route>
                 <Route
                   path={ROUTES.DASHBOARD}
                   element={
@@ -296,6 +325,39 @@ function App({ initialData }: AppProps) {
                         action="edit"
                       >
                         <DashboardMatchesForm />
+                      </RequireDashboardPermission>
+                    }
+                  />
+                  <Route
+                    path="galerias"
+                    element={
+                      <RequireDashboardPermission
+                        resource="galleries"
+                        action="view"
+                      >
+                        <DashboardGalleriesList />
+                      </RequireDashboardPermission>
+                    }
+                  />
+                  <Route
+                    path="galerias/nueva"
+                    element={
+                      <RequireDashboardPermission
+                        resource="galleries"
+                        action="create"
+                      >
+                        <DashboardGalleriesForm />
+                      </RequireDashboardPermission>
+                    }
+                  />
+                  <Route
+                    path="galerias/:id"
+                    element={
+                      <RequireDashboardPermission
+                        resource="galleries"
+                        action="edit"
+                      >
+                        <DashboardGalleriesForm />
                       </RequireDashboardPermission>
                     }
                   />
@@ -474,11 +536,7 @@ function App({ initialData }: AppProps) {
                   <Route
                     path="moderacion-comentarios"
                     element={
-                      <RequirePermission
-                        permission={PERMISSIONS.deleteOthersComments}
-                      >
-                        <DashboardCommentsModeration />
-                      </RequirePermission>
+                      <Navigate to={ROUTES.ADMIN_COMMENT_REPORTS} replace />
                     }
                   />
                 </Route>
@@ -503,7 +561,7 @@ function App({ initialData }: AppProps) {
           )}
         </main>
 
-        {!isAuthRoute && <Footer />}
+        {!isStandaloneRoute && <Footer />}
       </GameProvider>
     </InitialDataProvider>
   );

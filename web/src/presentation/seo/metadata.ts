@@ -125,6 +125,13 @@ export const STATIC_PAGE_HEAD = {
     canonicalUrl: canonicalUrl(ROUTES.ACCOUNT),
     robots: "noindex, nofollow",
   },
+  admin: {
+    ...DEFAULT_HEAD,
+    title: withSiteName("Panel admin"),
+    description: "Panel de administracion de Mentira FC.",
+    canonicalUrl: canonicalUrl(ROUTES.ADMIN),
+    robots: "noindex, nofollow",
+  },
   dashboard: {
     ...DEFAULT_HEAD,
     title: withSiteName("Dashboard"),
@@ -146,6 +153,13 @@ export const getStaticPageHeadByPathname = (
   pathname: string
 ): HeadMetadata | null => {
   const normalizedPathname = normalizePathname(pathname);
+
+  if (
+    normalizedPathname === ROUTES.ADMIN ||
+    normalizedPathname.startsWith(`${ROUTES.ADMIN}/`)
+  ) {
+    return STATIC_PAGE_HEAD.admin;
+  }
 
   if (
     normalizedPathname === ROUTES.DASHBOARD ||

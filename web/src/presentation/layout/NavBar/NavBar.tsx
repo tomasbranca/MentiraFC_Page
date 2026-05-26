@@ -66,7 +66,7 @@ const NavBar = () => {
       ? [{ label: "Dashboard", to: ROUTES.DASHBOARD, enabled: true as const }]
       : []),
     ...(canAccessAdminPanel(account?.role)
-      ? [{ label: "Panel admin", enabled: false as const }]
+      ? [{ label: "Panel admin", to: ROUTES.ADMIN, enabled: true as const }]
       : []),
   ];
 

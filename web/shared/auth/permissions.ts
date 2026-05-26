@@ -54,6 +54,7 @@ export const DASHBOARD_PERMISSION_RESOURCES = [
   "matches",
   "table",
   "tournaments",
+  "galleries",
   "organizations",
   "teams",
   "players",
@@ -115,6 +116,7 @@ export const DASHBOARD_RESOURCE_PERMISSIONS = {
   matches: createDashboardResourcePermissions("matches"),
   table: createDashboardResourcePermissions("table"),
   tournaments: createDashboardResourcePermissions("tournaments"),
+  galleries: createDashboardResourcePermissions("galleries"),
   organizations: createDashboardResourcePermissions("organizations"),
   teams: createDashboardResourcePermissions("teams"),
   players: {

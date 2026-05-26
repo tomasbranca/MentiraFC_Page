@@ -9,6 +9,7 @@ import {
 describe("dashboard api dev middleware", () => {
   it("registra todos los recursos locales del dashboard", () => {
     expect([...DASHBOARD_API_RESOURCES].sort()).toEqual([
+      "galleries",
       "matches",
       "news",
       "organizations",

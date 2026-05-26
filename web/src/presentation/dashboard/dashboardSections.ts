@@ -23,6 +23,11 @@ export const DASHBOARD_SECTIONS = [
     route: ROUTES.DASHBOARD_MATCHES,
   },
   {
+    resource: "galleries",
+    label: "Galerias",
+    route: ROUTES.DASHBOARD_GALLERIES,
+  },
+  {
     resource: "players",
     label: "Plantel",
     route: ROUTES.DASHBOARD_PLAYERS,

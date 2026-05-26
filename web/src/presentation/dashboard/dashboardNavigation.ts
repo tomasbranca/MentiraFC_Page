@@ -31,6 +31,10 @@ const DASHBOARD_ROUTE_ACTION_LABELS = {
     edit: "Editar partido",
     new: "Nuevo partido",
   },
+  galleries: {
+    edit: "Editar galeria",
+    new: "Nueva galeria",
+  },
   players: {
     edit: "Editar jugador",
     new: "Nuevo jugador",
@@ -95,20 +99,6 @@ export const getDashboardNavigationContext = (
   pathname: string
 ): DashboardNavigationContext => {
   const normalizedPathname = normalizeDashboardPathname(pathname);
-
-  if (normalizedPathname === ROUTES.DASHBOARD_COMMENTS_MODERATION) {
-    return {
-      actionLabel: "Cola de reportes",
-      breadcrumbs: [
-        { label: "Dashboard", route: ROUTES.DASHBOARD },
-        { label: "Moderacion de comentarios" },
-      ],
-      currentSection: null,
-      isFormRoute: false,
-      listRoute: ROUTES.DASHBOARD_COMMENTS_MODERATION,
-      title: "Moderacion",
-    };
-  }
 
   const currentSection =
     DASHBOARD_SECTIONS.find(

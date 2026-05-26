@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { queryKeys } from "../../../data/queryKeys";
 import type {
   DashboardMatchItem,
+  DashboardGalleryItem,
   DashboardNewsItem,
   DashboardOrganizationItem,
   DashboardStaffItem,
@@ -19,6 +20,14 @@ import {
   invalidateDashboardMatchPublishDependencies,
   invalidateDashboardMatchesList,
 } from "../DashboardMatches/dashboardMatches.queries";
+import {
+  cacheDashboardGallery,
+  dashboardGalleriesListQueryOptions,
+  dashboardGalleryDetailQueryOptions,
+  dashboardGalleryOptionsQueryOptions,
+  invalidateDashboardGalleriesList,
+  invalidateDashboardGalleryPublishDependencies,
+} from "../DashboardGalleries/dashboardGalleries.queries";
 import {
   cacheDashboardNews,
   dashboardNewsDetailQueryOptions,
@@ -94,6 +103,16 @@ describe("dashboard query helpers", () => {
       queryKeys.dashboard.matches.byId("match-1")
     );
 
+    expect(dashboardGalleriesListQueryOptions().queryKey).toEqual(
+      queryKeys.dashboard.galleries.all
+    );
+    expect(dashboardGalleryOptionsQueryOptions().queryKey).toEqual(
+      queryKeys.dashboard.galleries.options
+    );
+    expect(dashboardGalleryDetailQueryOptions("gallery-1").queryKey).toEqual(
+      queryKeys.dashboard.galleries.byId("gallery-1")
+    );
+
     expect(dashboardTablesListQueryOptions().queryKey).toEqual(
       queryKeys.dashboard.table.all
     );
@@ -143,6 +162,9 @@ describe("dashboard query helpers", () => {
     await expect(getInvalidatedFilters(invalidateDashboardMatchesList)).resolves.toEqual([
       { queryKey: queryKeys.dashboard.matches.all },
     ]);
+    await expect(
+      getInvalidatedFilters(invalidateDashboardGalleriesList)
+    ).resolves.toEqual([{ queryKey: queryKeys.dashboard.galleries.all }]);
     await expect(getInvalidatedFilters(invalidateDashboardTablesList)).resolves.toEqual([
       { queryKey: queryKeys.dashboard.table.all },
     ]);
@@ -173,12 +195,23 @@ describe("dashboard query helpers", () => {
       getInvalidatedFilters(invalidateDashboardMatchPublishDependencies)
     ).resolves.toEqual([
       { queryKey: queryKeys.dashboard.matches.all },
+      { queryKey: queryKeys.dashboard.galleries.all },
+      { queryKey: queryKeys.dashboard.galleries.options },
       { queryKey: queryKeys.games.latest },
       { queryKey: queryKeys.games.finished },
       { queryKey: queryKeys.games.tournamentFinished },
       { queryKey: queryKeys.events.goals() },
+      { queryKey: queryKeys.galleries.all },
       { queryKey: queryKeys.home.critical },
       { queryKey: queryKeys.home.deferred },
+    ]);
+
+    await expect(
+      getInvalidatedFilters(invalidateDashboardGalleryPublishDependencies)
+    ).resolves.toEqual([
+      { queryKey: queryKeys.dashboard.galleries.all },
+      { queryKey: queryKeys.dashboard.galleries.options },
+      { queryKey: queryKeys.galleries.all },
     ]);
 
     await expect(
@@ -196,6 +229,8 @@ describe("dashboard query helpers", () => {
       { queryKey: queryKeys.dashboard.tournaments.options },
       { queryKey: queryKeys.dashboard.matches.options },
       { queryKey: queryKeys.dashboard.table.options },
+      { queryKey: queryKeys.dashboard.galleries.all },
+      { queryKey: queryKeys.galleries.all },
       { queryKey: queryKeys.tournaments.current },
       { queryKey: queryKeys.home.deferred },
     ]);
@@ -208,6 +243,8 @@ describe("dashboard query helpers", () => {
       { queryKey: queryKeys.dashboard.tournaments.options },
       { queryKey: queryKeys.dashboard.matches.options },
       { queryKey: queryKeys.dashboard.table.options },
+      { queryKey: queryKeys.dashboard.galleries.all },
+      { queryKey: queryKeys.galleries.all },
       { queryKey: queryKeys.tournaments.current },
       { queryKey: queryKeys.home.deferred },
     ]);
@@ -222,10 +259,13 @@ describe("dashboard query helpers", () => {
       { queryKey: queryKeys.dashboard.tournaments.options },
       { queryKey: queryKeys.dashboard.table.all },
       { queryKey: queryKeys.dashboard.table.options },
+      { queryKey: queryKeys.dashboard.galleries.all },
+      { queryKey: queryKeys.dashboard.galleries.options },
       { queryKey: queryKeys.teams.all },
       { queryKey: queryKeys.games.all },
       { queryKey: queryKeys.games.latest },
       { queryKey: queryKeys.games.finished },
+      { queryKey: queryKeys.galleries.all },
       { queryKey: queryKeys.tournaments.current },
       { queryKey: queryKeys.home.critical },
       { queryKey: queryKeys.home.deferred },
@@ -244,6 +284,7 @@ describe("dashboard query helpers", () => {
 
     const news = { id: "news-1" } as DashboardNewsItem;
     const match = { id: "match-1" } as DashboardMatchItem;
+    const gallery = { id: "gallery-1" } as DashboardGalleryItem;
     const table = { id: "table-1" } as DashboardTableItem;
     const tournament = { id: "tournament-1" } as DashboardTournamentItem;
     const organization = { id: "organization-1" } as DashboardOrganizationItem;
@@ -252,6 +293,7 @@ describe("dashboard query helpers", () => {
 
     cacheDashboardNews(queryClient, news);
     cacheDashboardMatch(queryClient, match);
+    cacheDashboardGallery(queryClient, gallery);
     cacheDashboardTable(queryClient, table);
     cacheDashboardTournament(queryClient, tournament);
     cacheDashboardOrganization(queryClient, organization);
@@ -264,6 +306,9 @@ describe("dashboard query helpers", () => {
     expect(
       queryClient.getQueryData(queryKeys.dashboard.matches.byId(match.id))
     ).toEqual(match);
+    expect(
+      queryClient.getQueryData(queryKeys.dashboard.galleries.byId(gallery.id))
+    ).toEqual(gallery);
     expect(
       queryClient.getQueryData(queryKeys.dashboard.table.byId(table.id))
     ).toEqual(table);

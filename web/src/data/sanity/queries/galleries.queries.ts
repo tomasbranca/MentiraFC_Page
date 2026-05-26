@@ -69,6 +69,7 @@ const GALLERY_PHOTOS_PROJECTION = `
 export const GALLERIES_QUERY = `
   *[
     _type == "galleries" &&
+    !(_id in path("drafts.**")) &&
     game->state == "finalizado" &&
     defined(photos[0])
   ] | order(game->date desc, _createdAt desc) {
@@ -82,6 +83,7 @@ export const GALLERIES_QUERY = `
 export const GALLERY_BY_SLUG_QUERY = `
   *[
     _type == "galleries" &&
+    !(_id in path("drafts.**")) &&
     slug.current == $slug &&
     game->state == "finalizado"
   ][0] {

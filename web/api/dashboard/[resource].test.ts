@@ -5,7 +5,7 @@ import dashboardRoute from "./[resource].js";
 describe("dashboard api router", () => {
   it("delega recursos conocidos al handler correspondiente", async () => {
     const response = await dashboardRoute.fetch(
-      new Request("https://mentirafc.vercel.app/api/dashboard/matches")
+      new Request("https://mentirafc.vercel.app/api/dashboard/galleries")
     );
 
     await expect(response.json()).resolves.toEqual({

@@ -92,6 +92,7 @@ describe("seo metadata", () => {
       "noindex, nofollow"
     );
     expect(STATIC_PAGE_HEAD.account.robots).toBe("noindex, nofollow");
+    expect(STATIC_PAGE_HEAD.admin.robots).toBe("noindex, nofollow");
     expect(STATIC_PAGE_HEAD.dashboard.robots).toBe("noindex, nofollow");
   });
 
@@ -101,6 +102,9 @@ describe("seo metadata", () => {
     );
     expect(getStaticPageHeadByPathname("/dashboard/noticias/123")).toBe(
       STATIC_PAGE_HEAD.dashboard
+    );
+    expect(getStaticPageHeadByPathname("/admin/reportes-comentarios")).toBe(
+      STATIC_PAGE_HEAD.admin
     );
     expect(getStaticPageHeadByPathname("/recuperar-contrasena")).toBe(
       STATIC_PAGE_HEAD.passwordResetRequest
