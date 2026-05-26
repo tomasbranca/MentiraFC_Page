@@ -63,6 +63,54 @@ const commentModerationPageSchema = z.object({
 
 const COMMENTS_API_PATH = "/api/comments";
 
+const buildCommentsApiPath = (
+  params?: Record<string, string | number | null | undefined>
+): string => {
+  const searchParams = new URLSearchParams();
+
+  Object.entries(params ?? {}).forEach(([key, value]) => {
+    if (value != null && value !== "") {
+      searchParams.set(key, String(value));
+    }
+  });
+
+  const query = searchParams.toString();
+  return query ? `${COMMENTS_API_PATH}?${query}` : COMMENTS_API_PATH;
+};
+
+export const buildCommentItemApiPath = (
+  commentId: string,
+  options?: { asModerator?: boolean }
+): string =>
+  buildCommentsApiPath({
+    commentId,
+    as: options?.asModerator ? "moderator" : null,
+  });
+
+export const buildCommentReportApiPath = (commentId: string): string =>
+  buildCommentsApiPath({
+    commentId,
+    action: "report",
+  });
+
+export const buildCommentModerationApiPath = ({
+  cursor,
+  limit = 20,
+}: {
+  cursor?: string | null;
+  limit?: number;
+} = {}): string =>
+  buildCommentsApiPath({
+    view: "moderation",
+    limit,
+    cursor,
+  });
+
+export const buildCommentReportStatusApiPath = (reportId: string): string =>
+  buildCommentsApiPath({
+    reportId,
+  });
+
 const parseNewsComment = (data: unknown): NewsComment =>
   newsCommentSchema.parse(data, zodParseOptions) as NewsComment;
 
@@ -130,18 +178,13 @@ export const fetchNewsCommentsPage = async ({
   cursor?: string | null;
   limit?: number;
 }): Promise<NewsCommentsPage> => {
-  const params = new URLSearchParams({
-    newsId,
-    sort,
-    limit: String(limit),
-  });
-
-  if (cursor) {
-    params.set("cursor", cursor);
-  }
-
   const data = await fetchCommentsApi<unknown>(
-    `${COMMENTS_API_PATH}?${params.toString()}`,
+    buildCommentsApiPath({
+      newsId,
+      sort,
+      limit,
+      cursor,
+    }),
     { auth: "optional" }
   );
 
@@ -165,7 +208,7 @@ export const updateNewsComment = async (
   input: UpdateNewsCommentInput
 ): Promise<NewsComment> => {
   const data = await fetchCommentsApi<unknown>(
-    `${COMMENTS_API_PATH}/${commentId}`,
+    buildCommentItemApiPath(commentId),
     {
       method: "PATCH",
       auth: "required",
@@ -177,7 +220,7 @@ export const updateNewsComment = async (
 };
 
 export const deleteNewsComment = async (commentId: string): Promise<void> => {
-  await fetchCommentsApi<{ ok: boolean }>(`${COMMENTS_API_PATH}/${commentId}`, {
+  await fetchCommentsApi<{ ok: boolean }>(buildCommentItemApiPath(commentId), {
     method: "DELETE",
     auth: "required",
   });
@@ -187,7 +230,9 @@ export const deleteNewsCommentAsModerator = async (
   commentId: string
 ): Promise<void> => {
   await fetchCommentsApi<{ ok: boolean }>(
-    `${COMMENTS_API_PATH}/${commentId}?as=moderator`,
+    buildCommentItemApiPath(commentId, {
+      asModerator: true,
+    }),
     {
       method: "DELETE",
       auth: "required",
@@ -200,7 +245,7 @@ export const reportNewsComment = async (
   input: CreateCommentReportInput
 ): Promise<{ id: string }> => {
   return fetchCommentsApi<{ id: string }>(
-    `${COMMENTS_API_PATH}/${commentId}/report`,
+    buildCommentReportApiPath(commentId),
     {
       method: "POST",
       auth: "required",
@@ -216,16 +261,8 @@ export const fetchCommentModerationPage = async ({
   cursor?: string | null;
   limit?: number;
 } = {}): Promise<CommentModerationPage> => {
-  const params = new URLSearchParams({
-    limit: String(limit),
-  });
-
-  if (cursor) {
-    params.set("cursor", cursor);
-  }
-
   const data = await fetchCommentsApi<unknown>(
-    `${COMMENTS_API_PATH}/moderation?${params.toString()}`,
+    buildCommentModerationApiPath({ cursor, limit }),
     { auth: "required" }
   );
 
@@ -237,7 +274,7 @@ export const updateCommentReportStatus = async (
   status: Exclude<CommentReportStatus, "open">
 ): Promise<void> => {
   await fetchCommentsApi<{ ok: boolean }>(
-    `${COMMENTS_API_PATH}/reports/${reportId}`,
+    buildCommentReportStatusApiPath(reportId),
     {
       method: "PATCH",
       auth: "required",
