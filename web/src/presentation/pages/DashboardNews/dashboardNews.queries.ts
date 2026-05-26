@@ -5,6 +5,7 @@ import {
   fetchDashboardNewsById,
 } from "../../../data/dashboardNews";
 import { queryKeys } from "../../../data/queryKeys";
+import { SANITY_FRESHNESS } from "../../../data/sanity/freshness";
 import { reportError } from "../../../lib/errors/errorLogger";
 import type { DashboardNewsItem } from "../../../types/dashboard";
 
@@ -22,6 +23,7 @@ export const dashboardNewsListQueryOptions = () =>
         throw error;
       }
     },
+    ...SANITY_FRESHNESS.dashboard,
   });
 
 export const dashboardNewsDetailQueryOptions = (id: string) =>
@@ -39,6 +41,7 @@ export const dashboardNewsDetailQueryOptions = (id: string) =>
         throw error;
       }
     },
+    ...SANITY_FRESHNESS.dashboard,
   });
 
 export const invalidateDashboardNewsList = async (
@@ -55,6 +58,7 @@ export const invalidateDashboardNewsPublishDependencies = async (
   await Promise.all([
     invalidateDashboardNewsList(queryClient),
     queryClient.invalidateQueries({ queryKey: queryKeys.news.all }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.home.critical }),
   ]);
 };
 

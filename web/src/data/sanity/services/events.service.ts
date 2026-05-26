@@ -3,6 +3,7 @@ import {
   GOAL_EVENTS_QUERY,
 } from "../queries/events.queries";
 import { adaptGoalEvents } from "../adapters/events.adapter";
+import { sanityFreshClient } from "../client";
 import { fetchSanityQuery } from "../sanityFetch";
 
 import type { GoalEvent } from "../../../types/models";
@@ -22,9 +23,12 @@ export const getGoalEvents = async (
   const { year } = options;
   const data = year
     ? await fetchSanityQuery(GOAL_EVENTS_BY_YEAR_QUERY, {
+        client: sanityFreshClient,
         params: getYearRange(year),
       })
-    : await fetchSanityQuery(GOAL_EVENTS_QUERY);
+    : await fetchSanityQuery(GOAL_EVENTS_QUERY, {
+        client: sanityFreshClient,
+      });
 
   return adaptGoalEvents(data);
 };

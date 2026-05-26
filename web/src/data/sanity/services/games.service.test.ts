@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { LATEST_GAME_QUERY } from "../queries/games.queries";
+import { sanityFreshClient } from "../client";
 import { fetchSanityQuery } from "../sanityFetch";
 import { getLatestGame } from "./games.service";
 
@@ -38,7 +39,7 @@ describe("games.service", () => {
     const game = await getLatestGame();
 
     expect(fetchSanityQueryMock).toHaveBeenCalledWith(LATEST_GAME_QUERY, {
-      useCdn: false,
+      client: sanityFreshClient,
     });
     expect(game).toMatchObject({
       id: "game-1",

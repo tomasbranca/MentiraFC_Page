@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getPlayers } from "../../../../data/players";
 import { getStaff } from "../../../../data/staff";
 import { queryKeys } from "../../../../data/queryKeys";
+import { SANITY_FRESHNESS } from "../../../../data/sanity/freshness";
 import { reportError } from "../../../../lib/errors/errorLogger";
 import {
   shouldLoadStaffInitially,
@@ -53,10 +54,12 @@ export const useTeamData = () => {
         throw error;
       }
     },
-    enabled: needsInitialFetch,
+    enabled: true,
     initialData: needsInitialFetch ? undefined : initialPlayers,
     placeholderData: needsInitialFetch ? initialPlayers : undefined,
-    refetchOnMount: needsInitialFetch ? "always" : false,
+    refetchInterval: SANITY_FRESHNESS.semiDynamic.refetchInterval,
+    refetchOnMount: true,
+    staleTime: SANITY_FRESHNESS.semiDynamic.staleTime,
   });
 
   const staffQuery = useQuery({
@@ -72,10 +75,12 @@ export const useTeamData = () => {
         throw error;
       }
     },
-    enabled: needsInitialStaffFetch,
+    enabled: true,
     initialData: needsInitialStaffFetch ? undefined : initialStaff,
     placeholderData: needsInitialStaffFetch ? initialStaff : undefined,
-    refetchOnMount: needsInitialStaffFetch ? "always" : false,
+    refetchInterval: SANITY_FRESHNESS.semiDynamic.refetchInterval,
+    refetchOnMount: true,
+    staleTime: SANITY_FRESHNESS.semiDynamic.staleTime,
   });
 
   const players = playersQuery.data ?? EMPTY_PLAYERS;
@@ -87,7 +92,10 @@ export const useTeamData = () => {
   const loading =
     (needsInitialFetch && playersQuery.isFetching) ||
     (needsInitialStaffFetch && staffQuery.isFetching);
-  const error = Boolean(playersQuery.error || staffQuery.error);
+  const error = Boolean(
+    (playersQuery.error && typeof playersQuery.data === "undefined") ||
+      (staffQuery.error && typeof staffQuery.data === "undefined")
+  );
 
   return {
     players,

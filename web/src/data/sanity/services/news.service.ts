@@ -6,18 +6,22 @@ import {
 } from "../queries/news.queries";
 
 import { adaptNews, adaptSingleNews } from "../adapters/news.adapter";
+import { sanityFreshClient } from "../client";
 import { fetchSanityQuery } from "../sanityFetch";
 import type { NewsItem } from "../../../types/models";
 
 const MIN_RESULTS = 3;
 
 export const getNews = async (): Promise<NewsItem[]> => {
-  const data = await fetchSanityQuery(NEWS_QUERY);
+  const data = await fetchSanityQuery(NEWS_QUERY, {
+    client: sanityFreshClient,
+  });
   return adaptNews(data);
 };
 
 export const getNewsBySlug = async (slug: string): Promise<NewsItem | null> => {
   const data = await fetchSanityQuery(NEWS_BY_SLUG_QUERY, {
+    client: sanityFreshClient,
     params: { slug },
   });
   return adaptSingleNews(data);

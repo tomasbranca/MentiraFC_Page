@@ -1,5 +1,6 @@
 import { adaptGame } from "../adapters/games.adapter";
 import { adaptNews } from "../adapters/news.adapter";
+import { sanityFreshClient } from "../client";
 import { HOME_CRITICAL_QUERY } from "../queries/home.queries";
 import { fetchSanityQuery } from "../sanityFetch";
 
@@ -16,7 +17,7 @@ export const getHomeCriticalData = async (): Promise<{
 }> => {
   const data = await fetchSanityQuery<HomeCriticalResponse>(
     HOME_CRITICAL_QUERY,
-    { useCdn: false }
+    { client: sanityFreshClient }
   );
 
   return {

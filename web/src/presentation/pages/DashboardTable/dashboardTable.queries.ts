@@ -6,6 +6,7 @@ import {
   fetchDashboardTables,
 } from "../../../data/dashboardTable";
 import { queryKeys } from "../../../data/queryKeys";
+import { SANITY_FRESHNESS } from "../../../data/sanity/freshness";
 import { reportError } from "../../../lib/errors/errorLogger";
 import type { DashboardTableItem } from "../../../types/dashboard";
 
@@ -23,6 +24,7 @@ export const dashboardTablesListQueryOptions = () =>
         throw error;
       }
     },
+    ...SANITY_FRESHNESS.dashboard,
   });
 
 export const dashboardTableOptionsQueryOptions = () =>
@@ -39,6 +41,7 @@ export const dashboardTableOptionsQueryOptions = () =>
         throw error;
       }
     },
+    ...SANITY_FRESHNESS.dashboard,
   });
 
 export const dashboardTableDetailQueryOptions = (id: string) =>
@@ -56,6 +59,7 @@ export const dashboardTableDetailQueryOptions = (id: string) =>
         throw error;
       }
     },
+    ...SANITY_FRESHNESS.dashboard,
   });
 
 export const invalidateDashboardTablesList = async (
@@ -74,6 +78,7 @@ export const invalidateDashboardTablePublishDependencies = async (
     queryClient.invalidateQueries({
       queryKey: queryKeys.tournaments.current,
     }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.home.deferred }),
   ]);
 };
 

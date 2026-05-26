@@ -45,6 +45,7 @@ describe("dashboardPlayers query helpers", () => {
       { queryKey: queryKeys.dashboard.matches.options },
       { queryKey: queryKeys.games.all },
       { queryKey: queryKeys.events.goals() },
+      { queryKey: queryKeys.home.deferred },
     ]);
   });
 

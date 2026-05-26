@@ -5,6 +5,7 @@ import {
   fetchDashboardStaffById,
 } from "../../../data/dashboardStaff";
 import { queryKeys } from "../../../data/queryKeys";
+import { SANITY_FRESHNESS } from "../../../data/sanity/freshness";
 import { reportError } from "../../../lib/errors/errorLogger";
 import type { DashboardStaffItem } from "../../../types/dashboard";
 
@@ -22,6 +23,7 @@ export const dashboardStaffListQueryOptions = () =>
         throw error;
       }
     },
+    ...SANITY_FRESHNESS.dashboard,
   });
 
 export const dashboardStaffDetailQueryOptions = (id: string) =>
@@ -39,6 +41,7 @@ export const dashboardStaffDetailQueryOptions = (id: string) =>
         throw error;
       }
     },
+    ...SANITY_FRESHNESS.dashboard,
   });
 
 export const invalidateDashboardStaffList = async (

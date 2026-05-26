@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { getGalleries } from "../../../../data/galleries";
 import { queryKeys } from "../../../../data/queryKeys";
+import { SANITY_FRESHNESS } from "../../../../data/sanity/freshness";
 import { reportError } from "../../../../lib/errors/errorLogger";
 import type { GalleryItem } from "../../../../types/models";
 import { useInitialData } from "../../../context/useInitialData";
@@ -39,10 +40,12 @@ export const useGalleryData = () => {
         throw error;
       }
     },
-    enabled: needsInitialFetch,
+    enabled: true,
     initialData: needsInitialFetch ? undefined : initialGalleries,
     placeholderData: needsInitialFetch ? initialGalleries : undefined,
-    refetchOnMount: needsInitialFetch ? "always" : false,
+    refetchInterval: SANITY_FRESHNESS.semiDynamic.refetchInterval,
+    refetchOnMount: true,
+    staleTime: SANITY_FRESHNESS.semiDynamic.staleTime,
   });
 
   const galleries = useMemo(
@@ -50,7 +53,9 @@ export const useGalleryData = () => {
     [galleriesQuery.data]
   );
   const loading = needsInitialFetch && galleriesQuery.isFetching;
-  const error = Boolean(galleriesQuery.error);
+  const error = Boolean(
+    galleriesQuery.error && typeof galleriesQuery.data === "undefined"
+  );
 
   return {
     galleries,

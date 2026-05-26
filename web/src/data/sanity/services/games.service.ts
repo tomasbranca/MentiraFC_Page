@@ -5,20 +5,27 @@ import {
 } from "../queries/games.queries";
 
 import { adaptGame, adaptGames } from "../adapters/games.adapter";
+import { sanityFreshClient } from "../client";
 import { fetchSanityQuery } from "../sanityFetch";
 import type { Game } from "../../../types/models";
 
 export const getLatestGame = async (): Promise<Game | null> => {
-  const data = await fetchSanityQuery(LATEST_GAME_QUERY, { useCdn: false });
+  const data = await fetchSanityQuery(LATEST_GAME_QUERY, {
+    client: sanityFreshClient,
+  });
   return adaptGame(data);
 };
 
 export const getFinishedGames = async (): Promise<Game[]> => {
-  const data = await fetchSanityQuery(FINISHED_GAMES_QUERY);
+  const data = await fetchSanityQuery(FINISHED_GAMES_QUERY, {
+    client: sanityFreshClient,
+  });
   return adaptGames(data);
 };
 
 export const getFinishedTournamentGames = async (): Promise<Game[]> => {
-  const data = await fetchSanityQuery(FINISHED_TOURNAMENT_GAMES_QUERY);
+  const data = await fetchSanityQuery(FINISHED_TOURNAMENT_GAMES_QUERY, {
+    client: sanityFreshClient,
+  });
   return adaptGames(data);
 };

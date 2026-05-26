@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { getNews } from "../../../../data/news";
 import { queryKeys } from "../../../../data/queryKeys";
+import { SANITY_FRESHNESS } from "../../../../data/sanity/freshness";
 import { reportError } from "../../../../lib/errors/errorLogger";
 import { shouldLoadNewsInitially } from "../../../hooks/loading/loadingState.utils";
 import { useInitialData } from "../../../context/useInitialData";
@@ -36,15 +37,19 @@ export const useNewsData = () => {
         throw error;
       }
     },
-    enabled: needsInitialFetch,
+    enabled: true,
     initialData: needsInitialFetch ? undefined : initialNews,
     placeholderData: needsInitialFetch ? initialNews : undefined,
-    refetchOnMount: needsInitialFetch ? "always" : false,
+    refetchInterval: SANITY_FRESHNESS.news.refetchInterval,
+    refetchOnMount: "always",
+    staleTime: SANITY_FRESHNESS.news.staleTime,
   });
 
   const news = useMemo(() => sortNews(newsQuery.data ?? []), [newsQuery.data]);
   const loading = needsInitialFetch && newsQuery.isFetching;
-  const error = Boolean(newsQuery.error);
+  const error = Boolean(
+    newsQuery.error && typeof newsQuery.data === "undefined"
+  );
 
   return {
     news,

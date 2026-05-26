@@ -5,13 +5,6 @@ export const NEWS_QUERY = `
     _id,
     title,
     description,
-    content[]{
-      ...,
-      "imageUrl": asset->url,
-      "fileUrl": file.asset->url,
-      "mimeType": file.asset->mimeType,
-      "originalFilename": file.asset->originalFilename
-    },
     date,
     slug,
     "imageAlt": image.alt,

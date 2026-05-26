@@ -6,6 +6,7 @@ import {
   fetchDashboardTournaments,
 } from "../../../data/dashboardTournaments";
 import { queryKeys } from "../../../data/queryKeys";
+import { SANITY_FRESHNESS } from "../../../data/sanity/freshness";
 import { reportError } from "../../../lib/errors/errorLogger";
 import type { DashboardTournamentItem } from "../../../types/dashboard";
 
@@ -23,6 +24,7 @@ export const dashboardTournamentsListQueryOptions = () =>
         throw error;
       }
     },
+    ...SANITY_FRESHNESS.dashboard,
   });
 
 export const dashboardTournamentOptionsQueryOptions = () =>
@@ -39,6 +41,7 @@ export const dashboardTournamentOptionsQueryOptions = () =>
         throw error;
       }
     },
+    ...SANITY_FRESHNESS.dashboard,
   });
 
 export const dashboardTournamentDetailQueryOptions = (id: string) =>
@@ -56,6 +59,7 @@ export const dashboardTournamentDetailQueryOptions = (id: string) =>
         throw error;
       }
     },
+    ...SANITY_FRESHNESS.dashboard,
   });
 
 export const invalidateDashboardTournamentsList = async (
@@ -83,6 +87,7 @@ export const invalidateDashboardTournamentPublishDependencies = async (
     queryClient.invalidateQueries({
       queryKey: queryKeys.tournaments.current,
     }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.home.deferred }),
   ]);
 };
 

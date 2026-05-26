@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getPlayers } from "../../../data/players";
 import { getStaff } from "../../../data/staff";
 import { queryKeys } from "../../../data/queryKeys";
+import { SANITY_FRESHNESS } from "../../../data/sanity/freshness";
 import { reportError } from "../../../lib/errors/errorLogger";
 import { useInitialData } from "../../context/useInitialData";
 import type { Player, StaffMember } from "../../../types/models";
@@ -63,10 +64,12 @@ export const useRosterMembers = (source: string) => {
         throw error;
       }
     },
-    enabled: shouldLoadPlayers,
+    enabled: true,
     initialData: shouldLoadPlayers ? undefined : initialPlayers,
     placeholderData: shouldLoadPlayers ? initialData.players : undefined,
-    refetchOnMount: shouldLoadPlayers ? "always" : false,
+    refetchInterval: SANITY_FRESHNESS.semiDynamic.refetchInterval,
+    refetchOnMount: true,
+    staleTime: SANITY_FRESHNESS.semiDynamic.staleTime,
   });
 
   const staffQuery = useQuery({
@@ -82,10 +85,12 @@ export const useRosterMembers = (source: string) => {
         throw error;
       }
     },
-    enabled: shouldLoadStaff,
+    enabled: true,
     initialData: shouldLoadStaff ? undefined : initialStaffMembers,
     placeholderData: shouldLoadStaff ? initialData.staff : undefined,
-    refetchOnMount: shouldLoadStaff ? "always" : false,
+    refetchInterval: SANITY_FRESHNESS.semiDynamic.refetchInterval,
+    refetchOnMount: true,
+    staleTime: SANITY_FRESHNESS.semiDynamic.staleTime,
   });
 
   return {
