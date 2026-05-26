@@ -61,6 +61,12 @@ const DashboardMatchesList = lazyWithReload(
 const DashboardMatchesForm = lazyWithReload(
   () => import("./presentation/pages/DashboardMatches/DashboardMatchesForm")
 );
+const DashboardGalleriesList = lazyWithReload(
+  () => import("./presentation/pages/DashboardGalleries/DashboardGalleriesList")
+);
+const DashboardGalleriesForm = lazyWithReload(
+  () => import("./presentation/pages/DashboardGalleries/DashboardGalleriesForm")
+);
 const DashboardTableList = lazyWithReload(
   () => import("./presentation/pages/DashboardTable/DashboardTableList")
 );
@@ -296,6 +302,39 @@ function App({ initialData }: AppProps) {
                         action="edit"
                       >
                         <DashboardMatchesForm />
+                      </RequireDashboardPermission>
+                    }
+                  />
+                  <Route
+                    path="galerias"
+                    element={
+                      <RequireDashboardPermission
+                        resource="galleries"
+                        action="view"
+                      >
+                        <DashboardGalleriesList />
+                      </RequireDashboardPermission>
+                    }
+                  />
+                  <Route
+                    path="galerias/nueva"
+                    element={
+                      <RequireDashboardPermission
+                        resource="galleries"
+                        action="create"
+                      >
+                        <DashboardGalleriesForm />
+                      </RequireDashboardPermission>
+                    }
+                  />
+                  <Route
+                    path="galerias/:id"
+                    element={
+                      <RequireDashboardPermission
+                        resource="galleries"
+                        action="edit"
+                      >
+                        <DashboardGalleriesForm />
                       </RequireDashboardPermission>
                     }
                   />

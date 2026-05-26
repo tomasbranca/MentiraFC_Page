@@ -36,6 +36,7 @@ const writeWebResponse = async (response, nodeResponse) => {
 export const DASHBOARD_API_RESOURCES = new Set([
   "news",
   "matches",
+  "galleries",
   "table",
   "tournaments",
   "organizations",
@@ -95,7 +96,7 @@ const createDashboardApiDevPlugin = (env) => ({
           `/api/dashboard${normalizedRelativePath}`,
           "http://localhost"
         );
-        const routeModulePath = `/api/dashboard/${resource}/index.ts`;
+        const routeModulePath = `/api/dashboard/[resource].ts`;
         const routeModule = await server.ssrLoadModule(routeModulePath);
         const routeHandler =
           routeModule.default?.fetch ?? routeModule.default;

@@ -85,6 +85,10 @@ export const invalidateDashboardTournamentPublishDependencies = async (
       queryKey: queryKeys.dashboard.table.options,
     }),
     queryClient.invalidateQueries({
+      queryKey: queryKeys.dashboard.galleries.all,
+    }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.galleries.all }),
+    queryClient.invalidateQueries({
       queryKey: queryKeys.tournaments.current,
     }),
     queryClient.invalidateQueries({ queryKey: queryKeys.home.deferred }),

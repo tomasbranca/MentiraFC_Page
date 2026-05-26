@@ -9,6 +9,7 @@ import {
   FiFileText,
   FiFlag,
   FiHome,
+  FiImage,
   FiMessageSquare,
   FiShield,
   FiUsers,
@@ -31,6 +32,7 @@ const AppToaster = lazyWithReload(() => import("../../app/AppToaster"));
 const sectionIcons = {
   news: FiFileText,
   matches: FiCalendar,
+  galleries: FiImage,
   players: FiUsers,
   organizations: FiFlag,
   teams: FiShield,

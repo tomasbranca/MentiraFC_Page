@@ -71,6 +71,19 @@ export const DASHBOARD_TEAM_IMAGE_MAX_BYTES = 4 * 1024 * 1024;
 
 export const DASHBOARD_TEAM_IMAGE_MAX_MEGAPIXELS = 256;
 
+export const DASHBOARD_GALLERY_IMAGE_ACCEPTED_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+] as const;
+
+export const DASHBOARD_GALLERY_IMAGE_ACCEPTED_EXTENSIONS =
+  ".jpg,.jpeg,.png,.webp";
+
+export const DASHBOARD_GALLERY_IMAGE_MAX_BYTES = 4 * 1024 * 1024;
+
+export const DASHBOARD_GALLERY_IMAGE_MAX_MEGAPIXELS = 256;
+
 export type DashboardNewsStatus = "published" | "draft";
 
 export type DashboardNewsItem = {
@@ -122,6 +135,106 @@ export type DashboardNewsDraftMutationInput = Partial<DashboardNewsInput> & {
 };
 
 export type DashboardDocumentStatus = "published" | "draft";
+
+export type DashboardGalleryPhotoItem = {
+  key?: string | null;
+  imageAssetId?: string | null;
+  imageUrl?: string | null;
+  alt?: string | null;
+  caption?: string | null;
+  isHero?: boolean;
+  originalFilename?: string | null;
+  dimensions?: {
+    width?: number | null;
+    height?: number | null;
+    aspectRatio?: number | null;
+  } | null;
+};
+
+export type DashboardGalleryItem = {
+  id: string;
+  publishedId?: string | null;
+  draftId?: string | null;
+  status: DashboardDocumentStatus;
+  hasDraft: boolean;
+  hasPublishedVersion: boolean;
+  slug: string;
+  updatedAt?: string | null;
+  gameId?: string | null;
+  gameDate?: string | null;
+  gameState?: string | null;
+  gameLocation?: string | null;
+  gameCompetition?: string | null;
+  gameTournamentId?: string | null;
+  gameTournamentName?: string | null;
+  gameTournamentOrganizationName?: string | null;
+  rivalId?: string | null;
+  rivalName?: string | null;
+  rivalImageUrl?: string | null;
+  goalsFor?: number | null;
+  goalsAgainst?: number | null;
+  photos: DashboardGalleryPhotoItem[];
+  photoCount: number;
+};
+
+export type DashboardGalleryGameOption = {
+  id: string;
+  date?: string | null;
+  state?: string | null;
+  location?: string | null;
+  competition?: string | null;
+  tournamentId?: string | null;
+  tournamentName?: string | null;
+  tournamentOrganizationName?: string | null;
+  rivalId?: string | null;
+  rivalName?: string | null;
+  rivalImageUrl?: string | null;
+  goalsFor?: number | null;
+  goalsAgainst?: number | null;
+};
+
+export type DashboardGalleryOptions = {
+  games: DashboardGalleryGameOption[];
+};
+
+export type DashboardGalleryPhotoInput = {
+  key: string;
+  imageAssetId: string;
+  imageUrl: string;
+  uploadKey: string;
+  alt: string;
+  caption: string;
+  isHero: boolean;
+  file?: File | null;
+};
+
+export type DashboardGalleryInput = {
+  gameId: string;
+  slug: string;
+  photos: DashboardGalleryPhotoInput[];
+};
+
+export type DashboardGalleryPhotoMutationInput = {
+  key?: string;
+  imageAssetId?: string;
+  uploadKey?: string;
+  alt?: string;
+  caption?: string;
+  isHero?: boolean;
+};
+
+export type DashboardGalleryMutationInput = {
+  gameId: string;
+  slug: string;
+  photos: DashboardGalleryPhotoMutationInput[];
+  photoImageFiles?: Record<string, File>;
+};
+
+export type DashboardGalleryDraftMutationInput = Partial<
+  Omit<DashboardGalleryMutationInput, "photos">
+> & {
+  photos?: DashboardGalleryPhotoMutationInput[];
+};
 
 export type DashboardPlayerPosition = "arq" | "def" | "med" | "del";
 

@@ -17,4 +17,18 @@ describe("getRouteInitialData", () => {
       expect(payload.latestGame).toBeNull();
     }));
   });
+  it("usa un payload minimo para las rutas internas del dashboard", async () => {
+    await Promise.all([
+      ROUTES.DASHBOARD,
+      ROUTES.DASHBOARD_GALLERIES,
+      ROUTES.DASHBOARD_GALLERIES_NEW,
+      ROUTES.DASHBOARD_GALLERIES_EDIT("galleries-1"),
+    ].map(async (route) => {
+      const payload = await getRouteInitialData(route);
+
+      expect(payload.bootstrapScope).toBe("empty");
+      expect(payload.galleries).toEqual([]);
+      expect(payload.latestGame).toBeNull();
+    }));
+  });
 });

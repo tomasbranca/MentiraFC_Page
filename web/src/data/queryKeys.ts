@@ -45,6 +45,11 @@ export const queryKeys = {
       byId: (id: string) => ["dashboard", "matches", id] as const,
       options: ["dashboard", "matches", "options"] as const,
     },
+    galleries: {
+      all: ["dashboard", "galleries"] as const,
+      byId: (id: string) => ["dashboard", "galleries", id] as const,
+      options: ["dashboard", "galleries", "options"] as const,
+    },
     players: {
       all: ["dashboard", "players"] as const,
       byId: (id: string) => ["dashboard", "players", id] as const,

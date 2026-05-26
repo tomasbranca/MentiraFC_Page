@@ -14,6 +14,8 @@ export const ROUTES = {
   DASHBOARD_NEWS_NEW: "/dashboard/noticias/nueva",
   DASHBOARD_MATCHES: "/dashboard/partidos",
   DASHBOARD_MATCHES_NEW: "/dashboard/partidos/nuevo",
+  DASHBOARD_GALLERIES: "/dashboard/galerias",
+  DASHBOARD_GALLERIES_NEW: "/dashboard/galerias/nueva",
   DASHBOARD_TABLE: "/dashboard/tabla",
   DASHBOARD_TABLE_NEW: "/dashboard/tabla/nueva",
   DASHBOARD_TOURNAMENTS: "/dashboard/torneos",
@@ -33,6 +35,7 @@ export const ROUTES = {
   STAFF_DETAIL: (slug: string) => `/plantel/staff/${slug}`,
   DASHBOARD_NEWS_EDIT: (id: string) => `/dashboard/noticias/${id}`,
   DASHBOARD_MATCHES_EDIT: (id: string) => `/dashboard/partidos/${id}`,
+  DASHBOARD_GALLERIES_EDIT: (id: string) => `/dashboard/galerias/${id}`,
   DASHBOARD_TABLE_EDIT: (id: string) => `/dashboard/tabla/${id}`,
   DASHBOARD_TOURNAMENTS_EDIT: (id: string) => `/dashboard/torneos/${id}`,
   DASHBOARD_ORGANIZATIONS_EDIT: (id: string) =>

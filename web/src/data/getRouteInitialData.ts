@@ -183,13 +183,17 @@ export const getRouteInitialData = async (
 ): Promise<InitialDataPayload> => {
   const normalizedPathname =
     pathname === ROUTES.HOME ? pathname : pathname.replace(/\/+$/, "");
+  const isDashboardPathname =
+    normalizedPathname === ROUTES.DASHBOARD ||
+    normalizedPathname.startsWith(`${ROUTES.DASHBOARD}/`);
 
   // Each route gets the smallest useful bootstrap payload; generic pages fall
   // back to the full dataset because they depend on shared widgets.
   if (
     normalizedPathname === ROUTES.LOGIN ||
     normalizedPathname === ROUTES.PASSWORD_RESET_REQUEST ||
-    normalizedPathname === ROUTES.PASSWORD_RESET_UPDATE
+    normalizedPathname === ROUTES.PASSWORD_RESET_UPDATE ||
+    isDashboardPathname
   ) {
     return createEmptyInitialData();
   }

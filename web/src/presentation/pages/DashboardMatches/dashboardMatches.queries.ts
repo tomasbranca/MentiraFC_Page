@@ -75,12 +75,19 @@ export const invalidateDashboardMatchPublishDependencies = async (
 ) => {
   await Promise.all([
     invalidateDashboardMatchesList(queryClient),
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.dashboard.galleries.all,
+    }),
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.dashboard.galleries.options,
+    }),
     queryClient.invalidateQueries({ queryKey: queryKeys.games.latest }),
     queryClient.invalidateQueries({ queryKey: queryKeys.games.finished }),
     queryClient.invalidateQueries({
       queryKey: queryKeys.games.tournamentFinished,
     }),
     queryClient.invalidateQueries({ queryKey: queryKeys.events.goals() }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.galleries.all }),
     queryClient.invalidateQueries({ queryKey: queryKeys.home.critical }),
     queryClient.invalidateQueries({ queryKey: queryKeys.home.deferred }),
   ]);

@@ -31,6 +31,10 @@ const DASHBOARD_ROUTE_ACTION_LABELS = {
     edit: "Editar partido",
     new: "Nuevo partido",
   },
+  galleries: {
+    edit: "Editar galeria",
+    new: "Nueva galeria",
+  },
   players: {
     edit: "Editar jugador",
     new: "Nuevo jugador",

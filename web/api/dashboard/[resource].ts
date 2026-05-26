@@ -1,4 +1,5 @@
 import dashboardMatchesRoute from "./matches/_handler.js";
+import dashboardGalleriesRoute from "./galleries/_handler.js";
 import dashboardNewsRoute from "./news/_handler.js";
 import dashboardOrganizationsRoute from "./organizations/_handler.js";
 import dashboardPlayersRoute from "./players/_handler.js";
@@ -14,6 +15,7 @@ type DashboardRoute = {
 
 const dashboardRoutes: Record<string, DashboardRoute> = {
   matches: dashboardMatchesRoute,
+  galleries: dashboardGalleriesRoute,
   news: dashboardNewsRoute,
   organizations: dashboardOrganizationsRoute,
   players: dashboardPlayersRoute,
