@@ -53,8 +53,8 @@ const NewsBentoGrid = ({ items = [] }: NewsBentoGridProps) => {
       </div>
 
       {/* DESKTOP */}
-      <div className="hidden md:grid md:grid-cols-3 md:auto-rows-[120px] md:gap-4">
-        <div className="md:col-span-3 md:row-span-4">
+      <div className="hidden md:grid md:grid-cols-2 md:auto-rows-[120px] md:gap-4 lg:grid-cols-3">
+        <div className="md:col-span-2 md:row-span-4 lg:col-span-3">
           {hero && (
             <NewsCard
               item={hero}
@@ -76,7 +76,7 @@ const NewsBentoGrid = ({ items = [] }: NewsBentoGridProps) => {
           )}
         </div>
 
-        <div className="md:col-span-2 md:row-span-3">
+        <div className="md:col-span-1 md:row-span-3 lg:col-span-2">
           {featuredWide && (
             <NewsCard
               item={featuredWide}

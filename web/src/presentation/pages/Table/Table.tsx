@@ -268,10 +268,10 @@ const Table = () => {
                   <th className="py-3 px-2 text-center">G</th>
                   <th className="py-3 px-2 text-center">E</th>
                   <th className="py-3 px-2 text-center">P</th>
-                  <th className="py-3 px-2 text-center hidden sm:table-cell">
+                  <th className="hidden py-3 px-2 text-center lg:table-cell">
                     GF
                   </th>
-                  <th className="py-3 px-2 text-center hidden sm:table-cell">
+                  <th className="hidden py-3 px-2 text-center lg:table-cell">
                     GC
                   </th>
                   <th className="py-3 px-2 text-center">DG</th>
@@ -315,14 +315,14 @@ const Table = () => {
                       </td>
 
                       <td className="py-3 px-3">
-                        <div className="flex items-center gap-3">
+                        <div className="flex min-w-0 items-center gap-3">
                           <LogoImage
                             image={row.team.imageUrl}
                             name={row.team.name}
                             size="sm"
                           />
                           <span
-                            className={`font-semibold ${
+                            className={`truncate font-semibold ${
                               row.team.isMain ? "text-violet-400" : "text-white"
                             }`}
                           >
@@ -343,10 +343,10 @@ const Table = () => {
                       <td className="text-center text-neutral-400">
                         {row.losses}
                       </td>
-                      <td className="text-center text-neutral-400 hidden sm:table-cell">
+                      <td className="hidden text-center text-neutral-400 lg:table-cell">
                         {row.goalsFor}
                       </td>
-                      <td className="text-center text-neutral-400 hidden sm:table-cell">
+                      <td className="hidden text-center text-neutral-400 lg:table-cell">
                         {row.goalsAgainst}
                       </td>
 

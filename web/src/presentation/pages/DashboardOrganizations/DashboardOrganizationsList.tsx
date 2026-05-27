@@ -323,7 +323,7 @@ const DashboardOrganizationsList = () => {
           ) : (
         <div className="p-3 sm:p-5">
           <div className="overflow-hidden rounded-sm border border-white/10 bg-[#16161a]">
-            <div className="divide-y divide-white/8 md:hidden">
+            <div className="divide-y divide-white/8 lg:hidden">
               {organizations.map((item) => (
                 <article key={item.id} className="p-3 text-sm text-violet-50 sm:p-4">
                   <div className="mb-3 flex min-w-0 items-center justify-between gap-3">
@@ -377,7 +377,7 @@ const DashboardOrganizationsList = () => {
               ))}
             </div>
 
-            <table className="hidden w-full border-collapse text-left md:table">
+            <table className="hidden w-full border-collapse text-left lg:table">
               <thead className="bg-white/2.5 text-xs uppercase tracking-[0.16em] text-violet-100/60">
                 <tr>
                   <th className="px-5 py-4">Organizador</th>

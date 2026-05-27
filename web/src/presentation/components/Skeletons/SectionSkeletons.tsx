@@ -38,16 +38,16 @@ export const GameWidgetSkeleton = ({ compact = false }: { compact?: boolean }) =
 );
 
 export const TopScorersSkeleton = () => (
-  <section className="p-4 m-6 lg:col-span-2" aria-label="Cargando máximos goleadores">
-    <div className="flex flex-col items-center lg:flex-row lg:items-center mb-8">
-      <h2 className="font-extrabold uppercase whitespace-nowrap text-white bg-violet-900 px-6 py-2 text-center text-[clamp(1.2rem,5vw,1.6rem)] lg:text-violet-900 lg:bg-transparent lg:px-0 lg:py-0">
+  <section className="m-4 p-4 sm:m-6 xl:col-span-2" aria-label="Cargando máximos goleadores">
+    <div className="mb-6 flex flex-col items-center md:mb-8 xl:flex-row xl:items-center">
+      <h2 className="font-extrabold uppercase whitespace-nowrap text-white bg-violet-900 px-6 py-2 text-center text-[clamp(1.2rem,5vw,1.6rem)] xl:text-violet-900 xl:bg-transparent xl:px-0 xl:py-0">
         Máximos goleadores
       </h2>
 
-      <div className="hidden lg:block bg-violet-900 h-8 grow ml-4" />
+      <div className="hidden xl:block bg-violet-900 h-8 grow ml-4" />
     </div>
 
-    <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-2 lg:hidden">
+    <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-2 md:hidden">
       {Array.from({ length: TOP_SCORERS_SKELETON_CARD_COUNT }).map((_, index) => (
         <div
           key={index}
@@ -58,10 +58,16 @@ export const TopScorersSkeleton = () => (
       ))}
     </div>
 
-    <div className="hidden lg:block">
+    <div className="hidden grid-cols-4 gap-4 md:grid xl:hidden">
+      {Array.from({ length: TOP_SCORERS_SKELETON_CARD_COUNT }).map((_, index) => (
+        <PlayerCardSkeleton key={index} />
+      ))}
+    </div>
+
+    <div className="hidden xl:block">
       <div className="flex justify-between">
         {Array.from({ length: TOP_SCORERS_SKELETON_CARD_COUNT }).map((_, index) => (
-          <div key={index} className="w-45 lg:w-50">
+          <div key={index} className="w-45 xl:w-50">
             <PlayerCardSkeleton />
           </div>
         ))}
@@ -72,7 +78,7 @@ export const TopScorersSkeleton = () => (
 
 export const TableWidgetSkeleton = () => (
   <section
-    className="bg-linear-to-b from-stone-900 to-stone-950 p-4 lg:p-6 mx-0 lg:m-6 shadow-xl h-fit"
+    className="mx-0 bg-linear-to-b from-stone-900 to-stone-950 p-4 shadow-xl h-fit md:m-6 lg:p-6"
     aria-label="Cargando clasificación"
   >
     <div className="mb-6">

@@ -33,10 +33,10 @@ const getInitials = (firstName?: string, lastName?: string): string => {
 };
 
 const getNavLinkClassName = (isActive: boolean) =>
-  `flex min-h-11 shrink-0 items-center gap-2 rounded-[4px] border px-3 py-2.5 text-sm font-semibold transition lg:w-full lg:gap-3 ${
+  `flex min-h-11 shrink-0 items-center gap-2 rounded-[4px] border px-3 py-2.5 text-sm font-semibold transition xl:w-full xl:gap-3 ${
     isActive
       ? "border-violet-200/45 bg-violet-100 text-violet-950 shadow-[0_12px_30px_rgba(139,92,246,0.2)]"
-      : "border-white/8 text-violet-100/75 hover:border-violet-200/28 hover:bg-white/6 hover:text-white lg:border-transparent"
+      : "border-white/8 text-violet-100/75 hover:border-violet-200/28 hover:bg-white/6 hover:text-white xl:border-transparent"
   }`;
 
 const AdminLayout = () => {
@@ -50,9 +50,9 @@ const AdminLayout = () => {
         <AppToaster />
       </Suspense>
 
-      <div className="mx-auto grid w-full max-w-384 gap-3 sm:gap-4 lg:grid-cols-[16rem_minmax(0,1fr)]">
-        <aside className="overflow-hidden rounded-[6px] border border-white/10 bg-[#141418] lg:sticky lg:top-8 lg:self-start">
-          <div className="border-b border-white/10 p-4 lg:p-5">
+      <div className="mx-auto grid w-full max-w-384 gap-3 sm:gap-4 xl:grid-cols-[16rem_minmax(0,1fr)]">
+        <aside className="overflow-hidden rounded-[6px] border border-white/10 bg-[#141418] xl:sticky xl:top-8 xl:self-start">
+          <div className="border-b border-white/10 p-4 xl:p-5">
             <div className="flex items-center gap-3">
               <div className="flex size-12 shrink-0 items-center justify-center rounded-full border border-violet-200/35 bg-violet-200 text-lg font-black text-violet-950">
                 {getInitials(account?.firstName, account?.lastName)}
@@ -69,7 +69,7 @@ const AdminLayout = () => {
           </div>
 
           <nav className="p-2" aria-label="Secciones del panel admin">
-            <div className="flex gap-2 overflow-x-auto pb-1 lg:block lg:space-y-1 lg:overflow-visible lg:pb-0">
+            <div className="flex gap-2 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible md:pb-0 xl:block xl:space-y-1">
               {ADMIN_SECTIONS.map((section) => {
                 const Icon = sectionIcons[section.id];
 
@@ -88,7 +88,7 @@ const AdminLayout = () => {
             </div>
           </nav>
 
-          <div className="hidden border-t border-white/10 p-2 lg:block">
+          <div className="hidden border-t border-white/10 p-2 xl:block">
             <Link
               to={ROUTES.DASHBOARD}
               className="flex min-h-11 items-center gap-3 rounded-[4px] px-3 py-2.5 text-sm text-violet-100/75 transition hover:bg-white/6 hover:text-white"

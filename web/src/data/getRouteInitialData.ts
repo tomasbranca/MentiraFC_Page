@@ -186,6 +186,9 @@ export const getRouteInitialData = async (
   const isDashboardPathname =
     normalizedPathname === ROUTES.DASHBOARD ||
     normalizedPathname.startsWith(`${ROUTES.DASHBOARD}/`);
+  const isAdminPathname =
+    normalizedPathname === ROUTES.ADMIN ||
+    normalizedPathname.startsWith(`${ROUTES.ADMIN}/`);
 
   // Each route gets the smallest useful bootstrap payload; generic pages fall
   // back to the full dataset because they depend on shared widgets.
@@ -193,7 +196,9 @@ export const getRouteInitialData = async (
     normalizedPathname === ROUTES.LOGIN ||
     normalizedPathname === ROUTES.PASSWORD_RESET_REQUEST ||
     normalizedPathname === ROUTES.PASSWORD_RESET_UPDATE ||
-    isDashboardPathname
+    normalizedPathname === ROUTES.ACCOUNT ||
+    isDashboardPathname ||
+    isAdminPathname
   ) {
     return createEmptyInitialData();
   }

@@ -287,7 +287,7 @@ const DashboardGalleriesList = () => {
           ) : (
             <div className="p-3 sm:p-5">
               <div className="overflow-hidden rounded-sm border border-white/10 bg-[#16161a]">
-                <div className="divide-y divide-white/8 md:hidden">
+                <div className="divide-y divide-white/8 lg:hidden">
                   {galleries.map((item) => (
                     <article
                       key={item.id}
@@ -342,7 +342,7 @@ const DashboardGalleriesList = () => {
                   ))}
                 </div>
 
-                <table className="hidden w-full border-collapse text-left md:table">
+                <table className="hidden w-full border-collapse text-left lg:table">
                   <thead className="bg-white/2.5 text-xs uppercase tracking-[0.16em] text-violet-100/60">
                     <tr>
                       <th className="px-5 py-4">Galeria</th>

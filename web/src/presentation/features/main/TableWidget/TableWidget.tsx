@@ -19,7 +19,7 @@ const TableWidget = ({ table }: TableWidgetProps) => {
   const surroundingTeams = getSurroundingTeams(standings, mainIndex);
 
   return (
-    <section className="bg-linear-to-b from-stone-900 to-stone-950 p-4 lg:p-6 mx-0 lg:m-6 shadow-xl h-fit">
+    <section className="mx-0 bg-linear-to-b from-stone-900 to-stone-950 p-4 shadow-xl h-fit md:m-6 lg:p-6">
       {/* HEADER */}
       <div className="mb-6">
         <h2 className="text-2xl lg:text-3xl font-extrabold uppercase text-white tracking-wide">

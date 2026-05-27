@@ -28,7 +28,7 @@ const FeaturedWideCard = ({
           quality: 70,
           autoFormat: true,
         })}
-        sizes="(max-width: 768px) calc(100vw - 48px), 66vw"
+        sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc(50vw - 32px), 66vw"
         alt={item.imageAlt || item.title}
         wrapperClassName="w-full h-55 md:absolute md:inset-0 md:h-full"
         className="w-full h-55 md:absolute md:inset-0 md:h-full object-cover"

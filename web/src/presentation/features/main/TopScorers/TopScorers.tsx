@@ -24,18 +24,18 @@ const TopScorers = ({ players = [] }: TopScorersProps) => {
   } = paginate(playersWithGoals, page, playersPerPage);
 
   return (
-    <section className="p-4 m-6 lg:col-span-2">
+    <section className="m-4 p-4 sm:m-6 xl:col-span-2">
       {/* HEADER */}
-      <div className="flex flex-col items-center lg:flex-row lg:items-center mb-8">
-        <h2 className="font-extrabold uppercase whitespace-nowrap text-white bg-violet-900 px-6 py-2 text-center text-[clamp(1.2rem,5vw,1.6rem)] lg:text-violet-900 lg:bg-transparent lg:px-0 lg:py-0">
+      <div className="mb-6 flex flex-col items-center md:mb-8 xl:flex-row xl:items-center">
+        <h2 className="font-extrabold uppercase whitespace-nowrap text-white bg-violet-900 px-6 py-2 text-center text-[clamp(1.2rem,5vw,1.6rem)] xl:text-violet-900 xl:bg-transparent xl:px-0 xl:py-0">
           Máximos goleadores
         </h2>
 
-        <div className="hidden lg:block bg-violet-900 h-8 grow ml-4"></div>
+        <div className="hidden xl:block bg-violet-900 h-8 grow ml-4"></div>
       </div>
 
       {/* MOBILE */}
-      <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-2 lg:hidden">
+      <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-2 md:hidden">
         {playersWithGoals.map((player) => (
           <div
             key={player.id}
@@ -46,8 +46,19 @@ const TopScorers = ({ players = [] }: TopScorersProps) => {
         ))}
       </div>
 
+      {/* TABLET */}
+      <div className="hidden grid-cols-4 gap-4 md:grid xl:hidden">
+        {playersWithGoals.slice(0, playersPerPage).map((player) => (
+          <PlayerCard
+            key={player.id}
+            player={player}
+            mode={PLAYER_CARD_MODE.GOALS}
+          />
+        ))}
+      </div>
+
       {/* DESKTOP */}
-      <div className="hidden lg:block">
+      <div className="hidden xl:block">
         <div
           className={`flex ${
             visiblePlayers.length < 4
@@ -56,7 +67,7 @@ const TopScorers = ({ players = [] }: TopScorersProps) => {
           }`}
         >
           {visiblePlayers.map((player) => (
-            <div key={player.id} className="w-45 lg:w-50">
+            <div key={player.id} className="w-45 xl:w-50">
               <PlayerCard player={player} mode={PLAYER_CARD_MODE.GOALS} />
             </div>
           ))}

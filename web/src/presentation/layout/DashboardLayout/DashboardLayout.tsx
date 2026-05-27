@@ -37,10 +37,10 @@ const sectionIcons = {
 } satisfies Record<DashboardPermissionResource, IconType>;
 
 const getNavLinkClassName = (isActive: boolean) =>
-  `flex min-h-11 shrink-0 items-center gap-2 rounded-[3px] border px-3 py-2.5 text-sm font-semibold transition lg:w-full lg:gap-3 ${
+  `flex min-h-11 shrink-0 items-center gap-2 rounded-[3px] border px-3 py-2.5 text-sm font-semibold transition xl:w-full xl:gap-3 ${
     isActive
-      ? "border-violet-300/40 bg-violet-500/18 text-white shadow-[inset_0_-2px_0_rgba(196,181,253,0.55)] lg:shadow-none"
-      : "border-white/8 text-violet-100/75 hover:border-white/14 hover:bg-white/4.5 hover:text-white lg:border-transparent"
+      ? "border-violet-300/40 bg-violet-500/18 text-white shadow-[inset_0_-2px_0_rgba(196,181,253,0.55)] xl:shadow-none"
+      : "border-white/8 text-violet-100/75 hover:border-white/14 hover:bg-white/4.5 hover:text-white xl:border-transparent"
   }`;
 
 const DashboardLayout = () => {
@@ -55,29 +55,29 @@ const DashboardLayout = () => {
         <AppToaster />
       </Suspense>
 
-      <div className="mx-auto grid w-full max-w-384 gap-3 sm:gap-4 lg:grid-cols-[16rem_minmax(0,1fr)]">
-        <aside className="overflow-hidden rounded-[4px] border border-white/10 bg-[#151518] lg:sticky lg:top-28 lg:self-start">
-          <div className="border-b border-white/10 p-3 sm:p-4 lg:p-5">
+      <div className="mx-auto grid w-full max-w-384 gap-3 sm:gap-4 xl:grid-cols-[16rem_minmax(0,1fr)]">
+        <aside className="overflow-hidden rounded-[4px] border border-white/10 bg-[#151518] xl:sticky xl:top-28 xl:self-start">
+          <div className="border-b border-white/10 p-3 sm:p-4 xl:p-5">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-violet-200/80">
                   Panel interno
                 </p>
-                <p className="mt-2 truncate text-xl font-black uppercase leading-none text-white lg:mt-3 lg:text-2xl">
-                  <span className="lg:hidden">{navigationContext.title}</span>
-                  <span className="hidden lg:inline">Dashboard</span>
+                <p className="mt-2 truncate text-xl font-black uppercase leading-none text-white xl:mt-3 xl:text-2xl">
+                  <span className="xl:hidden">{navigationContext.title}</span>
+                  <span className="hidden xl:inline">Dashboard</span>
                 </p>
-                <p className="mt-1 truncate text-xs text-violet-100/65 lg:mt-3 lg:text-sm">
-                  <span className="lg:hidden">
+                <p className="mt-1 truncate text-xs text-violet-100/65 xl:mt-3 xl:text-sm">
+                  <span className="xl:hidden">
                     {navigationContext.actionLabel}
                   </span>
-                  <span className="hidden lg:inline">Gestión del club</span>
+                  <span className="hidden xl:inline">Gestión del club</span>
                 </p>
               </div>
 
               <Link
                 to={ROUTES.HOME}
-                className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-[3px] border border-white/10 px-3 py-2 text-xs font-semibold text-violet-50 transition hover:border-violet-200/35 hover:bg-white/4.5 lg:hidden"
+                className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-[3px] border border-white/10 px-3 py-2 text-xs font-semibold text-violet-50 transition hover:border-violet-200/35 hover:bg-white/4.5 xl:hidden"
                 aria-label="Ir al sitio público"
                 title="Ir al sitio público"
               >
@@ -88,7 +88,7 @@ const DashboardLayout = () => {
           </div>
 
           <nav className="p-2" aria-label="Secciones del dashboard">
-            <div className="flex gap-2 overflow-x-auto pb-1 lg:block lg:space-y-1 lg:overflow-visible lg:pb-0">
+            <div className="flex gap-2 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible md:pb-0 xl:block xl:space-y-1">
               {allowedSections.length === 0 ? (
                 <p className="w-full rounded-[3px] border border-amber-200/20 bg-amber-200/10 px-3 py-2.5 text-sm text-amber-100">
                   No tenés secciones habilitadas.
@@ -114,7 +114,7 @@ const DashboardLayout = () => {
             </div>
           </nav>
 
-          <div className="hidden border-t border-white/10 p-2 lg:block">
+          <div className="hidden border-t border-white/10 p-2 xl:block">
             <Link
               to={ROUTES.HOME}
               className="flex min-h-11 items-center gap-3 rounded-[3px] px-3 py-2.5 text-sm text-violet-100/75 transition hover:bg-white/4.5 hover:text-white"
