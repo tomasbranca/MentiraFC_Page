@@ -60,9 +60,10 @@ const NewsList = ({ items = [] }: NewsListProps) => {
                 relative
                 w-full
                 h-50
-                md:w-1/4
+                md:w-[38%]
                 md:h-auto
                 md:min-h-30
+                lg:w-1/4
               "
               className="w-full h-full object-cover"
               width={480}
@@ -75,7 +76,7 @@ const NewsList = ({ items = [] }: NewsListProps) => {
               }
             />
 
-            <div className="flex flex-col justify-between px-5 py-4 w-full md:w-3/4">
+            <div className="flex flex-col justify-between px-5 py-4 w-full md:w-[62%] lg:w-3/4">
               <div className="max-w-3xl">
                 <h3 className="text-lg md:text-xl font-extrabold uppercase text-violet-900 leading-tight">
                   {item.title}

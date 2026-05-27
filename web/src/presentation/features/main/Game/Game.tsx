@@ -47,7 +47,7 @@ const Game = ({ game, loading }: GameProps) => {
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between">
           {/* LOCAL */}
-          <div className="w-[35%] sm:w-[15%] flex flex-col items-center shrink-0">
+          <div className="w-[35%] sm:w-[18%] xl:w-[15%] flex flex-col items-center shrink-0">
             <img
               src={SITE_LOGO_ASSETS.large}
               srcSet={SITE_LOGO_SRC_SET}
@@ -55,7 +55,7 @@ const Game = ({ game, loading }: GameProps) => {
               alt="Mentira FC"
               width={160}
               height={160}
-              className="w-24 h-24 sm:w-24 sm:h-24 lg:w-36 lg:h-36 object-cover rounded-full scale-175 sm:scale-100 -translate-x-12 sm:translate-x-0"
+              className="w-24 h-24 sm:w-24 sm:h-24 md:w-32 md:h-32 xl:w-36 xl:h-36 object-cover rounded-full scale-175 sm:scale-100 -translate-x-12 sm:translate-x-0"
             />
 
             <span className="hidden sm:block mt-2 text-sm lg:text-base">
@@ -64,7 +64,7 @@ const Game = ({ game, loading }: GameProps) => {
           </div>
 
           {/* CENTRO */}
-          <div className="w-[30%] sm:w-[70%] flex flex-col items-center text-center gap-3">
+          <div className="w-[30%] sm:w-[64%] xl:w-[70%] flex flex-col items-center text-center gap-3">
             {isScheduledGameState(game.state) && !isInProgress && (
               <>
                 <span className="uppercase text-xs tracking-widest opacity-70">
@@ -134,7 +134,7 @@ const Game = ({ game, loading }: GameProps) => {
           </div>
 
           {/* RIVAL */}
-          <div className="w-[35%] sm:w-[15%] flex flex-col items-center shrink-0">
+          <div className="w-[35%] sm:w-[18%] xl:w-[15%] flex flex-col items-center shrink-0">
             <img
               src={getImageUrl(game.rival.imageUrl, {
                 width: 144,
@@ -146,7 +146,7 @@ const Game = ({ game, loading }: GameProps) => {
               alt={game.rival.name}
               width={144}
               height={144}
-              className="w-24 h-24 sm:w-24 sm:h-24 lg:w-36 lg:h-36 object-cover rounded-full scale-175 sm:scale-100 translate-x-12 sm:translate-x-0"
+              className="w-24 h-24 sm:w-24 sm:h-24 md:w-32 md:h-32 xl:w-36 xl:h-36 object-cover rounded-full scale-175 sm:scale-100 translate-x-12 sm:translate-x-0"
             />
 
             <span className="hidden sm:block mt-2 text-sm lg:text-base">

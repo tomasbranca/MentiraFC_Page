@@ -198,7 +198,7 @@ const Account = () => {
 
   return (
     <AccountShell description="Consultá tu perfil, el estado de la cuenta y las acciones habilitadas para tu rol.">
-      <div className="grid gap-6 p-5 sm:p-8 lg:grid-cols-[minmax(17rem,0.82fr)_minmax(0,1fr)] lg:items-start xl:grid-cols-[minmax(17rem,0.78fr)_minmax(0,0.94fr)_minmax(17rem,0.78fr)]">
+      <div className="grid gap-6 p-5 sm:p-8 md:grid-cols-[minmax(14rem,0.74fr)_minmax(0,1fr)] md:items-start xl:grid-cols-[minmax(17rem,0.78fr)_minmax(0,0.94fr)_minmax(17rem,0.78fr)]">
         <section className="order-1 border border-violet-100/10 bg-white/5 p-5 text-white sm:p-6">
           <div className="flex items-center justify-between gap-3">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-violet-200">
@@ -229,7 +229,7 @@ const Account = () => {
             </div>
           </div>
 
-          <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
+          <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2">
             <AccountProfileMetric
               icon={FiShield}
               label="Rol"
@@ -255,7 +255,7 @@ const Account = () => {
           )}
         </section>
 
-        <section className="order-3 border border-violet-100/10 bg-white p-5 text-neutral-900 sm:p-6 lg:order-2">
+        <section className="order-3 border border-violet-100/10 bg-white p-5 text-neutral-900 sm:p-6 md:order-2 md:row-span-2 xl:row-span-1">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-violet-700">
@@ -357,7 +357,7 @@ const Account = () => {
           </div>
         </section>
 
-        <section className="order-2 border border-violet-100/10 bg-neutral-950 p-5 text-white sm:p-6 lg:order-3">
+        <section className="order-2 border border-violet-100/10 bg-neutral-950 p-5 text-white sm:p-6 md:order-3">
           <h2 className="text-lg font-black uppercase tracking-wide text-white">
             Acciones disponibles
           </h2>
@@ -408,7 +408,7 @@ const AccountShell = ({ children, description }: AccountShellProps) => (
 
 const AccountLoadingState = () => (
   <AccountShell description="Estamos cargando tus datos de acceso y permisos.">
-    <div className="grid gap-6 p-5 sm:p-8 lg:grid-cols-[minmax(17rem,0.82fr)_minmax(0,1fr)] lg:items-start xl:grid-cols-[minmax(17rem,0.78fr)_minmax(0,0.94fr)_minmax(17rem,0.78fr)]">
+    <div className="grid gap-6 p-5 sm:p-8 md:grid-cols-[minmax(14rem,0.74fr)_minmax(0,1fr)] md:items-start xl:grid-cols-[minmax(17rem,0.78fr)_minmax(0,0.94fr)_minmax(17rem,0.78fr)]">
       <section className="order-1 border border-violet-100/10 bg-white/5 p-5 sm:p-6">
         <div className="flex items-center gap-4">
           <SkeletonBlock className="h-16 w-16 rounded-none" />
@@ -424,7 +424,7 @@ const AccountLoadingState = () => (
         </div>
       </section>
 
-      <section className="order-3 border border-violet-100/10 bg-white p-5 sm:p-6 lg:order-2">
+      <section className="order-3 border border-violet-100/10 bg-white p-5 sm:p-6 md:order-2 md:row-span-2 xl:row-span-1">
         <SkeletonBlock className="h-4 w-36 bg-neutral-200" />
         <SkeletonBlock className="mt-3 h-8 w-56 bg-neutral-200" />
         <SkeletonBlock className="mt-4 h-4 w-full bg-neutral-200" />
@@ -433,7 +433,7 @@ const AccountLoadingState = () => (
         <SkeletonBlock className="mt-6 h-11 w-40 bg-neutral-200" />
       </section>
 
-      <section className="order-2 border border-violet-100/10 bg-neutral-950 p-5 sm:p-6 lg:order-3">
+      <section className="order-2 border border-violet-100/10 bg-neutral-950 p-5 sm:p-6 md:order-3">
         <SkeletonBlock className="h-5 w-44" />
         <SkeletonBlock className="mt-4 h-4 w-full" />
         <div className="mt-6 space-y-3">

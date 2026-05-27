@@ -56,6 +56,13 @@
   }
 }
 
+@media (min-width: 768px) and (max-width: 1023px) {
+  .gallery-detail-bento {
+    grid-auto-rows: 12rem;
+    gap: 1rem;
+  }
+}
+
 @media (min-width: 1024px) {
   .gallery-detail-bento {
     grid-template-columns: repeat(4, minmax(0, 1fr));

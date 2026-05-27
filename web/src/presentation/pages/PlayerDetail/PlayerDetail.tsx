@@ -96,7 +96,7 @@ const PlayerDetail = () => {
       <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start lg:gap-7">
         <div className="min-w-0">
           <div ref={detailCardRef} className="border border-neutral-800 bg-neutral-900">
-            <div className="grid grid-cols-1 lg:grid-cols-2">
+            <div className="grid grid-cols-1 md:grid-cols-[minmax(18rem,0.9fr)_minmax(0,1.1fr)] lg:grid-cols-2">
           {/* IMAGEN */}
           <div className="w-full aspect-3/4">
             <ProgressiveMedia
@@ -108,7 +108,7 @@ const PlayerDetail = () => {
               })}
               alt={`${player.name} ${player.lastName}`}
               wrapperClassName="w-full h-full"
-              className="w-full h-full object-cover border-b-2 border-violet-700 lg:border-0"
+              className="w-full h-full object-cover border-b-2 border-violet-700 md:border-b-0 md:border-r-2 lg:border-r-0"
               skeletonClassName="bg-neutral-800"
               loading="eager"
               decoding="async"

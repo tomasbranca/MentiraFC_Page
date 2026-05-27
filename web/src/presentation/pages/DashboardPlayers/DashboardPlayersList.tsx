@@ -629,7 +629,7 @@ const DashboardPlayersList = () => {
               </div>
             ) : (
               <>
-                <div className="divide-y divide-white/8 md:hidden">
+                <div className="divide-y divide-white/8 lg:hidden">
                   {players.map((item) => (
                     <DashboardPlantelMobileCard
                       key={item.id}
@@ -695,7 +695,7 @@ const DashboardPlayersList = () => {
                   ))}
                 </div>
 
-                <table className="hidden w-full border-collapse text-left md:table">
+                <table className="hidden w-full border-collapse text-left lg:table">
                   <thead className="bg-white/2.5 text-xs uppercase tracking-[0.16em] text-violet-100/60">
                     <tr>
                       <th className="px-5 py-4">Integrante</th>
@@ -795,7 +795,7 @@ const DashboardPlayersList = () => {
               </div>
             ) : (
               <>
-                <div className="divide-y divide-white/8 md:hidden">
+                <div className="divide-y divide-white/8 lg:hidden">
                   {staff.map((item) => (
                     <DashboardPlantelMobileCard
                       key={item.id}
@@ -844,7 +844,7 @@ const DashboardPlayersList = () => {
                   ))}
                 </div>
 
-                <table className="hidden w-full border-collapse text-left md:table">
+                <table className="hidden w-full border-collapse text-left lg:table">
                   <thead className="bg-white/2.5 text-xs uppercase tracking-[0.16em] text-violet-100/60">
                     <tr>
                       <th className="px-5 py-4">Integrante</th>

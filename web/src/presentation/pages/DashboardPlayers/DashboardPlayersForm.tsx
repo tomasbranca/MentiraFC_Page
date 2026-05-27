@@ -546,7 +546,7 @@ const DashboardPlayersForm = () => {
         </div>
       </header>
 
-      <div className="grid gap-4 p-3 sm:gap-5 sm:p-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
+      <div className="grid gap-4 p-3 sm:gap-5 sm:p-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <form
           className="space-y-4 rounded-sm border border-white/10 bg-[#16161a] p-3 sm:space-y-5 sm:p-6"
           onSubmit={handleSubmit}

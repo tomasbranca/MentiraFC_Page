@@ -49,7 +49,7 @@ const Team = () => {
           </p>
 
           {/* MOBILE */}
-          <div className="lg:hidden mt-6">
+          <div className="md:hidden mt-6">
             <button
               onClick={() => setFiltersOpen(!filtersOpen)}
               className="w-full bg-linear-to-r from-violet-700 to-violet-600 px-4 py-3 text-white font-semibold flex justify-between items-center rounded-lg shadow-md transition-all duration-300"
@@ -81,7 +81,7 @@ const Team = () => {
           </div>
 
           {/* DESKTOP */}
-          <div className="hidden lg:flex mt-8 bg-neutral-900/70 border border-neutral-700 rounded-xl p-3 flex-wrap gap-3 justify-center">
+          <div className="hidden md:flex mt-8 bg-neutral-900/70 border border-neutral-700 rounded-xl p-3 flex-wrap gap-3 justify-center">
             {FILTERS.map(({ id, label }) => (
               <Button
                 key={id}
@@ -128,7 +128,7 @@ const Team = () => {
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5 md:gap-8">
+                  <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-4 md:gap-6 xl:grid-cols-5 xl:gap-8">
                     {sectionId === "staff"
                       ? (list as StaffMember[]).map((staffMember) => (
                           <StaffCard

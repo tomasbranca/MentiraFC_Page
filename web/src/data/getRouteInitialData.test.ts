@@ -31,4 +31,18 @@ describe("getRouteInitialData", () => {
       expect(payload.latestGame).toBeNull();
     }));
   });
+
+  it("usa un payload minimo para cuenta y admin", async () => {
+    await Promise.all([
+      ROUTES.ACCOUNT,
+      ROUTES.ADMIN,
+      ROUTES.ADMIN_COMMENT_REPORTS,
+    ].map(async (route) => {
+      const payload = await getRouteInitialData(route);
+
+      expect(payload.bootstrapScope).toBe("empty");
+      expect(payload.news).toEqual([]);
+      expect(payload.latestGame).toBeNull();
+    }));
+  });
 });

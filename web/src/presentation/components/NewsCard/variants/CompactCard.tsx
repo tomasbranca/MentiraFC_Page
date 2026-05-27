@@ -26,7 +26,7 @@ const CompactCard = ({
             quality: 70,
             autoFormat: true,
           })}
-          sizes="(max-width: 768px) calc(100vw - 48px), calc(33vw - 32px)"
+          sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc(50vw - 32px), calc(33vw - 32px)"
           alt={item.imageAlt || item.title}
           wrapperClassName="news-card-image h-full"
           className="news-card-media"

@@ -55,7 +55,7 @@ const Home = () => {
       <Game game={game} loading={gameLoading} />
 
       {showDeferredHomeGrid && (
-        <div className="relative grid grid-cols-1 lg:grid-cols-3">
+        <div className="relative grid grid-cols-1 xl:grid-cols-3">
           {isDeferredHomeLoading ? (
             <>
               <TopScorersSkeleton />
