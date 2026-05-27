@@ -44,16 +44,29 @@ describe("api function budget", () => {
     expect(routeFiles).toHaveLength(4);
   });
 
-  it("redirige subrutas de comentarios a la Function catch-all", () => {
+  it("redirige recursos dinamicos antes del fallback SPA", () => {
     const vercelConfig = JSON.parse(
       readFileSync(join(apiDir, "..", "vercel.json"), "utf8")
     ) as {
       rewrites?: Array<{ source: string; destination: string }>;
     };
+    const dashboardRewriteIndex = vercelConfig.rewrites?.findIndex(
+      (rewrite) => rewrite.source === "/api/dashboard/:resource"
+    );
+    const fallbackRewriteIndex = vercelConfig.rewrites?.findIndex(
+      (rewrite) => rewrite.destination === "/index.html"
+    );
+
+    expect(vercelConfig.rewrites).toContainEqual({
+      source: "/api/dashboard/:resource",
+      destination: "/api/dashboard/[resource]",
+    });
 
     expect(vercelConfig.rewrites).toContainEqual({
       source: "/api/comments/:path*",
       destination: "/api/comments/[...path]",
     });
+    expect(dashboardRewriteIndex).toBeGreaterThanOrEqual(0);
+    expect(fallbackRewriteIndex).toBeGreaterThan(dashboardRewriteIndex ?? -1);
   });
 });
