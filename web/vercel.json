@@ -4,6 +4,10 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
+      "source": "/api/dashboard/:resource",
+      "destination": "/api/dashboard/[resource]"
+    },
+    {
       "source": "/api/comments/:path*",
       "destination": "/api/comments/[...path]"
     },
