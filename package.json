@@ -1,21 +1,27 @@
 {
+  "name": "mentira-fc",
+  "private": true,
+  "packageManager": "pnpm@10.34.1",
   "devDependencies": {
     "concurrently": "^9.2.1"
   },
   "scripts": {
-    "dev:web": "cd web && npm run dev",
-    "dev:studio": "cd studio && npm run dev",
-    "dev": "concurrently \"npm run dev:web\" \"npm run dev:studio\"",
-    "build:web": "cd web && npm run build",
-    "build:studio": "cd studio && npm run build",
-    "check:web": "cd web && npm run check",
-    "check:studio": "cd studio && npm run check",
-    "check": "npm run check:web && npm run check:studio",
-    "install:web": "cd web && npm install",
-    "install:studio": "cd studio && npm install",
-    "install": "npm run install:all",
-    "install:all": "npm run install:web && npm run install:studio",
-    "deploy": "cd studio && npm run deploy",
+    "dev:web": "pnpm --dir web dev",
+    "dev:studio": "pnpm --dir studio dev",
+    "dev": "concurrently \"pnpm dev:web\" \"pnpm dev:studio\"",
+    "build:web": "pnpm --dir web build",
+    "build:studio": "pnpm --dir studio build",
+    "build": "pnpm build:web && pnpm build:studio",
+    "lint:web": "pnpm --dir web lint",
+    "lint:studio": "pnpm --dir studio lint",
+    "lint": "pnpm lint:web && pnpm lint:studio",
+    "test:web": "pnpm --dir web test",
+    "test:studio": "pnpm --dir studio functions:unit",
+    "test": "pnpm test:web && pnpm test:studio",
+    "check:web": "pnpm --dir web check",
+    "check:studio": "pnpm --dir studio check",
+    "check": "pnpm check:web && pnpm check:studio",
+    "deploy": "pnpm --dir studio run deploy",
     "push": "node scripts/push-and-deploy.mjs"
   }
 }

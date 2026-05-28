@@ -92,20 +92,20 @@ Use PowerShell-safe commands:
 
 ```powershell
 cd web
-npm.cmd run build
-npm.cmd run check
+pnpm.cmd build
+pnpm.cmd check
 ```
 
 ```powershell
 cd studio
-npm.cmd run build
-npm.cmd run check
+pnpm.cmd build
+pnpm.cmd check
 ```
 
 For Lighthouse CI, run from the repo root:
 
 ```powershell
-npm.cmd exec --yes @lhci/cli@0.15.1 -- autorun --config=./web/lighthouserc.json
+pnpm.cmd dlx @lhci/cli@0.15.1 autorun --config=./web/lighthouserc.json
 ```
 
 ## Security Rules

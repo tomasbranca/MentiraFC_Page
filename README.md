@@ -100,7 +100,7 @@ La SPA pública contiene secciones orientadas a producto real:
 ## 6) Requisitos
 
 - **Node.js** 20+ recomendado.
-- **npm** 10+ recomendado.
+- **pnpm** 10.34.x recomendado, gestionado desde `packageManager`.
 - Acceso a proyecto/dataset de Sanity para contenido real.
 
 ---
@@ -110,17 +110,10 @@ La SPA pública contiene secciones orientadas a producto real:
 Desde la raíz del repositorio:
 
 ```bash
-npm install
+pnpm install
 ```
 
-Este comando instala dependencias de ambas apps (`web` y `studio`) usando scripts del root.
-
-Si necesitás hacerlo por separado:
-
-```bash
-npm run install:web
-npm run install:studio
-```
+Este comando instala dependencias de ambas apps (`web` y `studio`) desde el workspace root.
 
 ---
 
@@ -129,14 +122,14 @@ npm run install:studio
 ### 8.1 Levantar todo el entorno (web + studio)
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 ### 8.2 Levantar servicios individualmente
 
 ```bash
-npm run dev:web
-npm run dev:studio
+pnpm dev:web
+pnpm dev:studio
 ```
 
 ---
@@ -145,34 +138,34 @@ npm run dev:studio
 
 ### 9.1 Scripts en raíz
 
-- `npm run dev` → ejecuta `web` y `studio` en paralelo.
-- `npm run dev:web` → inicia sólo la app pública.
-- `npm run dev:studio` → inicia sólo Sanity Studio.
-- `npm run install` → instala dependencias de ambos proyectos.
+- `pnpm dev` → ejecuta `web` y `studio` en paralelo.
+- `pnpm dev:web` → inicia sólo la app pública.
+- `pnpm dev:studio` → inicia sólo Sanity Studio.
+- `pnpm install` → instala dependencias de ambos proyectos.
 
 ### 9.2 Scripts de calidad desde la raíz
 
-- `npm run check:web` → pipeline completo de `web`.
-- `npm run check:studio` → pipeline completo de `studio`.
-- `npm run check` → ejecuta ambos checks en orden.
+- `pnpm check:web` → pipeline completo de `web`.
+- `pnpm check:studio` → pipeline completo de `studio`.
+- `pnpm check` → ejecuta ambos checks en orden.
 
 ### 9.3 Scripts en `web/`
 
-- `npm run dev` → servidor local Vite.
-- `npm run lint` → ESLint.
-- `npm run typecheck` → validación de tipos (`tsc --noEmit`).
-- `npm run test` → Vitest (`run`).
-- `npm run build` → build de producción.
-- `npm run check` → pipeline completo (`lint + typecheck + test + build`).
+- `pnpm dev` → servidor local Vite.
+- `pnpm lint` → ESLint.
+- `pnpm typecheck` → validación de tipos (`tsc --noEmit`).
+- `pnpm test` → Vitest (`run`).
+- `pnpm build` → build de producción.
+- `pnpm check` → pipeline completo (`lint + typecheck + test + build`).
 
 ### 9.4 Scripts en `studio/`
 
-- `npm run dev` → Sanity Studio en desarrollo.
-- `npm run lint` → ESLint.
-- `npm run build` → build de Studio.
-- `npm run deploy` → despliegue de Studio.
-- `npm run deploy-graphql` → despliegue del esquema GraphQL.
-- `npm run check` → lint + tests unitarios de Functions + build.
+- `pnpm dev` → Sanity Studio en desarrollo.
+- `pnpm lint` → ESLint.
+- `pnpm build` → build de Studio.
+- `pnpm run deploy` → despliegue de Studio.
+- `pnpm run deploy-graphql` → despliegue del esquema GraphQL.
+- `pnpm check` → lint + tests unitarios de Functions + build.
 
 ---
 
@@ -198,11 +191,11 @@ Antes de abrir PR:
 
 1. Ejecutar checks de `web`:
    ```bash
-   cd web && npm run check
+   pnpm check:web
    ```
 2. Ejecutar checks de `studio`:
    ```bash
-   cd studio && npm run check
+   pnpm check:studio
    ```
 3. Verificar manualmente navegación principal y estados vacíos/error.
 

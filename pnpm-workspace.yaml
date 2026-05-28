@@ -1,0 +1,7 @@
+packages:
+  - web
+  - studio
+
+allowBuilds:
+  "@sentry/cli": true
+  esbuild: true

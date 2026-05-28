@@ -10,10 +10,6 @@ jobs:
     name: Web | Lint + Typecheck + Tests + Build
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: web
-
     env:
       VITE_SANITY_PROJECT_ID: jwpxrdo2
       VITE_SANITY_DATASET: production
@@ -25,55 +21,61 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 10.34.1
+
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: web/package-lock.json
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Lint
-        run: npm run lint
+        run: pnpm --dir web lint
 
       - name: Typecheck
-        run: npm run typecheck
+        run: pnpm --dir web typecheck
 
       - name: Unit tests
-        run: npm run test
+        run: pnpm --dir web test
 
       - name: Build
-        run: npm run build
+        run: pnpm --dir web build
 
   studio-quality:
     name: Studio | Lint + Build
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: studio
-
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 10.34.1
 
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: studio/package-lock.json
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Lint
-        run: npm run lint
+        run: pnpm --dir studio lint
 
       - name: Build
-        run: npm run build
+        run: pnpm --dir studio build
 
   web-performance:
     name: Web | Lighthouse metrics (LCP, CLS, INP)
@@ -89,22 +91,25 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 10.34.1
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: web/package-lock.json
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: Install dependencies
-        working-directory: web
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Build
-        working-directory: web
-        run: npm run build
+        run: pnpm --dir web build
 
       - name: Run Lighthouse CI
         uses: treosh/lighthouse-ci-action@v12
