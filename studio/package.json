@@ -1,5 +1,5 @@
 {
-  "name": "mentira-fc",
+  "name": "@mentira-fc/studio",
   "private": true,
   "version": "1.0.0",
   "main": "package.json",
@@ -15,7 +15,7 @@
     "functions:test": "sanity functions test sync-standings-snapshot --with-user-token",
     "blueprints:deploy": "sanity blueprints deploy",
     "lint": "eslint .",
-    "check": "npm run lint && npm run functions:unit && npm run build"
+    "check": "pnpm lint && pnpm functions:unit && pnpm build"
   },
   "keywords": [
     "sanity"
@@ -41,7 +41,7 @@
     "@types/react": "^19.2.14",
     "eslint": "^9.0.0",
     "prettier": "^3.8.1",
-    "typescript": "^6.0.2"
+    "typescript": "^5.9.3"
   },
   "prettier": {
     "semi": false,

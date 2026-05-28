@@ -19,7 +19,7 @@ The long-term product direction is to replace Sanity Studio with an in-site cust
 4. Keep edits scoped to the requested behavior.
 5. Preserve existing public behavior unless the task asks for a UI or API change.
 6. Add or update focused tests when behavior changes.
-7. Use `npm.cmd` in PowerShell. Plain `npm` can fail because of script execution policy.
+7. Use `pnpm.cmd` in PowerShell. Plain `pnpm` can fail because of script execution policy.
 
 ## Autonomy And Delivery
 
@@ -49,16 +49,16 @@ For `web` changes:
 
 ```powershell
 cd web
-npm.cmd run build
-npm.cmd run check
+pnpm.cmd build
+pnpm.cmd check
 ```
 
 For `studio` changes:
 
 ```powershell
 cd studio
-npm.cmd run build
-npm.cmd run check
+pnpm.cmd build
+pnpm.cmd check
 ```
 
 For full Sanity-backed changes, run both packages. If a local browser check is required and port `5173` is busy, retry with `5174` or another strict port.

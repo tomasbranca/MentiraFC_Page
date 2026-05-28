@@ -7,7 +7,7 @@ import { createInterface } from 'node:readline/promises';
 const run = (command, args) =>
   new Promise((resolve, reject) => {
     const child = spawn(command, args, {
-      shell: process.platform === 'win32' && command === 'npm',
+      shell: process.platform === 'win32' && command === 'pnpm',
       stdio: 'inherit',
     });
 
@@ -59,7 +59,7 @@ const main = async () => {
   await run('git', ['add', '.']);
   await run('git', ['commit', '-m', message]);
   await run('git', ['push', 'origin', 'HEAD']);
-  await run('npm', ['run', 'deploy']);
+  await run('pnpm', ['run', 'deploy']);
 };
 
 main().catch((error) => {
