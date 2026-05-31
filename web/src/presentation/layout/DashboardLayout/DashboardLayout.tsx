@@ -56,7 +56,7 @@ const DashboardLayout = () => {
       </Suspense>
 
       <div className="mx-auto grid w-full max-w-384 gap-3 sm:gap-4 xl:grid-cols-[16rem_minmax(0,1fr)]">
-        <aside className="overflow-hidden rounded-[4px] border border-white/10 bg-[#151518] xl:sticky xl:top-28 xl:self-start">
+        <aside className="overflow-hidden rounded-sm border border-white/10 bg-[#151518] xl:sticky xl:top-28 xl:self-start">
           <div className="border-b border-white/10 p-3 sm:p-4 xl:p-5">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
@@ -125,7 +125,7 @@ const DashboardLayout = () => {
           </div>
         </aside>
 
-        <div className="min-w-0 overflow-hidden rounded-[4px] border border-white/10 bg-[#121216]">
+        <div className="min-w-0 overflow-hidden rounded-sm border border-white/10 bg-[#121216]">
           <div className="flex flex-col gap-3 border-b border-white/10 bg-[#151518]/70 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6">
             <nav
               className="flex min-w-0 items-center gap-1 text-xs text-violet-100/60"

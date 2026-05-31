@@ -25,6 +25,7 @@ Hoy existen estos documentos de Sanity:
 | `standingsState` | Tabla actual editable por torneo | Activo |
 | `standingsSnapshots` | Historial generado de tablas por fecha de torneo | Activo |
 | `organizations` | Organizadores/marcas de torneos | Activo |
+| `footerSettings` | Contacto, redes, links y sponsors del footer publico | Activo |
 
 ## Convenciones generales
 
@@ -433,6 +434,32 @@ Relaciones faltantes/proximas:
 
 - No agregar mas campos por ahora. El modelo actual queda tal cual.
 
+## `footerSettings`
+
+Representa la configuracion publica editable del footer. No incluye el nombre del club ni controles operativos.
+
+Schema: `studio/schemas/footerSettings.schema.js`
+
+Campos:
+
+| Campo | Tipo | Requerido | Descripcion |
+|---|---|---:|---|
+| `contactEmail` | `email` | Si | Email publico de contacto del club. |
+| `socials` | `array` | No | Redes sociales ordenables con `label`, `platform` y `url`. |
+| `links` | `array` | No | Links auxiliares del footer con `label` y `url`. |
+| `sponsors` | `array` | No | Sponsors ordenables con `name`, `url`, `logo`, `logoUrl` alternativo y `logoAlt`. |
+
+Uso en web:
+
+- Query principal: `FOOTER_SETTINGS_QUERY`
+- Modelo de dominio: `FooterSettings`
+- El footer usa fallback local si Sanity no responde o falta el singleton.
+- Sanity no guarda feature flags, mantenimiento, auth, usuarios, roles, permisos, metricas ni audit log.
+
+Relaciones actuales:
+
+- No tiene referencias obligatorias a otros documentos.
+
 ## Relaciones actuales
 
 ```mermaid
@@ -520,6 +547,28 @@ API Vercel (`/api/comments`, `/api/comments/:id`, reportes y moderacion) valida 
 Migracion versionada: `supabase/migrations/20260525120000_news_comments.sql`.
 
 Modelos web: `web/src/types/comments.ts`, cliente `web/src/data/comments.ts`.
+
+## Supabase admin operativo
+
+El panel `/admin` usa Supabase para operacion, seguridad y trazabilidad. Sanity no participa en estas decisiones.
+
+| Tabla / servicio | Proposito | Acceso esperado |
+|---|---|---|
+| Supabase Auth | Identidad, sesiones, login, email y reset de contraseña. | Validado por APIs Vercel con Bearer token. |
+| `public.profiles` | Nombre y apellido de usuarios. | RLS existente; admin escribe via API server-side. |
+| `private.user_accounts` | Rol asignado e `is_active`. | Autoridad operativa de roles y suspension. |
+| `private.role_permission_overrides` | Overrides de permisos por rol, si se necesitan. | Solo service role/API admin. |
+| `private.feature_flags` | Flags operativas del sitio. | Solo service role/API admin. |
+| `private.app_runtime_settings` | Singleton de modo mantenimiento. | Lectura publica reducida via `/api/admin/maintenance?public=1`; escritura admin. |
+| `private.audit_log` | Registro append-only de acciones sensibles. | Solo service role/API admin. |
+
+Migracion versionada: `supabase/migrations/202605310001_admin_operational_tables.sql`.
+
+Las rutas `/api/admin/*` que leen o escriben tablas operativas requieren `SUPABASE_SERVICE_ROLE_KEY`
+en el entorno server-side local y de Vercel. Sin esa variable, el panel muestra el estado de error
+operativo aunque el login y las pantallas no-Supabase funcionen.
+
+Regla de fuente de verdad: Sanity = contenido publico del footer; Supabase = operacion, seguridad, comunidad y trazabilidad; Vercel = analytics/performance.
 
 ## Observaciones tecnicas
 

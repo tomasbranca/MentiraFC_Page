@@ -39,9 +39,10 @@ describe("api function budget", () => {
       )
     ).toBe(true);
     expect(routeFiles).toContain(`dashboard${sep}[resource].ts`);
+    expect(routeFiles).toContain(`admin${sep}[resource].ts`);
     expect(routeFiles).toContain(`reactions${sep}index.ts`);
     expect(routeFiles).toContain(`comments${sep}index.ts`);
-    expect(routeFiles).toHaveLength(4);
+    expect(routeFiles).toHaveLength(5);
   });
 
   it("redirige recursos dinamicos antes del fallback SPA", () => {
@@ -52,6 +53,9 @@ describe("api function budget", () => {
     };
     const dashboardRewriteIndex = vercelConfig.rewrites?.findIndex(
       (rewrite) => rewrite.source === "/api/dashboard/:resource"
+    );
+    const adminRewriteIndex = vercelConfig.rewrites?.findIndex(
+      (rewrite) => rewrite.source === "/api/admin/:resource"
     );
     const fallbackRewriteIndex = vercelConfig.rewrites?.findIndex(
       (rewrite) => rewrite.destination === "/index.html"
@@ -66,7 +70,12 @@ describe("api function budget", () => {
       source: "/api/comments/:path*",
       destination: "/api/comments/[...path]",
     });
+    expect(vercelConfig.rewrites).toContainEqual({
+      source: "/api/admin/:resource",
+      destination: "/api/admin/[resource]",
+    });
     expect(dashboardRewriteIndex).toBeGreaterThanOrEqual(0);
+    expect(adminRewriteIndex).toBeGreaterThan(dashboardRewriteIndex ?? -1);
     expect(fallbackRewriteIndex).toBeGreaterThan(dashboardRewriteIndex ?? -1);
   });
 });

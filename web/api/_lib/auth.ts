@@ -2,10 +2,13 @@ import process from "node:process";
 import { createClient } from "@supabase/supabase-js";
 
 import {
+  ADMIN_PERMISSION_RESOURCES,
   getDashboardRequestPermission,
   getDashboardResourcePermission,
+  getAdminResourcePermission,
   hasPermission,
   isAppRole,
+  type AdminPermissionResource,
   type AppPermission,
   type AppRole,
   type DashboardPermissionResource,
@@ -120,3 +123,15 @@ export const authorizeDashboardRequest = async (
     request,
     getDashboardRequestPermission(resource, request.method)
   );
+
+export const isAdminPermissionResource = (
+  resource: unknown
+): resource is AdminPermissionResource =>
+  typeof resource === "string" &&
+  ADMIN_PERMISSION_RESOURCES.includes(resource as AdminPermissionResource);
+
+export const authorizeAdminRequest = async (
+  request: Request,
+  resource: AdminPermissionResource
+): Promise<AuthorizedDashboardUser | Response> =>
+  authorizeDashboardUser(request, getAdminResourcePermission(resource));

@@ -414,7 +414,7 @@ const Login = ({ initialMode = "signIn" }: LoginProps) => {
                     Mentira FC
                   </p>
 
-                  <h1 className="mt-2 max-w-sm break-words text-xl font-black leading-tight text-white sm:text-3xl lg:mt-4 lg:text-4xl">
+                  <h1 className="mt-2 max-w-sm wrap-break-word text-xl font-black leading-tight text-white sm:text-3xl lg:mt-4 lg:text-4xl">
                     Tu acceso al club, con la identidad de siempre
                   </h1>
 
@@ -438,7 +438,7 @@ const Login = ({ initialMode = "signIn" }: LoginProps) => {
                   <p className="text-xs font-semibold uppercase tracking-[0.28em] text-violet-600">
                     {formContent.eyebrow}
                   </p>
-                  <h2 className="mt-3 break-words text-3xl font-black text-neutral-900">
+                  <h2 className="mt-3 wrap-break-word text-3xl font-black text-neutral-900">
                     {formContent.title}
                   </h2>
                   <p className="mt-3 text-sm text-neutral-500 sm:text-base">

@@ -35,6 +35,18 @@ export const queryKeys = {
       ["comments", "news", newsId, sort] as const,
     moderation: ["comments", "moderation"] as const,
   },
+  footerSettings: ["footer-settings"] as const,
+  admin: {
+    users: ["admin", "users"] as const,
+    roles: ["admin", "roles"] as const,
+    footerSettings: ["admin", "footer-settings"] as const,
+    auditLog: ["admin", "audit-log"] as const,
+    metrics: ["admin", "metrics"] as const,
+    authControls: ["admin", "auth-controls"] as const,
+    featureFlags: ["admin", "feature-flags"] as const,
+    maintenance: ["admin", "maintenance"] as const,
+    publicMaintenance: ["admin", "maintenance", "public"] as const,
+  },
   dashboard: {
     news: {
       all: ["dashboard", "news"] as const,

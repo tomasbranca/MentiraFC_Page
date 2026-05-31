@@ -1,4 +1,5 @@
 import { Suspense, useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 
 import type { InitialDataPayload } from "./data/getInitialData";
@@ -9,6 +10,8 @@ import { InitialDataProvider } from "./presentation/context/InitialDataContext";
 import Footer from "./presentation/layout/Footer/Footer";
 import NavBar from "./presentation/layout/NavBar/NavBar";
 import { ROUTES } from "./shared/routing";
+import { fetchPublicMaintenanceSettings } from "./data/admin";
+import { queryKeys } from "./data/queryKeys";
 import RouteHead from "./presentation/seo/RouteHead";
 import Home from "./presentation/pages/Home/Home";
 import RequireAuth from "./presentation/routing/RequireAuth";
@@ -54,6 +57,30 @@ const AdminHome = lazyWithReload(
 );
 const AdminCommentReports = lazyWithReload(
   () => import("./presentation/pages/AdminCommentReports/AdminCommentReports")
+);
+const AdminUsers = lazyWithReload(
+  () => import("./presentation/pages/Admin/AdminUsers")
+);
+const AdminRoles = lazyWithReload(
+  () => import("./presentation/pages/Admin/AdminRoles")
+);
+const AdminFooterSettings = lazyWithReload(
+  () => import("./presentation/pages/Admin/AdminFooterSettings")
+);
+const AdminAuditLog = lazyWithReload(
+  () => import("./presentation/pages/Admin/AdminAuditLog")
+);
+const AdminMetrics = lazyWithReload(
+  () => import("./presentation/pages/Admin/AdminMetrics")
+);
+const AdminAuthControls = lazyWithReload(
+  () => import("./presentation/pages/Admin/AdminAuthControls")
+);
+const AdminFeatureFlags = lazyWithReload(
+  () => import("./presentation/pages/Admin/AdminFeatureFlags")
+);
+const AdminMaintenance = lazyWithReload(
+  () => import("./presentation/pages/Admin/AdminMaintenance")
 );
 const DashboardHome = lazyWithReload(
   () => import("./presentation/pages/Dashboard/DashboardHome")
@@ -150,6 +177,15 @@ function App({ initialData }: AppProps) {
     normalizedPathname === ROUTES.ADMIN ||
     normalizedPathname.startsWith(`${ROUTES.ADMIN}/`);
   const isStandaloneRoute = isAuthRoute || isAdminRoute;
+  const maintenanceQuery = useQuery({
+    queryKey: queryKeys.admin.publicMaintenance,
+    queryFn: fetchPublicMaintenanceSettings,
+    enabled: !isStandaloneRoute,
+    staleTime: 1000 * 60,
+    retry: false,
+  });
+  const isMaintenanceActive =
+    !isStandaloneRoute && maintenanceQuery.data?.enabled === true;
 
   useEffect(() => {
     const loadDeferredStyles = () => {
@@ -212,7 +248,22 @@ function App({ initialData }: AppProps) {
               : "border-t-96 border-t-violet-900 min-h-screen"
           }
         >
-          {hasBootstrapError ? (
+          {isMaintenanceActive ? (
+            <section className="flex min-h-[70vh] items-center justify-center bg-[#101012] px-4 py-16 text-white">
+              <div className="max-w-xl rounded-md border border-violet-200/20 bg-[#17151d] p-6 text-center shadow-[0_24px_80px_rgba(0,0,0,0.35)]">
+                <p className="text-[0.68rem] font-bold uppercase tracking-[0.22em] text-violet-200/80">
+                  Mantenimiento
+                </p>
+                <h1 className="mt-4 text-3xl font-black uppercase leading-none sm:text-4xl">
+                  Volvemos en breve
+                </h1>
+                <p className="mt-4 text-sm leading-relaxed text-violet-50/75">
+                  {maintenanceQuery.data?.message ||
+                    "Estamos realizando mantenimiento. Volve a intentar en unos minutos."}
+                </p>
+              </div>
+            </section>
+          ) : hasBootstrapError ? (
             <ErrorFallback
               title="No pudimos cargar la pagina"
               message={initialData.bootstrapError?.message}
@@ -257,6 +308,23 @@ function App({ initialData }: AppProps) {
                   <Route
                     path="reportes-comentarios"
                     element={<AdminCommentReports />}
+                  />
+                  <Route path="usuarios" element={<AdminUsers />} />
+                  <Route path="roles-permisos" element={<AdminRoles />} />
+                  <Route
+                    path="footer-sponsors"
+                    element={<AdminFooterSettings />}
+                  />
+                  <Route path="audit-log" element={<AdminAuditLog />} />
+                  <Route path="metricas" element={<AdminMetrics />} />
+                  <Route path="auth" element={<AdminAuthControls />} />
+                  <Route
+                    path="feature-flags"
+                    element={<AdminFeatureFlags />}
+                  />
+                  <Route
+                    path="mantenimiento"
+                    element={<AdminMaintenance />}
                   />
                 </Route>
                 <Route

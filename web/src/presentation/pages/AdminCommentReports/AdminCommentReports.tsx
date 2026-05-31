@@ -135,7 +135,7 @@ const AdminCommentReports = () => {
   return (
     <div className="space-y-5 p-4 sm:p-6">
       <header className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_14rem]">
-        <div className="rounded-[6px] border border-[#ded7ef] bg-white p-4 sm:p-5">
+        <div className="rounded-md border border-[#ded7ef] bg-white p-4 sm:p-5">
           <p className="text-[0.68rem] font-bold uppercase tracking-[0.2em] text-violet-700">
             Moderacion
           </p>
@@ -143,7 +143,7 @@ const AdminCommentReports = () => {
             <h1 className="text-3xl font-black uppercase leading-none text-[#17151d]">
               Reportes de comentarios
             </h1>
-            <span className="rounded-[4px] border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-800">
+            <span className="rounded-sm border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-800">
               {getReportCountLabel(totalVisibleReports)}
             </span>
           </div>
@@ -152,9 +152,9 @@ const AdminCommentReports = () => {
           </p>
         </div>
 
-        <div className="rounded-[6px] border border-violet-200 bg-[#17151d] p-4 text-white">
+        <div className="rounded-md border border-violet-200 bg-[#17151d] p-4 text-white">
           <div className="flex items-center justify-between gap-3">
-            <span className="flex size-10 items-center justify-center rounded-[4px] bg-violet-100 text-violet-950">
+            <span className="flex size-10 items-center justify-center rounded-sm bg-violet-100 text-violet-950">
               <FiMessageSquare className="size-5" aria-hidden="true" />
             </span>
             <span className="text-3xl font-black leading-none">
@@ -168,7 +168,7 @@ const AdminCommentReports = () => {
       </header>
 
       {items.length === 0 ? (
-        <div className="rounded-[6px] border border-[#ded7ef] bg-white p-8 text-center">
+        <div className="rounded-md border border-[#ded7ef] bg-white p-8 text-center">
           <span className="mx-auto flex size-12 items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 text-emerald-700">
             <FiCheck className="size-6" aria-hidden="true" />
           </span>
@@ -192,12 +192,12 @@ const AdminCommentReports = () => {
             return (
               <article
                 key={item.comment.id}
-                className="overflow-hidden rounded-[6px] border border-[#ded7ef] bg-white"
+                className="overflow-hidden rounded-md border border-[#ded7ef] bg-white"
               >
                 <div className="grid gap-4 border-b border-[#e7e1f2] bg-[#fbfaff] p-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-start sm:p-5">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="inline-flex items-center gap-1.5 rounded-[4px] border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-800">
+                      <span className="inline-flex items-center gap-1.5 rounded-sm border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-800">
                         <FiAlertTriangle
                           className="size-3.5"
                           aria-hidden="true"
@@ -219,7 +219,7 @@ const AdminCommentReports = () => {
                   </div>
 
                   <Button
-                    className="!rounded-[4px] !border-red-200 !bg-red-50 !px-3 !py-2 !text-xs !font-bold !text-red-800 hover:!border-red-300 hover:!bg-red-100"
+                    className="rounded-sm! border-red-200! bg-red-50! px-3! py-2! text-xs! font-bold! text-red-800! hover:border-red-300! hover:bg-red-100!"
                     disabled={isBusy || reportIds.length === 0}
                     onClick={() => void handleAction(item)}
                   >
@@ -250,7 +250,7 @@ const AdminCommentReports = () => {
 
                       <Button
                         variant="secondary"
-                        className="!rounded-[4px] !border-neutral-300 !px-3 !py-2 !text-xs !font-bold !text-neutral-700 hover:!border-violet-300 hover:!bg-violet-50"
+                        className="rounded-sm! border-neutral-300! px-3! py-2! text-xs! font-bold! text-neutral-700! hover:border-violet-300! hover:bg-violet-50!"
                         disabled={isBusy || report.status !== "open"}
                         onClick={() => void handleDismiss(report.id)}
                       >
@@ -269,7 +269,7 @@ const AdminCommentReports = () => {
         <div className="flex justify-center">
           <Button
             variant="secondary"
-            className="!rounded-[4px] !border-violet-200 !bg-white !text-violet-900 hover:!bg-violet-50"
+            className="rounded-sm! border-violet-200! bg-white! text-violet-900! hover:bg-violet-50!"
             disabled={moderationQuery.isFetchingNextPage}
             onClick={() => void moderationQuery.fetchNextPage()}
           >

@@ -75,7 +75,7 @@ const NewsCommentComposer = ({
           <Button
             type="submit"
             disabled={!canSubmit || isSubmitting}
-            className="!px-4 !py-1.5 !text-xs"
+            className="px-4! py-1.5! text-xs!"
           >
             {isSubmitting ? "Guardando..." : submitLabel}
           </Button>

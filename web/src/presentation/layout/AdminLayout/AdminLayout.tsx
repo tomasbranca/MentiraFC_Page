@@ -2,12 +2,18 @@ import { Suspense } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import type { IconType } from "react-icons";
 import {
+  FiActivity,
+  FiAtSign,
   FiChevronRight,
   FiExternalLink,
+  FiFlag,
   FiGrid,
   FiHome,
   FiMessageSquare,
+  FiSettings,
   FiShield,
+  FiTool,
+  FiUsers,
 } from "react-icons/fi";
 
 import { lazyWithReload } from "../../../lib/lazyWithReload";
@@ -23,7 +29,15 @@ const AppToaster = lazyWithReload(() => import("../../app/AppToaster"));
 
 const sectionIcons = {
   home: FiGrid,
+  users: FiUsers,
+  roles: FiShield,
   commentReports: FiMessageSquare,
+  footerSettings: FiSettings,
+  auditLog: FiActivity,
+  metrics: FiGrid,
+  authControls: FiAtSign,
+  featureFlags: FiFlag,
+  maintenance: FiTool,
 } satisfies Record<(typeof ADMIN_SECTIONS)[number]["id"], IconType>;
 
 const getInitials = (firstName?: string, lastName?: string): string => {
@@ -51,14 +65,14 @@ const AdminLayout = () => {
       </Suspense>
 
       <div className="mx-auto grid w-full max-w-384 gap-3 sm:gap-4 xl:grid-cols-[16rem_minmax(0,1fr)]">
-        <aside className="overflow-hidden rounded-[6px] border border-white/10 bg-[#141418] xl:sticky xl:top-8 xl:self-start">
+        <aside className="overflow-hidden rounded-md border border-white/10 bg-[#141418] xl:sticky xl:top-8 xl:self-start">
           <div className="border-b border-white/10 p-4 xl:p-5">
             <div className="flex items-center gap-3">
               <div className="flex size-12 shrink-0 items-center justify-center rounded-full border border-violet-200/35 bg-violet-200 text-lg font-black text-violet-950">
                 {getInitials(account?.firstName, account?.lastName)}
               </div>
               <div className="min-w-0">
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-violet-200/80">
+                <p className="text-[0.68rem] font-semibold uppercase text-violet-200/80">
                   Administracion
                 </p>
                 <p className="mt-1 truncate text-lg font-black uppercase leading-none text-white">
@@ -91,14 +105,14 @@ const AdminLayout = () => {
           <div className="hidden border-t border-white/10 p-2 xl:block">
             <Link
               to={ROUTES.DASHBOARD}
-              className="flex min-h-11 items-center gap-3 rounded-[4px] px-3 py-2.5 text-sm text-violet-100/75 transition hover:bg-white/6 hover:text-white"
+              className="flex min-h-11 items-center gap-3 rounded-sm px-3 py-2.5 text-sm text-violet-100/75 transition hover:bg-white/6 hover:text-white"
             >
               <FiShield className="size-4" aria-hidden="true" />
               <span>Dashboard</span>
             </Link>
             <Link
               to={ROUTES.HOME}
-              className="flex min-h-11 items-center gap-3 rounded-[4px] px-3 py-2.5 text-sm text-violet-100/75 transition hover:bg-white/6 hover:text-white"
+              className="flex min-h-11 items-center gap-3 rounded-sm px-3 py-2.5 text-sm text-violet-100/75 transition hover:bg-white/6 hover:text-white"
             >
               <FiHome className="size-4" aria-hidden="true" />
               <span>Sitio publico</span>
@@ -110,7 +124,7 @@ const AdminLayout = () => {
           </div>
         </aside>
 
-        <div className="min-w-0 overflow-hidden rounded-[6px] border border-white/10 bg-[#f6f4fb] text-[#17151d] shadow-[0_20px_80px_rgba(0,0,0,0.3)]">
+        <div className="min-w-0 overflow-hidden rounded-md border border-white/10 bg-[#f6f4fb] text-[#17151d] shadow-[0_20px_80px_rgba(0,0,0,0.3)]">
           <div className="flex flex-col gap-3 border-b border-[#dad5e8] bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6">
             <div className="min-w-0">
               <nav
@@ -158,7 +172,7 @@ const AdminLayout = () => {
               </p>
             </div>
 
-            <span className="inline-flex w-fit items-center rounded-[4px] border border-violet-200 bg-violet-50 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-violet-900">
+            <span className="inline-flex w-fit items-center rounded-sm border border-violet-200 bg-violet-50 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-violet-900">
               {navigationContext.actionLabel}
             </span>
           </div>

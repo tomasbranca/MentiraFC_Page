@@ -1,4 +1,5 @@
 import { z } from "zod/v3";
+import { FOOTER_SOCIAL_PLATFORMS } from "../../../shared/site/footerSettings";
 
 const sanitySlugSchema = z.union([
   z.string(),
@@ -258,6 +259,44 @@ export const sanityGoalEventSchema = z.object({
   player: sanityPlayerRefSchema.nullable().optional(),
 });
 
+export const sanityFooterSettingsSchema = z
+  .object({
+    _id: z.string().optional().default("footerSettings"),
+    _updatedAt: z.string().nullable().optional(),
+    contactEmail: z.string().nullable().optional(),
+    socials: z
+      .array(
+        z.object({
+          _key: z.string().nullable().optional(),
+          label: z.string().nullable().optional(),
+          platform: z.enum(FOOTER_SOCIAL_PLATFORMS),
+          url: z.string().nullable().optional(),
+        })
+      )
+      .nullish(),
+    links: z
+      .array(
+        z.object({
+          _key: z.string().nullable().optional(),
+          label: z.string().nullable().optional(),
+          url: z.string().nullable().optional(),
+        })
+      )
+      .nullish(),
+    sponsors: z
+      .array(
+        z.object({
+          _key: z.string().nullable().optional(),
+          name: z.string().nullable().optional(),
+          url: z.string().nullable().optional(),
+          logoAlt: z.string().nullable().optional(),
+          resolvedLogoUrl: z.string().nullable().optional(),
+        })
+      )
+      .nullish(),
+  })
+  .nullable();
+
 export type SanityNews = z.infer<typeof sanityNewsSchema>;
 export type SanityGallery = z.infer<typeof sanityGallerySchema>;
 export type SanityGalleryImage = z.infer<typeof sanityGalleryImageSchema>;
@@ -272,3 +311,6 @@ export type SanityStandingsSnapshot = z.infer<
   typeof sanityStandingsSnapshotSchema
 >;
 export type SanityGoalEvent = z.infer<typeof sanityGoalEventSchema>;
+export type SanityFooterSettings = NonNullable<
+  z.infer<typeof sanityFooterSettingsSchema>
+>;

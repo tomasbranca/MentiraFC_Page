@@ -1,7 +1,17 @@
 import { ROUTES } from "../../shared/routing";
 
 export type AdminSection = {
-  id: "home" | "commentReports";
+  id:
+    | "home"
+    | "users"
+    | "roles"
+    | "commentReports"
+    | "footerSettings"
+    | "auditLog"
+    | "metrics"
+    | "authControls"
+    | "featureFlags"
+    | "maintenance";
   label: string;
   route: string;
 };
@@ -29,6 +39,46 @@ export const ADMIN_SECTIONS = [
     label: "Reportes",
     route: ROUTES.ADMIN_COMMENT_REPORTS,
   },
+  {
+    id: "users",
+    label: "Usuarios",
+    route: ROUTES.ADMIN_USERS,
+  },
+  {
+    id: "roles",
+    label: "Roles y permisos",
+    route: ROUTES.ADMIN_ROLES,
+  },
+  {
+    id: "footerSettings",
+    label: "Footer y sponsors",
+    route: ROUTES.ADMIN_FOOTER_SETTINGS,
+  },
+  {
+    id: "auditLog",
+    label: "Audit log",
+    route: ROUTES.ADMIN_AUDIT_LOG,
+  },
+  {
+    id: "metrics",
+    label: "Metricas",
+    route: ROUTES.ADMIN_METRICS,
+  },
+  {
+    id: "authControls",
+    label: "Auth",
+    route: ROUTES.ADMIN_AUTH_CONTROLS,
+  },
+  {
+    id: "featureFlags",
+    label: "Feature flags",
+    route: ROUTES.ADMIN_FEATURE_FLAGS,
+  },
+  {
+    id: "maintenance",
+    label: "Mantenimiento",
+    route: ROUTES.ADMIN_MAINTENANCE,
+  },
 ] as const satisfies readonly AdminSection[];
 
 const normalizeAdminPathname = (pathname: string): string => {
@@ -50,8 +100,7 @@ export const getAdminNavigationContext = (
     ADMIN_SECTIONS[0];
 
   return {
-    actionLabel:
-      currentSection.id === "home" ? "Vista general" : "Cola de reportes",
+    actionLabel: currentSection.id === "home" ? "Vista general" : currentSection.label,
     breadcrumbs: [
       { label: "Admin", route: ROUTES.ADMIN },
       ...(currentSection.id === "home" ? [] : [{ label: currentSection.label }]),
