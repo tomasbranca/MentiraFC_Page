@@ -605,7 +605,7 @@ const DashboardGalleriesForm = () => {
 
           <Link
             to={ROUTES.DASHBOARD_GALLERIES}
-            className="order-first inline-flex min-h-10 w-fit items-center justify-center gap-2 self-start rounded-[3px] border border-white/10 px-3 py-2 text-xs font-semibold text-white transition hover:border-violet-200/35 hover:bg-white/4.5 sm:order-none sm:min-h-11 sm:self-auto sm:px-4 sm:py-3 sm:text-sm"
+            className="order-first inline-flex min-h-10 w-fit items-center justify-center gap-2 self-start rounded-[3px] border border-white/10 px-3 py-2 text-xs font-semibold text-white transition hover:border-violet-200/35 hover:bg-white/4.5 sm:order-0 sm:min-h-11 sm:self-auto sm:px-4 sm:py-3 sm:text-sm"
           >
             <FiArrowLeft className="size-4" aria-hidden="true" />
             Volver a la lista
@@ -721,7 +721,7 @@ const DashboardGalleriesForm = () => {
                       key={photo.key}
                       className="overflow-hidden rounded-[3px] border border-white/10 bg-[#0f0f13]"
                     >
-                      <div className="relative aspect-[3/2] bg-black/25">
+                      <div className="relative aspect-3/2 bg-black/25">
                         {previewSrc ? (
                           <img
                             src={previewSrc}
@@ -841,10 +841,10 @@ const DashboardGalleriesForm = () => {
                 <img
                   src={heroPreviewSrc}
                   alt={heroPhoto?.alt || "Hero de galeria"}
-                  className="aspect-[3/2] w-full object-cover"
+                  className="aspect-3/2 w-full object-cover"
                 />
               ) : (
-                <div className="flex aspect-[3/2] w-full items-center justify-center bg-[#0f0f13] text-center text-xs font-black uppercase tracking-[0.2em] text-violet-100/45">
+                <div className="flex aspect-3/2 w-full items-center justify-center bg-[#0f0f13] text-center text-xs font-black uppercase tracking-[0.2em] text-violet-100/45">
                   Sin hero
                 </div>
               )}
@@ -871,7 +871,7 @@ const DashboardGalleriesForm = () => {
             <dl className="mt-4 space-y-3 text-sm">
               <div>
                 <dt className="text-violet-100/45">Slug</dt>
-                <dd className="mt-1 break-words text-white">
+                <dd className="mt-1 wrap-break-word text-white">
                   {values.slug || "Sin slug"}
                 </dd>
               </div>

@@ -1,22 +1,13 @@
 import { describe, expect, it } from "vitest";
 
 import type { InitialDataPayload } from "../../data/getInitialData";
+import { createEmptyInitialData } from "../../data/getInitialData";
 import { getGameProviderSnapshot } from "./gameProvider.utils";
 
 const createPayload = (
   overrides: Partial<InitialDataPayload> = {}
 ): InitialDataPayload => ({
-  bootstrapScope: "empty",
-  news: [],
-  galleries: [],
-  players: [],
-  staff: [],
-  games: [],
-  goalEvents: [],
-  tournament: null,
-  teams: [],
-  tournamentGames: [],
-  latestGame: null,
+  ...createEmptyInitialData(),
   ...overrides,
 });
 

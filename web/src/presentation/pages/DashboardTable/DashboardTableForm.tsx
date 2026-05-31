@@ -567,7 +567,7 @@ const DashboardTableForm = () => {
 
           <Link
             to={ROUTES.DASHBOARD_TABLE}
-            className="order-first inline-flex min-h-10 w-fit items-center justify-center gap-2 self-start rounded-[3px] border border-white/10 px-3 py-2 text-xs font-semibold text-white transition hover:border-violet-200/35 hover:bg-white/4.5 sm:order-none sm:min-h-11 sm:self-auto sm:px-4 sm:py-3 sm:text-sm"
+            className="order-first inline-flex min-h-10 w-fit items-center justify-center gap-2 self-start rounded-[3px] border border-white/10 px-3 py-2 text-xs font-semibold text-white transition hover:border-violet-200/35 hover:bg-white/4.5 sm:order-0 sm:min-h-11 sm:self-auto sm:px-4 sm:py-3 sm:text-sm"
           >
             <FiArrowLeft className="size-4" aria-hidden="true" />
             Volver a la lista
@@ -721,7 +721,7 @@ const DashboardTableForm = () => {
                       className="overflow-hidden rounded-[3px] border border-white/10 bg-[#151518] shadow-[0_10px_24px_rgba(0,0,0,0.18)]"
                     >
                       <div className="grid gap-2 p-2 sm:p-3 lg:grid-cols-[minmax(15rem,1.1fr)_minmax(24rem,1.8fr)_3.25rem] lg:gap-0 lg:p-0">
-                        <div className="grid min-w-0 grid-cols-[2.75rem_minmax(0,1fr)_2.75rem] items-center gap-2 lg:grid-cols-[2.75rem_minmax(0,1fr)] lg:border-r lg:border-white/10 lg:bg-white/[0.025] lg:p-3">
+                        <div className="grid min-w-0 grid-cols-[2.75rem_minmax(0,1fr)_2.75rem] items-center gap-2 lg:grid-cols-[2.75rem_minmax(0,1fr)] lg:border-r lg:border-white/10 lg:bg-white/2.5 lg:p-3">
                           <TeamLogo team={selectedTeam} />
                           <select
                             value={row.teamId}

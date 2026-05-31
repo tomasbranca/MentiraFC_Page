@@ -7,6 +7,10 @@
       "destination": "/api/dashboard/[resource]"
     },
     {
+      "source": "/api/admin/:resource",
+      "destination": "/api/admin/[resource]"
+    },
+    {
       "source": "/api/comments/:path*",
       "destination": "/api/comments/[...path]"
     },

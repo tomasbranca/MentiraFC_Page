@@ -10,6 +10,7 @@ import {
   createPermissionChecker,
   DASHBOARD_RESOURCE_PERMISSION_LIST,
   getAssignableAppRoles,
+  getAdminResourcePermission,
   getDashboardRequestPermission,
   getDashboardResourcePermission,
   getRoleRank,
@@ -61,6 +62,16 @@ const ADMIN_EXPECTED_PERMISSIONS = [
   ...MODERATOR_EXPECTED_PERMISSIONS,
   PERMISSIONS.manageAllRoles,
   PERMISSIONS.viewAdminPanel,
+  PERMISSIONS.manageAdminUsers,
+  PERMISSIONS.manageAdminRoles,
+  PERMISSIONS.manageFooterSettings,
+  PERMISSIONS.manageModeration,
+  PERMISSIONS.manageReports,
+  PERMISSIONS.viewAuditLog,
+  PERMISSIONS.viewMetrics,
+  PERMISSIONS.manageFeatureFlags,
+  PERMISSIONS.manageAuthControls,
+  PERMISSIONS.manageMaintenance,
 ] as const satisfies readonly AppPermission[];
 
 const EXPECTED_ROLE_PERMISSIONS = {
@@ -107,6 +118,20 @@ describe("auth permissions", () => {
 
     expect(canAccessAdminPanel("moderator")).toBe(false);
     expect(canAccessAdminPanel("admin")).toBe(true);
+  });
+
+  it("mantiene permisos admin fuera de Sanity y solo en admin", () => {
+    expect(getAdminResourcePermission("footer-settings")).toBe(
+      PERMISSIONS.manageFooterSettings
+    );
+    expect(getAdminResourcePermission("feature-flags")).toBe(
+      PERMISSIONS.manageFeatureFlags
+    );
+    expect(hasPermission("moderator", PERMISSIONS.manageFooterSettings)).toBe(
+      false
+    );
+    expect(hasPermission("admin", PERMISSIONS.manageFooterSettings)).toBe(true);
+    expect(hasPermission("admin", PERMISSIONS.manageMaintenance)).toBe(true);
   });
 
   it("resuelve permisos de dashboard por recurso, accion y metodo HTTP", () => {

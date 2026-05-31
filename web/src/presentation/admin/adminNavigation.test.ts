@@ -17,12 +17,20 @@ describe("adminNavigation", () => {
     const context = getAdminNavigationContext(ROUTES.ADMIN_COMMENT_REPORTS);
 
     expect(context.title).toBe("Reportes");
-    expect(context.actionLabel).toBe("Cola de reportes");
+    expect(context.actionLabel).toBe("Reportes");
     expect(context.currentSection.id).toBe("commentReports");
     expect(context.breadcrumbs.map((item) => item.label)).toEqual([
       "Admin",
       "Reportes",
     ]);
+  });
+
+  it("identifica secciones operativas nuevas", () => {
+    const context = getAdminNavigationContext(ROUTES.ADMIN_FOOTER_SETTINGS);
+
+    expect(context.title).toBe("Footer y sponsors");
+    expect(context.actionLabel).toBe("Footer y sponsors");
+    expect(context.currentSection.id).toBe("footerSettings");
   });
 
   it("normaliza barras finales", () => {

@@ -3,12 +3,14 @@ import type {
   GalleryItem,
   Game,
   GoalEvent,
+  FooterSettings,
   NewsItem,
   Player,
   StaffMember,
   TeamRef,
   Tournament,
 } from "../types/models";
+import { DEFAULT_FOOTER_SETTINGS } from "../../shared/site/footerSettings";
 
 export interface InitialDataPayload {
   bootstrapScope: BootstrapScope;
@@ -22,6 +24,7 @@ export interface InitialDataPayload {
   teams: TeamRef[];
   tournamentGames: Game[];
   latestGame: Game | null;
+  footerSettings: FooterSettings;
   currentNewsDetail?: {
     slug: string;
     newsItem: NewsItem | null;
@@ -59,6 +62,7 @@ export const createEmptyInitialData = (): InitialDataPayload => ({
   teams: [],
   tournamentGames: [],
   latestGame: null,
+  footerSettings: DEFAULT_FOOTER_SETTINGS,
 });
 
 export const createBootstrapErrorPayload = (): InitialDataPayload => ({

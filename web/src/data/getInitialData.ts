@@ -1,6 +1,7 @@
 import { getAllGames, getLatestGame, getTournamentGames } from "./games";
 import { getGoalEvents } from "./events";
 import { getGalleries } from "./galleries";
+import { getFooterSettings } from "./footerSettings";
 import { getHomeCriticalData as fetchHomeCriticalData } from "./sanity/services/home.service";
 import { getNews } from "./news";
 import { getPlayers } from "./players";
@@ -18,7 +19,10 @@ export {
 
 export const getHomeCriticalData = async (): Promise<InitialDataPayload> => {
   try {
-    const { news, latestGame } = await fetchHomeCriticalData();
+    const [{ news, latestGame }, footerSettings] = await Promise.all([
+      fetchHomeCriticalData(),
+      getFooterSettings(),
+    ]);
 
     // Home renders above-the-fold content first; heavier datasets are loaded
     // later by the page so the initial route can become interactive sooner.
@@ -34,6 +38,7 @@ export const getHomeCriticalData = async (): Promise<InitialDataPayload> => {
       teams: [],
       tournamentGames: [],
       latestGame,
+      footerSettings,
     };
   } catch (error) {
     reportError(error, {
@@ -60,6 +65,7 @@ export const getInitialData = async (): Promise<InitialDataPayload> => {
       teams,
       tournamentGames,
       latestGame,
+      footerSettings,
     ] = await Promise.all([
       getNews(),
       getGalleries(),
@@ -71,6 +77,7 @@ export const getInitialData = async (): Promise<InitialDataPayload> => {
       getTeams(),
       getTournamentGames(),
       getLatestGame(),
+      getFooterSettings(),
     ]);
 
     return {
@@ -85,6 +92,7 @@ export const getInitialData = async (): Promise<InitialDataPayload> => {
       teams,
       tournamentGames,
       latestGame,
+      footerSettings,
     };
   } catch (error) {
     reportError(error, {

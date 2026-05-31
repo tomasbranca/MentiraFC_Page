@@ -172,6 +172,8 @@ const ensureHomeLcpPreload = (
 };
 
 const preloadQueryCache = (payload: InitialDataPayload) => {
+  queryClient.setQueryData(queryKeys.footerSettings, payload.footerSettings);
+
   if (payload.bootstrapScope === "full") {
     queryClient.setQueryData(queryKeys.games.latest, payload.latestGame);
     queryClient.setQueryData(queryKeys.news.all, payload.news);

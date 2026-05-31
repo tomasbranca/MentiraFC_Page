@@ -1,6 +1,15 @@
 import type { PortableTextBlock, TypedObject } from "@portabletext/types";
 
 import type { GameState, GoalScorerKind, KnownGameState } from "../domain/games";
+import type { FooterSettings } from "../../shared/site/footerSettings";
+
+export type {
+  FooterLink,
+  FooterSettings,
+  FooterSocialLink,
+  FooterSocialPlatform,
+  FooterSponsor,
+} from "../../shared/site/footerSettings";
 
 export type { GameState, GoalScorerKind, KnownGameState };
 export type BootstrapScope =

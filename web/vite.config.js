@@ -47,6 +47,19 @@ export const DASHBOARD_API_RESOURCES = new Set([
 
 export const PUBLIC_API_ROUTES = new Set(["reactions", "comments"]);
 
+export const ADMIN_API_RESOURCES = new Set([
+  "users",
+  "roles",
+  "footer-settings",
+  "moderation",
+  "reports",
+  "audit-log",
+  "metrics",
+  "feature-flags",
+  "auth-controls",
+  "maintenance",
+]);
+
 const PUBLIC_API_ERROR_MESSAGES = {
   reactions: "No pudimos ejecutar la API local de reacciones.",
   comments: "No pudimos ejecutar la API local de comentarios.",
@@ -132,6 +145,73 @@ const createDashboardApiDevPlugin = (env) => ({
         response.end(
           JSON.stringify({
             error: "No pudimos ejecutar la API local del dashboard.",
+          })
+        );
+      }
+    });
+
+    server.middlewares.use("/api/admin", async (request, response) => {
+      try {
+        const relativePath = request.url ?? "/";
+        const normalizedRelativePath = relativePath.startsWith("/")
+          ? relativePath
+          : `/${relativePath}`;
+        const relativeUrl = new URL(normalizedRelativePath, "http://localhost");
+        const pathParts = relativeUrl.pathname.split("/").filter(Boolean);
+        const resource = pathParts[0];
+
+        if (!ADMIN_API_RESOURCES.has(resource)) {
+          response.statusCode = 404;
+          response.setHeader("Content-Type", "application/json");
+          response.end(
+            JSON.stringify({
+              error: "Admin API route not found.",
+            })
+          );
+          return;
+        }
+
+        const requestUrl = new URL(
+          `/api/admin${normalizedRelativePath}`,
+          "http://localhost"
+        );
+        const routeModule = await server.ssrLoadModule("/api/admin/[resource].ts");
+        const routeHandler =
+          routeModule.default?.fetch ?? routeModule.default;
+
+        if (typeof routeHandler !== "function") {
+          throw new Error("Invalid admin API route handler.");
+        }
+
+        const body = await createNodeRequestBody(request);
+        const headers = new Headers();
+
+        Object.entries(request.headers).forEach(([key, value]) => {
+          if (Array.isArray(value)) {
+            value.forEach((item) => headers.append(key, item));
+            return;
+          }
+
+          if (typeof value === "string") {
+            headers.set(key, value);
+          }
+        });
+
+        const webRequest = new Request(requestUrl, {
+          method: request.method,
+          headers,
+          body,
+        });
+        const webResponse = await routeHandler(webRequest);
+
+        await writeWebResponse(webResponse, response);
+      } catch (error) {
+        console.error("[vite] admin API dev error:", error);
+        response.statusCode = 500;
+        response.setHeader("Content-Type", "application/json");
+        response.end(
+          JSON.stringify({
+            error: "No pudimos ejecutar la API local del admin.",
           })
         );
       }

@@ -220,7 +220,7 @@ const Account = () => {
               {getProfileInitials(account.firstName, account.lastName, "MC")}
             </div>
             <div className="min-w-0">
-              <h2 className="break-words text-xl font-black leading-tight text-white">
+              <h2 className="wrap-break-word text-xl font-black leading-tight text-white">
                 {account.firstName} {account.lastName}
               </h2>
               <p className="mt-1 break-all text-sm leading-relaxed text-violet-100/75">
@@ -513,7 +513,7 @@ const AccountProfileMetric = ({
     <dt className="mt-3 text-xs font-semibold uppercase tracking-[0.16em] text-violet-200/70">
       {label}
     </dt>
-    <dd className={`mt-1 break-words text-sm font-black ${valueClassName}`}>
+    <dd className={`mt-1 wrap-break-word text-sm font-black ${valueClassName}`}>
       {value}
     </dd>
   </div>

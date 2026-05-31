@@ -1,6 +1,6 @@
 const DashboardContentLoader = () => (
   <div
-    className="flex min-h-[24rem] items-center justify-center px-4 py-10 sm:min-h-[32rem]"
+    className="flex min-h-96 items-center justify-center px-4 py-10 sm:min-h-128"
     role="status"
     aria-live="polite"
   >

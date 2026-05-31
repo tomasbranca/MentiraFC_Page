@@ -1,5 +1,6 @@
 import { getAllGames, getLatestGame } from "./games";
 import { getGoalEvents } from "./events";
+import { getFooterSettings } from "./footerSettings";
 import { getGalleryBySlug } from "./galleries";
 import {
   createEmptyInitialData,
@@ -41,16 +42,18 @@ const getNewsDetailInitialData = async (
   slug: string
 ): Promise<InitialDataPayload> => {
   try {
-    const [newsItem, suggestedNews, latestGame] = await Promise.all([
+    const [newsItem, suggestedNews, latestGame, footerSettings] = await Promise.all([
       getNewsBySlug(slug),
       getSuggestedNews(slug),
       getLatestGame(),
+      getFooterSettings(),
     ]);
 
     return {
       ...createEmptyInitialData(),
       bootstrapScope: "news-detail",
       latestGame,
+      footerSettings,
       currentNewsDetail: {
         slug,
         newsItem,
@@ -72,15 +75,17 @@ const getGalleryDetailInitialData = async (
   slug: string
 ): Promise<InitialDataPayload> => {
   try {
-    const [gallery, latestGame] = await Promise.all([
+    const [gallery, latestGame, footerSettings] = await Promise.all([
       getGalleryBySlug(slug),
       getLatestGame(),
+      getFooterSettings(),
     ]);
 
     return {
       ...createEmptyInitialData(),
       bootstrapScope: "gallery-detail",
       latestGame,
+      footerSettings,
       currentGalleryDetail: {
         slug,
         gallery,
@@ -102,10 +107,11 @@ const getPlayerDetailInitialData = async (
 ): Promise<InitialDataPayload> => {
   try {
     const year = new Date().getFullYear();
-    const [player, latestGame, goalEvents] = await Promise.all([
+    const [player, latestGame, goalEvents, footerSettings] = await Promise.all([
       getPlayerBySlug(slug),
       getLatestGame(),
       getGoalEvents({ year }),
+      getFooterSettings(),
     ]);
 
     if (!player) {
@@ -113,6 +119,7 @@ const getPlayerDetailInitialData = async (
         ...createEmptyInitialData(),
         bootstrapScope: "player-detail",
         latestGame,
+        footerSettings,
         currentPlayerDetail: {
           slug,
           player: null,
@@ -130,6 +137,7 @@ const getPlayerDetailInitialData = async (
       ...createEmptyInitialData(),
       bootstrapScope: "player-detail",
       latestGame,
+      footerSettings,
       currentPlayerDetail: {
         slug,
         player,
@@ -153,15 +161,17 @@ const getStaffDetailInitialData = async (
   slug: string
 ): Promise<InitialDataPayload> => {
   try {
-    const [staffMember, latestGame] = await Promise.all([
+    const [staffMember, latestGame, footerSettings] = await Promise.all([
       getStaffMemberBySlug(slug),
       getLatestGame(),
+      getFooterSettings(),
     ]);
 
     return {
       ...createEmptyInitialData(),
       bootstrapScope: "staff-detail",
       latestGame,
+      footerSettings,
       currentStaffDetail: {
         slug,
         staffMember,

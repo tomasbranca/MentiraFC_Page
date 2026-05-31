@@ -45,6 +45,16 @@ export const PERMISSIONS = {
   manageAllRoles: "manage_all_roles",
   viewDashboard: "view_dashboard",
   viewAdminPanel: "view_admin_panel",
+  manageAdminUsers: "manage_admin_users",
+  manageAdminRoles: "manage_admin_roles",
+  manageFooterSettings: "manage_footer_settings",
+  manageModeration: "manage_moderation",
+  manageReports: "manage_reports",
+  viewAuditLog: "view_audit_log",
+  viewMetrics: "view_metrics",
+  manageFeatureFlags: "manage_feature_flags",
+  manageAuthControls: "manage_auth_controls",
+  manageMaintenance: "manage_maintenance",
 } as const;
 
 export type CorePermission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -142,6 +152,39 @@ export type DashboardResourcePermissionAction<
 
 export type AppPermission = CorePermission | DashboardResourcePermission;
 
+export const ADMIN_PERMISSION_RESOURCES = [
+  "users",
+  "roles",
+  "footer-settings",
+  "moderation",
+  "reports",
+  "audit-log",
+  "metrics",
+  "feature-flags",
+  "auth-controls",
+  "maintenance",
+] as const;
+
+export type AdminPermissionResource =
+  (typeof ADMIN_PERMISSION_RESOURCES)[number];
+
+export const ADMIN_RESOURCE_PERMISSIONS = {
+  users: PERMISSIONS.manageAdminUsers,
+  roles: PERMISSIONS.manageAdminRoles,
+  "footer-settings": PERMISSIONS.manageFooterSettings,
+  moderation: PERMISSIONS.manageModeration,
+  reports: PERMISSIONS.manageReports,
+  "audit-log": PERMISSIONS.viewAuditLog,
+  metrics: PERMISSIONS.viewMetrics,
+  "feature-flags": PERMISSIONS.manageFeatureFlags,
+  "auth-controls": PERMISSIONS.manageAuthControls,
+  maintenance: PERMISSIONS.manageMaintenance,
+} as const satisfies Record<AdminPermissionResource, AppPermission>;
+
+export const getAdminResourcePermission = (
+  resource: AdminPermissionResource
+): AppPermission => ADMIN_RESOURCE_PERMISSIONS[resource];
+
 export const getDashboardResourcePermission = <
   Resource extends DashboardPermissionResource,
   Action extends DashboardResourcePermissionAction<Resource>,
@@ -226,6 +269,16 @@ const ADMIN_PERMISSIONS = [
   ...MODERATOR_PERMISSIONS,
   PERMISSIONS.manageAllRoles,
   PERMISSIONS.viewAdminPanel,
+  PERMISSIONS.manageAdminUsers,
+  PERMISSIONS.manageAdminRoles,
+  PERMISSIONS.manageFooterSettings,
+  PERMISSIONS.manageModeration,
+  PERMISSIONS.manageReports,
+  PERMISSIONS.viewAuditLog,
+  PERMISSIONS.viewMetrics,
+  PERMISSIONS.manageFeatureFlags,
+  PERMISSIONS.manageAuthControls,
+  PERMISSIONS.manageMaintenance,
 ] as const satisfies readonly AppPermission[];
 
 export const ROLE_PERMISSIONS = {
