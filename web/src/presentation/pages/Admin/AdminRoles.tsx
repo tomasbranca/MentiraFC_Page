@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+import { FiRotateCcw, FiSave } from "react-icons/fi";
 
 import { fetchAdminRoles, saveAdminRoleOverride } from "../../../data/admin";
 import { queryKeys } from "../../../data/queryKeys";
@@ -9,6 +10,7 @@ import type { AppPermission, AppRole } from "../../../../shared/auth/permissions
 import Button from "../../components/Button/Button";
 import ErrorFallback from "../../components/errors/ErrorFallback";
 import DashboardContentLoader from "../../dashboard/DashboardContentLoader";
+import { confirmAdminAction } from "./adminConfirm";
 import AdminPageShell from "./AdminPageShell";
 
 type PermissionDrafts = Partial<Record<AppRole, AppPermission[]>>;
@@ -115,14 +117,53 @@ const AdminRoles = () => {
       [role]: getPersistedPermissions(payload, role),
     }));
   };
+  const handleSaveRole = async (
+    role: AppRole,
+    permissions: AppPermission[]
+  ) => {
+    const confirmed = await confirmAdminAction({
+      title: "Guardar permisos",
+      text: `Se actualizaran los permisos del rol ${role}.`,
+      confirmButtonText: "Guardar",
+    });
+
+    if (confirmed) {
+      mutation.mutate({ role, permissions });
+    }
+  };
 
   return (
     <AdminPageShell
       eyebrow="Autorizacion"
       title="Roles y permisos"
       description="Los defaults viven tipados en codigo. Los overrides operativos se guardan en Supabase."
+      aside={
+        <div className="rounded-md border border-violet-200 bg-[#17151d] p-4 text-white">
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <p className="text-3xl font-black leading-none">
+                {payload.roles.length}
+              </p>
+              <p className="mt-2 text-[0.65rem] font-bold uppercase tracking-[0.14em] text-violet-100/70">
+                Roles
+              </p>
+            </div>
+            <div>
+              <p className="text-3xl font-black leading-none">
+                {payload.overrides.length}
+              </p>
+              <p className="mt-2 text-[0.65rem] font-bold uppercase tracking-[0.14em] text-violet-100/70">
+                Overrides
+              </p>
+            </div>
+          </div>
+          <p className="mt-4 rounded-sm border border-white/10 bg-white/10 px-3 py-2 text-xs font-semibold text-violet-50/80">
+            El rol admin queda protegido desde la UI.
+          </p>
+        </div>
+      }
     >
-      <div className="grid gap-4">
+      <div className="grid gap-3 lg:grid-cols-2">
         {payload.roles.map((role) => {
           const persistedPermissions = getPersistedPermissions(payload, role);
           const permissions = drafts[role] ?? persistedPermissions;
@@ -136,47 +177,62 @@ const AdminRoles = () => {
           return (
             <article
               key={role}
-              className="rounded-md border border-[#ded7ef] bg-white p-4"
+              className={`rounded-md border bg-white p-4 shadow-[0_10px_28px_rgba(23,21,29,0.05)] ${
+                hasChanges ? "border-amber-200" : "border-[#ded7ef]"
+              }`}
             >
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="text-xl font-black uppercase text-[#17151d]">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-xl font-black uppercase text-[#17151d]">
                     {role}
-                  </p>
+                    </p>
+                    {!canOverride ? (
+                      <span className="rounded-sm border border-violet-200 bg-violet-50 px-2 py-1 text-[0.65rem] font-black uppercase text-violet-900">
+                        Protegido
+                      </span>
+                    ) : null}
+                    {canOverride && hasChanges ? (
+                      <span className="rounded-sm border border-amber-200 bg-amber-50 px-2 py-1 text-[0.65rem] font-black uppercase text-amber-800">
+                        Sin guardar
+                      </span>
+                    ) : null}
+                  </div>
                   <p className="mt-1 text-sm text-neutral-500">
                     {permissions.length} permisos activos
                   </p>
                 </div>
-                <Button
-                  className="rounded-sm! px-3! py-2! text-xs!"
-                  disabled={!canOverride || !hasChanges || mutation.isPending}
-                  onClick={() =>
-                    void mutation.mutate({
-                      role,
-                      permissions,
-                    })
-                  }
-                >
-                  {canOverride ? "Guardar cambios" : "Protegido"}
-                </Button>
-              </div>
-              {canOverride && hasChanges ? (
-                <div className="mt-3">
+
+                <div className="flex w-full flex-col gap-2 sm:w-auto">
                   <Button
-                    className="rounded-sm! px-3! py-2! text-xs!"
-                    variant="light"
-                    disabled={mutation.isPending}
-                    onClick={() => resetRoleDraft(role)}
+                    className="w-full rounded-sm! px-3! py-2! text-xs!"
+                    disabled={!canOverride || !hasChanges || mutation.isPending}
+                    onClick={() => void handleSaveRole(role, permissions)}
+                    aria-label={`Guardar permisos de ${role}`}
+                    title="Guardar"
                   >
-                    Descartar cambios
+                    <FiSave className="size-4" aria-hidden="true" />
                   </Button>
+                  {canOverride ? (
+                    <Button
+                      className="w-full rounded-sm! px-3! py-2! text-xs!"
+                      variant="light"
+                      disabled={!hasChanges || mutation.isPending}
+                      onClick={() => resetRoleDraft(role)}
+                      aria-label={`Descartar cambios de ${role}`}
+                      title="Descartar"
+                    >
+                      <FiRotateCcw className="size-4" aria-hidden="true" />
+                    </Button>
+                  ) : null}
                 </div>
-              ) : null}
-              <div className="mt-4 grid max-h-90 gap-2 overflow-y-auto pr-1 sm:grid-cols-2 xl:grid-cols-3">
+              </div>
+
+              <div className="mt-4 grid max-h-80 gap-2 overflow-y-auto pr-1 sm:grid-cols-2">
                 {payload.permissions.map((permission) => (
                   <label
                     key={permission}
-                    className={`flex min-h-11 items-center gap-2 rounded-sm border px-3 py-2 text-xs font-semibold ${
+                    className={`flex min-h-11 items-start gap-2 rounded-sm border px-3 py-2 text-xs font-semibold ${
                       selected.has(permission)
                         ? "border-violet-200 bg-violet-50 text-violet-950"
                         : "border-neutral-200 bg-neutral-50 text-neutral-500"
@@ -191,7 +247,7 @@ const AdminRoles = () => {
                       disabled={!canOverride || mutation.isPending}
                       onChange={() => togglePermission(role, permission)}
                     />
-                    <span className="break-all leading-snug">
+                    <span className="break-words leading-snug">
                       {permissionLabels[permission]}
                     </span>
                   </label>
