@@ -29,12 +29,12 @@ const AdminMetrics = () => {
 
   const metrics = metricsQuery.data;
   const cards = [
-    ["Usuarios", metrics.users],
-    ["Activos", metrics.activeUsers],
-    ["Comentarios", metrics.comments],
-    ["Reportes abiertos", metrics.openReports],
-    ["Feature flags", metrics.featureFlags],
-    ["Eventos auditados", metrics.auditEvents],
+    ["Usuarios", metrics.users, "default"],
+    ["Activos", metrics.activeUsers, "success"],
+    ["Comentarios", metrics.comments, "default"],
+    ["Reportes abiertos", metrics.openReports, metrics.openReports > 0 ? "warning" : "success"],
+    ["Feature flags", metrics.featureFlags, "default"],
+    ["Eventos auditados", metrics.auditEvents, "default"],
   ] as const;
 
   return (
@@ -42,12 +42,33 @@ const AdminMetrics = () => {
       eyebrow="Observabilidad"
       title="Metricas"
       description="Resumen interno del sitio. Trafico y Core Web Vitals se consultan en Vercel."
+      aside={
+        <div className="rounded-md border border-violet-200 bg-[#17151d] p-4 text-white">
+          <p className="text-3xl font-black leading-none">
+            {metrics.openReports}
+          </p>
+          <p className="mt-2 text-[0.65rem] font-bold uppercase tracking-[0.14em] text-violet-100/70">
+            Reportes abiertos
+          </p>
+          <p className="mt-4 rounded-sm border border-white/10 bg-white/10 px-3 py-2 text-xs font-semibold text-violet-50/80">
+            {metrics.openReports > 0
+              ? "Hay moderacion pendiente."
+              : "La cola esta al dia."}
+          </p>
+        </div>
+      }
     >
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {cards.map(([label, value]) => (
+        {cards.map(([label, value, tone]) => (
           <article
             key={label}
-            className="rounded-md border border-[#ded7ef] bg-white p-4"
+            className={`rounded-md border bg-white p-4 shadow-[0_10px_28px_rgba(23,21,29,0.05)] ${
+              tone === "success"
+                ? "border-emerald-200"
+                : tone === "warning"
+                  ? "border-amber-200"
+                  : "border-[#ded7ef]"
+            }`}
           >
             <p className="text-3xl font-black text-[#17151d]">{value}</p>
             <p className="mt-2 text-xs font-bold uppercase tracking-[0.14em] text-neutral-500">
@@ -61,7 +82,7 @@ const AdminMetrics = () => {
           href={metrics.external.vercelAnalyticsUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="rounded-md border border-violet-200 bg-[#17151d] p-4 text-white transition hover:border-violet-300"
+          className="rounded-md border border-violet-200 bg-[#17151d] p-4 text-white shadow-[0_14px_36px_rgba(23,21,29,0.12)] transition hover:border-violet-300"
         >
           <span className="inline-flex items-center gap-2 text-sm font-bold">
             Vercel Analytics <FiExternalLink aria-hidden="true" />
@@ -74,7 +95,7 @@ const AdminMetrics = () => {
           href={metrics.external.vercelSpeedInsightsUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="rounded-md border border-violet-200 bg-[#17151d] p-4 text-white transition hover:border-violet-300"
+          className="rounded-md border border-violet-200 bg-[#17151d] p-4 text-white shadow-[0_14px_36px_rgba(23,21,29,0.12)] transition hover:border-violet-300"
         >
           <span className="inline-flex items-center gap-2 text-sm font-bold">
             Speed Insights <FiExternalLink aria-hidden="true" />

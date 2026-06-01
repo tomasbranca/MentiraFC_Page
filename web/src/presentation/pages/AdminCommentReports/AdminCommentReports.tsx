@@ -9,6 +9,7 @@ import {
   FiAlertTriangle,
   FiCheck,
   FiMessageSquare,
+  FiSlash,
   FiTrash2,
 } from "react-icons/fi";
 
@@ -24,6 +25,8 @@ import ErrorFallback from "../../components/errors/ErrorFallback";
 import DashboardContentLoader from "../../dashboard/DashboardContentLoader";
 import { useModeratorDeleteNewsCommentMutation } from "../../hooks/queries/useNewsComments";
 import { formatDateTime } from "../../utils/date.utils";
+import AdminPageShell from "../Admin/AdminPageShell";
+import { confirmAdminAction } from "../Admin/adminConfirm";
 import {
   getReportCountLabel,
   getVisibleOpenReportIds,
@@ -77,6 +80,14 @@ const AdminCommentReports = () => {
   );
 
   const handleDismiss = async (reportId: string) => {
+    const confirmed = await confirmAdminAction({
+      title: "Descartar reporte",
+      text: "El reporte quedara cerrado sin eliminar el comentario.",
+      confirmButtonText: "Descartar",
+    });
+
+    if (!confirmed) return;
+
     try {
       await reviewMutation.mutateAsync({ reportId, status: "dismissed" });
       toast.success("Reporte descartado.");
@@ -91,6 +102,14 @@ const AdminCommentReports = () => {
 
   const handleAction = async (item: CommentModerationItem) => {
     const reportIds = getVisibleOpenReportIds(item);
+    const confirmed = await confirmAdminAction({
+      title: "Eliminar comentario",
+      text: "Se eliminara el comentario y se cerraran sus reportes abiertos.",
+      confirmButtonText: "Eliminar",
+      danger: true,
+    });
+
+    if (!confirmed) return;
 
     setActioningCommentId(item.comment.id);
 
@@ -133,42 +152,32 @@ const AdminCommentReports = () => {
   }
 
   return (
-    <div className="space-y-5 p-4 sm:p-6">
-      <header className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_14rem]">
-        <div className="rounded-md border border-[#ded7ef] bg-white p-4 sm:p-5">
-          <p className="text-[0.68rem] font-bold uppercase tracking-[0.2em] text-violet-700">
-            Moderacion
-          </p>
-          <div className="mt-3 flex flex-wrap items-end gap-2.5">
-            <h1 className="text-3xl font-black uppercase leading-none text-[#17151d]">
-              Reportes de comentarios
-            </h1>
-            <span className="rounded-sm border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-800">
-              {getReportCountLabel(totalVisibleReports)}
-            </span>
-          </div>
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-neutral-600">
-            Cola de reportes abiertos enviados por usuarios del sitio.
-          </p>
-        </div>
-
+    <AdminPageShell
+      eyebrow="Moderacion"
+      title="Reportes de comentarios"
+      description="Cola de reportes abiertos enviados por usuarios del sitio."
+      aside={
         <div className="rounded-md border border-violet-200 bg-[#17151d] p-4 text-white">
           <div className="flex items-center justify-between gap-3">
             <span className="flex size-10 items-center justify-center rounded-sm bg-violet-100 text-violet-950">
               <FiMessageSquare className="size-5" aria-hidden="true" />
             </span>
             <span className="text-3xl font-black leading-none">
-              {items.length}
+              {totalVisibleReports}
             </span>
           </div>
-          <p className="mt-5 text-xs font-bold uppercase tracking-[0.16em] text-violet-100/70">
-            Comentarios en cola
+          <p className="mt-4 text-xs font-bold uppercase tracking-[0.16em] text-violet-100/70">
+            {getReportCountLabel(totalVisibleReports)}
+          </p>
+          <p className="mt-3 rounded-sm border border-white/10 bg-white/10 px-3 py-2 text-xs font-semibold text-violet-50/80">
+            {items.length} comentarios visibles.
           </p>
         </div>
-      </header>
+      }
+    >
 
       {items.length === 0 ? (
-        <div className="rounded-md border border-[#ded7ef] bg-white p-8 text-center">
+        <div className="flex min-h-[22rem] flex-col items-center justify-center rounded-md border border-[#ded7ef] bg-white p-8 text-center shadow-[0_10px_28px_rgba(23,21,29,0.05)]">
           <span className="mx-auto flex size-12 items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 text-emerald-700">
             <FiCheck className="size-6" aria-hidden="true" />
           </span>
@@ -219,12 +228,13 @@ const AdminCommentReports = () => {
                   </div>
 
                   <Button
-                    className="rounded-sm! border-red-200! bg-red-50! px-3! py-2! text-xs! font-bold! text-red-800! hover:border-red-300! hover:bg-red-100!"
+                    className="w-full rounded-sm! border-red-200! bg-red-50! px-3! py-2! text-xs! font-bold! text-red-800! hover:border-red-300! hover:bg-red-100! md:size-10 md:p-0!"
                     disabled={isBusy || reportIds.length === 0}
                     onClick={() => void handleAction(item)}
+                    aria-label="Eliminar comentario"
+                    title="Eliminar"
                   >
                     <FiTrash2 className="size-4" aria-hidden="true" />
-                    {isActioning ? "Eliminando" : "Eliminar comentario"}
                   </Button>
                 </div>
 
@@ -250,11 +260,13 @@ const AdminCommentReports = () => {
 
                       <Button
                         variant="secondary"
-                        className="rounded-sm! border-neutral-300! px-3! py-2! text-xs! font-bold! text-neutral-700! hover:border-violet-300! hover:bg-violet-50!"
+                        className="w-full rounded-sm! border-neutral-300! bg-white! px-3! py-2! text-xs! font-bold! text-neutral-700! hover:border-violet-300! hover:bg-violet-50! sm:size-10 sm:p-0!"
                         disabled={isBusy || report.status !== "open"}
                         onClick={() => void handleDismiss(report.id)}
+                        aria-label="Descartar reporte"
+                        title="Descartar"
                       >
-                        Descartar
+                        <FiSlash className="size-4" aria-hidden="true" />
                       </Button>
                     </li>
                   ))}
@@ -279,7 +291,7 @@ const AdminCommentReports = () => {
           </Button>
         </div>
       ) : null}
-    </div>
+    </AdminPageShell>
   );
 };
 
