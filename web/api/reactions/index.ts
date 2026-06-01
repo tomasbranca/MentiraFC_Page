@@ -116,6 +116,10 @@ const reactionsHandler = async (request: Request): Promise<Response> => {
       return errorJson("No autorizado.", 401);
     }
 
+    if (error instanceof Error && error.message === "Inactive user.") {
+      return errorJson("Tu usuario ha sido baneado.", 403);
+    }
+
     return errorJson(
       "No pudimos procesar las reacciones. Verifica la configuracion del backend.",
       500

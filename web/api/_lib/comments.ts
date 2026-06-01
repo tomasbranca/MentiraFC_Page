@@ -41,6 +41,11 @@ export const COMMENT_DETAILS_MAX_LENGTH = 500;
 export const DEFAULT_COMMENTS_LIMIT = 20;
 export const MAX_COMMENTS_LIMIT = 50;
 
+const COMMENT_CURSOR_ID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const COMMENT_CURSOR_CREATED_AT_PATTERN =
+  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2})$/;
+
 export type CommentAuthor = {
   id: string;
   firstName: string;
@@ -185,6 +190,17 @@ export const encodeCommentCursor = (
   id: string
 ): string => Buffer.from(`${createdAt}|${id}`, "utf8").toString("base64url");
 
+const isValidCommentCursor = ({
+  createdAt,
+  id,
+}: {
+  createdAt: string;
+  id: string;
+}): boolean =>
+  COMMENT_CURSOR_CREATED_AT_PATTERN.test(createdAt) &&
+  Number.isFinite(Date.parse(createdAt)) &&
+  COMMENT_CURSOR_ID_PATTERN.test(id);
+
 export const decodeCommentCursor = (
   cursor: string | null | undefined
 ): { createdAt: string; id: string } | null => {
@@ -204,6 +220,10 @@ export const decodeCommentCursor = (
     const id = decoded.slice(separatorIndex + 1);
 
     if (!createdAt || !id) {
+      return null;
+    }
+
+    if (!isValidCommentCursor({ createdAt, id })) {
       return null;
     }
 

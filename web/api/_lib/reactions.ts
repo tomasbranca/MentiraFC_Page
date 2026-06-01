@@ -32,6 +32,11 @@ type UserReactionRow = {
   emoji?: unknown;
 };
 
+type ReactionViewer = {
+  userId: string;
+  supabase: ReturnType<typeof createUserSupabaseClient>;
+};
+
 const targetSanityTypes: Record<ReactionTargetType, string> = {
   news: "news",
   player: "players",
@@ -117,10 +122,10 @@ export const ensureReactionTargetExists = async ({
   });
 };
 
-const getUserIdFromToken = async (
+const getReactionViewer = async (
   token: string | null,
   { required }: { required: boolean }
-): Promise<string | null> => {
+): Promise<ReactionViewer | null> => {
   if (!token) {
     if (required) {
       throw new Error("Missing auth token.");
@@ -143,18 +148,31 @@ const getUserIdFromToken = async (
     return null;
   }
 
-  return user.id;
+  const { data: account, error: accountError } = await supabase
+    .from("my_account")
+    .select("is_active")
+    .maybeSingle();
+
+  if (accountError || !account?.is_active) {
+    if (required) {
+      throw new Error("Inactive user.");
+    }
+
+    return null;
+  }
+
+  return {
+    userId: user.id,
+    supabase,
+  };
 };
 
 export const getReactionState = async (
   target: ReactionTarget,
   token: string | null
 ): Promise<ReactionState> => {
-  const userId = await getUserIdFromToken(token, { required: false });
-  const supabase =
-    userId && token
-      ? createUserSupabaseClient(token)
-      : createPublicSupabaseClient();
+  const viewer = await getReactionViewer(token, { required: false });
+  const supabase = viewer?.supabase ?? createPublicSupabaseClient();
   const { data: countRows, error: countsError } = await supabase
     .from("reaction_counts")
     .select("emoji, reaction_count")
@@ -169,11 +187,11 @@ export const getReactionState = async (
 
   let currentUserReaction: string | null = null;
 
-  if (userId) {
+  if (viewer) {
     const { data: reactionRow, error: reactionError } = await supabase
       .from("user_reactions")
       .select("emoji")
-      .eq("user_id", userId)
+      .eq("user_id", viewer.userId)
       .eq("target_type", target.targetType)
       .eq("target_id", target.targetId)
       .maybeSingle();
@@ -204,8 +222,12 @@ export const setReaction = async (
   emoji: string,
   token: string | null
 ): Promise<ReactionState> => {
-  const userId = await getUserIdFromToken(token, { required: true });
-  const supabase = createUserSupabaseClient(token ?? "");
+  const viewer = await getReactionViewer(token, { required: true });
+  if (!viewer) {
+    throw new Error("Invalid auth token.");
+  }
+
+  const { userId, supabase } = viewer;
   const { data: existingReaction, error: existingReactionError } = await supabase
     .from("user_reactions")
     .select("id")
@@ -251,8 +273,12 @@ export const removeReaction = async (
   target: ReactionTarget,
   token: string | null
 ): Promise<ReactionState> => {
-  const userId = await getUserIdFromToken(token, { required: true });
-  const supabase = createUserSupabaseClient(token ?? "");
+  const viewer = await getReactionViewer(token, { required: true });
+  if (!viewer) {
+    throw new Error("Invalid auth token.");
+  }
+
+  const { userId, supabase } = viewer;
   const { error } = await supabase
     .from("user_reactions")
     .delete()

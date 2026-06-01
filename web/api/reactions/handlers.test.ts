@@ -165,6 +165,29 @@ describe("reactions api handlers", () => {
     );
   });
 
+  it("bloquea reacciones de usuarios inactivos", async () => {
+    reactionMocks.setReaction.mockRejectedValueOnce(new Error("Inactive user."));
+
+    const response = await reactionsRoute.fetch(
+      new Request("https://mentirafc.vercel.app/api/reactions", {
+        method: "POST",
+        headers: {
+          authorization: "Bearer access-token",
+        },
+        body: JSON.stringify({
+          targetType: "news",
+          targetId: "news-1",
+          emoji: "\u2764\ufe0f",
+        }),
+      })
+    );
+
+    await expect(response.json()).resolves.toEqual({
+      error: "Tu usuario ha sido baneado.",
+    });
+    expect(response.status).toBe(403);
+  });
+
   it("usa la misma API para reacciones de jugadores", async () => {
     reactionMocks.setReaction.mockResolvedValueOnce({
       targetType: "player",

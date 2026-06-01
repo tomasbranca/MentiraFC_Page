@@ -6,6 +6,7 @@ import {
   listAdminUsers,
   mapAdminErrorToStatus,
   recordAuditLog,
+  updateAdminUser,
 } from "./admin";
 
 const supabaseMocks = vi.hoisted(() => ({
@@ -128,6 +129,47 @@ describe("admin api data helpers", () => {
       message: "La configuracion admin de Supabase no esta lista.",
       status: 500,
     });
+  });
+
+  it("no filtra mensajes internos en errores admin inesperados", () => {
+    expect(
+      mapAdminErrorToStatus(new Error("permission denied for table private.audit_log"))
+    ).toEqual({
+      message: "No pudimos procesar la solicitud admin.",
+      status: 500,
+    });
+  });
+
+  it("bloquea auto-elevacion de rol antes de mutar la cuenta", async () => {
+    const actorId = "8c2c2e11-31dc-4af2-86b0-ec8ad56a2c76";
+
+    supabaseMocks.rpc.mockResolvedValueOnce({
+      data: [
+        {
+          user_id: actorId,
+          role: "user",
+          is_active: true,
+        },
+      ],
+      error: null,
+    });
+
+    await expect(
+      updateAdminUser({
+        actor: {
+          userId: actorId,
+          role: "editor",
+        },
+        targetUserId: actorId,
+        role: "admin",
+      })
+    ).rejects.toThrow("Role assignment is not allowed.");
+
+    expect(supabaseMocks.rpc).toHaveBeenCalledTimes(1);
+    expect(supabaseMocks.rpc).not.toHaveBeenCalledWith(
+      "admin_update_user",
+      expect.anything()
+    );
   });
 
   it("registra audit log mediante RPC service-role-only", async () => {
