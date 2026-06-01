@@ -30,6 +30,9 @@ vi.mock("../_lib/comments.js", async (importOriginal) => {
 });
 
 const { default: commentsRoute } = await import("./index.js");
+const { RateLimitError, __resetRateLimitsForTests } = await import(
+  "../_lib/rateLimit.js"
+);
 
 const sampleComment = {
   id: "22222222-2222-2222-2222-222222222222",
@@ -51,6 +54,7 @@ const sampleComment = {
 describe("comments api handlers", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    __resetRateLimitsForTests();
     commentMocks.ensureNewsExists.mockResolvedValue(true);
     commentMocks.listNewsComments.mockResolvedValue({
       items: [sampleComment],
@@ -114,6 +118,26 @@ describe("comments api handlers", () => {
 
     expect(response.status).toBe(201);
     expect(commentMocks.createNewsComment).toHaveBeenCalled();
+  });
+
+  it("devuelve 429 si se supera el limite de comentarios", async () => {
+    commentMocks.createNewsComment.mockRejectedValueOnce(new RateLimitError(60));
+
+    const response = await commentsRoute.fetch(
+      new Request("https://mentirafc.vercel.app/api/comments", {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer token",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ newsId: "news-1", body: "Hola" }),
+      })
+    );
+
+    await expect(response.json()).resolves.toEqual({
+      error: "Demasiadas acciones en poco tiempo. Intenta nuevamente mas tarde.",
+    });
+    expect(response.status).toBe(429);
   });
 
   it("actualiza comentario propio", async () => {
@@ -221,6 +245,31 @@ describe("comments api handlers", () => {
 
     expect(response.status).toBe(201);
     expect(commentMocks.createCommentReport).toHaveBeenCalled();
+  });
+
+  it("devuelve 429 si se supera el limite de reportes", async () => {
+    commentMocks.createCommentReport.mockRejectedValueOnce(
+      new RateLimitError(60)
+    );
+
+    const response = await commentsRoute.fetch(
+      new Request(
+        "https://mentirafc.vercel.app/api/comments/22222222-2222-2222-2222-222222222222/report",
+        {
+          method: "POST",
+          headers: {
+            Authorization: "Bearer token",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ reason: "spam" }),
+        }
+      )
+    );
+
+    await expect(response.json()).resolves.toEqual({
+      error: "Demasiadas acciones en poco tiempo. Intenta nuevamente mas tarde.",
+    });
+    expect(response.status).toBe(429);
   });
 
   it("crea reporte de comentario desde la ruta base con query params", async () => {

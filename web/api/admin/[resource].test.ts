@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import adminRoute from "./[resource].js";
+import { __resetRateLimitsForTests } from "../_lib/rateLimit";
 
 const adminMocks = vi.hoisted(() => ({
   authorizeAdminRequest: vi.fn(),
@@ -66,6 +67,7 @@ const adminResources = new Set([
 describe("admin api router", () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    __resetRateLimitsForTests();
     adminMocks.isAdminPermissionResource.mockImplementation((resource) =>
       adminResources.has(String(resource))
     );
@@ -162,6 +164,44 @@ describe("admin api router", () => {
     });
     expect(response.status).toBe(400);
     expect(adminMocks.updateAdminUser).not.toHaveBeenCalled();
+  });
+
+  it("limita mutaciones admin abusivas", async () => {
+    const infoSpy = vi.spyOn(console, "info").mockImplementation(() => undefined);
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+
+    adminMocks.updateAdminUser.mockResolvedValue({
+      id: "11111111-1111-1111-1111-111111111111",
+      email: "user@example.com",
+      firstName: "User",
+      lastName: "Test",
+      role: "user",
+      isActive: true,
+      createdAt: null,
+      lastSignInAt: null,
+    });
+
+    let lastResponse: Response | null = null;
+
+    for (let index = 0; index < 21; index += 1) {
+      lastResponse = await adminRoute.fetch(
+        new Request("https://mentirafc.vercel.app/api/admin/users", {
+          method: "PUT",
+          body: JSON.stringify({
+            id: "11111111-1111-1111-1111-111111111111",
+            role: "user",
+          }),
+        })
+      );
+    }
+
+    expect(lastResponse?.status).toBe(429);
+    await expect(lastResponse?.json()).resolves.toEqual({
+      error: "Demasiadas acciones en poco tiempo. Intenta nuevamente mas tarde.",
+    });
+
+    infoSpy.mockRestore();
+    warnSpy.mockRestore();
   });
 
   it("mantiene exitoso footer-settings si falla solo el audit log posterior", async () => {

@@ -28,6 +28,7 @@ describe("comments api helpers", () => {
     expect(normalizeCommentBody("  hola mundo  ")).toBe("hola mundo");
     expect(normalizeCommentBody("   ")).toBeNull();
     expect(normalizeCommentBody("a".repeat(2001))).toBeNull();
+    expect(normalizeCommentBody("<script>alert(1)</script>")).toBeNull();
   });
 
   it("normaliza sort y limit", () => {

@@ -59,3 +59,18 @@ export const normalizeOptionalSanityDocumentId = (
 
   return value ? { invalid: false, value } : { invalid: true, value: null };
 };
+
+export const hasExcessiveContentLength = (
+  request: Request,
+  maxBytes: number
+): boolean => {
+  const value = request.headers.get("content-length");
+
+  if (!value) {
+    return false;
+  }
+
+  const parsed = Number.parseInt(value, 10);
+
+  return Number.isFinite(parsed) && parsed > maxBytes;
+};

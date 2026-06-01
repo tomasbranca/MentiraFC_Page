@@ -8,6 +8,17 @@ import {
   removeReaction,
   setReaction,
 } from "../_lib/reactions.js";
+import {
+  assertRateLimit,
+  getClientIp,
+  isRateLimitError,
+  RATE_LIMIT_MESSAGE,
+} from "../_lib/rateLimit.js";
+import { hasExcessiveContentLength } from "../_lib/requestValidation.js";
+import { AUTHENTICATED_WRITE_IP_RATE_LIMIT_RULES } from "../_lib/securityLimits.js";
+import { logSecurityEvent } from "../_lib/securityLog.js";
+
+const MAX_REACTION_MUTATION_PAYLOAD_BYTES = 2_000;
 
 const getTargetFromRequest = (request: Request) => {
   const url = new URL(request.url);
@@ -38,6 +49,21 @@ const validateExistingTarget = async (
   return exists ? null : errorJson("La entidad no existe o no esta publicada.", 404);
 };
 
+const assertReactionIpRateLimit = (request: Request): void => {
+  const clientIp = getClientIp(request);
+
+  if (!clientIp) {
+    return;
+  }
+
+  assertRateLimit({
+    action: "reactions:write:ip",
+    identifier: clientIp,
+    rules: AUTHENTICATED_WRITE_IP_RATE_LIMIT_RULES,
+    meta: { route: "reactions" },
+  });
+};
+
 const reactionsHandler = async (request: Request): Promise<Response> => {
   try {
     const token = getBearerToken(request);
@@ -54,7 +80,16 @@ const reactionsHandler = async (request: Request): Promise<Response> => {
 
     if (request.method === "POST") {
       if (!token) {
+        logSecurityEvent("reaction_create_unauthorized", {
+          method: request.method,
+        });
         return errorJson("No autorizado.", 401);
+      }
+
+      assertReactionIpRateLimit(request);
+
+      if (hasExcessiveContentLength(request, MAX_REACTION_MUTATION_PAYLOAD_BYTES)) {
+        return errorJson("El payload de reaccion es demasiado grande.", 413);
       }
 
       const body = await parseMutationBody(request);
@@ -88,8 +123,13 @@ const reactionsHandler = async (request: Request): Promise<Response> => {
 
     if (request.method === "DELETE") {
       if (!token) {
+        logSecurityEvent("reaction_delete_unauthorized", {
+          method: request.method,
+        });
         return errorJson("No autorizado.", 401);
       }
+
+      assertReactionIpRateLimit(request);
 
       const target = getTargetFromRequest(request);
 
@@ -108,6 +148,10 @@ const reactionsHandler = async (request: Request): Promise<Response> => {
 
     return errorJson("Metodo no permitido.", 405);
   } catch (error) {
+    if (isRateLimitError(error)) {
+      return errorJson(RATE_LIMIT_MESSAGE, 429);
+    }
+
     if (
       error instanceof Error &&
       (error.message === "Missing auth token." ||
@@ -119,6 +163,8 @@ const reactionsHandler = async (request: Request): Promise<Response> => {
     if (error instanceof Error && error.message === "Inactive user.") {
       return errorJson("Tu usuario ha sido baneado.", 403);
     }
+
+    logSecurityEvent("reactions_api_sensitive_error", {}, "error");
 
     return errorJson(
       "No pudimos procesar las reacciones. Verifica la configuracion del backend.",

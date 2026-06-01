@@ -20,10 +20,14 @@ vi.mock("../_lib/reactions.js", async (importOriginal) => {
 });
 
 const { default: reactionsRoute } = await import("./index.js");
+const { RateLimitError, __resetRateLimitsForTests } = await import(
+  "../_lib/rateLimit.js"
+);
 
 describe("reactions api handlers", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    __resetRateLimitsForTests();
     reactionMocks.ensureReactionTargetExists.mockResolvedValue(true);
     reactionMocks.getReactionState.mockResolvedValue({
       targetType: "news",
@@ -163,6 +167,29 @@ describe("reactions api handlers", () => {
       "🔥",
       "access-token"
     );
+  });
+
+  it("devuelve 429 si se supera el limite de cambios de reaccion", async () => {
+    reactionMocks.setReaction.mockRejectedValueOnce(new RateLimitError(60));
+
+    const response = await reactionsRoute.fetch(
+      new Request("https://mentirafc.vercel.app/api/reactions", {
+        method: "POST",
+        headers: {
+          authorization: "Bearer access-token",
+        },
+        body: JSON.stringify({
+          targetType: "news",
+          targetId: "news-1",
+          emoji: "\u2764\ufe0f",
+        }),
+      })
+    );
+
+    await expect(response.json()).resolves.toEqual({
+      error: "Demasiadas acciones en poco tiempo. Intenta nuevamente mas tarde.",
+    });
+    expect(response.status).toBe(429);
   });
 
   it("bloquea reacciones de usuarios inactivos", async () => {

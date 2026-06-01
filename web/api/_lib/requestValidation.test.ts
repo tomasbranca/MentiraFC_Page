@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  hasExcessiveContentLength,
   normalizeOptionalSanityDocumentId,
   normalizeSanityDocumentId,
   normalizeUuid,
@@ -45,5 +46,16 @@ describe("request validation helpers", () => {
 
   it("limita ids Sanity excesivos", () => {
     expect(normalizeSanityDocumentId("n".repeat(257))).toBeNull();
+  });
+
+  it("detecta payloads con content-length excesivo", () => {
+    const request = new Request("https://mentirafc.vercel.app/api/comments", {
+      method: "POST",
+      headers: {
+        "content-length": "10001",
+      },
+    });
+
+    expect(hasExcessiveContentLength(request, 10_000)).toBe(true);
   });
 });

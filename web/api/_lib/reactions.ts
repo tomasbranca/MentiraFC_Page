@@ -6,6 +6,9 @@ import {
   createUserSupabaseClient,
 } from "./supabase.js";
 import { normalizeSanityDocumentId } from "./requestValidation.js";
+import { assertRateLimit } from "./rateLimit.js";
+import { REACTION_MUTATION_RATE_LIMIT_RULES } from "./securityLimits.js";
+import { logSecurityEvent } from "./securityLog.js";
 
 export const REACTION_TARGET_TYPES = ["news", "player", "game"] as const;
 
@@ -156,6 +159,12 @@ const getReactionViewer = async (
 
   if (accountError || !account?.is_active) {
     if (required) {
+      if (user) {
+        logSecurityEvent("inactive_reaction_user_blocked", {
+          userId: user.id,
+        });
+      }
+
       throw new Error("Inactive user.");
     }
 
@@ -229,6 +238,12 @@ export const setReaction = async (
   }
 
   const { userId, supabase } = viewer;
+  assertRateLimit({
+    action: "reaction:mutation",
+    identifier: userId,
+    rules: REACTION_MUTATION_RATE_LIMIT_RULES,
+    meta: { userId, targetType: target.targetType },
+  });
   const { data: existingReaction, error: existingReactionError } = await supabase
     .from("user_reactions")
     .select("id")
@@ -280,6 +295,12 @@ export const removeReaction = async (
   }
 
   const { userId, supabase } = viewer;
+  assertRateLimit({
+    action: "reaction:mutation",
+    identifier: userId,
+    rules: REACTION_MUTATION_RATE_LIMIT_RULES,
+    meta: { userId, targetType: target.targetType },
+  });
   const { error } = await supabase
     .from("user_reactions")
     .delete()
