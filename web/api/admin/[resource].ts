@@ -126,18 +126,27 @@ const adminHandler = async (request: Request): Promise<Response> => {
           );
         case "footer-settings": {
           const settings = await saveFooterSettingsForAdmin(body);
-          await recordAuditLog(createSupabaseAdminClient(), {
-            actor: authorization,
-            action: "admin.footer_settings.update",
-            resource: "footer-settings",
-            targetId: "footerSettings",
-            changes: {
-              contactEmail: settings.contactEmail,
-              socials: settings.socials.length,
-              links: settings.links.length,
-              sponsors: settings.sponsors.length,
-            },
-          });
+
+          try {
+            await recordAuditLog(createSupabaseAdminClient(), {
+              actor: authorization,
+              action: "admin.footer_settings.update",
+              resource: "footer-settings",
+              targetId: "footerSettings",
+              changes: {
+                contactEmail: settings.contactEmail,
+                socials: settings.socials.length,
+                links: settings.links.length,
+                sponsors: settings.sponsors.length,
+              },
+            });
+          } catch (auditError) {
+            console.warn(
+              "Admin footer audit log failed after Sanity save.",
+              auditError
+            );
+          }
+
           return json(settings);
         }
         case "feature-flags":

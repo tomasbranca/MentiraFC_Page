@@ -45,6 +45,8 @@ type ProfileRow = {
   id: string;
   first_name: string | null;
   last_name: string | null;
+  role: string | null;
+  is_active: boolean | null;
 };
 
 type UserAccountRow = {
@@ -104,65 +106,56 @@ export const createSupabaseAdminClient = (): SupabaseClient => {
   });
 };
 
-const privateTable = (supabase: SupabaseClient, table: string) =>
-  supabase.schema("private").from(table);
-
 const trimText = (value: unknown): string =>
   typeof value === "string" ? value.trim() : "";
 
 const normalizeBoolean = (value: unknown): boolean | null =>
   typeof value === "boolean" ? value : null;
 
+const callAdminRpc = async <T>(
+  supabase: SupabaseClient,
+  functionName: string,
+  args?: Record<string, unknown>
+): Promise<T> => {
+  const { data, error } = await supabase.rpc(functionName, args);
+
+  if (error) throw error;
+
+  return data as T;
+};
+
+const getSingleRpcRow = <T>(rows: T[]): T | null => rows[0] ?? null;
+
 export const recordAuditLog = async (
   supabase: SupabaseClient,
   input: AuditLogInput
 ): Promise<void> => {
-  const { error } = await privateTable(supabase, "audit_log").insert({
-    actor_user_id: input.actor.userId,
-    actor_role: input.actor.role,
-    action: input.action,
-    resource: input.resource,
-    target_id: input.targetId ?? null,
-    changes: input.changes ?? null,
-    result: input.result ?? "success",
+  await callAdminRpc<null>(supabase, "admin_record_audit_log", {
+    p_actor_user_id: input.actor.userId,
+    p_actor_role: input.actor.role,
+    p_action: input.action,
+    p_resource: input.resource,
+    p_target_id: input.targetId ?? null,
+    p_changes: input.changes ?? null,
+    p_result: input.result ?? "success",
   });
-
-  if (error) {
-    throw error;
-  }
 };
 
-const fetchProfilesByIds = async (
+const fetchProfilesAndAccountsByIds = async (
   supabase: SupabaseClient,
   ids: string[]
 ): Promise<Map<string, ProfileRow>> => {
   if (ids.length === 0) return new Map();
 
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("id, first_name, last_name")
-    .in("id", ids);
-
-  if (error) throw error;
-
-  return new Map(((data ?? []) as ProfileRow[]).map((row) => [row.id, row]));
-};
-
-const fetchAccountsByIds = async (
-  supabase: SupabaseClient,
-  ids: string[]
-): Promise<Map<string, UserAccountRow>> => {
-  if (ids.length === 0) return new Map();
-
-  const { data, error } = await privateTable(supabase, "user_accounts")
-    .select("user_id, role, is_active")
-    .in("user_id", ids);
-
-  if (error) throw error;
-
-  return new Map(
-    ((data ?? []) as UserAccountRow[]).map((row) => [row.user_id, row])
+  const data = await callAdminRpc<ProfileRow[]>(
+    supabase,
+    "admin_get_user_profiles_and_accounts",
+    {
+      p_user_ids: ids,
+    }
   );
+
+  return new Map(data.map((row) => [row.id, row]));
 };
 
 export const listAdminUsers = async (): Promise<AdminUser[]> => {
@@ -176,15 +169,11 @@ export const listAdminUsers = async (): Promise<AdminUser[]> => {
 
   const users = data.users ?? [];
   const ids = users.map((user) => user.id);
-  const [profiles, accounts] = await Promise.all([
-    fetchProfilesByIds(supabase, ids),
-    fetchAccountsByIds(supabase, ids),
-  ]);
+  const profiles = await fetchProfilesAndAccountsByIds(supabase, ids);
 
   return users.map((user) => {
     const profile = profiles.get(user.id);
-    const account = accounts.get(user.id);
-    const role = isAppRole(account?.role) ? account.role : "user";
+    const role = isAppRole(profile?.role) ? profile.role : "user";
 
     return {
       id: user.id,
@@ -192,7 +181,7 @@ export const listAdminUsers = async (): Promise<AdminUser[]> => {
       firstName: trimText(profile?.first_name) || "Usuario",
       lastName: trimText(profile?.last_name),
       role,
-      isActive: account?.is_active !== false,
+      isActive: profile?.is_active !== false,
       createdAt: user.created_at ?? null,
       lastSignInAt: user.last_sign_in_at ?? null,
     };
@@ -215,16 +204,13 @@ export const updateAdminUser = async ({
   isActive?: unknown;
 }): Promise<AdminUser> => {
   const supabase = createSupabaseAdminClient();
-  const { data: existingAccount, error: existingAccountError } =
-    await privateTable(supabase, "user_accounts")
-      .select("user_id, role, is_active")
-      .eq("user_id", targetUserId)
-      .maybeSingle();
-
-  if (existingAccountError) throw existingAccountError;
-
-  const currentRole = isAppRole((existingAccount as UserAccountRow | null)?.role)
-    ? ((existingAccount as UserAccountRow).role as AppRole)
+  const existingAccount = getSingleRpcRow(
+    await callAdminRpc<UserAccountRow[]>(supabase, "admin_get_user_account", {
+      p_target_user_id: targetUserId,
+    })
+  );
+  const currentRole = isAppRole(existingAccount?.role)
+    ? existingAccount.role
     : "user";
   const nextRole = isAppRole(role) ? role : undefined;
   const nextActive = normalizeBoolean(isActive);
@@ -249,42 +235,15 @@ export const updateAdminUser = async ({
     throw new Error("Self deactivation is not allowed.");
   }
 
-  if (nextFirstName != null || nextLastName != null) {
-    const profileUpdate: Record<string, string> = {};
-
-    if (nextFirstName != null) profileUpdate.first_name = nextFirstName;
-    if (nextLastName != null) profileUpdate.last_name = nextLastName;
-
-    const { error } = await supabase
-      .from("profiles")
-      .update(profileUpdate)
-      .eq("id", targetUserId);
-
-    if (error) throw error;
-  }
-
-  if (nextRole || nextActive !== null) {
-    const accountUpdate: Record<string, string | boolean> = {
-      user_id: targetUserId,
-      updated_by: actor.userId,
-      updated_at: new Date().toISOString(),
-    };
-
-    if (nextRole) accountUpdate.role = nextRole;
-    if (nextActive !== null) accountUpdate.is_active = nextActive;
-
-    const { error } = await privateTable(supabase, "user_accounts")
-      .upsert(accountUpdate, { onConflict: "user_id" });
-
-    if (error) throw error;
-  }
-
-  await recordAuditLog(supabase, {
-    actor,
-    action: "admin.users.update",
-    resource: "users",
-    targetId: targetUserId,
-    changes: {
+  await callAdminRpc<null>(supabase, "admin_update_user", {
+    p_actor_user_id: actor.userId,
+    p_actor_role: actor.role,
+    p_target_user_id: targetUserId,
+    p_first_name: nextFirstName ?? null,
+    p_last_name: nextLastName ?? null,
+    p_role: nextRole ?? null,
+    p_is_active: nextActive,
+    p_changes: {
       firstName: nextFirstName,
       lastName: nextLastName,
       role: nextRole,
@@ -308,18 +267,16 @@ const filterAppPermissions = (values: unknown): AppPermission[] => {
 
 export const getAdminRoles = async () => {
   const supabase = createSupabaseAdminClient();
-  const { data, error } = await privateTable(
+  const data = await callAdminRpc<RolePermissionOverrideRow[]>(
     supabase,
-    "role_permission_overrides"
-  ).select("role, permissions, updated_at");
-
-  if (error) throw error;
+    "admin_get_role_permission_overrides"
+  );
 
   return {
     roles: APP_ROLES,
     permissions: APP_PERMISSIONS,
     defaults: ROLE_PERMISSIONS,
-    overrides: ((data ?? []) as RolePermissionOverrideRow[])
+    overrides: data
       .filter((row) => isAppRole(row.role))
       .map((row) => ({
         role: row.role as AppRole,
@@ -348,22 +305,12 @@ export const saveAdminRoleOverride = async ({
 
   const nextPermissions = filterAppPermissions(permissions);
   const supabase = createSupabaseAdminClient();
-  const { error } = await privateTable(supabase, "role_permission_overrides")
-    .upsert({
-      role,
-      permissions: nextPermissions,
-      updated_by: actor.userId,
-      updated_at: new Date().toISOString(),
-    });
-
-  if (error) throw error;
-
-  await recordAuditLog(supabase, {
-    actor,
-    action: "admin.roles.update",
-    resource: "roles",
-    targetId: role,
-    changes: { permissions: nextPermissions },
+  await callAdminRpc<null>(supabase, "admin_save_role_permission_override", {
+    p_actor_user_id: actor.userId,
+    p_actor_role: actor.role,
+    p_role: role,
+    p_permissions: nextPermissions,
+    p_changes: { permissions: nextPermissions },
   });
 
   return getAdminRoles();
@@ -371,13 +318,12 @@ export const saveAdminRoleOverride = async ({
 
 export const listFeatureFlags = async (): Promise<AdminFeatureFlag[]> => {
   const supabase = createSupabaseAdminClient();
-  const { data, error } = await privateTable(supabase, "feature_flags")
-    .select("key, label, description, enabled, updated_at")
-    .order("key");
+  const data = await callAdminRpc<FeatureFlagRow[]>(
+    supabase,
+    "admin_list_feature_flags"
+  );
 
-  if (error) throw error;
-
-  return ((data ?? []) as FeatureFlagRow[]).map((row) => ({
+  return data.map((row) => ({
     key: row.key,
     label: trimText(row.label) || row.key,
     description: row.description ?? null,
@@ -409,23 +355,14 @@ export const saveFeatureFlag = async ({
   }
 
   const supabase = createSupabaseAdminClient();
-  const { error } = await privateTable(supabase, "feature_flags").upsert({
-    key: flagKey,
-    label: flagLabel,
-    description: trimText(description) || null,
-    enabled,
-    updated_by: actor.userId,
-    updated_at: new Date().toISOString(),
-  });
-
-  if (error) throw error;
-
-  await recordAuditLog(supabase, {
-    actor,
-    action: "admin.feature_flags.update",
-    resource: "feature-flags",
-    targetId: flagKey,
-    changes: { label: flagLabel, enabled },
+  await callAdminRpc<null>(supabase, "admin_save_feature_flag", {
+    p_actor_user_id: actor.userId,
+    p_actor_role: actor.role,
+    p_key: flagKey,
+    p_label: flagLabel,
+    p_description: trimText(description) || null,
+    p_enabled: enabled,
+    p_changes: { label: flagLabel, enabled },
   });
 
   return listFeatureFlags();
@@ -434,17 +371,12 @@ export const saveFeatureFlag = async ({
 export const getMaintenanceSettings =
   async (): Promise<AdminMaintenanceSettings> => {
     const supabase = createSupabaseAdminClient();
-    const { data, error } = await privateTable(
-      supabase,
-      "app_runtime_settings"
-    )
-      .select("maintenance_enabled, maintenance_message, updated_at")
-      .eq("id", "app")
-      .maybeSingle();
-
-    if (error) throw error;
-
-    const row = data as RuntimeSettingsRow | null;
+    const row = getSingleRpcRow(
+      await callAdminRpc<RuntimeSettingsRow[]>(
+        supabase,
+        "admin_get_maintenance_settings"
+      )
+    );
 
     return {
       enabled: row?.maintenance_enabled === true,
@@ -472,23 +404,12 @@ export const saveMaintenanceSettings = async ({
     trimText(message) ||
     "Estamos realizando mantenimiento. Volve a intentar en unos minutos.";
   const supabase = createSupabaseAdminClient();
-  const { error } = await privateTable(supabase, "app_runtime_settings")
-    .upsert({
-      id: "app",
-      maintenance_enabled: enabled,
-      maintenance_message: nextMessage,
-      updated_by: actor.userId,
-      updated_at: new Date().toISOString(),
-    });
-
-  if (error) throw error;
-
-  await recordAuditLog(supabase, {
-    actor,
-    action: "admin.maintenance.update",
-    resource: "maintenance",
-    targetId: "app",
-    changes: { enabled, message: nextMessage },
+  await callAdminRpc<null>(supabase, "admin_save_maintenance_settings", {
+    p_actor_user_id: actor.userId,
+    p_actor_role: actor.role,
+    p_enabled: enabled,
+    p_message: nextMessage,
+    p_changes: { enabled, message: nextMessage },
   });
 
   return getMaintenanceSettings();
@@ -496,16 +417,21 @@ export const saveMaintenanceSettings = async ({
 
 export const getAuditLog = async () => {
   const supabase = createSupabaseAdminClient();
-  const { data, error } = await privateTable(supabase, "audit_log")
-    .select(
-      "id, actor_user_id, actor_role, action, resource, target_id, changes, result, created_at"
-    )
-    .order("created_at", { ascending: false })
-    .limit(100);
+  const data = await callAdminRpc<
+    Array<{
+      id: string;
+      actor_user_id: string;
+      actor_role: AppRole;
+      action: string;
+      resource: string;
+      target_id: string | null;
+      changes: Record<string, unknown> | null;
+      result: string;
+      created_at: string;
+    }>
+  >(supabase, "admin_get_audit_log", { p_limit: 100 });
 
-  if (error) throw error;
-
-  return (data ?? []).map((row) => ({
+  return data.map((row) => ({
     id: row.id,
     actorUserId: row.actor_user_id,
     actorRole: row.actor_role,
@@ -518,62 +444,39 @@ export const getAuditLog = async () => {
   }));
 };
 
-export const getAdminMetrics = async () => {
-  const supabase = createSupabaseAdminClient();
-  const [
-    usersResult,
-    activeUsersResult,
-    commentsResult,
-    openReportsResult,
-    featureFlagsResult,
-    auditEventsResult,
-  ] = await Promise.all([
-    privateTable(supabase, "user_accounts").select("*", {
-      count: "exact",
-      head: true,
-    }),
-    privateTable(supabase, "user_accounts")
-      .select("*", { count: "exact", head: true })
-      .eq("is_active", true),
-    supabase.from("news_comments").select("*", {
-      count: "exact",
-      head: true,
-    }),
-    supabase
-      .from("comment_reports")
-      .select("*", { count: "exact", head: true })
-      .eq("status", "open"),
-    privateTable(supabase, "feature_flags").select("*", {
-      count: "exact",
-      head: true,
-    }),
-    privateTable(supabase, "audit_log").select("*", {
-      count: "exact",
-      head: true,
-    }),
-  ]);
+type AdminMetricsRow = {
+  users: number | string | null;
+  active_users: number | string | null;
+  comments: number | string | null;
+  open_reports: number | string | null;
+  feature_flags: number | string | null;
+  audit_events: number | string | null;
+};
 
-  const results = [
-    usersResult,
-    activeUsersResult,
-    commentsResult,
-    openReportsResult,
-    featureFlagsResult,
-    auditEventsResult,
-  ];
-  const failedResult = results.find((result) => result.error);
+const parseMetricCount = (value: number | string | null | undefined): number => {
+  if (typeof value === "number") return value;
+  if (typeof value === "string") {
+    const parsed = Number(value);
 
-  if (failedResult?.error) {
-    throw failedResult.error;
+    return Number.isFinite(parsed) ? parsed : 0;
   }
 
+  return 0;
+};
+
+export const getAdminMetrics = async () => {
+  const supabase = createSupabaseAdminClient();
+  const metrics = getSingleRpcRow(
+    await callAdminRpc<AdminMetricsRow[]>(supabase, "admin_get_metrics")
+  );
+
   return {
-    users: usersResult.count ?? 0,
-    activeUsers: activeUsersResult.count ?? 0,
-    comments: commentsResult.count ?? 0,
-    openReports: openReportsResult.count ?? 0,
-    featureFlags: featureFlagsResult.count ?? 0,
-    auditEvents: auditEventsResult.count ?? 0,
+    users: parseMetricCount(metrics?.users),
+    activeUsers: parseMetricCount(metrics?.active_users),
+    comments: parseMetricCount(metrics?.comments),
+    openReports: parseMetricCount(metrics?.open_reports),
+    featureFlags: parseMetricCount(metrics?.feature_flags),
+    auditEvents: parseMetricCount(metrics?.audit_events),
     external: {
       vercelAnalyticsUrl: "https://vercel.com/analytics",
       vercelSpeedInsightsUrl: "https://vercel.com/docs/speed-insights",
@@ -608,6 +511,21 @@ export const getAuthControls = async () => ({
 export const mapAdminErrorToStatus = (
   error: unknown
 ): { message: string; status: number } => {
+  const errorCode =
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    typeof error.code === "string"
+      ? error.code
+      : null;
+
+  if (errorCode === "PGRST106" || errorCode === "42501") {
+    return {
+      message: "La configuracion admin de Supabase no esta lista.",
+      status: 500,
+    };
+  }
+
   if (!(error instanceof Error)) {
     return {
       message: "No pudimos procesar la solicitud admin.",
