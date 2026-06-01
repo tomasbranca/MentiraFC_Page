@@ -249,7 +249,7 @@ function App({ initialData }: AppProps) {
           }
         >
           {isMaintenanceActive ? (
-            <section className="flex min-h-[70vh] items-center justify-center bg-[#101012] px-4 py-16 text-white">
+            <section className="flex min-h-[90vh] items-center justify-center bg-[#101012] px-4 py-16 text-white">
               <div className="max-w-xl rounded-md border border-violet-200/20 bg-[#17151d] p-6 text-center shadow-[0_24px_80px_rgba(0,0,0,0.35)]">
                 <p className="text-[0.68rem] font-bold uppercase tracking-[0.22em] text-violet-200/80">
                   Mantenimiento

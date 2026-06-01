@@ -1,6 +1,3 @@
-import process from "node:process";
-import { createClient } from "@supabase/supabase-js";
-
 import {
   ADMIN_PERMISSION_RESOURCES,
   getDashboardRequestPermission,
@@ -15,6 +12,7 @@ import {
   type DashboardResourcePermissionAction,
 } from "../../shared/auth/permissions.js";
 import { errorJson } from "./responses.js";
+import { createUserSupabaseClient } from "./supabase.js";
 
 type AuthorizedDashboardUser = {
   userId: string;
@@ -36,30 +34,17 @@ export const authorizeDashboardUser = async (
   requiredPermission: AppPermission
 ): Promise<AuthorizedDashboardUser | Response> => {
   const token = getBearerToken(request);
-  const supabaseUrl = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
-  const publishableKey =
-    process.env.SUPABASE_PUBLISHABLE_KEY ??
-    process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
   if (!token) {
     return errorJson("No autorizado.", 401);
   }
 
-  if (!supabaseUrl || !publishableKey) {
+  let supabase: ReturnType<typeof createUserSupabaseClient>;
+
+  try {
+    supabase = createUserSupabaseClient(token);
+  } catch {
     return errorJson("Supabase no está configurado en el servidor.", 500);
   }
-
-  const supabase = createClient(supabaseUrl, publishableKey, {
-    global: {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    },
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  });
 
   const {
     data: { user },

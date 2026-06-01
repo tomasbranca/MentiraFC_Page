@@ -1,5 +1,4 @@
-import process from "node:process";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 import {
   hasPermission,
@@ -9,6 +8,11 @@ import {
   type AppRole,
 } from "../../shared/auth/permissions.js";
 import { ensureReactionTargetExists } from "./reactions.js";
+import {
+  createAdminSupabaseClient,
+  createPublicSupabaseClient,
+  createUserSupabaseClient,
+} from "./supabase.js";
 
 export const COMMENT_SORT_OPTIONS = ["newest", "oldest"] as const;
 
@@ -112,21 +116,6 @@ type ReportRow = {
   status: string;
 };
 
-const getSupabaseConfig = () => {
-  const supabaseUrl = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
-  const publishableKey =
-    process.env.SUPABASE_PUBLISHABLE_KEY ??
-    process.env.VITE_SUPABASE_PUBLISHABLE_KEY ??
-    // In local/server envs the service role key may be provided instead
-    process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!supabaseUrl || !publishableKey) {
-    throw new Error("Supabase server environment variables are not configured.");
-  }
-
-  return { supabaseUrl, publishableKey };
-};
-
 export const getBearerToken = (request: Request): string | null => {
   const authorization = request.headers.get("authorization");
 
@@ -138,23 +127,7 @@ export const getBearerToken = (request: Request): string | null => {
 };
 
 export const createCommentsSupabaseClient = (token?: string | null) => {
-  const { supabaseUrl, publishableKey } = getSupabaseConfig();
-
-  return createClient(supabaseUrl, publishableKey, {
-    ...(token
-      ? {
-          global: {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          },
-        }
-      : {}),
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  });
+  return token ? createUserSupabaseClient(token) : createPublicSupabaseClient();
 };
 
 export const normalizeNewsId = (input: unknown): string | null => {
@@ -710,39 +683,8 @@ export const deleteNewsCommentAsModerator = async ({
     throw new Error("Comment not found.");
   }
 
-  // Use service role key when available to bypass RLS for moderator actions
-  const serviceRoleKey =
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
-
-  if (serviceRoleKey) {
-    const adminUrl = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
-
-    if (!adminUrl) {
-      throw new Error("Supabase server environment variables are not configured.");
-    }
-
-    const admin = createClient(adminUrl, serviceRoleKey, {
-      auth: { autoRefreshToken: false, persistSession: false },
-    });
-
-    const { error } = await admin
-      .from("news_comments")
-      .update({
-        deleted_at: new Date().toISOString(),
-        deleted_by: moderator.userId,
-        deletion_kind: "moderator",
-      })
-      .eq("id", commentId)
-      .is("deleted_at", null);
-
-    if (error) {
-      throw error;
-    }
-
-    return;
-  }
-
-  const { error } = await moderator.supabase
+  const admin = createAdminSupabaseClient();
+  const { error } = await admin
     .from("news_comments")
     .update({
       deleted_at: new Date().toISOString(),
@@ -991,6 +933,16 @@ export const mapCommentsErrorToStatus = (
       return {
         message: "Ya reportaste este comentario.",
         status: 409,
+      };
+    case "Supabase public server environment variables are not configured.":
+      return {
+        message: "Supabase no esta configurado en el servidor.",
+        status: 500,
+      };
+    case "Supabase admin environment variables are not configured.":
+      return {
+        message: "Supabase admin no esta configurado en el servidor.",
+        status: 500,
       };
     default:
       return {

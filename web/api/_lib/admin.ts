@@ -1,5 +1,4 @@
-import process from "node:process";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 import {
   APP_PERMISSIONS,
@@ -10,6 +9,7 @@ import {
   type AppPermission,
   type AppRole,
 } from "../../shared/auth/permissions.js";
+import { createAdminSupabaseClient } from "./supabase.js";
 
 type AuthorizedAdminUser = {
   userId: string;
@@ -84,27 +84,7 @@ type RuntimeSettingsRow = {
   updated_at: string | null;
 };
 
-const getSupabaseAdminConfig = () => {
-  const supabaseUrl = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!supabaseUrl || !serviceRoleKey) {
-    throw new Error("Supabase admin environment variables are not configured.");
-  }
-
-  return { supabaseUrl, serviceRoleKey };
-};
-
-export const createSupabaseAdminClient = (): SupabaseClient => {
-  const { supabaseUrl, serviceRoleKey } = getSupabaseAdminConfig();
-
-  return createClient(supabaseUrl, serviceRoleKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  });
-};
+export const createSupabaseAdminClient = createAdminSupabaseClient;
 
 const trimText = (value: unknown): string =>
   typeof value === "string" ? value.trim() : "";
