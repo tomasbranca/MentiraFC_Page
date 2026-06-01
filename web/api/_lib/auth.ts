@@ -12,6 +12,7 @@ import {
   type DashboardResourcePermissionAction,
 } from "../../shared/auth/permissions.js";
 import { errorJson } from "./responses.js";
+import { logSecurityEvent } from "./securityLog.js";
 import { createUserSupabaseClient } from "./supabase.js";
 
 type AuthorizedDashboardUser = {
@@ -34,7 +35,14 @@ export const authorizeDashboardUser = async (
   requiredPermission: AppPermission
 ): Promise<AuthorizedDashboardUser | Response> => {
   const token = getBearerToken(request);
+  const pathname = new URL(request.url).pathname;
+
   if (!token) {
+    logSecurityEvent("api_missing_auth_token", {
+      requiredPermission,
+      pathname,
+      method: request.method,
+    });
     return errorJson("No autorizado.", 401);
   }
 
@@ -52,6 +60,11 @@ export const authorizeDashboardUser = async (
   } = await supabase.auth.getUser(token);
 
   if (userError || !user) {
+    logSecurityEvent("api_invalid_auth_token", {
+      requiredPermission,
+      pathname,
+      method: request.method,
+    });
     return errorJson("La sesión no es válida.", 401);
   }
 
@@ -71,11 +84,24 @@ export const authorizeDashboardUser = async (
   const role = account.role;
 
   if (!account.is_active) {
+    logSecurityEvent("inactive_api_user_blocked", {
+      userId: user.id,
+      requiredPermission,
+      pathname,
+      method: request.method,
+    });
     return errorJson("Tu usuario ha sido baneado.", 403);
   }
 
   // UI/API permission checks are defense in depth; Supabase RLS must still enforce data access.
   if (!hasPermission(role, requiredPermission)) {
+    logSecurityEvent("api_permission_denied", {
+      userId: user.id,
+      role,
+      requiredPermission,
+      pathname,
+      method: request.method,
+    });
     return errorJson(
       `No tenes permisos para realizar esta accion del dashboard (${requiredPermission}).`,
       403

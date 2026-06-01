@@ -7,6 +7,7 @@ import {
   adaptGalleries,
   adaptSingleGallery,
 } from "../adapters/galleries.adapter";
+import { normalizeSanitySlugParam } from "../requestParams";
 import { fetchSanityQuery } from "../sanityFetch";
 import type { GalleryItem } from "../../../types/models";
 
@@ -18,8 +19,14 @@ export const getGalleries = async (): Promise<GalleryItem[]> => {
 export const getGalleryBySlug = async (
   slug: string
 ): Promise<GalleryItem | null> => {
+  const normalizedSlug = normalizeSanitySlugParam(slug);
+
+  if (!normalizedSlug) {
+    return null;
+  }
+
   const data = await fetchSanityQuery(GALLERY_BY_SLUG_QUERY, {
-    params: { slug },
+    params: { slug: normalizedSlug },
   });
   return adaptSingleGallery(data);
 };

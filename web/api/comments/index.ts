@@ -12,6 +12,7 @@ import {
   listCommentModeration,
   listNewsComments,
   mapCommentsErrorToStatus,
+  normalizeCommentEntityId,
   normalizeCommentBody,
   normalizeCommentLimit,
   normalizeCommentSort,
@@ -20,6 +21,17 @@ import {
   updateCommentReportStatus,
   updateOwnNewsComment,
 } from "../_lib/comments.js";
+import {
+  assertRateLimit,
+  getClientIp,
+  isRateLimitError,
+  RATE_LIMIT_MESSAGE,
+} from "../_lib/rateLimit.js";
+import { AUTHENTICATED_WRITE_IP_RATE_LIMIT_RULES } from "../_lib/securityLimits.js";
+import { logSecurityEvent } from "../_lib/securityLog.js";
+import { hasExcessiveContentLength } from "../_lib/requestValidation.js";
+
+const MAX_COMMENT_MUTATION_PAYLOAD_BYTES = 10_000;
 
 const parseJsonBody = async <T>(request: Request): Promise<T | null> => {
   try {
@@ -52,7 +64,12 @@ const getCommentIdFromPath = (pathname: string): string | null => {
 };
 
 const getCommentIdFromRequest = (url: URL, pathname: string): string | null =>
-  getTrimmedSearchParam(url, "commentId") ?? getCommentIdFromPath(pathname);
+  normalizeCommentEntityId(
+    getTrimmedSearchParam(url, "commentId") ?? getCommentIdFromPath(pathname)
+  );
+
+const hasCommentIdInput = (url: URL, pathname: string): boolean =>
+  Boolean(getTrimmedSearchParam(url, "commentId") ?? getCommentIdFromPath(pathname));
 
 const getReportIdFromPath = (pathname: string): string | null => {
   const segments = pathname.split("/").filter(Boolean);
@@ -66,7 +83,12 @@ const getReportIdFromPath = (pathname: string): string | null => {
 };
 
 const getReportIdFromRequest = (url: URL, pathname: string): string | null =>
-  getTrimmedSearchParam(url, "reportId") ?? getReportIdFromPath(pathname);
+  normalizeCommentEntityId(
+    getTrimmedSearchParam(url, "reportId") ?? getReportIdFromPath(pathname)
+  );
+
+const hasReportIdInput = (url: URL, pathname: string): boolean =>
+  Boolean(getTrimmedSearchParam(url, "reportId") ?? getReportIdFromPath(pathname));
 
 const isModerationRequest = (url: URL, pathname: string): boolean =>
   pathname.endsWith("/comments/moderation") ||
@@ -74,6 +96,21 @@ const isModerationRequest = (url: URL, pathname: string): boolean =>
 
 const isCommentReportRequest = (url: URL, pathname: string): boolean =>
   pathname.endsWith("/report") || url.searchParams.get("action") === "report";
+
+const assertCommentIpRateLimit = (request: Request): void => {
+  const clientIp = getClientIp(request);
+
+  if (!clientIp) {
+    return;
+  }
+
+  assertRateLimit({
+    action: "comments:write:ip",
+    identifier: clientIp,
+    rules: AUTHENTICATED_WRITE_IP_RATE_LIMIT_RULES,
+    meta: { route: "comments" },
+  });
+};
 
 const commentsHandler = async (request: Request): Promise<Response> => {
   try {
@@ -87,6 +124,9 @@ const commentsHandler = async (request: Request): Promise<Response> => {
       }
 
       if (!token) {
+        logSecurityEvent("comments_moderation_unauthorized", {
+          method: request.method,
+        });
         return errorJson("No autorizado.", 401);
       }
 
@@ -112,7 +152,16 @@ const commentsHandler = async (request: Request): Promise<Response> => {
       }
 
       if (!token) {
+        logSecurityEvent("comment_report_status_unauthorized", {
+          method: request.method,
+        });
         return errorJson("No autorizado.", 401);
+      }
+
+      assertCommentIpRateLimit(request);
+
+      if (hasExcessiveContentLength(request, MAX_COMMENT_MUTATION_PAYLOAD_BYTES)) {
+        return errorJson("El payload es demasiado grande.", 413);
       }
 
       const body = await parseJsonBody<{ status?: unknown }>(request);
@@ -134,6 +183,10 @@ const commentsHandler = async (request: Request): Promise<Response> => {
       return json({ ok: true });
     }
 
+    if (hasReportIdInput(url, pathname)) {
+      return errorJson("Falta un reporte valido.", 400);
+    }
+
     const commentId = getCommentIdFromRequest(url, pathname);
 
     if (isCommentReportRequest(url, pathname)) {
@@ -146,7 +199,16 @@ const commentsHandler = async (request: Request): Promise<Response> => {
       }
 
       if (!token) {
+        logSecurityEvent("comment_report_unauthorized", {
+          method: request.method,
+        });
         return errorJson("No autorizado.", 401);
+      }
+
+      assertCommentIpRateLimit(request);
+
+      if (hasExcessiveContentLength(request, MAX_COMMENT_MUTATION_PAYLOAD_BYTES)) {
+        return errorJson("El payload del reporte es demasiado grande.", 413);
       }
 
       const body = await parseJsonBody<{
@@ -188,10 +250,18 @@ const commentsHandler = async (request: Request): Promise<Response> => {
 
     if (commentId) {
       if (!token) {
+        logSecurityEvent("comment_mutation_unauthorized", {
+          method: request.method,
+        });
         return errorJson("No autorizado.", 401);
       }
 
       if (request.method === "PATCH") {
+        assertCommentIpRateLimit(request);
+        if (hasExcessiveContentLength(request, MAX_COMMENT_MUTATION_PAYLOAD_BYTES)) {
+          return errorJson("El payload del comentario es demasiado grande.", 413);
+        }
+
         const body = await parseJsonBody<{ body?: unknown }>(request);
 
         if (!body) {
@@ -217,6 +287,7 @@ const commentsHandler = async (request: Request): Promise<Response> => {
       }
 
       if (request.method === "DELETE") {
+        assertCommentIpRateLimit(request);
         const asModerator = url.searchParams.get("as") === "moderator";
 
         if (asModerator) {
@@ -229,6 +300,10 @@ const commentsHandler = async (request: Request): Promise<Response> => {
       }
 
       return errorJson("Metodo no permitido.", 405);
+    }
+
+    if (hasCommentIdInput(url, pathname)) {
+      return errorJson("Falta un comentario valido.", 400);
     }
 
     if (request.method === "GET") {
@@ -262,7 +337,16 @@ const commentsHandler = async (request: Request): Promise<Response> => {
 
     if (request.method === "POST") {
       if (!token) {
+        logSecurityEvent("comment_create_unauthorized", {
+          method: request.method,
+        });
         return errorJson("No autorizado.", 401);
+      }
+
+      assertCommentIpRateLimit(request);
+
+      if (hasExcessiveContentLength(request, MAX_COMMENT_MUTATION_PAYLOAD_BYTES)) {
+        return errorJson("El payload del comentario es demasiado grande.", 413);
       }
 
       const body = await parseJsonBody<{
@@ -301,6 +385,18 @@ const commentsHandler = async (request: Request): Promise<Response> => {
     return errorJson("Metodo no permitido.", 405);
   } catch (error) {
     const mapped = mapCommentsErrorToStatus(error);
+
+    if (isRateLimitError(error)) {
+      return errorJson(RATE_LIMIT_MESSAGE, 429);
+    }
+
+    if (mapped.status >= 500) {
+      logSecurityEvent(
+        "comments_api_sensitive_error",
+        { status: mapped.status },
+        "error"
+      );
+    }
 
     return errorJson(mapped.message, mapped.status);
   }

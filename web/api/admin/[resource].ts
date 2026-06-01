@@ -22,7 +22,15 @@ import {
   getFooterSettingsForAdmin,
   saveFooterSettingsForAdmin,
 } from "../_lib/footerSettings.js";
+import {
+  assertRateLimit,
+  isRateLimitError,
+  RATE_LIMIT_MESSAGE,
+} from "../_lib/rateLimit.js";
+import { normalizeUuid } from "../_lib/requestValidation.js";
 import { errorJson, json } from "../_lib/responses.js";
+import { ADMIN_MUTATION_RATE_LIMIT_RULES } from "../_lib/securityLimits.js";
+import { logSecurityEvent } from "../_lib/securityLog.js";
 
 const getResourceFromPathname = (pathname: string): string | null => {
   const segments = pathname.split("/").filter(Boolean);
@@ -94,6 +102,13 @@ const adminHandler = async (request: Request): Promise<Response> => {
     }
 
     if (request.method === "PUT" || request.method === "PATCH") {
+      assertRateLimit({
+        action: "admin:mutation",
+        identifier: authorization.userId,
+        rules: ADMIN_MUTATION_RATE_LIMIT_RULES,
+        meta: { userId: authorization.userId, resource },
+      });
+
       const body = await parseJsonBody<Record<string, unknown>>(request);
 
       if (!body) {
@@ -101,21 +116,37 @@ const adminHandler = async (request: Request): Promise<Response> => {
       }
 
       switch (resource) {
-        case "users":
-          if (!body.id || typeof body.id !== "string") {
+        case "users": {
+          const targetUserId = normalizeUuid(body.id);
+
+          if (!targetUserId) {
             return errorJson("Falta el usuario a actualizar.", 400);
+          }
+
+          if (typeof body.role === "string" || typeof body.isActive === "boolean") {
+            logSecurityEvent(
+              "admin_user_sensitive_change_attempt",
+              {
+                actorUserId: authorization.userId,
+                targetUserId,
+                role: typeof body.role === "string" ? body.role : null,
+                changesActive: typeof body.isActive === "boolean",
+              },
+              "info"
+            );
           }
 
           return json(
             await updateAdminUser({
               actor: authorization,
-              targetUserId: body.id,
+              targetUserId,
               firstName: body.firstName,
               lastName: body.lastName,
               role: body.role,
               isActive: body.isActive,
             })
           );
+        }
         case "roles":
           return json(
             await saveAdminRoleOverride({
@@ -174,7 +205,19 @@ const adminHandler = async (request: Request): Promise<Response> => {
 
     return errorJson("Metodo no permitido.", 405);
   } catch (error) {
+    if (isRateLimitError(error)) {
+      return errorJson(RATE_LIMIT_MESSAGE, 429);
+    }
+
     const mapped = mapAdminErrorToStatus(error);
+
+    if (mapped.status >= 500) {
+      logSecurityEvent(
+        "admin_api_sensitive_error",
+        { resource, status: mapped.status },
+        "error"
+      );
+    }
 
     return errorJson(mapped.message, mapped.status);
   }

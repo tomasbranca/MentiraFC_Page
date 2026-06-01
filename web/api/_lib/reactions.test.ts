@@ -33,6 +33,33 @@ describe("reaction api helpers", () => {
     ).toBeNull();
   });
 
+  it("rechaza targetId con payloads de query injection", () => {
+    expect(
+      normalizeReactionTarget({
+        targetType: "news",
+        targetId: "' OR 1=1 --",
+      })
+    ).toBeNull();
+    expect(
+      normalizeReactionTarget({
+        targetType: "news",
+        targetId: 'news"] | *[_type=="secret"]',
+      })
+    ).toBeNull();
+    expect(
+      normalizeReactionTarget({
+        targetType: "player",
+        targetId: "players[0]",
+      })
+    ).toBeNull();
+    expect(
+      normalizeReactionTarget({
+        targetType: "game",
+        targetId: "g".repeat(257),
+      })
+    ).toBeNull();
+  });
+
   it("acepta un unico emoji valido", () => {
     expect(normalizeEmoji("💜")).toBe("💜");
     expect(normalizeEmoji("🏳️‍🌈")).toBe("🏳️‍🌈");

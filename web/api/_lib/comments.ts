@@ -9,6 +9,19 @@ import {
 } from "../../shared/auth/permissions.js";
 import { ensureReactionTargetExists } from "./reactions.js";
 import {
+  normalizeSanityDocumentId,
+  normalizeUuid,
+} from "./requestValidation.js";
+import { assertRateLimit, isRateLimitError, RATE_LIMIT_MESSAGE } from "./rateLimit.js";
+import {
+  COMMENT_CREATE_RATE_LIMIT_RULES,
+  COMMENT_DELETE_RATE_LIMIT_RULES,
+  COMMENT_EDIT_RATE_LIMIT_RULES,
+  COMMENT_MODERATION_RATE_LIMIT_RULES,
+  COMMENT_REPORT_RATE_LIMIT_RULES,
+} from "./securityLimits.js";
+import { hashSecurityIdentifier, logSecurityEvent } from "./securityLog.js";
+import {
   createAdminSupabaseClient,
   createPublicSupabaseClient,
   createUserSupabaseClient,
@@ -40,6 +53,7 @@ export const COMMENT_BODY_MAX_LENGTH = 2000;
 export const COMMENT_DETAILS_MAX_LENGTH = 500;
 export const DEFAULT_COMMENTS_LIMIT = 20;
 export const MAX_COMMENTS_LIMIT = 50;
+const COMMENT_HTML_TAG_PATTERN = /<\/?[a-z][\s\S]*>/i;
 
 const COMMENT_CURSOR_ID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -135,19 +149,11 @@ export const createCommentsSupabaseClient = (token?: string | null) => {
   return token ? createUserSupabaseClient(token) : createPublicSupabaseClient();
 };
 
-export const normalizeNewsId = (input: unknown): string | null => {
-  if (typeof input !== "string") {
-    return null;
-  }
+export const normalizeNewsId = (input: unknown): string | null =>
+  normalizeSanityDocumentId(input);
 
-  const newsId = input.trim();
-
-  if (!newsId || newsId.startsWith("drafts.")) {
-    return null;
-  }
-
-  return newsId;
-};
+export const normalizeCommentEntityId = (input: unknown): string | null =>
+  normalizeUuid(input);
 
 export const normalizeCommentBody = (input: unknown): string | null => {
   if (typeof input !== "string") {
@@ -158,7 +164,8 @@ export const normalizeCommentBody = (input: unknown): string | null => {
 
   if (
     body.length < COMMENT_BODY_MIN_LENGTH ||
-    body.length > COMMENT_BODY_MAX_LENGTH
+    body.length > COMMENT_BODY_MAX_LENGTH ||
+    COMMENT_HTML_TAG_PATTERN.test(body)
   ) {
     return null;
   }
@@ -336,6 +343,11 @@ export const authorizeActiveCommentUser = async (
   }
 
   if (!account.is_active) {
+    logSecurityEvent("inactive_comment_user_blocked", {
+      userId: user.id,
+      requiredPermission:
+        options?.requiredPermission ?? PERMISSIONS.commentNews,
+    });
     throw new Error("Banned user.");
   }
 
@@ -343,6 +355,11 @@ export const authorizeActiveCommentUser = async (
     options?.requiredPermission ?? PERMISSIONS.commentNews;
 
   if (!hasPermission(account.role, requiredPermission)) {
+    logSecurityEvent("comment_permission_denied", {
+      userId: user.id,
+      role: account.role,
+      requiredPermission,
+    });
     throw new Error("Missing permission.");
   }
 
@@ -554,11 +571,24 @@ export const createNewsComment = async ({
   token: string;
 }): Promise<NewsComment> => {
   const user = await authorizeActiveCommentUser(token);
+  assertRateLimit({
+    action: "comment:create",
+    identifier: user.userId,
+    rules: COMMENT_CREATE_RATE_LIMIT_RULES,
+    meta: { userId: user.userId },
+  });
   const exists = await ensureNewsExists(newsId);
 
   if (!exists) {
     throw new Error("News not found.");
   }
+
+  assertRateLimit({
+    action: "comment:duplicate",
+    identifier: `${user.userId}:${newsId}:${hashSecurityIdentifier(body)}`,
+    rules: [{ windowMs: 60_000, max: 1 }],
+    meta: { userId: user.userId, newsId },
+  });
 
   const { data, error } = await user.supabase
     .from("news_comments")
@@ -597,6 +627,12 @@ export const updateOwnNewsComment = async ({
   token: string;
 }): Promise<NewsComment> => {
   const user = await authorizeActiveCommentUser(token);
+  assertRateLimit({
+    action: "comment:edit",
+    identifier: user.userId,
+    rules: COMMENT_EDIT_RATE_LIMIT_RULES,
+    meta: { userId: user.userId },
+  });
   const { data: existing, error: existingError } = await user.supabase
     .from("news_comments")
     .select("id, news_id, user_id, body, created_at, updated_at, edited_at")
@@ -649,6 +685,12 @@ export const deleteOwnNewsComment = async ({
   token: string;
 }): Promise<void> => {
   const user = await authorizeActiveCommentUser(token);
+  assertRateLimit({
+    action: "comment:delete",
+    identifier: user.userId,
+    rules: COMMENT_DELETE_RATE_LIMIT_RULES,
+    meta: { userId: user.userId },
+  });
   const { data: existing, error: existingError } = await user.supabase
     .from("news_comments")
     .select("id, user_id")
@@ -688,6 +730,12 @@ export const deleteNewsCommentAsModerator = async ({
   token: string;
 }): Promise<void> => {
   const moderator = await authorizeModerator(token);
+  assertRateLimit({
+    action: "comment:moderator_delete",
+    identifier: moderator.userId,
+    rules: COMMENT_MODERATION_RATE_LIMIT_RULES,
+    meta: { userId: moderator.userId },
+  });
   const { data: existing, error: existingError } = await moderator.supabase
     .from("news_comments")
     .select("id")
@@ -717,6 +765,15 @@ export const deleteNewsCommentAsModerator = async ({
   if (error) {
     throw error;
   }
+
+  logSecurityEvent(
+    "comment_moderation_delete",
+    {
+      moderatorUserId: moderator.userId,
+      commentId,
+    },
+    "info"
+  );
 };
 
 export const createCommentReport = async ({
@@ -731,6 +788,12 @@ export const createCommentReport = async ({
   token: string;
 }): Promise<{ id: string }> => {
   const user = await authorizeActiveCommentUser(token);
+  assertRateLimit({
+    action: "comment:report",
+    identifier: user.userId,
+    rules: COMMENT_REPORT_RATE_LIMIT_RULES,
+    meta: { userId: user.userId },
+  });
   const { data: comment, error: commentError } = await user.supabase
     .from("news_comments")
     .select("id, user_id")
@@ -747,6 +810,10 @@ export const createCommentReport = async ({
   }
 
   if (comment.user_id === user.userId) {
+    logSecurityEvent("own_comment_report_blocked", {
+      userId: user.userId,
+      commentId,
+    });
     throw new Error("Cannot report own comment.");
   }
 
@@ -906,6 +973,12 @@ export const updateCommentReportStatus = async ({
   token: string;
 }): Promise<void> => {
   const moderator = await authorizeModerator(token);
+  assertRateLimit({
+    action: "comment:moderation_status",
+    identifier: moderator.userId,
+    rules: COMMENT_MODERATION_RATE_LIMIT_RULES,
+    meta: { userId: moderator.userId },
+  });
   const { error } = await moderator.supabase
     .from("comment_reports")
     .update({
@@ -919,6 +992,16 @@ export const updateCommentReportStatus = async ({
   if (error) {
     throw error;
   }
+
+  logSecurityEvent(
+    "comment_report_moderation",
+    {
+      moderatorUserId: moderator.userId,
+      reportId,
+      status,
+    },
+    "info"
+  );
 };
 
 export const mapCommentsErrorToStatus = (
@@ -928,6 +1011,13 @@ export const mapCommentsErrorToStatus = (
     return {
       message: "No pudimos procesar los comentarios.",
       status: 500,
+    };
+  }
+
+  if (isRateLimitError(error)) {
+    return {
+      message: RATE_LIMIT_MESSAGE,
+      status: 429,
     };
   }
 
