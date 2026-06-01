@@ -1,8 +1,10 @@
-import process from "node:process";
-import { createClient } from "@supabase/supabase-js";
 import emojiRegex from "emoji-regex";
 
 import { querySanity } from "./sanity.js";
+import {
+  createPublicSupabaseClient,
+  createUserSupabaseClient,
+} from "./supabase.js";
 
 export const REACTION_TARGET_TYPES = ["news", "player", "game"] as const;
 
@@ -44,19 +46,6 @@ const targetExistsQuery = `
   ]) > 0
 `;
 
-const getSupabaseConfig = () => {
-  const supabaseUrl = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
-  const publishableKey =
-    process.env.SUPABASE_PUBLISHABLE_KEY ??
-    process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
-  if (!supabaseUrl || !publishableKey) {
-    throw new Error("Supabase server environment variables are not configured.");
-  }
-
-  return { supabaseUrl, publishableKey };
-};
-
 export const getBearerToken = (request: Request): string | null => {
   const authorization = request.headers.get("authorization");
 
@@ -65,26 +54,6 @@ export const getBearerToken = (request: Request): string | null => {
   }
 
   return authorization.slice("Bearer ".length).trim() || null;
-};
-
-const createReactionSupabaseClient = (token?: string | null) => {
-  const { supabaseUrl, publishableKey } = getSupabaseConfig();
-
-  return createClient(supabaseUrl, publishableKey, {
-    ...(token
-      ? {
-          global: {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          },
-        }
-      : {}),
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  });
 };
 
 export const isReactionTargetType = (
@@ -160,7 +129,7 @@ const getUserIdFromToken = async (
     return null;
   }
 
-  const supabase = createReactionSupabaseClient(token);
+  const supabase = createUserSupabaseClient(token);
   const {
     data: { user },
     error,
@@ -181,8 +150,11 @@ export const getReactionState = async (
   target: ReactionTarget,
   token: string | null
 ): Promise<ReactionState> => {
-  const supabase = createReactionSupabaseClient(token);
   const userId = await getUserIdFromToken(token, { required: false });
+  const supabase =
+    userId && token
+      ? createUserSupabaseClient(token)
+      : createPublicSupabaseClient();
   const { data: countRows, error: countsError } = await supabase
     .from("reaction_counts")
     .select("emoji, reaction_count")
@@ -233,7 +205,7 @@ export const setReaction = async (
   token: string | null
 ): Promise<ReactionState> => {
   const userId = await getUserIdFromToken(token, { required: true });
-  const supabase = createReactionSupabaseClient(token);
+  const supabase = createUserSupabaseClient(token ?? "");
   const { data: existingReaction, error: existingReactionError } = await supabase
     .from("user_reactions")
     .select("id")
@@ -280,7 +252,7 @@ export const removeReaction = async (
   token: string | null
 ): Promise<ReactionState> => {
   const userId = await getUserIdFromToken(token, { required: true });
-  const supabase = createReactionSupabaseClient(token);
+  const supabase = createUserSupabaseClient(token ?? "");
   const { error } = await supabase
     .from("user_reactions")
     .delete()
