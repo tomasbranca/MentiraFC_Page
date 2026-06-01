@@ -20,6 +20,7 @@ import RequirePermission from "./presentation/routing/RequirePermission";
 import { PERMISSIONS } from "./domain/auth/permissions";
 
 import { lazyWithReload } from "./lib/lazyWithReload";
+import { shouldEnableVercelAnalytics } from "./lib/analytics/shouldEnableVercelAnalytics";
 
 import "./App.css";
 
@@ -164,8 +165,7 @@ function App({ initialData }: AppProps) {
   const { pathname } = useLocation();
   const normalizedPathname =
     pathname === ROUTES.HOME ? pathname : pathname.replace(/\/+$/, "");
-  const enableAnalytics =
-    import.meta.env.VITE_ENABLE_ANALYTICS === "true";
+  const enableAnalytics = shouldEnableVercelAnalytics();
   const [shouldLoadAnalytics, setShouldLoadAnalytics] = useState(false);
   const hasBootstrapError = initialData.bootstrapScope === "bootstrap-error";
   const isAuthRoute = [
