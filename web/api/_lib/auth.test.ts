@@ -143,4 +143,28 @@ describe("dashboard API authorization", () => {
     });
     expect(response.status).toBe(403);
   });
+
+  it("niega cuentas inactivas aunque tengan permisos", async () => {
+    supabaseMocks.maybeSingle.mockResolvedValue({
+      data: {
+        role: "admin",
+        is_active: false,
+      },
+      error: null,
+    });
+
+    const result = await authorizeDashboardUser(
+      createAuthorizedRequest(),
+      getDashboardResourcePermission("news", "view")
+    );
+
+    expect(result).toBeInstanceOf(Response);
+
+    const response = result as Response;
+
+    await expect(response.json()).resolves.toEqual({
+      error: "Tu usuario ha sido baneado.",
+    });
+    expect(response.status).toBe(403);
+  });
 });

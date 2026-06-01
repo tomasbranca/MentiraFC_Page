@@ -524,7 +524,7 @@ export const mapAdminErrorToStatus = (
       return { message: "Revisa los datos enviados.", status: 400 };
     default:
       return {
-        message: error.message || "No pudimos procesar la solicitud admin.",
+        message: "No pudimos procesar la solicitud admin.",
         status: 500,
       };
   }

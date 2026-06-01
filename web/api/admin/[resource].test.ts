@@ -127,6 +127,25 @@ describe("admin api router", () => {
     expect(response.status).toBe(500);
   });
 
+  it("no ejecuta handlers admin si la autorizacion falla", async () => {
+    adminMocks.authorizeAdminRequest.mockResolvedValueOnce(
+      new Response(JSON.stringify({ error: "No autorizado." }), {
+        status: 403,
+        headers: { "content-type": "application/json" },
+      })
+    );
+
+    const response = await adminRoute.fetch(
+      new Request("https://mentirafc.vercel.app/api/admin/users")
+    );
+
+    await expect(response.json()).resolves.toEqual({
+      error: "No autorizado.",
+    });
+    expect(response.status).toBe(403);
+    expect(adminMocks.listAdminUsers).not.toHaveBeenCalled();
+  });
+
   it("mantiene exitoso footer-settings si falla solo el audit log posterior", async () => {
     const warnSpy = vi
       .spyOn(console, "warn")

@@ -42,6 +42,20 @@ describe("comments api helpers", () => {
     expect(decodeCommentCursor("invalid")).toBeNull();
   });
 
+  it("rechaza cursores fabricados con fecha o id inseguros", () => {
+    const unsafeCreatedAt = Buffer.from(
+      "created_at.lt.2026-01-01|11111111-1111-1111-1111-111111111111",
+      "utf8"
+    ).toString("base64url");
+    const unsafeId = Buffer.from(
+      "2026-05-25T12:00:00.000Z|id.lt.anything",
+      "utf8"
+    ).toString("base64url");
+
+    expect(decodeCommentCursor(unsafeCreatedAt)).toBeNull();
+    expect(decodeCommentCursor(unsafeId)).toBeNull();
+  });
+
   it("valida razones y detalles de reporte", () => {
     expect(isCommentReportReason("spam")).toBe(true);
     expect(isCommentReportReason("invalid")).toBe(false);
