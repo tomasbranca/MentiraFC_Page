@@ -1,4 +1,8 @@
-import type { NewsContentBlock, NewsItem } from "../../../types/models";
+import type {
+  NewsContentBlock,
+  NewsItem,
+  NewsListItem,
+} from "../../../types/models";
 import {
   getSanitySlugValue,
   sanityNewsSchema,
@@ -28,6 +32,24 @@ export const adaptSingleNews = (item: unknown): NewsItem | null => {
   };
 };
 
+export const adaptSingleNewsListItem = (item: unknown): NewsListItem | null => {
+  const news = adaptSingleNews(item);
+
+  if (!news) {
+    return null;
+  }
+
+  return {
+    id: news.id,
+    title: news.title,
+    description: news.description,
+    date: news.date,
+    slug: news.slug,
+    imageAlt: news.imageAlt,
+    imageUrl: news.imageUrl,
+  };
+};
+
 export const adaptNews = (news: unknown): NewsItem[] => {
   const validatedNews: SanityNews[] = validateSanityArray(
     sanityNewsSchema,
@@ -39,3 +61,14 @@ export const adaptNews = (news: unknown): NewsItem[] => {
     .map(adaptSingleNews)
     .filter((item): item is NewsItem => Boolean(item && item.slug));
 };
+
+export const adaptNewsListItems = (news: unknown): NewsListItem[] =>
+  adaptNews(news).map((item) => ({
+    id: item.id,
+    title: item.title,
+    description: item.description,
+    date: item.date,
+    slug: item.slug,
+    imageAlt: item.imageAlt,
+    imageUrl: item.imageUrl,
+  }));

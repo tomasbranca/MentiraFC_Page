@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   dashboardNewsByIdQuery,
   dashboardNewsListQuery,
+  getDashboardNewsPageQuery,
   parseDashboardNewsDraftFormData,
   parseDashboardNewsDraftInput,
   parseDashboardNewsFormData,
@@ -248,6 +249,16 @@ describe("dashboard news api input", () => {
     expect(dashboardNewsListQuery).toContain('*[_type == "news"]');
     expect(dashboardNewsByIdQuery).toContain("_id == $draftId");
     expect(dashboardNewsListQuery).toContain('"imageAssetId": image.asset->_id');
-    expect(dashboardNewsListQuery).toContain('"imageAssetId": asset->_id');
+    expect(dashboardNewsListQuery).not.toContain("content[]");
+    expect(dashboardNewsByIdQuery).toContain('"imageAssetId": asset->_id');
+  });
+
+  it("arma la query paginada con slice por parametros y sort whitelisteado", () => {
+    const query = getDashboardNewsPageQuery("title", "asc");
+
+    expect(query).toContain("[$offset...$end]");
+    expect(query).toContain("order(title asc, _id asc)");
+    expect(query).toContain('"total": count(');
+    expect(query).not.toContain("content[]");
   });
 });

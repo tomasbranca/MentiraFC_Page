@@ -4,6 +4,7 @@ import type {
   DashboardNewsItem,
   DashboardNewsMutationInput,
 } from "../types/dashboard";
+import type { PaginatedResult, SortDirection } from "../../shared/pagination";
 import { z, zodParseOptions } from "./zodRuntime";
 
 const dashboardNewsSchema = z.object({
@@ -25,14 +26,35 @@ const dashboardNewsSchema = z.object({
 });
 
 const dashboardNewsListSchema = z.array(dashboardNewsSchema);
+const dashboardNewsPageSchema = z.object({
+  items: z.array(dashboardNewsSchema),
+  total: z.number().optional(),
+  page: z.number().optional(),
+  limit: z.number(),
+  totalPages: z.number().optional(),
+  hasNextPage: z.boolean().optional(),
+  hasPreviousPage: z.boolean().optional(),
+  nextCursor: z.string().nullable().optional(),
+  previousCursor: z.string().nullable().optional(),
+});
 
 const DASHBOARD_NEWS_API_PATH = "/api/dashboard/news";
 
 type DashboardNewsMutationIntent = "draft" | "publish";
+export type DashboardNewsPageSortBy = "date" | "title" | "updatedAt";
+
+export type DashboardNewsPageOptions = {
+  page?: number;
+  limit?: number;
+  sortBy?: DashboardNewsPageSortBy;
+  direction?: SortDirection;
+  search?: string | null;
+};
 
 const buildDashboardNewsApiPath = (
   id?: string | null,
-  intent?: DashboardNewsMutationIntent
+  intent?: DashboardNewsMutationIntent,
+  options?: DashboardNewsPageOptions
 ): string => {
   const params = new URLSearchParams();
 
@@ -44,12 +66,22 @@ const buildDashboardNewsApiPath = (
     params.set("intent", intent);
   }
 
+  Object.entries(options ?? {}).forEach(([key, value]) => {
+    if (value != null && value !== "") {
+      params.set(key, String(value));
+    }
+  });
+
   const query = params.toString();
   return query ? `${DASHBOARD_NEWS_API_PATH}?${query}` : DASHBOARD_NEWS_API_PATH;
 };
 
 export const buildDashboardNewsItemApiPath = (id: string): string =>
   buildDashboardNewsApiPath(id);
+
+export const buildDashboardNewsPageApiPath = (
+  options: DashboardNewsPageOptions = {}
+): string => buildDashboardNewsApiPath(null, undefined, options);
 
 const fetchDashboardApi = async <T>(
   path: string,
@@ -121,6 +153,19 @@ export const fetchDashboardNews = async (): Promise<DashboardNewsItem[]> => {
     data,
     zodParseOptions
   ) as DashboardNewsItem[];
+};
+
+export const fetchDashboardNewsPage = async (
+  options: DashboardNewsPageOptions = {}
+): Promise<PaginatedResult<DashboardNewsItem>> => {
+  const data = await fetchDashboardApi<unknown>(
+    buildDashboardNewsPageApiPath(options)
+  );
+
+  return dashboardNewsPageSchema.parse(
+    data,
+    zodParseOptions
+  ) as PaginatedResult<DashboardNewsItem>;
 };
 
 export const fetchDashboardNewsById = async (

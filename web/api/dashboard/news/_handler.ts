@@ -1,5 +1,7 @@
 import {
+  DASHBOARD_NEWS_PAGE_SORT_BY,
   deleteDashboardNews,
+  getDashboardNewsPage,
   getDashboardNewsById,
   listDashboardNews,
   publishDashboardNews,
@@ -7,10 +9,20 @@ import {
 } from "../../_lib/news.js";
 import { authorizeDashboardRequest } from "../../_lib/auth.js";
 import { errorJson, json } from "../../_lib/responses.js";
+import { parseOffsetPaginationParams } from "../../../shared/pagination.js";
 import {
   validateDashboardNewsDraftMutation,
   validateDashboardNewsMutation,
 } from "./_shared.js";
+
+const PAGINATION_PARAM_NAMES = [
+  "page",
+  "limit",
+  "sortBy",
+  "direction",
+  "search",
+  "cursor",
+] as const;
 
 const getIdFromRequest = (request: Request): string | null => {
   const id = new URL(request.url).searchParams.get("id")?.trim();
@@ -22,6 +34,9 @@ const getIntentFromRequest = (request: Request): "draft" | "publish" => {
   return intent === "draft" ? "draft" : "publish";
 };
 
+const shouldUsePaginatedResponse = (searchParams: URLSearchParams): boolean =>
+  PAGINATION_PARAM_NAMES.some((paramName) => searchParams.has(paramName));
+
 const dashboardNewsHandler = async (request: Request): Promise<Response> => {
   try {
     const authorization = await authorizeDashboardRequest(request, "news");
@@ -30,6 +45,7 @@ const dashboardNewsHandler = async (request: Request): Promise<Response> => {
       return authorization;
     }
 
+    const url = new URL(request.url);
     const id = getIdFromRequest(request);
 
     if (request.method === "GET" && id) {
@@ -38,6 +54,19 @@ const dashboardNewsHandler = async (request: Request): Promise<Response> => {
     }
 
     if (request.method === "GET") {
+      if (shouldUsePaginatedResponse(url.searchParams)) {
+        const pagination = parseOffsetPaginationParams(url.searchParams, {
+          allowedSortBy: DASHBOARD_NEWS_PAGE_SORT_BY,
+          defaultSortBy: "date",
+        });
+
+        if (!pagination.ok) {
+          return errorJson(pagination.issues[0]?.message ?? "Paginacion invalida.", 400);
+        }
+
+        return json(await getDashboardNewsPage(pagination.params));
+      }
+
       return json(await listDashboardNews());
     }
 

@@ -3,21 +3,60 @@ import {
   NEWS_BY_SLUG_QUERY,
   SUGGESTED_NEWS_QUERY,
   FALLBACK_NEWS_QUERY,
+  NEWS_PAGE_SORT_BY,
+  getNewsPageQuery,
+  type NewsPageSortBy,
 } from "../queries/news.queries";
 
-import { adaptNews, adaptSingleNews } from "../adapters/news.adapter";
+import {
+  adaptNews,
+  adaptNewsListItems,
+  adaptSingleNews,
+} from "../adapters/news.adapter";
 import { sanityFreshClient } from "../client";
+import {
+  buildSanityPageParams,
+  buildSanityPaginatedResult,
+  parseSanityPageOptions,
+  type SanityPageOptions,
+  type SanityPageQueryResult,
+} from "../pagination";
 import { normalizeSanitySlugParam } from "../requestParams";
 import { fetchSanityQuery } from "../sanityFetch";
-import type { NewsItem } from "../../../types/models";
+import type { NewsItem, NewsListItem } from "../../../types/models";
+import type { PaginatedResult } from "../../../../shared/pagination";
 
 const MIN_RESULTS = 3;
+
+export type { NewsPageSortBy };
 
 export const getNews = async (): Promise<NewsItem[]> => {
   const data = await fetchSanityQuery(NEWS_QUERY, {
     client: sanityFreshClient,
   });
   return adaptNews(data);
+};
+
+export const getNewsPage = async (
+  options?: SanityPageOptions<NewsPageSortBy>
+): Promise<PaginatedResult<NewsListItem>> => {
+  const pagination = parseSanityPageOptions(options, {
+    allowedSortBy: NEWS_PAGE_SORT_BY,
+    defaultSortBy: "date",
+  });
+  const data = await fetchSanityQuery<SanityPageQueryResult>(
+    getNewsPageQuery(pagination.sortBy, pagination.direction),
+    {
+      client: sanityFreshClient,
+      params: buildSanityPageParams(pagination),
+    }
+  );
+
+  return buildSanityPaginatedResult(
+    adaptNewsListItems(data.items ?? []),
+    data.total,
+    pagination
+  );
 };
 
 export const getNewsBySlug = async (slug: string): Promise<NewsItem | null> => {

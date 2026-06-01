@@ -1,4 +1,8 @@
-import type { GalleryImage, GalleryItem } from "../../../types/models";
+import type {
+  GalleryImage,
+  GalleryItem,
+  GalleryListItem,
+} from "../../../types/models";
 import {
   getSanitySlugValue,
   sanityGalleryImageSchema,
@@ -54,7 +58,26 @@ export const adaptSingleGallery = (item: unknown): GalleryItem | null => {
     game,
     heroImage,
     images,
-    photoCount: images.length,
+    photoCount: validated.photoCount ?? images.length,
+  };
+};
+
+export const adaptSingleGalleryListItem = (
+  item: unknown
+): GalleryListItem | null => {
+  const gallery = adaptSingleGallery(item);
+
+  if (!gallery) {
+    return null;
+  }
+
+  return {
+    id: gallery.id,
+    slug: gallery.slug,
+    date: gallery.date,
+    game: gallery.game,
+    heroImage: gallery.heroImage,
+    photoCount: gallery.photoCount,
   };
 };
 
@@ -69,3 +92,13 @@ export const adaptGalleries = (galleries: unknown): GalleryItem[] => {
     .map(adaptSingleGallery)
     .filter((gallery): gallery is GalleryItem => Boolean(gallery));
 };
+
+export const adaptGalleryListItems = (galleries: unknown): GalleryListItem[] =>
+  adaptGalleries(galleries).map((gallery) => ({
+    id: gallery.id,
+    slug: gallery.slug,
+    date: gallery.date,
+    game: gallery.game,
+    heroImage: gallery.heroImage,
+    photoCount: gallery.photoCount,
+  }));

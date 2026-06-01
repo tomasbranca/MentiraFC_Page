@@ -50,6 +50,13 @@ export const queryKeys = {
   dashboard: {
     news: {
       all: ["dashboard", "news"] as const,
+      page: (params: {
+        page?: number;
+        limit?: number;
+        sortBy?: string;
+        direction?: string;
+        search?: string | null;
+      }) => ["dashboard", "news", "page", params] as const,
       byId: (id: string) => ["dashboard", "news", id] as const,
     },
     matches: {

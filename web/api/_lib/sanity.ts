@@ -35,8 +35,10 @@ type SanityQueryResponse<T> = {
   };
 };
 
+type SanityParamValue = string | number | boolean;
+
 type SanityQueryOptions = {
-  params?: Record<string, string>;
+  params?: Record<string, SanityParamValue>;
   perspective?: "published" | "drafts" | "raw";
   useToken?: boolean;
 };

@@ -3,14 +3,17 @@ export {
 } from "./news/content.js";
 export {
   deleteDashboardNews,
+  getDashboardNewsPage,
   getDashboardNewsById,
   listDashboardNews,
   publishDashboardNews,
   saveDashboardNewsDraft,
 } from "./news/repository.js";
 export {
+  DASHBOARD_NEWS_PAGE_SORT_BY,
   dashboardNewsByIdQuery,
   dashboardNewsListQuery,
+  getDashboardNewsPageQuery,
 } from "./news/queries.js";
 export {
   parseDashboardNewsDraftFormData,
