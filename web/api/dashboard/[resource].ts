@@ -8,6 +8,7 @@ import dashboardTableRoute from "./table/_handler.js";
 import dashboardTeamsRoute from "./teams/_handler.js";
 import dashboardTournamentsRoute from "./tournaments/_handler.js";
 import { errorJson } from "../_lib/responses.js";
+import { normalizeOptionalSanityDocumentId } from "../_lib/requestValidation.js";
 
 type DashboardRoute = {
   fetch: (request: Request) => Response | Promise<Response>;
@@ -40,6 +41,15 @@ const dashboardRoute = {
 
     if (!route) {
       return errorJson("Recurso de dashboard no encontrado.", 404);
+    }
+
+    const idParam = normalizeOptionalSanityDocumentId(
+      new URL(request.url).searchParams.get("id"),
+      { allowDrafts: true }
+    );
+
+    if (idParam.invalid) {
+      return errorJson("Identificador de dashboard invalido.", 400);
     }
 
     return route.fetch(request);

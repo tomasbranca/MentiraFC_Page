@@ -86,6 +86,23 @@ type RuntimeSettingsRow = {
 
 export const createSupabaseAdminClient = createAdminSupabaseClient;
 
+const ADMIN_RPC_FUNCTIONS = [
+  "admin_get_audit_log",
+  "admin_get_maintenance_settings",
+  "admin_get_metrics",
+  "admin_get_role_permission_overrides",
+  "admin_get_user_account",
+  "admin_get_user_profiles_and_accounts",
+  "admin_list_feature_flags",
+  "admin_record_audit_log",
+  "admin_save_feature_flag",
+  "admin_save_maintenance_settings",
+  "admin_save_role_permission_override",
+  "admin_update_user",
+] as const;
+
+type AdminRpcFunctionName = (typeof ADMIN_RPC_FUNCTIONS)[number];
+
 const trimText = (value: unknown): string =>
   typeof value === "string" ? value.trim() : "";
 
@@ -94,7 +111,7 @@ const normalizeBoolean = (value: unknown): boolean | null =>
 
 const callAdminRpc = async <T>(
   supabase: SupabaseClient,
-  functionName: string,
+  functionName: AdminRpcFunctionName,
   args?: Record<string, unknown>
 ): Promise<T> => {
   const { data, error } = await supabase.rpc(functionName, args);

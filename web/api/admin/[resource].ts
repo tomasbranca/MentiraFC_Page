@@ -22,6 +22,7 @@ import {
   getFooterSettingsForAdmin,
   saveFooterSettingsForAdmin,
 } from "../_lib/footerSettings.js";
+import { normalizeUuid } from "../_lib/requestValidation.js";
 import { errorJson, json } from "../_lib/responses.js";
 
 const getResourceFromPathname = (pathname: string): string | null => {
@@ -101,21 +102,24 @@ const adminHandler = async (request: Request): Promise<Response> => {
       }
 
       switch (resource) {
-        case "users":
-          if (!body.id || typeof body.id !== "string") {
+        case "users": {
+          const targetUserId = normalizeUuid(body.id);
+
+          if (!targetUserId) {
             return errorJson("Falta el usuario a actualizar.", 400);
           }
 
           return json(
             await updateAdminUser({
               actor: authorization,
-              targetUserId: body.id,
+              targetUserId,
               firstName: body.firstName,
               lastName: body.lastName,
               role: body.role,
               isActive: body.isActive,
             })
           );
+        }
         case "roles":
           return json(
             await saveAdminRoleOverride({

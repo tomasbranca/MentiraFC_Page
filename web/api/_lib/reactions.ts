@@ -5,6 +5,7 @@ import {
   createPublicSupabaseClient,
   createUserSupabaseClient,
 } from "./supabase.js";
+import { normalizeSanityDocumentId } from "./requestValidation.js";
 
 export const REACTION_TARGET_TYPES = ["news", "player", "game"] as const;
 
@@ -78,9 +79,9 @@ export const normalizeReactionTarget = ({
     return null;
   }
 
-  const normalizedTargetId = targetId.trim();
+  const normalizedTargetId = normalizeSanityDocumentId(targetId);
 
-  if (!normalizedTargetId || normalizedTargetId.startsWith("drafts.")) {
+  if (!normalizedTargetId) {
     return null;
   }
 

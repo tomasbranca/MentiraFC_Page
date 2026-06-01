@@ -18,6 +18,12 @@ describe("comments api helpers", () => {
     expect(normalizeNewsId("")).toBeNull();
   });
 
+  it("rechaza newsId con payloads de query injection", () => {
+    expect(normalizeNewsId("' OR 1=1 --")).toBeNull();
+    expect(normalizeNewsId('news"] | *[_type=="secret"]')).toBeNull();
+    expect(normalizeNewsId("news[0]")).toBeNull();
+  });
+
   it("normaliza body con trim y limite", () => {
     expect(normalizeCommentBody("  hola mundo  ")).toBe("hola mundo");
     expect(normalizeCommentBody("   ")).toBeNull();

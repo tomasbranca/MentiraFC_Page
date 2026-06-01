@@ -9,6 +9,10 @@ import {
 } from "../../shared/auth/permissions.js";
 import { ensureReactionTargetExists } from "./reactions.js";
 import {
+  normalizeSanityDocumentId,
+  normalizeUuid,
+} from "./requestValidation.js";
+import {
   createAdminSupabaseClient,
   createPublicSupabaseClient,
   createUserSupabaseClient,
@@ -135,19 +139,11 @@ export const createCommentsSupabaseClient = (token?: string | null) => {
   return token ? createUserSupabaseClient(token) : createPublicSupabaseClient();
 };
 
-export const normalizeNewsId = (input: unknown): string | null => {
-  if (typeof input !== "string") {
-    return null;
-  }
+export const normalizeNewsId = (input: unknown): string | null =>
+  normalizeSanityDocumentId(input);
 
-  const newsId = input.trim();
-
-  if (!newsId || newsId.startsWith("drafts.")) {
-    return null;
-  }
-
-  return newsId;
-};
+export const normalizeCommentEntityId = (input: unknown): string | null =>
+  normalizeUuid(input);
 
 export const normalizeCommentBody = (input: unknown): string | null => {
   if (typeof input !== "string") {

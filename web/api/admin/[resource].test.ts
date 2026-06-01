@@ -146,6 +146,24 @@ describe("admin api router", () => {
     expect(adminMocks.listAdminUsers).not.toHaveBeenCalled();
   });
 
+  it("rechaza ids de usuario invalidos antes del RPC admin", async () => {
+    const response = await adminRoute.fetch(
+      new Request("https://mentirafc.vercel.app/api/admin/users", {
+        method: "PUT",
+        body: JSON.stringify({
+          id: "8c2c2e11-31dc-4af2-86b0-ec8ad56a2c76' OR 1=1 --",
+          role: "admin",
+        }),
+      })
+    );
+
+    await expect(response.json()).resolves.toEqual({
+      error: "Falta el usuario a actualizar.",
+    });
+    expect(response.status).toBe(400);
+    expect(adminMocks.updateAdminUser).not.toHaveBeenCalled();
+  });
+
   it("mantiene exitoso footer-settings si falla solo el audit log posterior", async () => {
     const warnSpy = vi
       .spyOn(console, "warn")

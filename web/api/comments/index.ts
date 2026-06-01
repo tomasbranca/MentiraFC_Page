@@ -12,6 +12,7 @@ import {
   listCommentModeration,
   listNewsComments,
   mapCommentsErrorToStatus,
+  normalizeCommentEntityId,
   normalizeCommentBody,
   normalizeCommentLimit,
   normalizeCommentSort,
@@ -52,7 +53,12 @@ const getCommentIdFromPath = (pathname: string): string | null => {
 };
 
 const getCommentIdFromRequest = (url: URL, pathname: string): string | null =>
-  getTrimmedSearchParam(url, "commentId") ?? getCommentIdFromPath(pathname);
+  normalizeCommentEntityId(
+    getTrimmedSearchParam(url, "commentId") ?? getCommentIdFromPath(pathname)
+  );
+
+const hasCommentIdInput = (url: URL, pathname: string): boolean =>
+  Boolean(getTrimmedSearchParam(url, "commentId") ?? getCommentIdFromPath(pathname));
 
 const getReportIdFromPath = (pathname: string): string | null => {
   const segments = pathname.split("/").filter(Boolean);
@@ -66,7 +72,12 @@ const getReportIdFromPath = (pathname: string): string | null => {
 };
 
 const getReportIdFromRequest = (url: URL, pathname: string): string | null =>
-  getTrimmedSearchParam(url, "reportId") ?? getReportIdFromPath(pathname);
+  normalizeCommentEntityId(
+    getTrimmedSearchParam(url, "reportId") ?? getReportIdFromPath(pathname)
+  );
+
+const hasReportIdInput = (url: URL, pathname: string): boolean =>
+  Boolean(getTrimmedSearchParam(url, "reportId") ?? getReportIdFromPath(pathname));
 
 const isModerationRequest = (url: URL, pathname: string): boolean =>
   pathname.endsWith("/comments/moderation") ||
@@ -132,6 +143,10 @@ const commentsHandler = async (request: Request): Promise<Response> => {
       });
 
       return json({ ok: true });
+    }
+
+    if (hasReportIdInput(url, pathname)) {
+      return errorJson("Falta un reporte valido.", 400);
     }
 
     const commentId = getCommentIdFromRequest(url, pathname);
@@ -229,6 +244,10 @@ const commentsHandler = async (request: Request): Promise<Response> => {
       }
 
       return errorJson("Metodo no permitido.", 405);
+    }
+
+    if (hasCommentIdInput(url, pathname)) {
+      return errorJson("Falta un comentario valido.", 400);
     }
 
     if (request.method === "GET") {
