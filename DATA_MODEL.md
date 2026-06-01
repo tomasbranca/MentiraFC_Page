@@ -562,7 +562,12 @@ El panel `/admin` usa Supabase para operacion, seguridad y trazabilidad. Sanity 
 | `private.app_runtime_settings` | Singleton de modo mantenimiento. | Lectura publica reducida via `/api/admin/maintenance?public=1`; escritura admin. |
 | `private.audit_log` | Registro append-only de acciones sensibles. | Solo service role/API admin. |
 
-Migracion versionada: `supabase/migrations/202605310001_admin_operational_tables.sql`.
+Migraciones versionadas:
+
+- `supabase/migrations/202605310001_admin_operational_tables.sql`
+- `supabase/migrations/202606010001_admin_operational_rpc_access.sql`
+
+El schema `private` no se expone al Data API. Las APIs server-side del admin acceden a estas tablas mediante RPCs `public.admin_*` ejecutables solo por `service_role`.
 
 Las rutas `/api/admin/*` que leen o escriben tablas operativas requieren `SUPABASE_SERVICE_ROLE_KEY`
 en el entorno server-side local y de Vercel. Sin esa variable, el panel muestra el estado de error
