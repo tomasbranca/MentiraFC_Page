@@ -23,6 +23,8 @@ export const queryKeys = {
   },
   news: {
     all: ["news"] as const,
+    page: (params: { page: number; limit: number }) =>
+      ["news", "page", params] as const,
     bySlug: (slug: string) => ["news", "slug", slug] as const,
     suggested: (slug: string) => ["news", "suggested", slug] as const,
   },

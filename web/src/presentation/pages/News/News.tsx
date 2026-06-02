@@ -12,7 +12,15 @@ const NewsList = lazyWithReload(
 );
 
 const News = () => {
-  const { news, loading, error, refetch } = useNewsData();
+  const {
+    news,
+    loading,
+    error,
+    refetch,
+    hasMore,
+    loadingMore,
+    fetchNextPage,
+  } = useNewsData();
 
   if (loading) return <Loader />;
   if (error) {
@@ -49,7 +57,12 @@ const News = () => {
               />
             }
           >
-            <NewsList items={list} />
+            <NewsList
+              items={list}
+              hasMore={hasMore}
+              loadingMore={loadingMore}
+              onLoadMore={() => void fetchNextPage()}
+            />
           </Suspense>
         </div>
       </section>
