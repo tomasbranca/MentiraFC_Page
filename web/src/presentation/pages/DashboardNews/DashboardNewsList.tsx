@@ -1,8 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
-import { FiEdit2, FiPlus, FiTrash2 } from "react-icons/fi";
+import {
+  FiChevronLeft,
+  FiChevronRight,
+  FiEdit2,
+  FiPlus,
+  FiTrash2,
+} from "react-icons/fi";
 
 import { deleteDashboardNews } from "../../../data/dashboardNews";
 import { getImageSrcSet, getImageUrl } from "../../../data/imageService";
@@ -19,13 +25,16 @@ import { DASHBOARD_STATUS_FILTER_OPTIONS } from "../../dashboard/dashboardListFi
 import { formatDateTime } from "../../utils/date.utils";
 import {
   defaultDashboardNewsListFilters,
-  filterDashboardNewsList,
   hasActiveDashboardNewsListFilters,
 } from "./dashboardNewsList.filters";
 import {
-  dashboardNewsListQueryOptions,
+  dashboardNewsPageQueryOptions,
   invalidateDashboardNewsPublishDependencies,
 } from "./dashboardNews.queries";
+
+const DASHBOARD_NEWS_PAGE_LIMIT = 20;
+const DASHBOARD_NEWS_SEARCH_MAX_LENGTH = 80;
+const EMPTY_DASHBOARD_NEWS: DashboardNewsItem[] = [];
 
 const NewsThumbnail = ({ item }: { item: DashboardNewsItem }) => {
   const imageUrl = getImageUrl(item.imageUrl, {
@@ -144,17 +153,115 @@ const DeleteNewsButton = ({
   </button>
 );
 
+const paginationButtonClassName =
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-[3px] border border-white/10 bg-white/[0.035] px-3 py-2.5 text-sm font-medium text-violet-100/80 transition hover:border-violet-200/35 hover:bg-white/8 hover:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/40 disabled:cursor-not-allowed disabled:opacity-45";
+
+const DashboardNewsPagination = ({
+  page,
+  totalPages,
+  hasNextPage,
+  hasPreviousPage,
+  isFetching,
+  onPageChange,
+}: {
+  page: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+  isFetching: boolean;
+  onPageChange: (page: number) => void;
+}) => {
+  if (totalPages <= 1) {
+    return null;
+  }
+
+  return (
+    <nav
+      className="flex flex-col gap-3 border-t border-white/10 bg-[#151518] px-3 py-4 text-sm text-violet-100/70 sm:flex-row sm:items-center sm:justify-between sm:px-5"
+      aria-label="Paginacion de noticias"
+    >
+      <p aria-live="polite">
+        Pagina {page} de {totalPages}
+        {isFetching ? " - Actualizando..." : ""}
+      </p>
+      <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-end">
+        <button
+          type="button"
+          className={paginationButtonClassName}
+          disabled={!hasPreviousPage || isFetching}
+          onClick={() => onPageChange(page - 1)}
+        >
+          <FiChevronLeft className="size-4" aria-hidden="true" />
+          Anterior
+        </button>
+        <button
+          type="button"
+          className={paginationButtonClassName}
+          disabled={!hasNextPage || isFetching}
+          onClick={() => onPageChange(page + 1)}
+        >
+          Siguiente
+          <FiChevronRight className="size-4" aria-hidden="true" />
+        </button>
+      </div>
+    </nav>
+  );
+};
+
 const DashboardNewsList = () => {
   const [filters, setFilters] = useState(defaultDashboardNewsListFilters);
+  const [page, setPage] = useState(1);
   const queryClient = useQueryClient();
   const canCreateNews = useDashboardPermission("news", "create");
   const canEditNews = useDashboardPermission("news", "edit");
   const canDeleteNews = useDashboardPermission("news", "delete");
-  const newsQuery = useQuery(dashboardNewsListQueryOptions());
+  const search = filters.search.trim();
+  const newsQuery = useQuery(
+    dashboardNewsPageQueryOptions({
+      page,
+      limit: DASHBOARD_NEWS_PAGE_LIMIT,
+      sortBy: "date",
+      direction: "desc",
+      search: search || null,
+      status: filters.status,
+    })
+  );
   const deleteMutation = useMutation({
     mutationFn: deleteDashboardNews,
-    onSuccess: () => invalidateDashboardNewsPublishDependencies(queryClient),
+    onSuccess: async () => {
+      await invalidateDashboardNewsPublishDependencies(queryClient);
+    },
   });
+
+  const pageData = newsQuery.data;
+  const totalPages = pageData?.totalPages ?? 1;
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
+
+  const handleSearchChange = (nextSearch: string) => {
+    setPage(1);
+    setFilters((current) => ({
+      ...current,
+      search: nextSearch.slice(0, DASHBOARD_NEWS_SEARCH_MAX_LENGTH),
+    }));
+  };
+
+  const handleStatusChange = (status: typeof filters.status) => {
+    setPage(1);
+    setFilters((current) => ({
+      ...current,
+      status,
+    }));
+  };
+
+  const clearFilters = () => {
+    setPage(1);
+    setFilters(defaultDashboardNewsListFilters());
+  };
 
   const handleDeleteNews = async (itemId: string) => {
     try {
@@ -176,24 +283,21 @@ const DashboardNewsList = () => {
     }
   };
 
-  const allNews = newsQuery.data;
-  const news = useMemo(
-    () => filterDashboardNewsList(allNews ?? [], filters),
-    [allNews, filters]
-  );
-  const totalNews = allNews?.length ?? 0;
+  const pageNews = pageData?.items ?? EMPTY_DASHBOARD_NEWS;
+  const news = pageNews;
+  const totalNews = pageData?.total ?? 0;
+  const totalPageNews = pageNews.length;
   const hasActiveFilters = hasActiveDashboardNewsListFilters(filters);
-  const countLabel =
-    hasActiveFilters && news.length !== totalNews
-      ? `${news.length} de ${totalNews} noticias`
-      : `${totalNews} noticias`;
+  const countLabel = `${totalNews} noticias`;
   const hasRowActions = canEditNews || canDeleteNews;
+  const hasInitialData = Boolean(pageData);
+  const hasEmptyDataset = totalNews === 0 && !hasActiveFilters;
 
-  if (newsQuery.isLoading) {
+  if (newsQuery.isLoading && !hasInitialData) {
     return <DashboardContentLoader />;
   }
 
-  if (newsQuery.isError) {
+  if (newsQuery.isError && !hasInitialData) {
     return (
       <ErrorFallback
         title="No pudimos cargar las noticias"
@@ -235,7 +339,7 @@ const DashboardNewsList = () => {
         </div>
       </header>
 
-      {totalNews === 0 ? (
+      {hasEmptyDataset ? (
         <div className="p-6 text-sm text-violet-100/75">
           Todavía no hay noticias ni borradores cargados.
         </div>
@@ -246,31 +350,26 @@ const DashboardNewsList = () => {
             searchLabel="Buscar noticias"
             searchPlaceholder="Titulo, descripcion o slug..."
             searchValue={filters.search}
-            onSearchChange={(search) =>
-              setFilters((current) => ({ ...current, search }))
-            }
+            onSearchChange={handleSearchChange}
             selects={[
               {
                 id: "dashboard-news-status",
                 label: "Estado",
                 value: filters.status,
                 onChange: (status) =>
-                  setFilters((current) => ({
-                    ...current,
-                    status: status as typeof filters.status,
-                  })),
+                  handleStatusChange(status as typeof filters.status),
                 options: DASHBOARD_STATUS_FILTER_OPTIONS,
               },
             ]}
             showClear={hasActiveFilters}
-            onClear={() => setFilters(defaultDashboardNewsListFilters())}
+            onClear={clearFilters}
             filteredCount={news.length}
-            totalCount={totalNews}
+            totalCount={totalPageNews}
           />
 
           {news.length === 0 ? (
             <DashboardListFilteredEmpty
-              onClear={() => setFilters(defaultDashboardNewsListFilters())}
+              onClear={clearFilters}
             />
           ) : (
         <div className="p-3 sm:p-5">
@@ -392,6 +491,14 @@ const DashboardNewsList = () => {
           </div>
         </div>
           )}
+          <DashboardNewsPagination
+            page={page}
+            totalPages={totalPages}
+            hasNextPage={Boolean(pageData?.hasNextPage)}
+            hasPreviousPage={Boolean(pageData?.hasPreviousPage)}
+            isFetching={newsQuery.isFetching}
+            onPageChange={setPage}
+          />
         </>
       )}
     </div>

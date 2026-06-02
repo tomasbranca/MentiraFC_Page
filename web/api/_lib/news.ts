@@ -11,6 +11,7 @@ export {
 } from "./news/repository.js";
 export {
   DASHBOARD_NEWS_PAGE_SORT_BY,
+  DASHBOARD_NEWS_PAGE_STATUS_FILTERS,
   dashboardNewsByIdQuery,
   dashboardNewsListQuery,
   getDashboardNewsPageQuery,

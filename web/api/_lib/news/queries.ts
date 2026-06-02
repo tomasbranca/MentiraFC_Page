@@ -30,7 +30,7 @@ const dashboardNewsProjection = `{
   }
 }`;
 
-const dashboardNewsPageFilter = `_type == "news" && (!$hasSearch || title match $search || description match $search || slug.current match $search)`;
+const dashboardNewsPageFilter = `_type == "news" && (!$hasSearch || title match $search || description match $search || slug.current match $search) && (!$hasStatus || ($status == "draft" && _id in path("drafts.**")) || ($status == "published" && !(_id in path("drafts.**")) && !defined(*[_id == "drafts." + ^._id][0]._id)))`;
 
 export const dashboardNewsListQuery = `*[_type == "news"] | order(coalesce(date, _updatedAt) desc) ${dashboardNewsSummaryProjection}`;
 
@@ -62,11 +62,17 @@ const dashboardNewsPageQueries = {
 } as const;
 
 export type DashboardNewsPageSortBy = "date" | "title" | "updatedAt";
+export type DashboardNewsPageStatusFilter = "published" | "draft";
 
 export const DASHBOARD_NEWS_PAGE_SORT_BY = [
   "date",
   "title",
   "updatedAt",
+] as const;
+
+export const DASHBOARD_NEWS_PAGE_STATUS_FILTERS = [
+  "published",
+  "draft",
 ] as const;
 
 export const getDashboardNewsPageQuery = (

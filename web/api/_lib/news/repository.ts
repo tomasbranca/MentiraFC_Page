@@ -30,6 +30,7 @@ import {
   dashboardNewsByIdQuery,
   dashboardNewsListQuery,
   getDashboardNewsPageQuery,
+  type DashboardNewsPageStatusFilter,
   type DashboardNewsPageSortBy,
 } from "./queries.js";
 import { adaptDashboardNewsItem } from "./validation.js";
@@ -58,6 +59,10 @@ type DashboardNewsDocumentPair = {
 type DashboardNewsPageResult = {
   items?: DashboardNewsDocument[];
   total?: number;
+};
+
+type DashboardNewsPageFilters = {
+  status?: DashboardNewsPageStatusFilter | null;
 };
 
 const getCanonicalNewsId = (id: string): string =>
@@ -254,12 +259,17 @@ export const listDashboardNews = async (): Promise<DashboardNewsItem[]> => {
 };
 
 export const getDashboardNewsPage = async (
-  pagination: OffsetPaginationParams<DashboardNewsPageSortBy>
+  pagination: OffsetPaginationParams<DashboardNewsPageSortBy>,
+  filters: DashboardNewsPageFilters = {}
 ): Promise<PaginatedResult<DashboardNewsItem>> => {
   const result = await querySanity<DashboardNewsPageResult>(
     getDashboardNewsPageQuery(pagination.sortBy, pagination.direction),
     {
-      params: buildOffsetPaginationQueryParams(pagination),
+      params: {
+        ...buildOffsetPaginationQueryParams(pagination),
+        hasStatus: Boolean(filters.status),
+        status: filters.status ?? "",
+      },
       perspective: "raw",
       useToken: true,
     }

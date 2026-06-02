@@ -58,6 +58,7 @@ export const queryKeys = {
         sortBy?: string;
         direction?: string;
         search?: string | null;
+        status?: string;
       }) => ["dashboard", "news", "page", params] as const,
       byId: (id: string) => ["dashboard", "news", id] as const,
     },

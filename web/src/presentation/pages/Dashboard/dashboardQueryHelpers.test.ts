@@ -32,6 +32,7 @@ import {
   cacheDashboardNews,
   dashboardNewsDetailQueryOptions,
   dashboardNewsListQueryOptions,
+  dashboardNewsPageQueryOptions,
   invalidateDashboardNewsList,
   invalidateDashboardNewsPublishDependencies,
 } from "../DashboardNews/dashboardNews.queries";
@@ -91,6 +92,25 @@ describe("dashboard query helpers", () => {
     );
     expect(dashboardNewsDetailQueryOptions("news-1").queryKey).toEqual(
       queryKeys.dashboard.news.byId("news-1")
+    );
+    expect(
+      dashboardNewsPageQueryOptions({
+        page: 2,
+        limit: 20,
+        sortBy: "date",
+        direction: "desc",
+        search: "final",
+        status: "draft",
+      }).queryKey
+    ).toEqual(
+      queryKeys.dashboard.news.page({
+        page: 2,
+        limit: 20,
+        sortBy: "date",
+        direction: "desc",
+        search: "final",
+        status: "draft",
+      })
     );
 
     expect(dashboardMatchesListQueryOptions().queryKey).toEqual(
