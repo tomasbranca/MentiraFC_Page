@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { LATEST_GAME_QUERY } from "../queries/games.queries";
+import { GAME_BY_ID_QUERY, LATEST_GAME_QUERY } from "../queries/games.queries";
 import { sanityFreshClient } from "../client";
 import { fetchSanityQuery } from "../sanityFetch";
-import { getLatestGame } from "./games.service";
+import { getGameById, getLatestGame } from "./games.service";
 
 vi.mock("../sanityFetch", () => ({
   fetchSanityQuery: vi.fn(),
@@ -76,5 +76,38 @@ describe("games.service", () => {
         goalsAgainst: 1,
       },
     });
+  });
+
+  it("carga el detalle de un partido finalizado por id usando params", async () => {
+    fetchSanityQueryMock.mockResolvedValue(
+      createSanityGame({
+        state: "finalizado",
+        result: {
+          goalsFor: 2,
+          goalsAgainst: 0,
+        },
+      })
+    );
+
+    const game = await getGameById("game-1");
+
+    expect(fetchSanityQueryMock).toHaveBeenCalledWith(GAME_BY_ID_QUERY, {
+      client: sanityFreshClient,
+      params: { id: "game-1" },
+    });
+    expect(game).toMatchObject({
+      id: "game-1",
+      state: "finalizado",
+      result: {
+        goalsFor: 2,
+        goalsAgainst: 0,
+      },
+    });
+  });
+
+  it("rechaza ids invalidos antes de consultar Sanity", async () => {
+    await expect(getGameById("../bad id")).resolves.toBeNull();
+
+    expect(fetchSanityQueryMock).not.toHaveBeenCalled();
   });
 });

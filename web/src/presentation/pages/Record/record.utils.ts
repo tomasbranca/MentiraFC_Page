@@ -2,7 +2,7 @@ import {
   formatMatchGoalScorerLabel,
   getMentiraMatchGoalScorerLines,
 } from "../../../domain/games";
-import type { Game, MatchEvent } from "../../../types/models";
+import type { GameListItem, MatchEvent } from "../../../types/models";
 
 type MatchResult = "win" | "loss" | "draw";
 export type ScorerLine = {
@@ -11,15 +11,8 @@ export type ScorerLine = {
   goals: number;
 };
 
-export const paginateGames = (
-  games: Game[] = [],
-  visibleCount = 10
-): Game[] => {
-  return games.slice(0, visibleCount);
-};
-
-export const groupGamesByMonth = (games: Game[] = []) => {
-  return games.reduce<Record<string, Game[]>>((acc, game) => {
+export const groupGamesByMonth = (games: GameListItem[] = []) => {
+  return games.reduce<Record<string, GameListItem[]>>((acc, game) => {
     const date = new Date(game.date);
 
     const key = date.toLocaleDateString("es-AR", {
@@ -34,7 +27,7 @@ export const groupGamesByMonth = (games: Game[] = []) => {
   }, {});
 };
 
-export const getMatchResult = (game: Game): MatchResult => {
+export const getMatchResult = (game: GameListItem): MatchResult => {
   const { goalsFor, goalsAgainst } = game.result;
 
   if (goalsFor > goalsAgainst) return "win";

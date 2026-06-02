@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { adaptGame } from "./games.adapter";
+import { adaptGame, adaptGameListItem } from "./games.adapter";
 
 const createSanityGame = (overrides: Record<string, unknown> = {}) => ({
   _id: "game-1",
@@ -59,6 +59,29 @@ describe("games.adapter", () => {
     expect(
       adaptGame(createSanityGame({ playedPlayers: undefined }))?.playedPlayers
     ).toEqual([]);
+  });
+
+  it("adapta partidos resumidos sin eventos ni jugadores pesados", () => {
+    const game = adaptGameListItem(
+      createSanityGame({
+        events: undefined,
+        playedPlayers: undefined,
+      })
+    );
+
+    expect(game).toMatchObject({
+      id: "game-1",
+      state: "finalizado",
+      rival: {
+        name: "Rival FC",
+      },
+      result: {
+        goalsFor: 2,
+        goalsAgainst: 1,
+      },
+    });
+    expect(game).not.toHaveProperty("events");
+    expect(game).not.toHaveProperty("playedPlayers");
   });
 
   it("adapta goles de plantel, invitados y en propia sin descartar el partido", () => {

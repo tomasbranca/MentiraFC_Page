@@ -7,6 +7,9 @@ export const queryKeys = {
     all: ["games"] as const,
     latest: ["games", "latest"] as const,
     finished: ["games", "finished"] as const,
+    finishedPage: (params: { page: number; limit: number }) =>
+      ["games", "finished", "page", params] as const,
+    finishedDetail: (id: string) => ["games", "finished", "detail", id] as const,
     tournamentFinished: ["games", "tournament-finished"] as const,
   },
   events: {
