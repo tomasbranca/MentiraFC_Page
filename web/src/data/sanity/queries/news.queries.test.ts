@@ -5,6 +5,7 @@ import {
   NEWS_BY_SLUG_QUERY,
   NEWS_QUERY,
   SUGGESTED_NEWS_QUERY,
+  getNewsPageQuery,
 } from "./news.queries";
 
 describe("news queries", () => {
@@ -15,5 +16,14 @@ describe("news queries", () => {
     expect(NEWS_BY_SLUG_QUERY).toContain(draftFilter);
     expect(SUGGESTED_NEWS_QUERY).toContain(draftFilter);
     expect(FALLBACK_NEWS_QUERY).toContain(draftFilter);
+  });
+
+  it("pagina noticias publicas sin traer Portable Text completo", () => {
+    const query = getNewsPageQuery("date", "desc");
+
+    expect(query).toContain("[$offset...$end]");
+    expect(query).toContain('"total": count(');
+    expect(query).toContain("!$hasSearch");
+    expect(query).not.toContain("content[]");
   });
 });

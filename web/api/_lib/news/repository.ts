@@ -6,6 +6,12 @@ import type {
   DashboardNewsMutationInput,
 } from "../../../src/types/dashboard";
 import type { NewsContentBlock } from "../../../src/types/models";
+import {
+  buildOffsetPaginatedResult,
+  buildOffsetPaginationQueryParams,
+  type OffsetPaginationParams,
+  type PaginatedResult,
+} from "../../../shared/pagination.js";
 import { mutateSanity, querySanity } from "../sanity.js";
 import {
   collectContentImageAssetIds,
@@ -23,6 +29,8 @@ import {
 import {
   dashboardNewsByIdQuery,
   dashboardNewsListQuery,
+  getDashboardNewsPageQuery,
+  type DashboardNewsPageSortBy,
 } from "./queries.js";
 import { adaptDashboardNewsItem } from "./validation.js";
 
@@ -45,6 +53,11 @@ type DashboardNewsDocumentPair = {
   canonicalId: string;
   published?: DashboardNewsDocument;
   draft?: DashboardNewsDocument;
+};
+
+type DashboardNewsPageResult = {
+  items?: DashboardNewsDocument[];
+  total?: number;
 };
 
 const getCanonicalNewsId = (id: string): string =>
@@ -134,7 +147,7 @@ const sortDashboardNewsItems = (
 
 const queryDashboardNewsDocuments = async (
   query: string,
-  params?: Record<string, string>
+  params?: Record<string, string | number | boolean>
 ): Promise<DashboardNewsDocument[]> =>
   querySanity<DashboardNewsDocument[]>(query, {
     params,
@@ -238,6 +251,24 @@ export const listDashboardNews = async (): Promise<DashboardNewsItem[]> => {
   return sortDashboardNewsItems(
     groupDashboardNewsDocuments(result).map(adaptDashboardNewsPair)
   );
+};
+
+export const getDashboardNewsPage = async (
+  pagination: OffsetPaginationParams<DashboardNewsPageSortBy>
+): Promise<PaginatedResult<DashboardNewsItem>> => {
+  const result = await querySanity<DashboardNewsPageResult>(
+    getDashboardNewsPageQuery(pagination.sortBy, pagination.direction),
+    {
+      params: buildOffsetPaginationQueryParams(pagination),
+      perspective: "raw",
+      useToken: true,
+    }
+  );
+  const items = sortDashboardNewsItems(
+    groupDashboardNewsDocuments(result.items ?? []).map(adaptDashboardNewsPair)
+  );
+
+  return buildOffsetPaginatedResult(items, result.total, pagination);
 };
 
 export const getDashboardNewsById = async (

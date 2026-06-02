@@ -23,6 +23,8 @@ export const queryKeys = {
   },
   news: {
     all: ["news"] as const,
+    page: (params: { page: number; limit: number }) =>
+      ["news", "page", params] as const,
     bySlug: (slug: string) => ["news", "slug", slug] as const,
     suggested: (slug: string) => ["news", "suggested", slug] as const,
   },
@@ -50,6 +52,13 @@ export const queryKeys = {
   dashboard: {
     news: {
       all: ["dashboard", "news"] as const,
+      page: (params: {
+        page?: number;
+        limit?: number;
+        sortBy?: string;
+        direction?: string;
+        search?: string | null;
+      }) => ["dashboard", "news", "page", params] as const,
       byId: (id: string) => ["dashboard", "news", id] as const,
     },
     matches: {

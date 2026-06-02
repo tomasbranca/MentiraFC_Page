@@ -52,6 +52,55 @@ export const GAME_PROJECTION = `{
     }
   }`;
 
+const GAME_LIST_PROJECTION = `{
+    _id,
+    date,
+    state,
+    location,
+    competition,
+
+    tournament->{
+      _id,
+      name,
+      organization->{
+        name
+      }
+    },
+
+    result{
+      goalsFor,
+      goalsAgainst
+    },
+
+    rival->{
+      _id,
+      name,
+      "logoUrl": logo.asset->url
+    }
+  }`;
+
+const FINISHED_GAMES_PAGE_FILTER = `_type == "games" && state == "finalizado" && (!$hasSearch || rival->name match $search || tournament->name match $search || location match $search || competition match $search)`;
+
+const GAMES_PAGE_QUERIES = {
+  "date:desc": `{
+    "items": *[${FINISHED_GAMES_PAGE_FILTER}] | order(date desc, _id desc)[$offset...$end] ${GAME_LIST_PROJECTION},
+    "total": count(*[${FINISHED_GAMES_PAGE_FILTER}])
+  }`,
+  "date:asc": `{
+    "items": *[${FINISHED_GAMES_PAGE_FILTER}] | order(date asc, _id asc)[$offset...$end] ${GAME_LIST_PROJECTION},
+    "total": count(*[${FINISHED_GAMES_PAGE_FILTER}])
+  }`,
+} as const;
+
+export type GamesPageSortBy = "date";
+
+export const GAMES_PAGE_SORT_BY = ["date"] as const;
+
+export const getGamesPageQuery = (
+  sortBy: GamesPageSortBy,
+  direction: "asc" | "desc"
+): string => GAMES_PAGE_QUERIES[`${sortBy}:${direction}`];
+
 export const LATEST_GAME_QUERY = `
   coalesce(
     *[

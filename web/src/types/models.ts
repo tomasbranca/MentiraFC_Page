@@ -17,6 +17,7 @@ export type BootstrapScope =
   | "bootstrap-error"
   | "full"
   | "home-critical"
+  | "news-list"
   | "gallery-detail"
   | "news-detail"
   | "player-detail"
@@ -105,6 +106,8 @@ export interface Game {
   playedPlayers: Pick<Player, "id" | "name" | "lastName" | "slug">[];
 }
 
+export type GameListItem = Omit<Game, "events" | "playedPlayers">;
+
 export interface StandingsRow {
   team: TeamRef;
   played: number;
@@ -180,6 +183,8 @@ export interface NewsItem {
   imageUrl?: string | null;
 }
 
+export type NewsListItem = Omit<NewsItem, "content">;
+
 export interface GalleryImageDimensions {
   width?: number | null;
   height?: number | null;
@@ -205,6 +210,10 @@ export interface GalleryItem {
   images: GalleryImage[];
   photoCount: number;
 }
+
+export type GalleryListItem = Omit<GalleryItem, "game" | "images"> & {
+  game: GameListItem;
+};
 
 export interface GoalEvent {
   id: string;

@@ -2,7 +2,9 @@ import { type QueryClient, queryOptions } from "@tanstack/react-query";
 
 import {
   fetchDashboardNews,
+  fetchDashboardNewsPage,
   fetchDashboardNewsById,
+  type DashboardNewsPageOptions,
 } from "../../../data/dashboardNews";
 import { queryKeys } from "../../../data/queryKeys";
 import { SANITY_FRESHNESS } from "../../../data/sanity/freshness";
@@ -19,6 +21,25 @@ export const dashboardNewsListQueryOptions = () =>
         reportError(error, {
           page: "DashboardNewsList",
           action: "load_news",
+        });
+        throw error;
+      }
+    },
+    ...SANITY_FRESHNESS.dashboard,
+  });
+
+export const dashboardNewsPageQueryOptions = (
+  params: DashboardNewsPageOptions = {}
+) =>
+  queryOptions({
+    queryKey: queryKeys.dashboard.news.page(params),
+    queryFn: async () => {
+      try {
+        return await fetchDashboardNewsPage(params);
+      } catch (error) {
+        reportError(error, {
+          page: "DashboardNewsList",
+          action: "load_news_page",
         });
         throw error;
       }

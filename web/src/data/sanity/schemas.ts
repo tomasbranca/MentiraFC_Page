@@ -137,6 +137,7 @@ export const sanityGallerySchema = z.object({
   slug: sanitySlugSchema.optional(),
   game: sanityGameSchema.optional(),
   photos: z.array(sanityGalleryImageSchema).nullish(),
+  photoCount: z.number().nullable().optional(),
 });
 
 export const sanityPlayerSchema = z.object({
