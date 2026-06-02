@@ -1,58 +1,54 @@
-import { useMemo, useRef } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMemo } from "react";
+import { useInfiniteQuery } from "@tanstack/react-query";
 
-import { getGalleries } from "../../../../data/galleries";
+import { getGalleriesPage } from "../../../../data/galleries";
 import { queryKeys } from "../../../../data/queryKeys";
 import { SANITY_FRESHNESS } from "../../../../data/sanity/freshness";
 import { reportError } from "../../../../lib/errors/errorLogger";
-import type { GalleryItem } from "../../../../types/models";
-import { useInitialData } from "../../../context/useInitialData";
-import { shouldLoadGalleryInitially } from "../../../hooks/loading/loadingState.utils";
 import { sortGalleriesByDate } from "../../../utils/gallery.utils";
 
-export const useGalleryData = () => {
-  const { initialData } = useInitialData();
-  const queryClient = useQueryClient();
-  const hasCachedGalleries = useRef(
-    queryClient.getQueryState(queryKeys.galleries.all)?.data !== undefined
-  );
-  const cachedGalleries = hasCachedGalleries.current
-    ? queryClient.getQueryData<GalleryItem[]>(queryKeys.galleries.all)
-    : undefined;
-  const initialGalleries = cachedGalleries ?? initialData.galleries;
-  const needsInitialFetch =
-    !hasCachedGalleries.current &&
-    shouldLoadGalleryInitially(
-      initialData.bootstrapScope,
-      initialGalleries.length
-    );
+const GALLERIES_PAGE_LIMIT = 9;
 
-  const galleriesQuery = useQuery({
-    queryKey: queryKeys.galleries.all,
-    queryFn: async () => {
+export const useGalleryData = () => {
+  const galleriesQuery = useInfiniteQuery({
+    queryKey: queryKeys.galleries.page({
+      page: 1,
+      limit: GALLERIES_PAGE_LIMIT,
+    }),
+    queryFn: async ({ pageParam }) => {
       try {
-        return await getGalleries();
+        return await getGalleriesPage({
+          page: pageParam,
+          limit: GALLERIES_PAGE_LIMIT,
+          sortBy: "date",
+          direction: "desc",
+        });
       } catch (error) {
         reportError(error, {
           page: "Gallery",
-          action: "refresh_galleries",
+          action: "load_galleries_page",
         });
         throw error;
       }
     },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.hasNextPage && lastPage.page ? lastPage.page + 1 : undefined,
     enabled: true,
-    initialData: needsInitialFetch ? undefined : initialGalleries,
-    placeholderData: needsInitialFetch ? initialGalleries : undefined,
     refetchInterval: SANITY_FRESHNESS.semiDynamic.refetchInterval,
     refetchOnMount: true,
     staleTime: SANITY_FRESHNESS.semiDynamic.staleTime,
   });
 
   const galleries = useMemo(
-    () => sortGalleriesByDate(galleriesQuery.data ?? []),
+    () =>
+      sortGalleriesByDate(
+        galleriesQuery.data?.pages.flatMap((page) => page.items) ?? []
+      ),
     [galleriesQuery.data]
   );
-  const loading = needsInitialFetch && galleriesQuery.isFetching;
+  const loading =
+    galleriesQuery.isLoading && typeof galleriesQuery.data === "undefined";
   const error = Boolean(
     galleriesQuery.error && typeof galleriesQuery.data === "undefined"
   );
@@ -61,6 +57,11 @@ export const useGalleryData = () => {
     galleries,
     loading,
     error,
+    hasMore: Boolean(galleriesQuery.hasNextPage),
+    loadingMore: galleriesQuery.isFetchingNextPage,
+    fetchNextPage: async () => {
+      await galleriesQuery.fetchNextPage();
+    },
     refetch: async () => {
       await galleriesQuery.refetch();
     },

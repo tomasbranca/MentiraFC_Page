@@ -7,6 +7,9 @@ export const queryKeys = {
     all: ["games"] as const,
     latest: ["games", "latest"] as const,
     finished: ["games", "finished"] as const,
+    finishedPage: (params: { page: number; limit: number }) =>
+      ["games", "finished", "page", params] as const,
+    finishedDetail: (id: string) => ["games", "finished", "detail", id] as const,
     tournamentFinished: ["games", "tournament-finished"] as const,
   },
   events: {
@@ -58,6 +61,7 @@ export const queryKeys = {
         sortBy?: string;
         direction?: string;
         search?: string | null;
+        status?: string;
       }) => ["dashboard", "news", "page", params] as const,
       byId: (id: string) => ["dashboard", "news", id] as const,
     },
@@ -100,6 +104,8 @@ export const queryKeys = {
   },
   galleries: {
     all: ["galleries"] as const,
+    page: (params: { page: number; limit: number }) =>
+      ["galleries", "page", params] as const,
     bySlug: (slug: string) => ["galleries", "slug", slug] as const,
   },
   tournaments: {

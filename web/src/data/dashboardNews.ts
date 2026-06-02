@@ -42,6 +42,7 @@ const DASHBOARD_NEWS_API_PATH = "/api/dashboard/news";
 
 type DashboardNewsMutationIntent = "draft" | "publish";
 export type DashboardNewsPageSortBy = "date" | "title" | "updatedAt";
+export type DashboardNewsPageStatusFilter = "all" | "published" | "draft";
 
 export type DashboardNewsPageOptions = {
   page?: number;
@@ -49,6 +50,7 @@ export type DashboardNewsPageOptions = {
   sortBy?: DashboardNewsPageSortBy;
   direction?: SortDirection;
   search?: string | null;
+  status?: DashboardNewsPageStatusFilter;
 };
 
 const buildDashboardNewsApiPath = (

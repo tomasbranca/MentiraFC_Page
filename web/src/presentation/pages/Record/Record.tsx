@@ -1,25 +1,49 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { getGameById } from "../../../data/games";
 import { getImageUrl } from "../../../data/imageService";
+import { queryKeys } from "../../../data/queryKeys";
+import { reportError } from "../../../lib/errors/errorLogger";
 import Loader from "../../components/Loader/Loader";
 import Button from "../../components/Button/Button";
 import ErrorFallback from "../../components/errors/ErrorFallback";
 import ProgressiveMedia from "../../components/ProgressiveMedia/ProgressiveMedia";
 
 import { useRecordData } from "./hooks/useRecordData";
-import {
-  paginateGames,
-  groupGamesByMonth,
-  getMatchResult,
-  getScorers,
-} from "./record.utils";
-import { RESULT_STYLES, PAGE_SIZE } from "./record.constants";
+import { groupGamesByMonth, getMatchResult, getScorers } from "./record.utils";
+import { RESULT_STYLES } from "./record.constants";
 import { formatDate } from "../../utils/date.utils";
 import "./Record.css";
 
 const Record = () => {
-  const { games, loading, error, refetch } = useRecordData();
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const {
+    games,
+    loading,
+    error,
+    refetch,
+    hasMore,
+    loadingMore,
+    fetchNextPage,
+  } = useRecordData();
   const [openGame, setOpenGame] = useState<string | null>(null);
+  const gameDetailQuery = useQuery({
+    queryKey: queryKeys.games.finishedDetail(openGame ?? ""),
+    queryFn: async () => {
+      if (!openGame) return null;
+
+      try {
+        return await getGameById(openGame);
+      } catch (error) {
+        reportError(error, {
+          page: "Record",
+          action: "load_record_game_detail",
+          id: openGame,
+        });
+        throw error;
+      }
+    },
+    enabled: Boolean(openGame),
+  });
 
   if (loading) return <Loader />;
 
@@ -27,20 +51,17 @@ const Record = () => {
     return (
       <ErrorFallback
         title="No se pudo cargar el historial"
-        message="Intentá nuevamente en unos minutos."
+        message={"Intent\u00e1 nuevamente en unos minutos."}
         onRetry={refetch}
       />
     );
   }
 
-  const visibleGames = paginateGames(games, visibleCount);
-  const groupedGames = groupGamesByMonth(visibleGames);
-  const hasMore = visibleCount < games.length;
+  const groupedGames = groupGamesByMonth(games);
 
   return (
     <section className="max-w-6xl mx-auto md:px-4 md:py-10">
       <div className="bg-neutral-900 border border-neutral-800 overflow-hidden">
-        {/* HEADER */}
         <header className="px-4 sm:px-8 py-5 sm:py-6 border-b border-neutral-800">
           <h1 className="text-2xl sm:text-3xl font-extrabold text-neutral-100">
             Historial de partidos
@@ -50,18 +71,15 @@ const Record = () => {
           </p>
         </header>
 
-        {/* EMPTY */}
         {!games.length && (
           <div className="py-20 text-center text-neutral-500">
-            No hay partidos registrados todavía
+            No hay partidos registrados todav&iacute;a
           </div>
         )}
 
-        {/* LISTA */}
         <div>
           {Object.entries(groupedGames).map(([group, games]) => (
             <div key={group}>
-              {/* MES */}
               <div className="px-4 sm:px-6 py-2 text-xs uppercase tracking-wider text-neutral-500 bg-neutral-800">
                 {group}
               </div>
@@ -69,28 +87,33 @@ const Record = () => {
               {games.map((game) => {
                 const result = getMatchResult(game);
                 const styles = RESULT_STYLES[result];
-                const scorers = getScorers(game.events || []);
                 const isOpen = openGame === game.id;
-                const hasScorers = scorers.length > 0;
+                const detailedGame = isOpen ? gameDetailQuery.data : null;
+                const scorers = getScorers(detailedGame?.events || []);
+                const hasExpandable = game.result.goalsFor > 0;
+                const isDetailLoading =
+                  isOpen && gameDetailQuery.isFetching && !detailedGame;
+                const isDetailError = isOpen && gameDetailQuery.isError;
 
                 return (
                   <div key={game.id} className="border-b border-neutral-800">
-                    {/* ITEM */}
                     <div
                       onClick={() =>
-                        hasScorers ? setOpenGame(isOpen ? null : game.id) : null
+                        hasExpandable
+                          ? setOpenGame(isOpen ? null : game.id)
+                          : null
                       }
                       className={`
                         px-4 sm:px-6 py-4 flex flex-col gap-2
                         ${
-                          hasScorers ? "cursor-pointer active:scale-[0.98]" : ""
+                          hasExpandable
+                            ? "cursor-pointer active:scale-[0.98]"
+                            : ""
                         }
                         hover:bg-neutral-800/60 transition
                       `}
                     >
-                      {/* FILA PRINCIPAL */}
                       <div className="flex justify-between items-center">
-                        {/* IZQUIERDA */}
                         <div className="flex items-center gap-3">
                           {Boolean(game.rival?.imageUrl) && (
                             <ProgressiveMedia
@@ -123,12 +146,13 @@ const Record = () => {
                           </div>
                         </div>
 
-                        {/* DERECHA */}
                         <div className="text-right flex items-center gap-2">
                           <div>
                             <p className="text-2xl sm:text-4xl font-extrabold text-neutral-100">
                               {game.result.goalsFor}
-                              <span className="mx-1 text-neutral-500">–</span>
+                              <span className="mx-1 text-neutral-500">
+                                &ndash;
+                              </span>
                               {game.result.goalsAgainst}
                             </p>
 
@@ -139,40 +163,36 @@ const Record = () => {
                             </p>
                           </div>
 
-                          {/* FLECHA */}
-                          {hasScorers && (
+                          {hasExpandable && (
                             <span
                               className={`text-neutral-500 text-xs transition-transform duration-300 ${
                                 isOpen ? "rotate-180" : ""
                               }`}
                             >
-                              ▼
+                              &#9660;
                             </span>
                           )}
                         </div>
                       </div>
 
-                      {/* TEXTO UX */}
-                      {hasScorers && !isOpen && (
+                      {hasExpandable && !isOpen && (
                         <p className="text-[10px] text-neutral-500">
                           Ver goleadores
                         </p>
                       )}
 
-                      {/* INFO EXTRA */}
                       <div className="text-xs text-neutral-400">
                         {game.competition === "Torneo"
                           ? game.tournament
                           : game.competition}
                         <span className="hidden md:inline">
                           {" "}
-                          · {game.location}
+                          &middot; {game.location}
                         </span>
                       </div>
                     </div>
 
-                    {/* ACORDEÓN */}
-                    {hasScorers && (
+                    {hasExpandable && (
                       <div
                         className={`overflow-hidden transition-all duration-300 ${
                           isOpen ? "max-h-125" : "max-h-0"
@@ -188,13 +208,21 @@ const Record = () => {
                             Goleadores
                           </p>
 
-                          <ul className="space-y-1">
-                            {scorers.map((scorer) => (
-                              <li key={scorer.key}>
-                                {scorer.label} ({scorer.goals})
-                              </li>
-                            ))}
-                          </ul>
+                          {isDetailLoading ? (
+                            <p>Cargando goleadores...</p>
+                          ) : isDetailError ? (
+                            <p>No pudimos cargar los goleadores.</p>
+                          ) : scorers.length > 0 ? (
+                            <ul className="space-y-1">
+                              {scorers.map((scorer) => (
+                                <li key={scorer.key}>
+                                  {scorer.label} ({scorer.goals})
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <p>No hay goleadores cargados.</p>
+                          )}
                         </div>
                       </div>
                     )}
@@ -205,15 +233,15 @@ const Record = () => {
           ))}
         </div>
 
-        {/* FOOTER */}
         {hasMore && (
           <div className="flex justify-center py-6 sm:py-8 border-t border-neutral-800">
             <Button
               variant="ghostStrong"
               className="px-6 py-2.5 rounded-md text-sm w-full max-w-xs"
-              onClick={() => setVisibleCount((prev) => prev + PAGE_SIZE)}
+              disabled={loadingMore}
+              onClick={() => void fetchNextPage()}
             >
-              Cargar más partidos
+              {loadingMore ? "Cargando..." : "Cargar m\u00e1s partidos"}
             </Button>
           </div>
         )}

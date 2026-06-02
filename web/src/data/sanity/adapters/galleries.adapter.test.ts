@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { adaptSingleGallery } from "./galleries.adapter";
+import {
+  adaptSingleGallery,
+  adaptSingleGalleryListItem,
+} from "./galleries.adapter";
 
 const createSanityGallery = (overrides: Record<string, unknown> = {}) => ({
   _id: "gallery-1",
@@ -75,6 +78,49 @@ describe("galleries.adapter", () => {
     );
 
     expect(gallery?.heroImage.id).toBe("photo-1");
+  });
+
+  it("adapta el modelo resumido sin fotos completas ni arrays pesados del partido", () => {
+    const listItem = adaptSingleGalleryListItem(
+      createSanityGallery({
+        game: {
+          _id: "game-1",
+          date: "2026-04-18T20:00:00Z",
+          state: "finalizado",
+          competition: "Torneo",
+          result: {
+            goalsFor: 3,
+            goalsAgainst: 1,
+          },
+          rival: {
+            _id: "team-1",
+            name: "Rival FC",
+          },
+        },
+        photoCount: 12,
+        photos: [
+          {
+            _key: "photo-1",
+            alt: "Portada",
+            imageUrl: "https://cdn.sanity.io/images/project/dataset/photo-1.jpg",
+          },
+        ],
+      })
+    );
+
+    expect(listItem).toMatchObject({
+      id: "gallery-1",
+      photoCount: 12,
+      game: {
+        id: "game-1",
+        rival: {
+          name: "Rival FC",
+        },
+      },
+    });
+    expect("images" in (listItem ?? {})).toBe(false);
+    expect("events" in (listItem?.game ?? {})).toBe(false);
+    expect("playedPlayers" in (listItem?.game ?? {})).toBe(false);
   });
 
   it("no descarta galerias cuando el partido tiene goles sin jugador del plantel", () => {

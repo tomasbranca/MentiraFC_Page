@@ -23,9 +23,10 @@ describe("dashboardNews data client", () => {
         sortBy: "title",
         direction: "asc",
         search: "final",
+        status: "draft",
       })
     ).toBe(
-      "/api/dashboard/news?page=2&limit=25&sortBy=title&direction=asc&search=final"
+      "/api/dashboard/news?page=2&limit=25&sortBy=title&direction=asc&search=final&status=draft"
     );
   });
 });

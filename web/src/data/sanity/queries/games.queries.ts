@@ -79,7 +79,7 @@ const GAME_LIST_PROJECTION = `{
     }
   }`;
 
-const FINISHED_GAMES_PAGE_FILTER = `_type == "games" && state == "finalizado" && (!$hasSearch || rival->name match $search || tournament->name match $search || location match $search || competition match $search)`;
+const FINISHED_GAMES_PAGE_FILTER = `_type == "games" && !(_id in path("drafts.**")) && state == "finalizado" && (!$hasSearch || rival->name match $search || tournament->name match $search || location match $search || competition match $search)`;
 
 const GAMES_PAGE_QUERIES = {
   "date:desc": `{
@@ -100,6 +100,15 @@ export const getGamesPageQuery = (
   sortBy: GamesPageSortBy,
   direction: "asc" | "desc"
 ): string => GAMES_PAGE_QUERIES[`${sortBy}:${direction}`];
+
+export const GAME_BY_ID_QUERY = `
+  *[
+    _type == "games" &&
+    !(_id in path("drafts.**")) &&
+    state == "finalizado" &&
+    _id == $id
+  ][0] ${GAME_PROJECTION}
+`;
 
 export const LATEST_GAME_QUERY = `
   coalesce(

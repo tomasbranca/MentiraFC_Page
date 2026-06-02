@@ -18,6 +18,8 @@ export type BootstrapScope =
   | "full"
   | "home-critical"
   | "news-list"
+  | "gallery-list"
+  | "record-list"
   | "gallery-detail"
   | "news-detail"
   | "player-detail"

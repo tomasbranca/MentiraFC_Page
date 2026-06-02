@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  DASHBOARD_NEWS_PAGE_STATUS_FILTERS,
   dashboardNewsByIdQuery,
   dashboardNewsListQuery,
   getDashboardNewsPageQuery,
@@ -259,6 +260,9 @@ describe("dashboard news api input", () => {
     expect(query).toContain("[$offset...$end]");
     expect(query).toContain("order(title asc, _id asc)");
     expect(query).toContain('"total": count(');
+    expect(query).toContain("$hasStatus");
+    expect(query).toContain('$status == "draft"');
     expect(query).not.toContain("content[]");
+    expect(DASHBOARD_NEWS_PAGE_STATUS_FILTERS).toEqual(["published", "draft"]);
   });
 });

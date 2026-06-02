@@ -1,5 +1,6 @@
 import {
   DASHBOARD_NEWS_PAGE_SORT_BY,
+  DASHBOARD_NEWS_PAGE_STATUS_FILTERS,
   deleteDashboardNews,
   getDashboardNewsPage,
   getDashboardNewsById,
@@ -21,8 +22,11 @@ const PAGINATION_PARAM_NAMES = [
   "sortBy",
   "direction",
   "search",
+  "status",
   "cursor",
 ] as const;
+
+type DashboardNewsStatusFilter = (typeof DASHBOARD_NEWS_PAGE_STATUS_FILTERS)[number];
 
 const getIdFromRequest = (request: Request): string | null => {
   const id = new URL(request.url).searchParams.get("id")?.trim();
@@ -36,6 +40,31 @@ const getIntentFromRequest = (request: Request): "draft" | "publish" => {
 
 const shouldUsePaginatedResponse = (searchParams: URLSearchParams): boolean =>
   PAGINATION_PARAM_NAMES.some((paramName) => searchParams.has(paramName));
+
+const parseDashboardNewsStatusFilter = (
+  searchParams: URLSearchParams
+):
+  | { ok: true; status: DashboardNewsStatusFilter | null }
+  | { ok: false; message: string } => {
+  const status = searchParams.get("status")?.trim();
+
+  if (!status || status === "all") {
+    return { ok: true, status: null };
+  }
+
+  if (
+    DASHBOARD_NEWS_PAGE_STATUS_FILTERS.includes(
+      status as DashboardNewsStatusFilter
+    )
+  ) {
+    return { ok: true, status: status as DashboardNewsStatusFilter };
+  }
+
+  return {
+    ok: false,
+    message: "El filtro de estado no esta permitido para este listado.",
+  };
+};
 
 const dashboardNewsHandler = async (request: Request): Promise<Response> => {
   try {
@@ -64,7 +93,17 @@ const dashboardNewsHandler = async (request: Request): Promise<Response> => {
           return errorJson(pagination.issues[0]?.message ?? "Paginacion invalida.", 400);
         }
 
-        return json(await getDashboardNewsPage(pagination.params));
+        const statusFilter = parseDashboardNewsStatusFilter(url.searchParams);
+
+        if (!statusFilter.ok) {
+          return errorJson(statusFilter.message, 400);
+        }
+
+        return json(
+          await getDashboardNewsPage(pagination.params, {
+            status: statusFilter.status,
+          })
+        );
       }
 
       return json(await listDashboardNews());

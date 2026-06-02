@@ -1,4 +1,8 @@
-import { type QueryClient, queryOptions } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  type QueryClient,
+  queryOptions,
+} from "@tanstack/react-query";
 
 import {
   fetchDashboardNews,
@@ -44,6 +48,7 @@ export const dashboardNewsPageQueryOptions = (
         throw error;
       }
     },
+    placeholderData: keepPreviousData,
     ...SANITY_FRESHNESS.dashboard,
   });
 

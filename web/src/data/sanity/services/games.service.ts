@@ -1,4 +1,5 @@
 import {
+  GAME_BY_ID_QUERY,
   LATEST_GAME_QUERY,
   FINISHED_GAMES_QUERY,
   FINISHED_TOURNAMENT_GAMES_QUERY,
@@ -25,6 +26,14 @@ import type { Game, GameListItem } from "../../../types/models";
 import type { PaginatedResult } from "../../../../shared/pagination";
 
 export type { GamesPageSortBy };
+
+const SANITY_ID_PATTERN = /^[A-Za-z0-9_.-]{1,200}$/;
+
+const normalizeSanityIdParam = (id: string): string | null => {
+  const value = id.trim();
+
+  return SANITY_ID_PATTERN.test(value) ? value : null;
+};
 
 export const getLatestGame = async (): Promise<Game | null> => {
   const data = await fetchSanityQuery(LATEST_GAME_QUERY, {
@@ -60,6 +69,21 @@ export const getGamesPage = async (
     data.total,
     pagination
   );
+};
+
+export const getGameById = async (id: string): Promise<Game | null> => {
+  const normalizedId = normalizeSanityIdParam(id);
+
+  if (!normalizedId) {
+    return null;
+  }
+
+  const data = await fetchSanityQuery(GAME_BY_ID_QUERY, {
+    client: sanityFreshClient,
+    params: { id: normalizedId },
+  });
+
+  return adaptGame(data);
 };
 
 export const getFinishedTournamentGames = async (): Promise<Game[]> => {

@@ -10,7 +10,7 @@ import {
   type SanityGallery,
 } from "../schemas";
 import { validateSanityArray, validateSanityItem } from "../validation";
-import { adaptGame } from "./games.adapter";
+import { adaptGame, adaptGameListItem } from "./games.adapter";
 
 const adaptGalleryImage = (image: unknown): GalleryImage | null => {
   const validated = validateSanityItem(
@@ -65,19 +65,32 @@ export const adaptSingleGallery = (item: unknown): GalleryItem | null => {
 export const adaptSingleGalleryListItem = (
   item: unknown
 ): GalleryListItem | null => {
-  const gallery = adaptSingleGallery(item);
+  const validated = validateSanityItem(
+    sanityGallerySchema,
+    item,
+    "galleries.adapter:adaptSingleGalleryListItem"
+  );
+  if (!validated?.game) return null;
 
-  if (!gallery) {
+  const game = adaptGameListItem(validated.game);
+  const slug = getSanitySlugValue(validated.slug);
+  const images = (validated.photos ?? [])
+    .map(adaptGalleryImage)
+    .filter((image): image is GalleryImage => Boolean(image));
+
+  if (!game || !slug || !images.length) {
     return null;
   }
 
+  const heroImage = images.find((image) => image.isHero) ?? images[0];
+
   return {
-    id: gallery.id,
-    slug: gallery.slug,
-    date: gallery.date,
-    game: gallery.game,
-    heroImage: gallery.heroImage,
-    photoCount: gallery.photoCount,
+    id: validated._id,
+    slug,
+    date: game.date,
+    game,
+    heroImage,
+    photoCount: validated.photoCount ?? images.length,
   };
 };
 
@@ -93,12 +106,14 @@ export const adaptGalleries = (galleries: unknown): GalleryItem[] => {
     .filter((gallery): gallery is GalleryItem => Boolean(gallery));
 };
 
-export const adaptGalleryListItems = (galleries: unknown): GalleryListItem[] =>
-  adaptGalleries(galleries).map((gallery) => ({
-    id: gallery.id,
-    slug: gallery.slug,
-    date: gallery.date,
-    game: gallery.game,
-    heroImage: gallery.heroImage,
-    photoCount: gallery.photoCount,
-  }));
+export const adaptGalleryListItems = (galleries: unknown): GalleryListItem[] => {
+  const validatedGalleries: SanityGallery[] = validateSanityArray(
+    sanityGallerySchema,
+    galleries,
+    "galleries.adapter:adaptGalleryListItems"
+  );
+
+  return validatedGalleries
+    .map(adaptSingleGalleryListItem)
+    .filter((gallery): gallery is GalleryListItem => Boolean(gallery));
+};

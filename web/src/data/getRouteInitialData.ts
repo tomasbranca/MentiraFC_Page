@@ -94,6 +94,52 @@ const getNewsListInitialData = async (): Promise<InitialDataPayload> => {
   }
 };
 
+const getGalleryListInitialData = async (): Promise<InitialDataPayload> => {
+  try {
+    const [latestGame, footerSettings] = await Promise.all([
+      getLatestGame(),
+      getFooterSettings(),
+    ]);
+
+    return {
+      ...createEmptyInitialData(),
+      bootstrapScope: "gallery-list",
+      latestGame,
+      footerSettings,
+    };
+  } catch (error) {
+    reportError(error, {
+      scope: "data:getRouteInitialData",
+      action: "load_gallery_list_initial_data",
+    });
+
+    throw error;
+  }
+};
+
+const getRecordListInitialData = async (): Promise<InitialDataPayload> => {
+  try {
+    const [latestGame, footerSettings] = await Promise.all([
+      getLatestGame(),
+      getFooterSettings(),
+    ]);
+
+    return {
+      ...createEmptyInitialData(),
+      bootstrapScope: "record-list",
+      latestGame,
+      footerSettings,
+    };
+  } catch (error) {
+    reportError(error, {
+      scope: "data:getRouteInitialData",
+      action: "load_record_list_initial_data",
+    });
+
+    throw error;
+  }
+};
+
 const getGalleryDetailInitialData = async (
   slug: string
 ): Promise<InitialDataPayload> => {
@@ -242,6 +288,14 @@ export const getRouteInitialData = async (
 
   if (normalizedPathname === ROUTES.NEWS) {
     return getNewsListInitialData();
+  }
+
+  if (normalizedPathname === ROUTES.GALLERY) {
+    return getGalleryListInitialData();
+  }
+
+  if (normalizedPathname === ROUTES.RECORD) {
+    return getRecordListInitialData();
   }
 
   const newsSlug = extractSlugFromPathname(

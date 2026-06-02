@@ -1,10 +1,19 @@
 import ErrorFallback from "../../components/errors/ErrorFallback";
 import GalleryCard from "../../components/GalleryCard/GalleryCard";
 import Loader from "../../components/Loader/Loader";
+import Button from "../../components/Button/Button";
 import { useGalleryData } from "./hooks/useGalleryData";
 
 const Gallery = () => {
-  const { galleries, loading, error, refetch } = useGalleryData();
+  const {
+    galleries,
+    loading,
+    error,
+    refetch,
+    hasMore,
+    loadingMore,
+    fetchNextPage,
+  } = useGalleryData();
 
   if (loading) return <Loader />;
 
@@ -46,6 +55,19 @@ const Gallery = () => {
               />
             ))}
           </div>
+
+          {hasMore && (
+            <div className="flex justify-center pt-10">
+              <Button
+                variant="light"
+                className="rounded-lg px-5 py-2.5 text-sm"
+                disabled={loadingMore}
+                onClick={() => void fetchNextPage()}
+              >
+                {loadingMore ? "Cargando..." : "Cargar mas galerias"}
+              </Button>
+            </div>
+          )}
         </div>
       </section>
     </div>
