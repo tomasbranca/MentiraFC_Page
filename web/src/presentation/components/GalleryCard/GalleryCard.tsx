@@ -2,7 +2,7 @@ import { FiImage } from "react-icons/fi";
 import { Link } from "react-router-dom";
 
 import { getImageUrl } from "../../../data/imageService";
-import type { GalleryItem } from "../../../types/models";
+import type { GalleryListItem } from "../../../types/models";
 import ProgressiveMedia from "../ProgressiveMedia/ProgressiveMedia";
 import { buildGalleryMatchTitle } from "../../utils/gallery.utils";
 import { getGalleryLink } from "../../utils/navigation.utils";
@@ -10,7 +10,7 @@ import { getGalleryLink } from "../../utils/navigation.utils";
 import "./GalleryCard.css";
 
 type GalleryCardProps = {
-  gallery: GalleryItem;
+  gallery: GalleryListItem;
   imageLoading?: "eager" | "lazy";
 };
 

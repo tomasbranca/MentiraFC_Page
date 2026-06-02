@@ -1,4 +1,8 @@
-import type { GalleryImage, GalleryItem, Game } from "../../types/models";
+import type {
+  GalleryImage,
+  GalleryItem,
+  GameListItem,
+} from "../../types/models";
 
 const TEAM_NAME = "Mentira FC";
 const DEFAULT_DOWNLOAD_EXTENSION = "jpg";
@@ -14,14 +18,14 @@ export type GalleryImageLayout =
 const normalizeText = (value?: string | null): string =>
   (value ?? "").replace(/\s+/g, " ").trim();
 
-export const getGalleryCompetitionName = (game: Game): string => {
+export const getGalleryCompetitionName = (game: GameListItem): string => {
   const tournament = normalizeText(game.tournament);
   const competition = normalizeText(game.competition);
 
   return tournament || competition || "Partido";
 };
 
-export const buildGalleryMatchTitle = (game: Game): string => {
+export const buildGalleryMatchTitle = (game: GameListItem): string => {
   const competition = getGalleryCompetitionName(game);
   const rival = normalizeText(game.rival?.name) || "Rival";
   const result = `${TEAM_NAME} ${game.result.goalsFor} - ${rival} ${game.result.goalsAgainst}`;
@@ -29,9 +33,9 @@ export const buildGalleryMatchTitle = (game: Game): string => {
   return competition ? `${competition} - ${result}` : result;
 };
 
-export const sortGalleriesByDate = (
-  galleries: GalleryItem[] = []
-): GalleryItem[] =>
+export const sortGalleriesByDate = <T extends Pick<GalleryItem, "date">>(
+  galleries: T[] = []
+): T[] =>
   [...galleries].sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
   );

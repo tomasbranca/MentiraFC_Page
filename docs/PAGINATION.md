@@ -66,6 +66,8 @@ Publico/Sanity:
 - `getNewsPage`
 - `getGamesPage`
 - `getGalleriesPage`
+- La pagina publica `/galeria` usa `getGalleriesPage` con `limit` 9 y
+  bootstrap `gallery-list`; el detalle de galeria carga el documento completo.
 
 Dashboard:
 

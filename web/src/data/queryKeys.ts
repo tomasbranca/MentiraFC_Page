@@ -101,6 +101,8 @@ export const queryKeys = {
   },
   galleries: {
     all: ["galleries"] as const,
+    page: (params: { page: number; limit: number }) =>
+      ["galleries", "page", params] as const,
     bySlug: (slug: string) => ["galleries", "slug", slug] as const,
   },
   tournaments: {
