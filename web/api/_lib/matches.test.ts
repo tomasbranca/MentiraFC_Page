@@ -5,6 +5,7 @@ import {
   dashboardMatchGoalEventsQuery,
   dashboardMatchListQuery,
   dashboardMatchOptionsQuery,
+  getDashboardMatchesPageQuery,
   parseDashboardMatchDraftInput,
   parseDashboardMatchInput,
 } from "./matches.js";
@@ -137,7 +138,16 @@ describe("dashboard matches api input", () => {
   });
 
   it("lee publicados, borradores y opciones de referencia", () => {
+    const pageQuery = getDashboardMatchesPageQuery("date", "desc");
+
     expect(dashboardMatchListQuery).toContain('*[_type == "games"]');
+    expect(pageQuery).toContain("$offset...$end");
+    expect(pageQuery).toContain('"playedPlayers": []');
+    expect(pageQuery).toContain('"goalEvents": []');
+    expect(pageQuery).toContain("$hasSearch");
+    expect(pageQuery).toContain("$hasStatus");
+    expect(pageQuery).toContain("$hasState");
+    expect(pageQuery).toContain("$hasCompetition");
     expect(dashboardMatchByIdQuery).toContain("_id == $draftId");
     expect(dashboardMatchByIdQuery).toContain('"goalEvents"');
     expect(dashboardMatchGoalEventsQuery).toContain('type == "goal"');

@@ -1,9 +1,15 @@
-import { type QueryClient, queryOptions } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  type QueryClient,
+  queryOptions,
+} from "@tanstack/react-query";
 
 import {
   fetchDashboardMatchById,
   fetchDashboardMatchOptions,
   fetchDashboardMatches,
+  fetchDashboardMatchesPage,
+  type DashboardMatchesPageOptions,
 } from "../../../data/dashboardMatches";
 import { queryKeys } from "../../../data/queryKeys";
 import { SANITY_FRESHNESS } from "../../../data/sanity/freshness";
@@ -24,6 +30,26 @@ export const dashboardMatchesListQueryOptions = () =>
         throw error;
       }
     },
+    ...SANITY_FRESHNESS.dashboard,
+  });
+
+export const dashboardMatchesPageQueryOptions = (
+  params: DashboardMatchesPageOptions = {}
+) =>
+  queryOptions({
+    queryKey: queryKeys.dashboard.matches.page(params),
+    queryFn: async () => {
+      try {
+        return await fetchDashboardMatchesPage(params);
+      } catch (error) {
+        reportError(error, {
+          page: "DashboardMatchesList",
+          action: "load_matches_page",
+        });
+        throw error;
+      }
+    },
+    placeholderData: keepPreviousData,
     ...SANITY_FRESHNESS.dashboard,
   });
 

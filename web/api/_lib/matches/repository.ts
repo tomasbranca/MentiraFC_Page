@@ -8,6 +8,12 @@ import type {
   DashboardMatchOptions,
   DashboardMatchPlayerOption,
 } from "../../../src/types/dashboard";
+import {
+  buildOffsetPaginatedResult,
+  buildOffsetPaginationQueryParams,
+  type OffsetPaginationParams,
+  type PaginatedResult,
+} from "../../../shared/pagination.js";
 import { mutateSanity, querySanity } from "../sanity.js";
 import {
   dashboardMatchByIdQuery,
@@ -15,6 +21,11 @@ import {
   dashboardMatchListQuery,
   dashboardMatchOptionsQuery,
   dashboardMatchRelatedEventsQuery,
+  getDashboardMatchesPageQuery,
+  type DashboardMatchesPageCompetitionFilter,
+  type DashboardMatchesPageSortBy,
+  type DashboardMatchesPageStateFilter,
+  type DashboardMatchesPageStatusFilter,
 } from "./queries.js";
 import {
   adaptDashboardMatchItem,
@@ -66,6 +77,17 @@ type DashboardMatchDocumentPair = {
   canonicalId: string;
   published?: DashboardMatchDocument;
   draft?: DashboardMatchDocument;
+};
+
+type DashboardMatchesPageResult = {
+  items?: DashboardMatchDocument[];
+  total?: number;
+};
+
+type DashboardMatchesPageFilters = {
+  status?: DashboardMatchesPageStatusFilter | null;
+  state?: DashboardMatchesPageStateFilter | null;
+  competition?: DashboardMatchesPageCompetitionFilter | null;
 };
 
 type DashboardMatchOptionSource = {
@@ -287,7 +309,7 @@ const sortDashboardMatchItems = (
 
 const queryDashboardMatchDocuments = async (
   query: string,
-  params?: Record<string, string>
+  params?: Record<string, string | number | boolean>
 ): Promise<DashboardMatchDocument[]> =>
   querySanity<DashboardMatchDocument[]>(query, {
     params,
@@ -470,6 +492,33 @@ export const listDashboardMatches = async (): Promise<DashboardMatchItem[]> => {
   return sortDashboardMatchItems(
     groupDashboardMatchDocuments(result).map(adaptDashboardMatchPair)
   );
+};
+
+export const getDashboardMatchesPage = async (
+  pagination: OffsetPaginationParams<DashboardMatchesPageSortBy>,
+  filters: DashboardMatchesPageFilters = {}
+): Promise<PaginatedResult<DashboardMatchItem>> => {
+  const result = await querySanity<DashboardMatchesPageResult>(
+    getDashboardMatchesPageQuery(pagination.sortBy, pagination.direction),
+    {
+      params: {
+        ...buildOffsetPaginationQueryParams(pagination),
+        hasStatus: Boolean(filters.status),
+        status: filters.status ?? "",
+        hasState: Boolean(filters.state),
+        state: filters.state ?? "",
+        hasCompetition: Boolean(filters.competition),
+        competition: filters.competition ?? "",
+      },
+      perspective: "raw",
+      useToken: true,
+    }
+  );
+  const items = sortDashboardMatchItems(
+    groupDashboardMatchDocuments(result.items ?? []).map(adaptDashboardMatchPair)
+  );
+
+  return buildOffsetPaginatedResult(items, result.total, pagination);
 };
 
 export const getDashboardMatchById = async (

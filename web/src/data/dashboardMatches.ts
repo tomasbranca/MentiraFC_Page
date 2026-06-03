@@ -2,10 +2,13 @@ import { normalizeGameState } from "../domain/games";
 import { getCurrentAccessToken } from "./auth";
 import type {
   DashboardMatchDraftMutationInput,
+  DashboardMatchCompetition,
   DashboardMatchItem,
   DashboardMatchMutationInput,
   DashboardMatchOptions,
+  DashboardMatchState,
 } from "../types/dashboard";
+import type { PaginatedResult, SortDirection } from "../../shared/pagination";
 import { z, zodParseOptions } from "./zodRuntime";
 
 const dashboardMatchPlayerSchema = z.object({
@@ -85,17 +88,50 @@ const dashboardMatchOptionsSchema = z.object({
 });
 
 const dashboardMatchListSchema = z.array(dashboardMatchSchema);
+const dashboardMatchPageSchema = z.object({
+  items: z.array(dashboardMatchSchema),
+  total: z.number().optional(),
+  page: z.number().optional(),
+  limit: z.number(),
+  totalPages: z.number().optional(),
+  hasNextPage: z.boolean().optional(),
+  hasPreviousPage: z.boolean().optional(),
+  nextCursor: z.string().nullable().optional(),
+  previousCursor: z.string().nullable().optional(),
+});
 
 const DASHBOARD_MATCHES_API_PATH = "/api/dashboard/matches";
 
 type DashboardMatchMutationIntent = "draft" | "publish";
+export type DashboardMatchesPageSortBy = "date" | "updatedAt" | "rivalName";
+export type DashboardMatchesPageStatusFilter = "all" | "published" | "draft";
+export type DashboardMatchesPageStateFilter = "all" | DashboardMatchState;
+export type DashboardMatchesPageCompetitionFilter =
+  | "all"
+  | DashboardMatchCompetition;
+
+export type DashboardMatchesPageOptions = {
+  page?: number;
+  limit?: number;
+  sortBy?: DashboardMatchesPageSortBy;
+  direction?: SortDirection;
+  search?: string | null;
+  status?: DashboardMatchesPageStatusFilter;
+  state?: DashboardMatchesPageStateFilter;
+  competition?: DashboardMatchesPageCompetitionFilter;
+};
+
+type DashboardMatchesApiOptions = DashboardMatchesPageOptions & {
+  loadOptions?: boolean;
+};
 
 const buildDashboardMatchesApiPath = (
   id?: string | null,
   intent?: DashboardMatchMutationIntent,
-  options?: { loadOptions?: boolean }
+  options?: DashboardMatchesApiOptions
 ): string => {
   const params = new URLSearchParams();
+  const { loadOptions, ...pageOptions } = options ?? {};
 
   if (id) {
     params.set("id", id);
@@ -105,9 +141,15 @@ const buildDashboardMatchesApiPath = (
     params.set("intent", intent);
   }
 
-  if (options?.loadOptions) {
+  if (loadOptions) {
     params.set("options", "1");
   }
+
+  Object.entries(pageOptions).forEach(([key, value]) => {
+    if (value != null && value !== "") {
+      params.set(key, String(value));
+    }
+  });
 
   const query = params.toString();
   return query
@@ -120,6 +162,10 @@ export const buildDashboardMatchItemApiPath = (id: string): string =>
 
 export const buildDashboardMatchOptionsApiPath = (): string =>
   buildDashboardMatchesApiPath(null, undefined, { loadOptions: true });
+
+export const buildDashboardMatchesPageApiPath = (
+  options: DashboardMatchesPageOptions = {}
+): string => buildDashboardMatchesApiPath(null, undefined, options);
 
 const fetchDashboardApi = async <T>(
   path: string,
@@ -166,6 +212,19 @@ export const fetchDashboardMatches = async (): Promise<
     data,
     zodParseOptions
   ) as DashboardMatchItem[];
+};
+
+export const fetchDashboardMatchesPage = async (
+  options: DashboardMatchesPageOptions = {}
+): Promise<PaginatedResult<DashboardMatchItem>> => {
+  const data = await fetchDashboardApi<unknown>(
+    buildDashboardMatchesPageApiPath(options)
+  );
+
+  return dashboardMatchPageSchema.parse(
+    data,
+    zodParseOptions
+  ) as PaginatedResult<DashboardMatchItem>;
 };
 
 export const fetchDashboardMatchById = async (
