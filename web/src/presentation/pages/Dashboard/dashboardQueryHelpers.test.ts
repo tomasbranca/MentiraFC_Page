@@ -16,6 +16,7 @@ import {
   cacheDashboardMatch,
   dashboardMatchDetailQueryOptions,
   dashboardMatchesListQueryOptions,
+  dashboardMatchesPageQueryOptions,
   dashboardMatchOptionsQueryOptions,
   invalidateDashboardMatchPublishDependencies,
   invalidateDashboardMatchesList,
@@ -115,6 +116,29 @@ describe("dashboard query helpers", () => {
 
     expect(dashboardMatchesListQueryOptions().queryKey).toEqual(
       queryKeys.dashboard.matches.all
+    );
+    expect(
+      dashboardMatchesPageQueryOptions({
+        page: 2,
+        limit: 20,
+        sortBy: "date",
+        direction: "desc",
+        search: "final",
+        status: "draft",
+        state: "finalizado",
+        competition: "Torneo",
+      }).queryKey
+    ).toEqual(
+      queryKeys.dashboard.matches.page({
+        page: 2,
+        limit: 20,
+        sortBy: "date",
+        direction: "desc",
+        search: "final",
+        status: "draft",
+        state: "finalizado",
+        competition: "Torneo",
+      })
     );
     expect(dashboardMatchOptionsQueryOptions().queryKey).toEqual(
       queryKeys.dashboard.matches.options

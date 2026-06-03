@@ -67,6 +67,16 @@ export const queryKeys = {
     },
     matches: {
       all: ["dashboard", "matches"] as const,
+      page: (params: {
+        page?: number;
+        limit?: number;
+        sortBy?: string;
+        direction?: string;
+        search?: string | null;
+        status?: string;
+        state?: string;
+        competition?: string;
+      }) => ["dashboard", "matches", "page", params] as const,
       byId: (id: string) => ["dashboard", "matches", id] as const,
       options: ["dashboard", "matches", "options"] as const,
     },

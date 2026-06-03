@@ -66,6 +66,9 @@ Publico/Sanity:
 - `getNewsPage`
 - `getGamesPage`
 - `getGalleriesPage`
+- La pagina publica `/historial` usa `getGamesPage` con `limit` 10,
+  bootstrap `record-list` y carga el detalle completo del partido por id solo
+  al abrir los goleadores.
 - La pagina publica `/galeria` usa `getGalleriesPage` con `limit` 9 y
   bootstrap `gallery-list`; el detalle de galeria carga el documento completo.
 
@@ -75,10 +78,17 @@ Dashboard:
 - `fetchDashboardNewsPage` y `dashboardNewsPageQueryOptions` en el cliente.
 - `DashboardNewsList` ya usa la pagina remota de noticias con `limit` 20 y
   filtros `search`/`status` whitelisteados.
+- `getDashboardMatchesPage` en el repositorio de la API.
+- `fetchDashboardMatchesPage` y `dashboardMatchesPageQueryOptions` en el
+  cliente.
+- `DashboardMatchesList` ya usa la pagina remota de partidos con `limit` 20 y
+  filtros `search`/`status`/`state`/`competition` whitelisteados. El listado no
+  trae `playedPlayers` ni eventos de gol; el formulario/detalle usa
+  `dashboardMatchByIdQuery` para cargar el documento completo.
 
 Las funciones legacy (`getNews`, `getAllGames`, `getGalleries`,
-`fetchDashboardNews`) siguen disponibles como compatibilidad temporal mientras
-se migran pantallas.
+`fetchDashboardNews`, `fetchDashboardMatches`) siguen disponibles como
+compatibilidad temporal mientras se migran pantallas.
 
 ## Como crear un listado paginado
 

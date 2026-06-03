@@ -1,8 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
-import { FiEdit2, FiPlus, FiTrash2 } from "react-icons/fi";
+import {
+  FiChevronLeft,
+  FiChevronRight,
+  FiEdit2,
+  FiPlus,
+  FiTrash2,
+} from "react-icons/fi";
 
 import { deleteDashboardMatch } from "../../../data/dashboardMatches";
 import { getImageSrcSet, getImageUrl } from "../../../data/imageService";
@@ -20,7 +26,6 @@ import { DASHBOARD_STATUS_FILTER_OPTIONS } from "../../dashboard/dashboardListFi
 import { formatDateTime } from "../../utils/date.utils";
 import {
   defaultDashboardMatchesListFilters,
-  filterDashboardMatchesList,
   hasActiveDashboardMatchesListFilters,
 } from "./dashboardMatchesList.filters";
 import {
@@ -30,9 +35,13 @@ import {
   MATCH_STATE_OPTIONS,
 } from "./dashboardMatches.utils";
 import {
-  dashboardMatchesListQueryOptions,
+  dashboardMatchesPageQueryOptions,
   invalidateDashboardMatchPublishDependencies,
 } from "./dashboardMatches.queries";
+
+const DASHBOARD_MATCHES_PAGE_LIMIT = 20;
+const DASHBOARD_MATCHES_SEARCH_MAX_LENGTH = 80;
+const EMPTY_DASHBOARD_MATCHES: DashboardMatchItem[] = [];
 
 const MatchThumbnail = ({ item }: { item: DashboardMatchItem }) => {
   const imageUrl = getImageUrl(item.rivalImageUrl, {
@@ -173,17 +182,130 @@ const DeleteMatchButton = ({
   </button>
 );
 
+const paginationButtonClassName =
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-[3px] border border-white/10 bg-white/[0.035] px-3 py-2.5 text-sm font-medium text-violet-100/80 transition hover:border-violet-200/35 hover:bg-white/8 hover:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/40 disabled:cursor-not-allowed disabled:opacity-45";
+
+const DashboardMatchesPagination = ({
+  page,
+  totalPages,
+  hasNextPage,
+  hasPreviousPage,
+  isFetching,
+  onPageChange,
+}: {
+  page: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+  isFetching: boolean;
+  onPageChange: (page: number) => void;
+}) => {
+  if (totalPages <= 1) {
+    return null;
+  }
+
+  return (
+    <nav
+      className="flex flex-col gap-3 border-t border-white/10 bg-[#151518] px-3 py-4 text-sm text-violet-100/70 sm:flex-row sm:items-center sm:justify-between sm:px-5"
+      aria-label="Paginacion de partidos"
+    >
+      <p aria-live="polite">
+        Pagina {page} de {totalPages}
+        {isFetching ? " - Actualizando..." : ""}
+      </p>
+      <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-end">
+        <button
+          type="button"
+          className={paginationButtonClassName}
+          disabled={!hasPreviousPage || isFetching}
+          onClick={() => onPageChange(page - 1)}
+        >
+          <FiChevronLeft className="size-4" aria-hidden="true" />
+          Anterior
+        </button>
+        <button
+          type="button"
+          className={paginationButtonClassName}
+          disabled={!hasNextPage || isFetching}
+          onClick={() => onPageChange(page + 1)}
+        >
+          Siguiente
+          <FiChevronRight className="size-4" aria-hidden="true" />
+        </button>
+      </div>
+    </nav>
+  );
+};
+
 const DashboardMatchesList = () => {
   const [filters, setFilters] = useState(defaultDashboardMatchesListFilters);
+  const [page, setPage] = useState(1);
   const queryClient = useQueryClient();
   const canCreateMatch = useDashboardPermission("matches", "create");
   const canEditMatch = useDashboardPermission("matches", "edit");
   const canDeleteMatch = useDashboardPermission("matches", "delete");
-  const matchesQuery = useQuery(dashboardMatchesListQueryOptions());
+  const search = filters.search.trim();
+  const matchesQuery = useQuery(
+    dashboardMatchesPageQueryOptions({
+      page,
+      limit: DASHBOARD_MATCHES_PAGE_LIMIT,
+      sortBy: "date",
+      direction: "desc",
+      search: search || null,
+      status: filters.status,
+      state: filters.state,
+      competition: filters.competition,
+    })
+  );
   const deleteMutation = useMutation({
     mutationFn: deleteDashboardMatch,
     onSuccess: () => invalidateDashboardMatchPublishDependencies(queryClient),
   });
+  const pageData = matchesQuery.data;
+  const totalPages = pageData?.totalPages ?? 1;
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
+
+  const handleSearchChange = (nextSearch: string) => {
+    setPage(1);
+    setFilters((current) => ({
+      ...current,
+      search: nextSearch.slice(0, DASHBOARD_MATCHES_SEARCH_MAX_LENGTH),
+    }));
+  };
+
+  const handleStatusChange = (status: typeof filters.status) => {
+    setPage(1);
+    setFilters((current) => ({
+      ...current,
+      status,
+    }));
+  };
+
+  const handleStateChange = (state: typeof filters.state) => {
+    setPage(1);
+    setFilters((current) => ({
+      ...current,
+      state,
+    }));
+  };
+
+  const handleCompetitionChange = (competition: typeof filters.competition) => {
+    setPage(1);
+    setFilters((current) => ({
+      ...current,
+      competition,
+    }));
+  };
+
+  const clearFilters = () => {
+    setPage(1);
+    setFilters(defaultDashboardMatchesListFilters());
+  };
 
   const handleDeleteMatch = async (itemId: string) => {
     try {
@@ -205,24 +327,21 @@ const DashboardMatchesList = () => {
     }
   };
 
-  const allMatches = matchesQuery.data;
-  const matches = useMemo(
-    () => filterDashboardMatchesList(allMatches ?? [], filters),
-    [allMatches, filters]
-  );
-  const totalMatches = allMatches?.length ?? 0;
+  const pageMatches = pageData?.items ?? EMPTY_DASHBOARD_MATCHES;
+  const matches = pageMatches;
+  const totalMatches = pageData?.total ?? 0;
+  const totalPageMatches = pageMatches.length;
   const hasActiveFilters = hasActiveDashboardMatchesListFilters(filters);
-  const countLabel =
-    hasActiveFilters && matches.length !== totalMatches
-      ? `${matches.length} de ${totalMatches} partidos`
-      : `${totalMatches} partidos`;
+  const countLabel = `${totalMatches} partidos`;
   const hasRowActions = canEditMatch || canDeleteMatch;
+  const hasInitialData = Boolean(pageData);
+  const hasEmptyDataset = totalMatches === 0 && !hasActiveFilters;
 
-  if (matchesQuery.isLoading) {
+  if (matchesQuery.isLoading && !hasInitialData) {
     return <DashboardContentLoader />;
   }
 
-  if (matchesQuery.isError) {
+  if (matchesQuery.isError && !hasInitialData) {
     return (
       <ErrorFallback
         title="No pudimos cargar los partidos"
@@ -264,7 +383,7 @@ const DashboardMatchesList = () => {
         </div>
       </header>
 
-      {totalMatches === 0 ? (
+      {hasEmptyDataset ? (
         <div className="p-6 text-sm text-violet-100/75">
           Todavia no hay partidos ni borradores cargados.
         </div>
@@ -275,19 +394,14 @@ const DashboardMatchesList = () => {
             searchLabel="Buscar partidos"
             searchPlaceholder="Rival, torneo, sede o resultado..."
             searchValue={filters.search}
-            onSearchChange={(search) =>
-              setFilters((current) => ({ ...current, search }))
-            }
+            onSearchChange={handleSearchChange}
             selects={[
               {
                 id: "dashboard-matches-status",
                 label: "Publicacion",
                 value: filters.status,
                 onChange: (status) =>
-                  setFilters((current) => ({
-                    ...current,
-                    status: status as typeof filters.status,
-                  })),
+                  handleStatusChange(status as typeof filters.status),
                 options: DASHBOARD_STATUS_FILTER_OPTIONS,
               },
               {
@@ -295,10 +409,7 @@ const DashboardMatchesList = () => {
                 label: "Estado del partido",
                 value: filters.state,
                 onChange: (state) =>
-                  setFilters((current) => ({
-                    ...current,
-                    state: state as typeof filters.state,
-                  })),
+                  handleStateChange(state as typeof filters.state),
                 options: [
                   { value: "all", label: "Todos" },
                   ...MATCH_STATE_OPTIONS,
@@ -309,10 +420,9 @@ const DashboardMatchesList = () => {
                 label: "Competencia",
                 value: filters.competition,
                 onChange: (competition) =>
-                  setFilters((current) => ({
-                    ...current,
-                    competition: competition as typeof filters.competition,
-                  })),
+                  handleCompetitionChange(
+                    competition as typeof filters.competition
+                  ),
                 options: [
                   { value: "all", label: "Todas" },
                   ...MATCH_COMPETITION_OPTIONS,
@@ -320,14 +430,14 @@ const DashboardMatchesList = () => {
               },
             ]}
             showClear={hasActiveFilters}
-            onClear={() => setFilters(defaultDashboardMatchesListFilters())}
+            onClear={clearFilters}
             filteredCount={matches.length}
-            totalCount={totalMatches}
+            totalCount={totalPageMatches}
           />
 
           {matches.length === 0 ? (
             <DashboardListFilteredEmpty
-              onClear={() => setFilters(defaultDashboardMatchesListFilters())}
+              onClear={clearFilters}
             />
           ) : (
         <div className="p-3 sm:p-5">
@@ -465,6 +575,14 @@ const DashboardMatchesList = () => {
           </div>
         </div>
           )}
+          <DashboardMatchesPagination
+            page={page}
+            totalPages={totalPages}
+            hasNextPage={Boolean(pageData?.hasNextPage)}
+            hasPreviousPage={Boolean(pageData?.hasPreviousPage)}
+            isFetching={matchesQuery.isFetching}
+            onPageChange={setPage}
+          />
         </>
       )}
     </div>
