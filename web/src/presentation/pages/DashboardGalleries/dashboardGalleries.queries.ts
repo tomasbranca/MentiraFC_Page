@@ -1,9 +1,15 @@
-import { type QueryClient, queryOptions } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  type QueryClient,
+  queryOptions,
+} from "@tanstack/react-query";
 
 import {
   fetchDashboardGalleries,
+  fetchDashboardGalleriesPage,
   fetchDashboardGalleryById,
   fetchDashboardGalleryOptions,
+  type DashboardGalleriesPageOptions,
 } from "../../../data/dashboardGalleries";
 import { queryKeys } from "../../../data/queryKeys";
 import { SANITY_FRESHNESS } from "../../../data/sanity/freshness";
@@ -24,6 +30,26 @@ export const dashboardGalleriesListQueryOptions = () =>
         throw error;
       }
     },
+    ...SANITY_FRESHNESS.dashboard,
+  });
+
+export const dashboardGalleriesPageQueryOptions = (
+  params: DashboardGalleriesPageOptions = {}
+) =>
+  queryOptions({
+    queryKey: queryKeys.dashboard.galleries.page(params),
+    queryFn: async () => {
+      try {
+        return await fetchDashboardGalleriesPage(params);
+      } catch (error) {
+        reportError(error, {
+          page: "DashboardGalleriesList",
+          action: "load_galleries_page",
+        });
+        throw error;
+      }
+    },
+    placeholderData: keepPreviousData,
     ...SANITY_FRESHNESS.dashboard,
   });
 
@@ -65,9 +91,14 @@ export const dashboardGalleryDetailQueryOptions = (id: string) =>
 export const invalidateDashboardGalleriesList = async (
   queryClient: QueryClient
 ) => {
-  await queryClient.invalidateQueries({
-    queryKey: queryKeys.dashboard.galleries.all,
-  });
+  await Promise.all([
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.dashboard.galleries.all,
+    }),
+    queryClient.invalidateQueries({
+      queryKey: ["dashboard", "galleries", "page"] as const,
+    }),
+  ]);
 };
 
 export const invalidateDashboardGalleryPublishDependencies = async (

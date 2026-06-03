@@ -82,6 +82,15 @@ export const queryKeys = {
     },
     galleries: {
       all: ["dashboard", "galleries"] as const,
+      page: (params: {
+        page?: number;
+        limit?: number;
+        sortBy?: string;
+        direction?: string;
+        search?: string | null;
+        status?: string;
+        photos?: string;
+      }) => ["dashboard", "galleries", "page", params] as const,
       byId: (id: string) => ["dashboard", "galleries", id] as const,
       options: ["dashboard", "galleries", "options"] as const,
     },

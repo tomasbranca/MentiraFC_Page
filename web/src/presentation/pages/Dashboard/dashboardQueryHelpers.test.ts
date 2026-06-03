@@ -24,6 +24,7 @@ import {
 import {
   cacheDashboardGallery,
   dashboardGalleriesListQueryOptions,
+  dashboardGalleriesPageQueryOptions,
   dashboardGalleryDetailQueryOptions,
   dashboardGalleryOptionsQueryOptions,
   invalidateDashboardGalleriesList,
@@ -150,6 +151,27 @@ describe("dashboard query helpers", () => {
     expect(dashboardGalleriesListQueryOptions().queryKey).toEqual(
       queryKeys.dashboard.galleries.all
     );
+    expect(
+      dashboardGalleriesPageQueryOptions({
+        page: 2,
+        limit: 20,
+        sortBy: "date",
+        direction: "desc",
+        search: "final",
+        status: "draft",
+        photos: "with_photos",
+      }).queryKey
+    ).toEqual(
+      queryKeys.dashboard.galleries.page({
+        page: 2,
+        limit: 20,
+        sortBy: "date",
+        direction: "desc",
+        search: "final",
+        status: "draft",
+        photos: "with_photos",
+      })
+    );
     expect(dashboardGalleryOptionsQueryOptions().queryKey).toEqual(
       queryKeys.dashboard.galleries.options
     );
@@ -208,7 +230,10 @@ describe("dashboard query helpers", () => {
     ]);
     await expect(
       getInvalidatedFilters(invalidateDashboardGalleriesList)
-    ).resolves.toEqual([{ queryKey: queryKeys.dashboard.galleries.all }]);
+    ).resolves.toEqual([
+      { queryKey: queryKeys.dashboard.galleries.all },
+      { queryKey: ["dashboard", "galleries", "page"] },
+    ]);
     await expect(getInvalidatedFilters(invalidateDashboardTablesList)).resolves.toEqual([
       { queryKey: queryKeys.dashboard.table.all },
     ]);
@@ -254,6 +279,7 @@ describe("dashboard query helpers", () => {
       getInvalidatedFilters(invalidateDashboardGalleryPublishDependencies)
     ).resolves.toEqual([
       { queryKey: queryKeys.dashboard.galleries.all },
+      { queryKey: ["dashboard", "galleries", "page"] },
       { queryKey: queryKeys.dashboard.galleries.options },
       { queryKey: queryKeys.galleries.all },
     ]);
