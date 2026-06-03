@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildDashboardGalleryDraftMutationInput,
+  buildDashboardGalleriesPageApiPath,
   buildDashboardGalleryItemApiPath,
   buildDashboardGalleryMutationInput,
   buildDashboardGalleryOptionsApiPath,
@@ -17,6 +18,19 @@ describe("dashboardGalleries client", () => {
     );
     expect(buildDashboardGalleryOptionsApiPath()).toBe(
       "/api/dashboard/galleries?options=1"
+    );
+    expect(
+      buildDashboardGalleriesPageApiPath({
+        page: 2,
+        limit: 20,
+        sortBy: "date",
+        direction: "desc",
+        search: "final",
+        status: "draft",
+        photos: "with_photos",
+      })
+    ).toBe(
+      "/api/dashboard/galleries?page=2&limit=20&sortBy=date&direction=desc&search=final&status=draft&photos=with_photos"
     );
   });
 

@@ -1,8 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
-import { FiEdit2, FiImage, FiPlus, FiTrash2 } from "react-icons/fi";
+import {
+  FiChevronLeft,
+  FiChevronRight,
+  FiEdit2,
+  FiImage,
+  FiPlus,
+  FiTrash2,
+} from "react-icons/fi";
 
 import { deleteDashboardGallery } from "../../../data/dashboardGalleries";
 import { getImageSrcSet, getImageUrl } from "../../../data/imageService";
@@ -19,14 +26,17 @@ import { DASHBOARD_STATUS_FILTER_OPTIONS } from "../../dashboard/dashboardListFi
 import { formatDateTime } from "../../utils/date.utils";
 import {
   defaultDashboardGalleriesListFilters,
-  filterDashboardGalleriesList,
   hasActiveDashboardGalleriesListFilters,
 } from "./dashboardGalleriesList.filters";
 import {
-  dashboardGalleriesListQueryOptions,
+  dashboardGalleriesPageQueryOptions,
   invalidateDashboardGalleryPublishDependencies,
 } from "./dashboardGalleries.queries";
 import { getDashboardGalleryTitle } from "./dashboardGalleries.utils";
+
+const DASHBOARD_GALLERIES_PAGE_LIMIT = 20;
+const DASHBOARD_GALLERIES_SEARCH_MAX_LENGTH = 80;
+const EMPTY_DASHBOARD_GALLERIES: DashboardGalleryItem[] = [];
 
 const GalleryThumbnail = ({ item }: { item: DashboardGalleryItem }) => {
   const heroPhoto = item.photos.find((photo) => photo.isHero) ?? item.photos[0];
@@ -138,17 +148,121 @@ const DeleteGalleryButton = ({
   </button>
 );
 
+const paginationButtonClassName =
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-[3px] border border-white/10 bg-white/[0.035] px-3 py-2.5 text-sm font-medium text-violet-100/80 transition hover:border-violet-200/35 hover:bg-white/8 hover:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/40 disabled:cursor-not-allowed disabled:opacity-45";
+
+const DashboardGalleriesPagination = ({
+  page,
+  totalPages,
+  hasNextPage,
+  hasPreviousPage,
+  isFetching,
+  onPageChange,
+}: {
+  page: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+  isFetching: boolean;
+  onPageChange: (page: number) => void;
+}) => {
+  if (totalPages <= 1) {
+    return null;
+  }
+
+  return (
+    <nav
+      className="flex flex-col gap-3 border-t border-white/10 bg-[#151518] px-3 py-4 text-sm text-violet-100/70 sm:flex-row sm:items-center sm:justify-between sm:px-5"
+      aria-label="Paginacion de galerias"
+    >
+      <p aria-live="polite">
+        Pagina {page} de {totalPages}
+        {isFetching ? " - Actualizando..." : ""}
+      </p>
+      <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-end">
+        <button
+          type="button"
+          className={paginationButtonClassName}
+          disabled={!hasPreviousPage || isFetching}
+          onClick={() => onPageChange(page - 1)}
+        >
+          <FiChevronLeft className="size-4" aria-hidden="true" />
+          Anterior
+        </button>
+        <button
+          type="button"
+          className={paginationButtonClassName}
+          disabled={!hasNextPage || isFetching}
+          onClick={() => onPageChange(page + 1)}
+        >
+          Siguiente
+          <FiChevronRight className="size-4" aria-hidden="true" />
+        </button>
+      </div>
+    </nav>
+  );
+};
+
 const DashboardGalleriesList = () => {
   const [filters, setFilters] = useState(defaultDashboardGalleriesListFilters);
+  const [page, setPage] = useState(1);
   const queryClient = useQueryClient();
   const canCreateGallery = useDashboardPermission("galleries", "create");
   const canEditGallery = useDashboardPermission("galleries", "edit");
   const canDeleteGallery = useDashboardPermission("galleries", "delete");
-  const galleriesQuery = useQuery(dashboardGalleriesListQueryOptions());
+  const search = filters.search.trim();
+  const galleriesQuery = useQuery(
+    dashboardGalleriesPageQueryOptions({
+      page,
+      limit: DASHBOARD_GALLERIES_PAGE_LIMIT,
+      sortBy: "date",
+      direction: "desc",
+      search: search || null,
+      status: filters.status,
+      photos: filters.photos,
+    })
+  );
   const deleteMutation = useMutation({
     mutationFn: deleteDashboardGallery,
     onSuccess: () => invalidateDashboardGalleryPublishDependencies(queryClient),
   });
+  const pageData = galleriesQuery.data;
+  const totalPages = pageData?.totalPages ?? 1;
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
+
+  const handleSearchChange = (nextSearch: string) => {
+    setPage(1);
+    setFilters((current) => ({
+      ...current,
+      search: nextSearch.slice(0, DASHBOARD_GALLERIES_SEARCH_MAX_LENGTH),
+    }));
+  };
+
+  const handleStatusChange = (status: typeof filters.status) => {
+    setPage(1);
+    setFilters((current) => ({
+      ...current,
+      status,
+    }));
+  };
+
+  const handlePhotosChange = (photos: typeof filters.photos) => {
+    setPage(1);
+    setFilters((current) => ({
+      ...current,
+      photos,
+    }));
+  };
+
+  const clearFilters = () => {
+    setPage(1);
+    setFilters(defaultDashboardGalleriesListFilters());
+  };
 
   const handleDeleteGallery = async (itemId: string) => {
     try {
@@ -173,24 +287,21 @@ const DashboardGalleriesList = () => {
     }
   };
 
-  const allGalleries = galleriesQuery.data;
-  const galleries = useMemo(
-    () => filterDashboardGalleriesList(allGalleries ?? [], filters),
-    [allGalleries, filters]
-  );
-  const totalGalleries = allGalleries?.length ?? 0;
+  const pageGalleries = pageData?.items ?? EMPTY_DASHBOARD_GALLERIES;
+  const galleries = pageGalleries;
+  const totalGalleries = pageData?.total ?? 0;
+  const totalPageGalleries = pageGalleries.length;
   const hasActiveFilters = hasActiveDashboardGalleriesListFilters(filters);
-  const countLabel =
-    hasActiveFilters && galleries.length !== totalGalleries
-      ? `${galleries.length} de ${totalGalleries} galerias`
-      : `${totalGalleries} galerias`;
+  const countLabel = `${totalGalleries} galerias`;
   const hasRowActions = canEditGallery || canDeleteGallery;
+  const hasInitialData = Boolean(pageData);
+  const hasEmptyDataset = totalGalleries === 0 && !hasActiveFilters;
 
-  if (galleriesQuery.isLoading) {
+  if (galleriesQuery.isLoading && !hasInitialData) {
     return <DashboardContentLoader />;
   }
 
-  if (galleriesQuery.isError) {
+  if (galleriesQuery.isError && !hasInitialData) {
     return (
       <ErrorFallback
         title="No pudimos cargar las galerias"
@@ -232,7 +343,7 @@ const DashboardGalleriesList = () => {
         </div>
       </header>
 
-      {totalGalleries === 0 ? (
+      {hasEmptyDataset ? (
         <div className="p-6 text-sm text-violet-100/75">
           Todavia no hay galerias ni borradores cargados.
         </div>
@@ -243,19 +354,14 @@ const DashboardGalleriesList = () => {
             searchLabel="Buscar galerias"
             searchPlaceholder="Rival, torneo, slug o cantidad de fotos..."
             searchValue={filters.search}
-            onSearchChange={(search) =>
-              setFilters((current) => ({ ...current, search }))
-            }
+            onSearchChange={handleSearchChange}
             selects={[
               {
                 id: "dashboard-galleries-status",
                 label: "Estado",
                 value: filters.status,
                 onChange: (status) =>
-                  setFilters((current) => ({
-                    ...current,
-                    status: status as typeof filters.status,
-                  })),
+                  handleStatusChange(status as typeof filters.status),
                 options: DASHBOARD_STATUS_FILTER_OPTIONS,
               },
               {
@@ -263,10 +369,7 @@ const DashboardGalleriesList = () => {
                 label: "Fotos",
                 value: filters.photos,
                 onChange: (photos) =>
-                  setFilters((current) => ({
-                    ...current,
-                    photos: photos as typeof filters.photos,
-                  })),
+                  handlePhotosChange(photos as typeof filters.photos),
                 options: [
                   { value: "all", label: "Todas" },
                   { value: "with_photos", label: "Con fotos" },
@@ -275,14 +378,14 @@ const DashboardGalleriesList = () => {
               },
             ]}
             showClear={hasActiveFilters}
-            onClear={() => setFilters(defaultDashboardGalleriesListFilters())}
+            onClear={clearFilters}
             filteredCount={galleries.length}
-            totalCount={totalGalleries}
+            totalCount={totalPageGalleries}
           />
 
           {galleries.length === 0 ? (
             <DashboardListFilteredEmpty
-              onClear={() => setFilters(defaultDashboardGalleriesListFilters())}
+              onClear={clearFilters}
             />
           ) : (
             <div className="p-3 sm:p-5">
@@ -408,6 +511,14 @@ const DashboardGalleriesList = () => {
               </div>
             </div>
           )}
+          <DashboardGalleriesPagination
+            page={page}
+            totalPages={totalPages}
+            hasNextPage={Boolean(pageData?.hasNextPage)}
+            hasPreviousPage={Boolean(pageData?.hasPreviousPage)}
+            isFetching={galleriesQuery.isFetching}
+            onPageChange={setPage}
+          />
         </>
       )}
     </div>

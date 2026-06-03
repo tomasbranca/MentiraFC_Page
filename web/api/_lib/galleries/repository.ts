@@ -9,12 +9,22 @@ import type {
   DashboardGalleryPhotoItem,
   DashboardGalleryPhotoMutationInput,
 } from "../../../src/types/dashboard";
+import {
+  buildOffsetPaginatedResult,
+  buildOffsetPaginationQueryParams,
+  type OffsetPaginationParams,
+  type PaginatedResult,
+} from "../../../shared/pagination.js";
 import { mutateSanity, querySanity } from "../sanity.js";
 import {
   dashboardGalleryByIdQuery,
   dashboardGalleryListQuery,
   dashboardGalleryOptionsQuery,
   dashboardGalleryValidationOptionsQuery,
+  getDashboardGalleriesPageQuery,
+  type DashboardGalleriesPagePhotoFilter,
+  type DashboardGalleriesPageSortBy,
+  type DashboardGalleriesPageStatusFilter,
 } from "./queries.js";
 import {
   adaptDashboardGalleryItem,
@@ -65,6 +75,7 @@ type DashboardGalleryDocument = {
   goalsFor?: number | null;
   goalsAgainst?: number | null;
   photos?: DashboardGalleryDocumentPhoto[] | null;
+  photoCount?: number | null;
 };
 
 type DashboardGalleryDocumentPair = {
@@ -75,6 +86,16 @@ type DashboardGalleryDocumentPair = {
 
 type DashboardGalleryOptionsSource = {
   games?: DashboardGalleryGameOption[];
+};
+
+type DashboardGalleriesPageResult = {
+  items?: DashboardGalleryDocument[];
+  total?: number;
+};
+
+type DashboardGalleriesPageFilters = {
+  status?: DashboardGalleriesPageStatusFilter | null;
+  photos?: DashboardGalleriesPagePhotoFilter | null;
 };
 
 type DashboardGalleryValidationSource = {
@@ -165,6 +186,7 @@ const adaptDashboardGalleryPair = (
 ): DashboardGalleryItem => {
   const selectedDocument = getSelectedDocument(pair);
   const photos = (selectedDocument?.photos ?? []).map(adaptPhoto);
+  const rawPhotoCount = normalizeOptionalNumber(selectedDocument?.photoCount);
 
   return adaptDashboardGalleryItem({
     id: pair.canonicalId,
@@ -190,8 +212,9 @@ const adaptDashboardGalleryPair = (
     goalsFor: normalizeOptionalNumber(selectedDocument?.goalsFor),
     goalsAgainst: normalizeOptionalNumber(selectedDocument?.goalsAgainst),
     photos,
-    photoCount: photos.filter((photo) => photo.imageAssetId || photo.imageUrl)
-      .length,
+    photoCount:
+      rawPhotoCount ??
+      photos.filter((photo) => photo.imageAssetId || photo.imageUrl).length,
   });
 };
 
@@ -209,7 +232,7 @@ const sortDashboardGalleryItems = (
 
 const queryDashboardGalleryDocuments = async (
   query: string,
-  params?: Record<string, string>
+  params?: Record<string, string | number | boolean>
 ): Promise<DashboardGalleryDocument[]> =>
   querySanity<DashboardGalleryDocument[]>(query, {
     params,
@@ -361,6 +384,33 @@ export const listDashboardGalleries =
       groupDashboardGalleryDocuments(result).map(adaptDashboardGalleryPair)
     );
   };
+
+export const getDashboardGalleriesPage = async (
+  pagination: OffsetPaginationParams<DashboardGalleriesPageSortBy>,
+  filters: DashboardGalleriesPageFilters = {}
+): Promise<PaginatedResult<DashboardGalleryItem>> => {
+  const result = await querySanity<DashboardGalleriesPageResult>(
+    getDashboardGalleriesPageQuery(pagination.sortBy, pagination.direction),
+    {
+      params: {
+        ...buildOffsetPaginationQueryParams(pagination),
+        hasStatus: Boolean(filters.status),
+        status: filters.status ?? "",
+        hasPhotos: Boolean(filters.photos),
+        photos: filters.photos ?? "",
+      },
+      perspective: "raw",
+      useToken: true,
+    }
+  );
+  const items = sortDashboardGalleryItems(
+    groupDashboardGalleryDocuments(result.items ?? []).map(
+      adaptDashboardGalleryPair
+    )
+  );
+
+  return buildOffsetPaginatedResult(items, result.total, pagination);
+};
 
 export const getDashboardGalleryById = async (
   id: string

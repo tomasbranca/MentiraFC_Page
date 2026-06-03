@@ -4,6 +4,7 @@ import {
   dashboardGalleryByIdQuery,
   dashboardGalleryListQuery,
   dashboardGalleryOptionsQuery,
+  getDashboardGalleriesPageQuery,
   parseDashboardGalleryDraftFormData,
   parseDashboardGalleryDraftInput,
   parseDashboardGalleryFormData,
@@ -120,5 +121,17 @@ describe("dashboard galleries api input", () => {
     expect(dashboardGalleryOptionsQuery).toContain(
       '!(_id in path("drafts.**"))'
     );
+  });
+
+  it("consulta paginas de galerias con filtros parametrizados y resumen liviano", () => {
+    const pageQuery = getDashboardGalleriesPageQuery("date", "desc");
+
+    expect(pageQuery).toContain("$offset...$end");
+    expect(pageQuery).toContain("$hasSearch");
+    expect(pageQuery).toContain("$hasStatus");
+    expect(pageQuery).toContain("$hasPhotos");
+    expect(pageQuery).toContain('"photoCount": count(photos[defined(image.asset)])');
+    expect(pageQuery).toContain("photos[isHero == true");
+    expect(pageQuery).not.toContain('"photos": photos[]');
   });
 });

@@ -7,6 +7,7 @@ import type {
   DashboardGalleryPhotoInput,
   DashboardGalleryPhotoMutationInput,
 } from "../types/dashboard";
+import type { PaginatedResult, SortDirection } from "../../shared/pagination";
 import { z, zodParseOptions } from "./zodRuntime";
 
 const dashboardGalleryPhotoSchema = z.object({
@@ -70,6 +71,17 @@ const dashboardGallerySchema = z.object({
 });
 
 const dashboardGalleryListSchema = z.array(dashboardGallerySchema);
+const dashboardGalleryPageSchema = z.object({
+  items: z.array(dashboardGallerySchema),
+  total: z.number().optional(),
+  page: z.number().optional(),
+  limit: z.number(),
+  totalPages: z.number().optional(),
+  hasNextPage: z.boolean().optional(),
+  hasPreviousPage: z.boolean().optional(),
+  nextCursor: z.string().nullable().optional(),
+  previousCursor: z.string().nullable().optional(),
+});
 
 const dashboardGalleryOptionsSchema = z.object({
   games: z.array(dashboardGalleryGameOptionSchema),
@@ -78,13 +90,37 @@ const dashboardGalleryOptionsSchema = z.object({
 const DASHBOARD_GALLERIES_API_PATH = "/api/dashboard/galleries";
 
 type DashboardGalleryMutationIntent = "draft" | "publish";
+export type DashboardGalleriesPageSortBy = "date" | "updatedAt" | "slug";
+export type DashboardGalleriesPageStatusFilter =
+  | "all"
+  | "published"
+  | "draft";
+export type DashboardGalleriesPagePhotoFilter =
+  | "all"
+  | "with_photos"
+  | "empty";
+
+export type DashboardGalleriesPageOptions = {
+  page?: number;
+  limit?: number;
+  sortBy?: DashboardGalleriesPageSortBy;
+  direction?: SortDirection;
+  search?: string | null;
+  status?: DashboardGalleriesPageStatusFilter;
+  photos?: DashboardGalleriesPagePhotoFilter;
+};
+
+type DashboardGalleriesApiOptions = DashboardGalleriesPageOptions & {
+  loadOptions?: boolean;
+};
 
 const buildDashboardGalleriesApiPath = (
   id?: string | null,
   intent?: DashboardGalleryMutationIntent,
-  options?: { loadOptions?: boolean }
+  options?: DashboardGalleriesApiOptions
 ): string => {
   const params = new URLSearchParams();
+  const { loadOptions, ...pageOptions } = options ?? {};
 
   if (id) {
     params.set("id", id);
@@ -94,9 +130,15 @@ const buildDashboardGalleriesApiPath = (
     params.set("intent", intent);
   }
 
-  if (options?.loadOptions) {
+  if (loadOptions) {
     params.set("options", "1");
   }
+
+  Object.entries(pageOptions).forEach(([key, value]) => {
+    if (value != null && value !== "") {
+      params.set(key, String(value));
+    }
+  });
 
   const query = params.toString();
   return query
@@ -109,6 +151,10 @@ export const buildDashboardGalleryItemApiPath = (id: string): string =>
 
 export const buildDashboardGalleryOptionsApiPath = (): string =>
   buildDashboardGalleriesApiPath(null, undefined, { loadOptions: true });
+
+export const buildDashboardGalleriesPageApiPath = (
+  options: DashboardGalleriesPageOptions = {}
+): string => buildDashboardGalleriesApiPath(null, undefined, options);
 
 const fetchDashboardApi = async <T>(
   path: string,
@@ -207,6 +253,19 @@ export const fetchDashboardGalleries = async (): Promise<
     data,
     zodParseOptions
   ) as DashboardGalleryItem[];
+};
+
+export const fetchDashboardGalleriesPage = async (
+  options: DashboardGalleriesPageOptions = {}
+): Promise<PaginatedResult<DashboardGalleryItem>> => {
+  const data = await fetchDashboardApi<unknown>(
+    buildDashboardGalleriesPageApiPath(options)
+  );
+
+  return dashboardGalleryPageSchema.parse(
+    data,
+    zodParseOptions
+  ) as PaginatedResult<DashboardGalleryItem>;
 };
 
 export const fetchDashboardGalleryById = async (
