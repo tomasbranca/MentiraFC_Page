@@ -232,6 +232,7 @@ export const sanityStandingRowSchema = z.object({
 
 export const sanityStandingsSnapshotSchema = z.object({
   _id: z.string().nullable().optional(),
+  snapshotRole: z.enum(["current", "previous"]).nullable().optional(),
   matchdayNumber: z.union([z.number(), z.string(), z.null()]).optional(),
   label: z.string().nullable().optional(),
   snapshotDate: z.string().nullable().optional(),

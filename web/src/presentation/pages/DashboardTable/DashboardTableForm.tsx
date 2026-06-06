@@ -511,7 +511,7 @@ const DashboardTableForm = () => {
 
     const confirmed = await confirmDashboardAction({
       title: isEditing ? "Publicar cambios" : "Publicar tabla",
-      text: "La tabla actual se publicara en Sanity. El historial de tablas queda gestionado internamente.",
+      text: "La tabla publicada pasara a current y la current anterior quedara como previous para comparar movimientos.",
       confirmText: isEditing ? "Publicar cambios" : "Publicar",
       icon: isEditing ? "question" : "info",
     });
@@ -561,7 +561,8 @@ const DashboardTableForm = () => {
               {isEditing ? "Editar tabla" : "Nueva tabla"}
             </h2>
             <p className="mt-2 text-sm text-violet-100/65">
-              Modifica la tabla actual editable por torneo y fecha.
+              Modifica la tabla editable; al publicar se conserva solo current
+              y previous por torneo.
             </p>
           </div>
 
@@ -667,7 +668,7 @@ const DashboardTableForm = () => {
                 </div>
                 <p className="mt-1 text-xs leading-relaxed text-violet-100/55">
                   Carga solo rivales participantes; Mentira FC se calcula desde
-                  partidos finalizados.
+                  partidos finalizados hasta el corte elegido.
                 </p>
               </div>
 

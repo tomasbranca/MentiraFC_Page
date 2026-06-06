@@ -21,6 +21,7 @@ import { hashSecurityIdentifier } from "./securityLog";
 describe("rate limit helpers", () => {
   beforeEach(() => {
     vi.unstubAllEnvs();
+    vi.stubEnv("SUPABASE_RATE_LIMIT_STORE", "");
     vi.clearAllMocks();
     __resetRateLimitsForTests();
     vi.restoreAllMocks();

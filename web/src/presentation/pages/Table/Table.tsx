@@ -99,6 +99,22 @@ const Table = () => {
 
   const lastUpdate = formatLongDate(tournament.updatedAt);
 
+  if (!standings.length) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4 text-white">
+        <div className="text-center max-w-md">
+          <div className="text-5xl mb-4 flex justify-center" aria-hidden="true">
+            <FiBarChart2 />
+          </div>
+          <h2 className="text-xl font-bold mb-2">Sin tabla publicada</h2>
+          <p className="text-neutral-400">
+            Todavia no hay un snapshot current disponible para este torneo.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="max-w-6xl mx-auto md:px-4 md:py-10">

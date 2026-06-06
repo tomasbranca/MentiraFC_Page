@@ -84,6 +84,7 @@ const adminResources = new Set([
 
 describe("admin api router", () => {
   beforeEach(() => {
+    vi.stubEnv("SUPABASE_RATE_LIMIT_STORE", "");
     vi.resetAllMocks();
     __resetRateLimitsForTests();
     adminMocks.isAdminPermissionResource.mockImplementation((resource: unknown) =>

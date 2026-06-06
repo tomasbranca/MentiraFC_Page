@@ -29,6 +29,7 @@ vi.mock("./supabase.js", () => ({
 }));
 
 const { removeReaction, setReaction } = await import("./reactions.js");
+const { __resetRateLimitsForTests } = await import("./rateLimit.js");
 
 const target: ReactionTarget = {
   targetType: "news",
@@ -83,7 +84,9 @@ const createSupabaseMock = () => ({
 
 describe("reaction auth checks", () => {
   beforeEach(() => {
+    vi.stubEnv("SUPABASE_RATE_LIMIT_STORE", "");
     vi.clearAllMocks();
+    __resetRateLimitsForTests();
     tableQueues = new Map();
     userClient = createSupabaseMock();
     supabaseMocks.createUserSupabaseClient.mockReturnValue(userClient);

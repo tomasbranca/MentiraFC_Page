@@ -13,6 +13,7 @@ vi.mock("./supabase.js", () => ({
 
 const { createCommentReport, createNewsComment, updateOwnNewsComment } =
   await import("./comments.js");
+const { __resetRateLimitsForTests } = await import("./rateLimit.js");
 
 type QueryResult = {
   data: unknown;
@@ -77,7 +78,9 @@ const createSupabaseMock = () => ({
 
 describe("comment auth checks", () => {
   beforeEach(() => {
+    vi.stubEnv("SUPABASE_RATE_LIMIT_STORE", "");
     vi.clearAllMocks();
+    __resetRateLimitsForTests();
     tableQueues = new Map();
     userClient = createSupabaseMock();
     supabaseMocks.createUserSupabaseClient.mockReturnValue(userClient);
