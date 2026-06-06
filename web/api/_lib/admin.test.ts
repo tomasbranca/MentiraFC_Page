@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createClient } from "@supabase/supabase-js";
 
 import {
+  getAdminUsersPage,
   getAdminRoles,
   listAdminUsers,
   mapAdminErrorToStatus,
@@ -94,6 +95,101 @@ describe("admin api data helpers", () => {
       { p_user_ids: [userId] }
     );
     expect(supabaseMocks.schema).not.toHaveBeenCalled();
+  });
+
+  it("pagina usuarios admin con Auth Admin sin cargar el listado legacy completo", async () => {
+    const users = [
+      {
+        id: "11111111-1111-4111-8111-111111111111",
+        email: "uno@mentirafc.com",
+        created_at: "2026-06-03T00:00:00.000Z",
+        last_sign_in_at: "2026-06-03T01:00:00.000Z",
+      },
+      {
+        id: "22222222-2222-4222-8222-222222222222",
+        email: "dos@mentirafc.com",
+        created_at: "2026-06-02T00:00:00.000Z",
+        last_sign_in_at: null,
+      },
+      {
+        id: "33333333-3333-4333-8333-333333333333",
+        email: "tres@mentirafc.com",
+        created_at: "2026-06-01T00:00:00.000Z",
+        last_sign_in_at: null,
+      },
+    ];
+
+    supabaseMocks.listUsers.mockResolvedValue({
+      data: { users },
+      error: null,
+    });
+    supabaseMocks.rpc.mockResolvedValue({
+      data: [
+        {
+          id: users[0].id,
+          first_name: "Uno",
+          last_name: "Admin",
+          role: "admin",
+          is_active: true,
+        },
+        {
+          id: users[1].id,
+          first_name: "Dos",
+          last_name: "Editor",
+          role: "editor",
+          is_active: false,
+        },
+      ],
+      error: null,
+    });
+
+    await expect(
+      getAdminUsersPage({
+        page: 2,
+        limit: 2,
+        offset: 2,
+        sortBy: "createdAt",
+        direction: "desc",
+        search: null,
+      })
+    ).resolves.toEqual({
+      items: [
+        {
+          id: users[0].id,
+          email: "uno@mentirafc.com",
+          firstName: "Uno",
+          lastName: "Admin",
+          role: "admin",
+          isActive: true,
+          createdAt: "2026-06-03T00:00:00.000Z",
+          lastSignInAt: "2026-06-03T01:00:00.000Z",
+        },
+        {
+          id: users[1].id,
+          email: "dos@mentirafc.com",
+          firstName: "Dos",
+          lastName: "Editor",
+          role: "editor",
+          isActive: false,
+          createdAt: "2026-06-02T00:00:00.000Z",
+          lastSignInAt: null,
+        },
+      ],
+      page: 2,
+      limit: 2,
+      hasPreviousPage: true,
+      hasNextPage: true,
+      nextCursor: null,
+      previousCursor: null,
+    });
+    expect(supabaseMocks.listUsers).toHaveBeenCalledWith({
+      page: 2,
+      perPage: 3,
+    });
+    expect(supabaseMocks.rpc).toHaveBeenCalledWith(
+      "admin_get_user_profiles_and_accounts",
+      { p_user_ids: [users[0].id, users[1].id] }
+    );
   });
 
   it("propaga errores RPC PGRST106 para que el router los traduzca", async () => {

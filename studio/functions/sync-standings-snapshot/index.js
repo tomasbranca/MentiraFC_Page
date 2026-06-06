@@ -1,8 +1,6 @@
 import {createClient} from '@sanity/client'
 import {documentEventHandler} from '@sanity/functions'
 
-/* global console */
-
 import {
   buildComputedStandings,
   createSnapshotId,

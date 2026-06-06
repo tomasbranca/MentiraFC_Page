@@ -9,6 +9,11 @@ import {
   type AppPermission,
   type AppRole,
 } from "../../shared/auth/permissions.js";
+import type {
+  OffsetPaginationParams,
+  PaginatedResult,
+  SortDirection,
+} from "../../shared/pagination.js";
 import { createAdminSupabaseClient } from "./supabase.js";
 
 type AuthorizedAdminUser = {
@@ -25,6 +30,25 @@ export type AdminUser = {
   isActive: boolean;
   createdAt: string | null;
   lastSignInAt: string | null;
+};
+
+export const ADMIN_USERS_PAGE_SORT_BY = [
+  "createdAt",
+  "email",
+  "lastSignInAt",
+  "role",
+] as const;
+
+export type AdminUsersPageSortBy = (typeof ADMIN_USERS_PAGE_SORT_BY)[number];
+
+export const ADMIN_USERS_PAGE_STATUS_FILTERS = ["active", "inactive"] as const;
+
+export type AdminUsersPageStatusFilter =
+  (typeof ADMIN_USERS_PAGE_STATUS_FILTERS)[number];
+
+export type AdminUsersPageFilters = {
+  role?: AppRole | null;
+  status?: AdminUsersPageStatusFilter | null;
 };
 
 export type AdminFeatureFlag = {
@@ -84,6 +108,13 @@ type RuntimeSettingsRow = {
   updated_at: string | null;
 };
 
+type SupabaseAuthUser = {
+  id: string;
+  email?: string | null;
+  created_at?: string | null;
+  last_sign_in_at?: string | null;
+};
+
 export const createSupabaseAdminClient = createAdminSupabaseClient;
 
 const ADMIN_RPC_FUNCTIONS = [
@@ -123,6 +154,9 @@ const callAdminRpc = async <T>(
 
 const getSingleRpcRow = <T>(rows: T[]): T | null => rows[0] ?? null;
 
+const ADMIN_USERS_PROVIDER_PAGE_SIZE = 50;
+const ADMIN_USERS_FILTER_SCAN_LIMIT = 500;
+
 export const recordAuditLog = async (
   supabase: SupabaseClient,
   input: AuditLogInput
@@ -155,16 +189,10 @@ const fetchProfilesAndAccountsByIds = async (
   return new Map(data.map((row) => [row.id, row]));
 };
 
-export const listAdminUsers = async (): Promise<AdminUser[]> => {
-  const supabase = createSupabaseAdminClient();
-  const { data, error } = await supabase.auth.admin.listUsers({
-    page: 1,
-    perPage: 200,
-  });
-
-  if (error) throw error;
-
-  const users = data.users ?? [];
+const mapAuthUsersToAdminUsers = async (
+  supabase: SupabaseClient,
+  users: SupabaseAuthUser[]
+): Promise<AdminUser[]> => {
   const ids = users.map((user) => user.id);
   const profiles = await fetchProfilesAndAccountsByIds(supabase, ids);
 
@@ -183,6 +211,192 @@ export const listAdminUsers = async (): Promise<AdminUser[]> => {
       lastSignInAt: user.last_sign_in_at ?? null,
     };
   });
+};
+
+const listAuthUsersPage = async (
+  supabase: SupabaseClient,
+  {
+    page,
+    perPage,
+  }: {
+    page: number;
+    perPage: number;
+  }
+): Promise<SupabaseAuthUser[]> => {
+  const { data, error } = await supabase.auth.admin.listUsers({
+    page,
+    perPage,
+  });
+
+  if (error) throw error;
+
+  return (data.users ?? []) as SupabaseAuthUser[];
+};
+
+export const listAdminUsers = async (): Promise<AdminUser[]> => {
+  const supabase = createSupabaseAdminClient();
+  const users = await listAuthUsersPage(supabase, {
+    page: 1,
+    perPage: 200,
+  });
+
+  return mapAuthUsersToAdminUsers(supabase, users);
+};
+
+const getAdminUserSortValue = (
+  user: AdminUser,
+  sortBy: AdminUsersPageSortBy
+): string => {
+  switch (sortBy) {
+    case "email":
+      return user.email?.toLowerCase() ?? "";
+    case "lastSignInAt":
+      return user.lastSignInAt ?? "";
+    case "role":
+      return user.role;
+    case "createdAt":
+    default:
+      return user.createdAt ?? "";
+  }
+};
+
+const sortAdminUsers = (
+  users: AdminUser[],
+  sortBy: AdminUsersPageSortBy,
+  direction: SortDirection
+): AdminUser[] =>
+  [...users].sort((left, right) => {
+    const leftValue = getAdminUserSortValue(left, sortBy);
+    const rightValue = getAdminUserSortValue(right, sortBy);
+    const comparison = leftValue.localeCompare(rightValue);
+
+    return direction === "asc" ? comparison : -comparison;
+  });
+
+const adminUserMatchesSearch = (
+  user: AdminUser,
+  search: string | null
+): boolean => {
+  if (!search) return true;
+
+  const normalizedSearch = search.toLowerCase();
+  const haystack = [
+    user.email,
+    user.firstName,
+    user.lastName,
+    user.role,
+    user.id,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  return haystack.includes(normalizedSearch);
+};
+
+const adminUserMatchesFilters = (
+  user: AdminUser,
+  filters: AdminUsersPageFilters,
+  search: string | null
+): boolean => {
+  if (filters.role && user.role !== filters.role) return false;
+  if (filters.status === "active" && !user.isActive) return false;
+  if (filters.status === "inactive" && user.isActive) return false;
+
+  return adminUserMatchesSearch(user, search);
+};
+
+const shouldUseDirectAuthPage = (
+  pagination: OffsetPaginationParams<AdminUsersPageSortBy>,
+  filters: AdminUsersPageFilters
+): boolean =>
+  pagination.sortBy === "createdAt" &&
+  pagination.direction === "desc" &&
+  !pagination.search &&
+  !filters.role &&
+  !filters.status;
+
+export const getAdminUsersPage = async (
+  pagination: OffsetPaginationParams<AdminUsersPageSortBy>,
+  filters: AdminUsersPageFilters = {}
+): Promise<PaginatedResult<AdminUser>> => {
+  const supabase = createSupabaseAdminClient();
+
+  if (shouldUseDirectAuthPage(pagination, filters)) {
+    const users = await listAuthUsersPage(supabase, {
+      page: pagination.page,
+      perPage: pagination.limit + 1,
+    });
+    const hasNextPage = users.length > pagination.limit;
+    const items = await mapAuthUsersToAdminUsers(
+      supabase,
+      users.slice(0, pagination.limit)
+    );
+
+    return {
+      items,
+      page: pagination.page,
+      limit: pagination.limit,
+      hasPreviousPage: pagination.page > 1,
+      hasNextPage,
+      nextCursor: null,
+      previousCursor: null,
+    };
+  }
+
+  if (pagination.offset >= ADMIN_USERS_FILTER_SCAN_LIMIT) {
+    throw new Error("Admin users filtered page exceeds scan limit.");
+  }
+
+  const matchedUsers: AdminUser[] = [];
+  let authPage = 1;
+  let scannedUsers = 0;
+  let reachedEnd = false;
+
+  while (scannedUsers < ADMIN_USERS_FILTER_SCAN_LIMIT && !reachedEnd) {
+    const remainingScanLimit = ADMIN_USERS_FILTER_SCAN_LIMIT - scannedUsers;
+    const perPage = Math.min(ADMIN_USERS_PROVIDER_PAGE_SIZE, remainingScanLimit);
+    const users = await listAuthUsersPage(supabase, {
+      page: authPage,
+      perPage,
+    });
+
+    scannedUsers += users.length;
+
+    if (users.length < perPage) {
+      reachedEnd = true;
+    }
+
+    const adminUsers = await mapAuthUsersToAdminUsers(supabase, users);
+    matchedUsers.push(
+      ...adminUsers.filter((user) =>
+        adminUserMatchesFilters(user, filters, pagination.search)
+      )
+    );
+
+    authPage += 1;
+  }
+
+  const sortedUsers = sortAdminUsers(
+    matchedUsers,
+    pagination.sortBy,
+    pagination.direction
+  );
+  const end = pagination.offset + pagination.limit;
+
+  return {
+    items: sortedUsers.slice(pagination.offset, end),
+    total: reachedEnd ? sortedUsers.length : undefined,
+    page: pagination.page,
+    limit: pagination.limit,
+    totalPages: reachedEnd
+      ? Math.max(1, Math.ceil(sortedUsers.length / pagination.limit))
+      : undefined,
+    hasPreviousPage: pagination.page > 1,
+    hasNextPage: sortedUsers.length > end,
+    nextCursor: null,
+    previousCursor: null,
+  };
 };
 
 export const updateAdminUser = async ({
@@ -538,6 +752,7 @@ export const mapAdminErrorToStatus = (
     case "Invalid role.":
     case "Invalid feature flag.":
     case "Invalid maintenance status.":
+    case "Admin users filtered page exceeds scan limit.":
       return { message: "Revisa los datos enviados.", status: 400 };
     default:
       return {

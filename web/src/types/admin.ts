@@ -1,4 +1,5 @@
 import type { AppPermission, AppRole } from "../../shared/auth/permissions";
+import type { PaginatedResult, SortDirection } from "../../shared/pagination";
 import type { FooterSettings } from "./models";
 
 export type AdminUser = {
@@ -11,6 +12,26 @@ export type AdminUser = {
   createdAt: string | null;
   lastSignInAt: string | null;
 };
+
+export type AdminUsersPageSortBy =
+  | "createdAt"
+  | "email"
+  | "lastSignInAt"
+  | "role";
+
+export type AdminUsersPageStatusFilter = "active" | "inactive";
+
+export type AdminUsersPageOptions = {
+  page?: number;
+  limit?: number;
+  sortBy?: AdminUsersPageSortBy;
+  direction?: SortDirection;
+  search?: string | null;
+  role?: AppRole | null;
+  status?: AdminUsersPageStatusFilter | null;
+};
+
+export type AdminUsersPage = PaginatedResult<AdminUser>;
 
 export type AdminRolesPayload = {
   roles: AppRole[];

@@ -4,10 +4,13 @@ import adminRoute from "./[resource].js";
 import { __resetRateLimitsForTests } from "../_lib/rateLimit";
 
 const adminMocks = vi.hoisted(() => ({
+  ADMIN_USERS_PAGE_SORT_BY: ["createdAt", "email", "lastSignInAt", "role"],
+  ADMIN_USERS_PAGE_STATUS_FILTERS: ["active", "inactive"],
   authorizeAdminRequest: vi.fn(),
   createSupabaseAdminClient: vi.fn(),
   getAdminMetrics: vi.fn(),
   getAdminRoles: vi.fn(),
+  getAdminUsersPage: vi.fn(),
   getAuditLog: vi.fn(),
   getAuthControls: vi.fn(),
   getFooterSettingsForAdmin: vi.fn(),
@@ -30,9 +33,12 @@ vi.mock("../_lib/auth.js", () => ({
 }));
 
 vi.mock("../_lib/admin.js", () => ({
+  ADMIN_USERS_PAGE_SORT_BY: adminMocks.ADMIN_USERS_PAGE_SORT_BY,
+  ADMIN_USERS_PAGE_STATUS_FILTERS: adminMocks.ADMIN_USERS_PAGE_STATUS_FILTERS,
   createSupabaseAdminClient: adminMocks.createSupabaseAdminClient,
   getAdminMetrics: adminMocks.getAdminMetrics,
   getAdminRoles: adminMocks.getAdminRoles,
+  getAdminUsersPage: adminMocks.getAdminUsersPage,
   getAuditLog: adminMocks.getAuditLog,
   getAuthControls: adminMocks.getAuthControls,
   getMaintenanceSettings: adminMocks.getMaintenanceSettings,
@@ -68,14 +74,14 @@ describe("admin api router", () => {
   beforeEach(() => {
     vi.resetAllMocks();
     __resetRateLimitsForTests();
-    adminMocks.isAdminPermissionResource.mockImplementation((resource) =>
+    adminMocks.isAdminPermissionResource.mockImplementation((resource: unknown) =>
       adminResources.has(String(resource))
     );
     adminMocks.authorizeAdminRequest.mockResolvedValue({
       userId: "8c2c2e11-31dc-4af2-86b0-ec8ad56a2c76",
       role: "admin",
     });
-    adminMocks.mapAdminErrorToStatus.mockImplementation((error) => {
+    adminMocks.mapAdminErrorToStatus.mockImplementation((error: unknown) => {
       const code =
         typeof error === "object" &&
         error !== null &&
@@ -146,6 +152,71 @@ describe("admin api router", () => {
     });
     expect(response.status).toBe(403);
     expect(adminMocks.listAdminUsers).not.toHaveBeenCalled();
+  });
+
+  it("mantiene el array legacy de usuarios si no hay parametros de pagina", async () => {
+    adminMocks.listAdminUsers.mockResolvedValue([]);
+
+    const response = await adminRoute.fetch(
+      new Request("https://mentirafc.vercel.app/api/admin/users")
+    );
+
+    await expect(response.json()).resolves.toEqual({ data: [] });
+    expect(response.status).toBe(200);
+    expect(adminMocks.listAdminUsers).toHaveBeenCalledTimes(1);
+    expect(adminMocks.getAdminUsersPage).not.toHaveBeenCalled();
+  });
+
+  it("pagina usuarios admin con params validados", async () => {
+    const page = {
+      items: [],
+      page: 1,
+      limit: 20,
+      hasPreviousPage: false,
+      hasNextPage: false,
+      nextCursor: null,
+      previousCursor: null,
+    };
+
+    adminMocks.getAdminUsersPage.mockResolvedValue(page);
+
+    const response = await adminRoute.fetch(
+      new Request(
+        "https://mentirafc.vercel.app/api/admin/users?page=1&limit=20&sortBy=email&direction=asc&search=tomas&role=admin&status=active"
+      )
+    );
+
+    await expect(response.json()).resolves.toEqual({ data: page });
+    expect(response.status).toBe(200);
+    expect(adminMocks.getAdminUsersPage).toHaveBeenCalledWith(
+      {
+        page: 1,
+        limit: 20,
+        offset: 0,
+        sortBy: "email",
+        direction: "asc",
+        search: "tomas",
+      },
+      {
+        role: "admin",
+        status: "active",
+      }
+    );
+    expect(adminMocks.listAdminUsers).not.toHaveBeenCalled();
+  });
+
+  it("rechaza filtros de usuarios admin fuera de whitelist", async () => {
+    const response = await adminRoute.fetch(
+      new Request(
+        "https://mentirafc.vercel.app/api/admin/users?page=1&role=admin%27%20OR%201%3D1"
+      )
+    );
+
+    await expect(response.json()).resolves.toEqual({
+      error: "El rol elegido no esta permitido para este listado.",
+    });
+    expect(response.status).toBe(400);
+    expect(adminMocks.getAdminUsersPage).not.toHaveBeenCalled();
   });
 
   it("rechaza ids de usuario invalidos antes del RPC admin", async () => {

@@ -3,7 +3,7 @@
   "private": true,
   "packageManager": "pnpm@10.34.1",
   "devDependencies": {
-    "concurrently": "^9.2.1"
+    "concurrently": "^10.0.3"
   },
   "scripts": {
     "dev:web": "pnpm --dir web dev",

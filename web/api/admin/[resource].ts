@@ -3,8 +3,11 @@ import {
   isAdminPermissionResource,
 } from "../_lib/auth.js";
 import {
+  ADMIN_USERS_PAGE_SORT_BY,
+  ADMIN_USERS_PAGE_STATUS_FILTERS,
   getAdminMetrics,
   getAdminRoles,
+  getAdminUsersPage,
   getAuditLog,
   getAuthControls,
   getMaintenanceSettings,
@@ -18,6 +21,8 @@ import {
   updateAdminUser,
   createSupabaseAdminClient,
 } from "../_lib/admin.js";
+import { APP_ROLES, type AppRole } from "../../shared/auth/permissions.js";
+import { parseOffsetPaginationParams } from "../../shared/pagination.js";
 import {
   getFooterSettingsForAdmin,
   saveFooterSettingsForAdmin,
@@ -45,6 +50,65 @@ const parseJsonBody = async <T>(request: Request): Promise<T | null> => {
   } catch {
     return null;
   }
+};
+
+const ADMIN_USERS_PAGE_PARAM_NAMES = [
+  "page",
+  "limit",
+  "cursor",
+  "sortBy",
+  "direction",
+  "search",
+  "role",
+  "status",
+] as const;
+
+const isAdminUsersPageRequest = (searchParams: URLSearchParams): boolean =>
+  ADMIN_USERS_PAGE_PARAM_NAMES.some((param) => searchParams.has(param));
+
+const parseAdminUsersPageFilters = (
+  searchParams: URLSearchParams
+):
+  | {
+      ok: true;
+      filters: {
+        role?: AppRole | null;
+        status?: (typeof ADMIN_USERS_PAGE_STATUS_FILTERS)[number] | null;
+      };
+    }
+  | {
+      ok: false;
+      message: string;
+    } => {
+  const role = searchParams.get("role")?.trim() || null;
+  const status = searchParams.get("status")?.trim() || null;
+
+  if (role && !APP_ROLES.includes(role as AppRole)) {
+    return {
+      ok: false,
+      message: "El rol elegido no esta permitido para este listado.",
+    };
+  }
+
+  if (
+    status &&
+    !ADMIN_USERS_PAGE_STATUS_FILTERS.includes(
+      status as (typeof ADMIN_USERS_PAGE_STATUS_FILTERS)[number]
+    )
+  ) {
+    return {
+      ok: false,
+      message: "El filtro de estado no esta permitido para este listado.",
+    };
+  }
+
+  return {
+    ok: true,
+    filters: {
+      role: role as AppRole | null,
+      status: status as (typeof ADMIN_USERS_PAGE_STATUS_FILTERS)[number] | null,
+    },
+  };
 };
 
 const adminHandler = async (request: Request): Promise<Response> => {
@@ -76,8 +140,35 @@ const adminHandler = async (request: Request): Promise<Response> => {
   try {
     if (request.method === "GET") {
       switch (resource) {
-        case "users":
+        case "users": {
+          if (isAdminUsersPageRequest(url.searchParams)) {
+            const pagination = parseOffsetPaginationParams(url.searchParams, {
+              allowedSortBy: ADMIN_USERS_PAGE_SORT_BY,
+              defaultSortBy: "createdAt",
+              defaultDirection: "desc",
+              maxPage: 100,
+            });
+
+            if (!pagination.ok) {
+              return errorJson(
+                pagination.issues[0]?.message ?? "Paginacion invalida.",
+                400
+              );
+            }
+
+            const filters = parseAdminUsersPageFilters(url.searchParams);
+
+            if (!filters.ok) {
+              return errorJson(filters.message, 400);
+            }
+
+            return json(
+              await getAdminUsersPage(pagination.params, filters.filters)
+            );
+          }
+
           return json(await listAdminUsers());
+        }
         case "roles":
           return json(await getAdminRoles());
         case "footer-settings":
