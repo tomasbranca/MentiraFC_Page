@@ -3,10 +3,13 @@ import {
   isAdminPermissionResource,
 } from "../_lib/auth.js";
 import {
+  ADMIN_AUDIT_LOG_PAGE_SORT_BY,
+  ADMIN_AUDIT_LOG_RESULT_FILTERS,
   ADMIN_USERS_PAGE_SORT_BY,
   ADMIN_USERS_PAGE_STATUS_FILTERS,
   getAdminMetrics,
   getAdminRoles,
+  getAuditLogPage,
   getAdminUsersPage,
   getAuditLog,
   getAuthControls,
@@ -63,8 +66,23 @@ const ADMIN_USERS_PAGE_PARAM_NAMES = [
   "status",
 ] as const;
 
+const ADMIN_AUDIT_LOG_PAGE_PARAM_NAMES = [
+  "page",
+  "limit",
+  "cursor",
+  "sortBy",
+  "direction",
+  "search",
+  "role",
+  "result",
+  "resource",
+] as const;
+
 const isAdminUsersPageRequest = (searchParams: URLSearchParams): boolean =>
   ADMIN_USERS_PAGE_PARAM_NAMES.some((param) => searchParams.has(param));
+
+const isAdminAuditLogPageRequest = (searchParams: URLSearchParams): boolean =>
+  ADMIN_AUDIT_LOG_PAGE_PARAM_NAMES.some((param) => searchParams.has(param));
 
 const parseAdminUsersPageFilters = (
   searchParams: URLSearchParams
@@ -107,6 +125,64 @@ const parseAdminUsersPageFilters = (
     filters: {
       role: role as AppRole | null,
       status: status as (typeof ADMIN_USERS_PAGE_STATUS_FILTERS)[number] | null,
+    },
+  };
+};
+
+const AUDIT_LOG_RESOURCE_FILTER_PATTERN = /^[a-z0-9_.:/-]{1,80}$/i;
+
+const parseAdminAuditLogPageFilters = (
+  searchParams: URLSearchParams
+):
+  | {
+      ok: true;
+      filters: {
+        role?: AppRole | null;
+        result?: (typeof ADMIN_AUDIT_LOG_RESULT_FILTERS)[number] | null;
+        resource?: string | null;
+      };
+    }
+  | {
+      ok: false;
+      message: string;
+    } => {
+  const role = searchParams.get("role")?.trim() || null;
+  const result = searchParams.get("result")?.trim() || null;
+  const resource = searchParams.get("resource")?.trim() || null;
+
+  if (role && !APP_ROLES.includes(role as AppRole)) {
+    return {
+      ok: false,
+      message: "El rol elegido no esta permitido para este listado.",
+    };
+  }
+
+  if (
+    result &&
+    !ADMIN_AUDIT_LOG_RESULT_FILTERS.includes(
+      result as (typeof ADMIN_AUDIT_LOG_RESULT_FILTERS)[number]
+    )
+  ) {
+    return {
+      ok: false,
+      message: "El resultado elegido no esta permitido para este listado.",
+    };
+  }
+
+  if (resource && !AUDIT_LOG_RESOURCE_FILTER_PATTERN.test(resource)) {
+    return {
+      ok: false,
+      message: "El recurso elegido no esta permitido para este listado.",
+    };
+  }
+
+  return {
+    ok: true,
+    filters: {
+      role: role as AppRole | null,
+      result:
+        result as (typeof ADMIN_AUDIT_LOG_RESULT_FILTERS)[number] | null,
+      resource,
     },
   };
 };
@@ -173,8 +249,33 @@ const adminHandler = async (request: Request): Promise<Response> => {
           return json(await getAdminRoles());
         case "footer-settings":
           return json(await getFooterSettingsForAdmin());
-        case "audit-log":
+        case "audit-log": {
+          if (isAdminAuditLogPageRequest(url.searchParams)) {
+            const pagination = parseOffsetPaginationParams(url.searchParams, {
+              allowedSortBy: ADMIN_AUDIT_LOG_PAGE_SORT_BY,
+              defaultSortBy: "createdAt",
+              defaultDirection: "desc",
+              maxPage: 25,
+            });
+
+            if (!pagination.ok) {
+              return errorJson(
+                pagination.issues[0]?.message ?? "Paginacion invalida.",
+                400
+              );
+            }
+
+            const filters = parseAdminAuditLogPageFilters(url.searchParams);
+
+            if (!filters.ok) {
+              return errorJson(filters.message, 400);
+            }
+
+            return json(await getAuditLogPage(pagination.params, filters.filters));
+          }
+
           return json(await getAuditLog());
+        }
         case "metrics":
           return json(await getAdminMetrics());
         case "auth-controls":

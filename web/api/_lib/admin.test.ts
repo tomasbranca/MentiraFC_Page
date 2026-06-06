@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createClient } from "@supabase/supabase-js";
 
 import {
+  getAuditLogPage,
   getAdminUsersPage,
   getAdminRoles,
   listAdminUsers,
@@ -293,6 +294,86 @@ describe("admin api data helpers", () => {
       p_target_id: "target-1",
       p_changes: { ok: true },
       p_result: "success",
+    });
+  });
+
+  it("pagina audit log con el RPC existente y limite acotado", async () => {
+    supabaseMocks.rpc.mockResolvedValue({
+      data: [
+        {
+          id: "audit-1",
+          actor_user_id: "8c2c2e11-31dc-4af2-86b0-ec8ad56a2c76",
+          actor_role: "admin",
+          action: "admin.users.update",
+          resource: "users",
+          target_id: "target-1",
+          changes: { role: "editor" },
+          result: "success",
+          created_at: "2026-06-04T00:00:00.000Z",
+        },
+        {
+          id: "audit-2",
+          actor_user_id: "9c2c2e11-31dc-4af2-86b0-ec8ad56a2c76",
+          actor_role: "editor",
+          action: "admin.flags.update",
+          resource: "feature-flags",
+          target_id: "flag-1",
+          changes: null,
+          result: "success",
+          created_at: "2026-06-03T00:00:00.000Z",
+        },
+        {
+          id: "audit-3",
+          actor_user_id: "7c2c2e11-31dc-4af2-86b0-ec8ad56a2c76",
+          actor_role: "admin",
+          action: "admin.roles.update",
+          resource: "roles",
+          target_id: "role-1",
+          changes: null,
+          result: "failure",
+          created_at: "2026-06-02T00:00:00.000Z",
+        },
+      ],
+      error: null,
+    });
+
+    await expect(
+      getAuditLogPage(
+        {
+          page: 1,
+          limit: 2,
+          offset: 0,
+          sortBy: "createdAt",
+          direction: "desc",
+          search: null,
+        },
+        { role: "admin", result: "success" }
+      )
+    ).resolves.toEqual({
+      items: [
+        {
+          id: "audit-1",
+          actorUserId: "8c2c2e11-31dc-4af2-86b0-ec8ad56a2c76",
+          actorRole: "admin",
+          action: "admin.users.update",
+          resource: "users",
+          targetId: "target-1",
+          changes: { role: "editor" },
+          result: "success",
+          createdAt: "2026-06-04T00:00:00.000Z",
+        },
+      ],
+      total: 1,
+      page: 1,
+      limit: 2,
+      totalPages: 1,
+      hasPreviousPage: false,
+      hasNextPage: false,
+      nextCursor: null,
+      previousCursor: null,
+    });
+    expect(supabaseMocks.rpc).toHaveBeenCalledWith("admin_get_audit_log", {
+      p_limit: 500,
     });
   });
 });

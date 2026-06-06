@@ -51,6 +51,40 @@ export type AdminUsersPageFilters = {
   status?: AdminUsersPageStatusFilter | null;
 };
 
+export type AdminAuditLogItem = {
+  id: string;
+  actorUserId: string;
+  actorRole: AppRole;
+  action: string;
+  resource: string;
+  targetId: string | null;
+  changes: Record<string, unknown> | null;
+  result: string;
+  createdAt: string;
+};
+
+export const ADMIN_AUDIT_LOG_PAGE_SORT_BY = [
+  "createdAt",
+  "resource",
+  "action",
+  "actorRole",
+  "result",
+] as const;
+
+export type AdminAuditLogPageSortBy =
+  (typeof ADMIN_AUDIT_LOG_PAGE_SORT_BY)[number];
+
+export const ADMIN_AUDIT_LOG_RESULT_FILTERS = ["success", "failure"] as const;
+
+export type AdminAuditLogResultFilter =
+  (typeof ADMIN_AUDIT_LOG_RESULT_FILTERS)[number];
+
+export type AdminAuditLogPageFilters = {
+  role?: AppRole | null;
+  result?: AdminAuditLogResultFilter | null;
+  resource?: string | null;
+};
+
 export type AdminFeatureFlag = {
   key: string;
   label: string;
@@ -156,6 +190,8 @@ const getSingleRpcRow = <T>(rows: T[]): T | null => rows[0] ?? null;
 
 const ADMIN_USERS_PROVIDER_PAGE_SIZE = 50;
 const ADMIN_USERS_FILTER_SCAN_LIMIT = 500;
+const ADMIN_AUDIT_LOG_LEGACY_LIMIT = 100;
+const ADMIN_AUDIT_LOG_SCAN_LIMIT = 500;
 
 export const recordAuditLog = async (
   supabase: SupabaseClient,
@@ -626,21 +662,27 @@ export const saveMaintenanceSettings = async ({
   return getMaintenanceSettings();
 };
 
-export const getAuditLog = async () => {
-  const supabase = createSupabaseAdminClient();
-  const data = await callAdminRpc<
-    Array<{
-      id: string;
-      actor_user_id: string;
-      actor_role: AppRole;
-      action: string;
-      resource: string;
-      target_id: string | null;
-      changes: Record<string, unknown> | null;
-      result: string;
-      created_at: string;
-    }>
-  >(supabase, "admin_get_audit_log", { p_limit: 100 });
+type AdminAuditLogRow = {
+  id: string;
+  actor_user_id: string;
+  actor_role: AppRole;
+  action: string;
+  resource: string;
+  target_id: string | null;
+  changes: Record<string, unknown> | null;
+  result: string;
+  created_at: string;
+};
+
+const fetchAuditLogItems = async (
+  supabase: SupabaseClient,
+  limit: number
+): Promise<AdminAuditLogItem[]> => {
+  const data = await callAdminRpc<AdminAuditLogRow[]>(
+    supabase,
+    "admin_get_audit_log",
+    { p_limit: limit }
+  );
 
   return data.map((row) => ({
     id: row.id,
@@ -653,6 +695,129 @@ export const getAuditLog = async () => {
     result: row.result,
     createdAt: row.created_at,
   }));
+};
+
+export const getAuditLog = async (): Promise<AdminAuditLogItem[]> => {
+  const supabase = createSupabaseAdminClient();
+
+  return fetchAuditLogItems(supabase, ADMIN_AUDIT_LOG_LEGACY_LIMIT);
+};
+
+const getAuditLogSortValue = (
+  item: AdminAuditLogItem,
+  sortBy: AdminAuditLogPageSortBy
+): string => {
+  switch (sortBy) {
+    case "resource":
+      return item.resource.toLowerCase();
+    case "action":
+      return item.action.toLowerCase();
+    case "actorRole":
+      return item.actorRole;
+    case "result":
+      return item.result.toLowerCase();
+    case "createdAt":
+    default:
+      return item.createdAt;
+  }
+};
+
+const sortAuditLogItems = (
+  items: AdminAuditLogItem[],
+  sortBy: AdminAuditLogPageSortBy,
+  direction: SortDirection
+): AdminAuditLogItem[] =>
+  [...items].sort((left, right) => {
+    const comparison = getAuditLogSortValue(left, sortBy).localeCompare(
+      getAuditLogSortValue(right, sortBy)
+    );
+
+    return direction === "asc" ? comparison : -comparison;
+  });
+
+const auditLogMatchesSearch = (
+  item: AdminAuditLogItem,
+  search: string | null
+): boolean => {
+  if (!search) return true;
+
+  const normalizedSearch = search.toLowerCase();
+  const haystack = [
+    item.actorUserId,
+    item.actorRole,
+    item.action,
+    item.resource,
+    item.targetId,
+    item.result,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  return haystack.includes(normalizedSearch);
+};
+
+const auditLogMatchesFilters = (
+  item: AdminAuditLogItem,
+  filters: AdminAuditLogPageFilters,
+  search: string | null
+): boolean => {
+  if (filters.role && item.actorRole !== filters.role) return false;
+  if (filters.result && item.result !== filters.result) return false;
+  if (filters.resource && item.resource !== filters.resource) return false;
+
+  return auditLogMatchesSearch(item, search);
+};
+
+const shouldUseDirectAuditLogPage = (
+  pagination: OffsetPaginationParams<AdminAuditLogPageSortBy>,
+  filters: AdminAuditLogPageFilters
+): boolean =>
+  pagination.sortBy === "createdAt" &&
+  pagination.direction === "desc" &&
+  !pagination.search &&
+  !filters.role &&
+  !filters.result &&
+  !filters.resource;
+
+export const getAuditLogPage = async (
+  pagination: OffsetPaginationParams<AdminAuditLogPageSortBy>,
+  filters: AdminAuditLogPageFilters = {}
+): Promise<PaginatedResult<AdminAuditLogItem>> => {
+  if (pagination.offset >= ADMIN_AUDIT_LOG_SCAN_LIMIT) {
+    throw new Error("Admin audit log page exceeds scan limit.");
+  }
+
+  const supabase = createSupabaseAdminClient();
+  const end = pagination.offset + pagination.limit;
+  const requestedLimit = shouldUseDirectAuditLogPage(pagination, filters)
+    ? Math.min(end + 1, ADMIN_AUDIT_LOG_SCAN_LIMIT)
+    : ADMIN_AUDIT_LOG_SCAN_LIMIT;
+  const items = await fetchAuditLogItems(supabase, requestedLimit);
+  const reachedEnd = items.length < requestedLimit;
+  const filteredItems = shouldUseDirectAuditLogPage(pagination, filters)
+    ? items
+    : sortAuditLogItems(
+        items.filter((item) =>
+          auditLogMatchesFilters(item, filters, pagination.search)
+        ),
+        pagination.sortBy,
+        pagination.direction
+      );
+
+  return {
+    items: filteredItems.slice(pagination.offset, end),
+    total: reachedEnd ? filteredItems.length : undefined,
+    page: pagination.page,
+    limit: pagination.limit,
+    totalPages: reachedEnd
+      ? Math.max(1, Math.ceil(filteredItems.length / pagination.limit))
+      : undefined,
+    hasPreviousPage: pagination.page > 1,
+    hasNextPage: filteredItems.length > end,
+    nextCursor: null,
+    previousCursor: null,
+  };
 };
 
 type AdminMetricsRow = {
@@ -753,6 +918,7 @@ export const mapAdminErrorToStatus = (
     case "Invalid feature flag.":
     case "Invalid maintenance status.":
     case "Admin users filtered page exceeds scan limit.":
+    case "Admin audit log page exceeds scan limit.":
       return { message: "Revisa los datos enviados.", status: 400 };
     default:
       return {

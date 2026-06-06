@@ -56,6 +56,28 @@ export type AdminAuditLogItem = {
   createdAt: string;
 };
 
+export type AdminAuditLogPageSortBy =
+  | "createdAt"
+  | "resource"
+  | "action"
+  | "actorRole"
+  | "result";
+
+export type AdminAuditLogResultFilter = "success" | "failure";
+
+export type AdminAuditLogPageOptions = {
+  page?: number;
+  limit?: number;
+  sortBy?: AdminAuditLogPageSortBy;
+  direction?: SortDirection;
+  search?: string | null;
+  role?: AppRole | null;
+  result?: AdminAuditLogResultFilter | null;
+  resource?: string | null;
+};
+
+export type AdminAuditLogPage = PaginatedResult<AdminAuditLogItem>;
+
 export type AdminMetricsPayload = {
   users: number;
   activeUsers: number;

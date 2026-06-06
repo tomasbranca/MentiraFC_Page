@@ -4,12 +4,21 @@ import adminRoute from "./[resource].js";
 import { __resetRateLimitsForTests } from "../_lib/rateLimit";
 
 const adminMocks = vi.hoisted(() => ({
+  ADMIN_AUDIT_LOG_PAGE_SORT_BY: [
+    "createdAt",
+    "resource",
+    "action",
+    "actorRole",
+    "result",
+  ],
+  ADMIN_AUDIT_LOG_RESULT_FILTERS: ["success", "failure"],
   ADMIN_USERS_PAGE_SORT_BY: ["createdAt", "email", "lastSignInAt", "role"],
   ADMIN_USERS_PAGE_STATUS_FILTERS: ["active", "inactive"],
   authorizeAdminRequest: vi.fn(),
   createSupabaseAdminClient: vi.fn(),
   getAdminMetrics: vi.fn(),
   getAdminRoles: vi.fn(),
+  getAuditLogPage: vi.fn(),
   getAdminUsersPage: vi.fn(),
   getAuditLog: vi.fn(),
   getAuthControls: vi.fn(),
@@ -33,11 +42,14 @@ vi.mock("../_lib/auth.js", () => ({
 }));
 
 vi.mock("../_lib/admin.js", () => ({
+  ADMIN_AUDIT_LOG_PAGE_SORT_BY: adminMocks.ADMIN_AUDIT_LOG_PAGE_SORT_BY,
+  ADMIN_AUDIT_LOG_RESULT_FILTERS: adminMocks.ADMIN_AUDIT_LOG_RESULT_FILTERS,
   ADMIN_USERS_PAGE_SORT_BY: adminMocks.ADMIN_USERS_PAGE_SORT_BY,
   ADMIN_USERS_PAGE_STATUS_FILTERS: adminMocks.ADMIN_USERS_PAGE_STATUS_FILTERS,
   createSupabaseAdminClient: adminMocks.createSupabaseAdminClient,
   getAdminMetrics: adminMocks.getAdminMetrics,
   getAdminRoles: adminMocks.getAdminRoles,
+  getAuditLogPage: adminMocks.getAuditLogPage,
   getAdminUsersPage: adminMocks.getAdminUsersPage,
   getAuditLog: adminMocks.getAuditLog,
   getAuthControls: adminMocks.getAuthControls,
@@ -217,6 +229,72 @@ describe("admin api router", () => {
     });
     expect(response.status).toBe(400);
     expect(adminMocks.getAdminUsersPage).not.toHaveBeenCalled();
+  });
+
+  it("mantiene el array legacy del audit log si no hay parametros de pagina", async () => {
+    adminMocks.getAuditLog.mockResolvedValue([]);
+
+    const response = await adminRoute.fetch(
+      new Request("https://mentirafc.vercel.app/api/admin/audit-log")
+    );
+
+    await expect(response.json()).resolves.toEqual({ data: [] });
+    expect(response.status).toBe(200);
+    expect(adminMocks.getAuditLog).toHaveBeenCalledTimes(1);
+    expect(adminMocks.getAuditLogPage).not.toHaveBeenCalled();
+  });
+
+  it("pagina audit log con params validados", async () => {
+    const page = {
+      items: [],
+      page: 2,
+      limit: 20,
+      hasPreviousPage: true,
+      hasNextPage: false,
+      nextCursor: null,
+      previousCursor: null,
+    };
+
+    adminMocks.getAuditLogPage.mockResolvedValue(page);
+
+    const response = await adminRoute.fetch(
+      new Request(
+        "https://mentirafc.vercel.app/api/admin/audit-log?page=2&limit=20&sortBy=resource&direction=asc&search=usuario&role=admin&result=success&resource=users"
+      )
+    );
+
+    await expect(response.json()).resolves.toEqual({ data: page });
+    expect(response.status).toBe(200);
+    expect(adminMocks.getAuditLogPage).toHaveBeenCalledWith(
+      {
+        page: 2,
+        limit: 20,
+        offset: 20,
+        sortBy: "resource",
+        direction: "asc",
+        search: "usuario",
+      },
+      {
+        role: "admin",
+        result: "success",
+        resource: "users",
+      }
+    );
+    expect(adminMocks.getAuditLog).not.toHaveBeenCalled();
+  });
+
+  it("rechaza filtros del audit log fuera de whitelist", async () => {
+    const response = await adminRoute.fetch(
+      new Request(
+        "https://mentirafc.vercel.app/api/admin/audit-log?page=1&result=success%27%20OR%201%3D1"
+      )
+    );
+
+    await expect(response.json()).resolves.toEqual({
+      error: "El resultado elegido no esta permitido para este listado.",
+    });
+    expect(response.status).toBe(400);
+    expect(adminMocks.getAuditLogPage).not.toHaveBeenCalled();
   });
 
   it("rechaza ids de usuario invalidos antes del RPC admin", async () => {

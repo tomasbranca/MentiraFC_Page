@@ -123,6 +123,15 @@ Admin:
   el servicio hace un escaneo acotado a 500 usuarios como maximo para evitar
   requests enormes; si se necesita busqueda global exacta a futuro, conviene
   crear una vista/RPC paginada especifica en Supabase.
+- `getAuditLogPage` en `web/api/_lib/admin.ts`.
+- `fetchAdminAuditLogPage` en el cliente.
+- `/admin/audit-log` ya usa la pagina remota del audit log con `limit` 20 y
+  filtros `search`/`role`/`result`/`resource` whitelisteados.
+- El RPC existente `admin_get_audit_log` recibe `p_limit`, no `offset`. Para no
+  agregar SQL en esta tarea, el modo default pide solo `offset + limit + 1`
+  eventos hasta un maximo de 500; cuando hay filtros o sort distinto, escanea
+  como maximo 500 eventos y pagina el resultado en memoria. Esto alcanza para
+  el panel operativo simple y evita volver al listado sin limite.
 
 ## Como crear un listado paginado
 

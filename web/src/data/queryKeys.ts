@@ -55,6 +55,16 @@ export const queryKeys = {
     roles: ["admin", "roles"] as const,
     footerSettings: ["admin", "footer-settings"] as const,
     auditLog: ["admin", "audit-log"] as const,
+    auditLogPage: (params: {
+      page?: number;
+      limit?: number;
+      sortBy?: string;
+      direction?: string;
+      search?: string | null;
+      role?: string | null;
+      result?: string | null;
+      resource?: string | null;
+    }) => ["admin", "audit-log", "page", params] as const,
     metrics: ["admin", "metrics"] as const,
     authControls: ["admin", "auth-controls"] as const,
     featureFlags: ["admin", "feature-flags"] as const,
