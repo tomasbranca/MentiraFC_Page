@@ -1,0 +1,32 @@
+approval_policy = "never"
+sandbox_mode = "danger-full-access"
+
+[mcp_servers.openaiDeveloperDocs]
+url = "https://developers.openai.com/mcp"
+default_tools_approval_mode = "prompt"
+tool_timeout_sec = 60
+
+[mcp_servers.context7]
+url = "https://mcp.context7.com/mcp"
+default_tools_approval_mode = "prompt"
+tool_timeout_sec = 60
+
+[mcp_servers.vercel]
+url = "https://mcp.vercel.com"
+default_tools_approval_mode = "prompt"
+tool_timeout_sec = 60
+
+[mcp_servers.github]
+url = "https://api.githubcopilot.com/mcp/"
+default_tools_approval_mode = "prompt"
+tool_timeout_sec = 60
+
+[mcp_servers.supabase]
+url = "https://mcp.supabase.com/mcp"
+default_tools_approval_mode = "prompt"
+tool_timeout_sec = 60
+
+[mcp_servers.sanity]
+url = "https://mcp.sanity.io"
+default_tools_approval_mode = "prompt"
+tool_timeout_sec = 60

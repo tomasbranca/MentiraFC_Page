@@ -1,4 +1,0 @@
-interface:
-  display_name: "Design System Guidance"
-  short_description: "Preserve Mentira FC visual style"
-  default_prompt: "Use $design-system-guidance when creating or reviewing Mentira FC UI."
