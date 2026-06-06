@@ -128,6 +128,7 @@ export interface StandingsRow {
 
 export interface StandingsSnapshot {
   id: string;
+  snapshotRole?: "current" | "previous" | null;
   matchdayNumber: number;
   label?: string | null;
   snapshotDate?: string | null;

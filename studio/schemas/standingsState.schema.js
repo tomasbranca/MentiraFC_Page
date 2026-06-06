@@ -71,7 +71,7 @@ export default {
 
       return {
         title: `${tournament || 'Torneo'} - ${title}`,
-        subtitle: 'Documento editable que genera el historial de tabla',
+        subtitle: 'Documento editable que actualiza current y previous',
         media: logo,
       }
     },
@@ -82,7 +82,7 @@ export default {
       title: 'Torneo',
       type: 'reference',
       to: [{type: 'tournaments'}],
-      description: 'Debe existir un solo documento de tabla actual por torneo.',
+      description: 'Debe existir un solo documento editable de tabla por torneo.',
       validation: (Rule) => Rule.required(),
     },
     {

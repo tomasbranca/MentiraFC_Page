@@ -137,6 +137,7 @@ const adaptStandingsSnapshot = (
   snapshot: SanityStandingsSnapshot
 ): StandingsSnapshot => ({
   id: snapshot._id || "unknown-standings-snapshot",
+  snapshotRole: snapshot.snapshotRole || null,
   matchdayNumber: normalizePositiveInteger(snapshot.matchdayNumber),
   label: snapshot.label || null,
   snapshotDate: snapshot.snapshotDate || null,
@@ -167,8 +168,16 @@ export const adaptTournament = (data: unknown): Tournament | null => {
     "tournaments.adapter:standingsSnapshots"
   );
   const standingsSnapshots = validatedSnapshots.map(adaptStandingsSnapshot);
-  const currentSnapshot = standingsSnapshots[0] || null;
-  const previousSnapshot = standingsSnapshots[1] || null;
+  const hasSnapshotRoles = standingsSnapshots.some((snapshot) =>
+    Boolean(snapshot.snapshotRole)
+  );
+  const currentSnapshot =
+    standingsSnapshots.find((snapshot) => snapshot.snapshotRole === "current") ??
+    (hasSnapshotRoles ? null : standingsSnapshots[0] || null);
+  const previousSnapshot =
+    standingsSnapshots.find(
+      (snapshot) => snapshot.snapshotRole === "previous"
+    ) ?? (hasSnapshotRoles ? null : standingsSnapshots[1] || null);
   const standings = currentSnapshot?.standings ?? [];
 
   return {

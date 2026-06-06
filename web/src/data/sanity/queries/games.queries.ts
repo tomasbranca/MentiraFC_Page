@@ -190,7 +190,11 @@ export const FINISHED_GAMES_QUERY = `
 `;
 
 export const FINISHED_TOURNAMENT_GAMES_QUERY = `
-  *[_type == "games" && ${VALID_FINISHED_GAME_FILTER} && competition == "Torneo"] | order(date desc) {
+  *[
+    _type == "games" &&
+    ${VALID_FINISHED_GAME_FILTER} &&
+    defined(tournament._ref)
+  ] | order(date desc) {
     _id,
     date,
     state,

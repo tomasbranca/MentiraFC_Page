@@ -21,9 +21,11 @@ export const TOURNAMENT_QUERY = `
     secondaryPrizeSlots,
     "standingsSnapshots": *[
       _type == "standingsSnapshots" &&
-      tournament._ref == ^._id
-    ] | order(matchdayNumber desc, snapshotDate desc, _updatedAt desc)[0...2]{
+      tournament._ref == ^._id &&
+      snapshotRole in ["current", "previous"]
+    ] | order(snapshotRole asc)[0...2]{
       _id,
+      snapshotRole,
       matchdayNumber,
       label,
       snapshotDate,

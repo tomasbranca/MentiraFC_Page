@@ -2,10 +2,13 @@ import {createClient} from '@sanity/client'
 import {documentEventHandler} from '@sanity/functions'
 
 import {
+  SNAPSHOT_ROLES,
   buildComputedStandings,
   createSnapshotId,
+  createSnapshotRotationPlan,
   getPublishedId,
-  toSnapshotRows,
+  isValidDateTimeValue,
+  isValidSanityDocumentId,
   validateStandingRowsAgainstParticipants,
 } from './standingsSnapshot.js'
 
@@ -60,7 +63,6 @@ const FINISHED_MAIN_TEAM_GAMES_QUERY = `
     state == "finalizado" &&
     defined(result.goalsFor) &&
     defined(result.goalsAgainst) &&
-    competition == "Torneo" &&
     tournament._ref == $tournamentId &&
     date <= $gamesThroughDate
   ]{
@@ -71,17 +73,34 @@ const FINISHED_MAIN_TEAM_GAMES_QUERY = `
   }
 `
 
-const PREVIOUS_SNAPSHOT_QUERY = `
+const MANAGED_SNAPSHOTS_QUERY = `
   *[
     _type == "standingsSnapshots" &&
-    tournament._ref == $tournamentId &&
-    matchdayNumber < $matchdayNumber
-  ] | order(matchdayNumber desc)[0]{
+    _id in $snapshotIds
+  ]{
+    _id,
+    _type,
+    snapshotRole,
+    tournament,
+    matchdayNumber,
+    label,
+    snapshotDate,
+    gamesThroughDate,
     rows[]{
+      _key,
+      _type,
+      team,
+      played,
+      wins,
+      draws,
+      losses,
+      goalsFor,
+      goalsAgainst,
+      points,
+      goalDiff,
       position,
-      team->{
-        _id
-      }
+      previousPosition,
+      positionChange
     }
   }
 `
@@ -109,7 +128,20 @@ export const handler = documentEventHandler(async ({context, event}) => {
     return
   }
 
-  const tournamentId = state.tournament._id
+  const tournamentId = getPublishedId(state.tournament._id)
+
+  if (!isValidSanityDocumentId(tournamentId)) {
+    throw new Error(`Invalid standingsState tournamentId: ${tournamentId || 'missing'}`)
+  }
+
+  if (!isValidDateTimeValue(state.snapshotDate)) {
+    throw new Error(`Invalid standingsState snapshotDate: ${state.snapshotDate || 'missing'}`)
+  }
+
+  if (!isValidDateTimeValue(state.gamesThroughDate)) {
+    throw new Error(`Invalid standingsState gamesThroughDate: ${state.gamesThroughDate || 'missing'}`)
+  }
+
   const mainTeam = await client.fetch(MAIN_TEAM_QUERY)
   const rowValidation = validateStandingRowsAgainstParticipants({
     rows: state.rows || [],
@@ -128,52 +160,63 @@ export const handler = documentEventHandler(async ({context, event}) => {
     throw new Error(`Invalid standingsState rows: ${rowValidation.errors.join(' ')}`)
   }
 
-  const [games, previousSnapshot] = await Promise.all([
+  const currentSnapshotId = createSnapshotId(tournamentId, SNAPSHOT_ROLES.CURRENT)
+  const previousSnapshotId = createSnapshotId(tournamentId, SNAPSHOT_ROLES.PREVIOUS)
+  const [games, managedSnapshots] = await Promise.all([
     client.fetch(FINISHED_MAIN_TEAM_GAMES_QUERY, {
       tournamentId,
       gamesThroughDate: state.gamesThroughDate,
     }),
-    client.fetch(PREVIOUS_SNAPSHOT_QUERY, {
-      tournamentId,
-      matchdayNumber: state.matchdayNumber,
+    client.fetch(MANAGED_SNAPSHOTS_QUERY, {
+      snapshotIds: [currentSnapshotId, previousSnapshotId],
     }),
   ])
+  const snapshotsById = (managedSnapshots || []).reduce((acc, snapshot) => {
+    if (snapshot?._id) acc[snapshot._id] = snapshot
+    return acc
+  }, {})
+  const previousCurrentSnapshot = snapshotsById[currentSnapshotId] || null
+  const oldPreviousSnapshot = snapshotsById[previousSnapshotId] || null
   const standings = buildComputedStandings({
     rows: state.rows || [],
     games: games || [],
     mainTeam,
-    previousRows: previousSnapshot?.rows || [],
+    previousRows: previousCurrentSnapshot?.rows || [],
   })
-  const snapshotId = createSnapshotId(tournamentId, state.matchdayNumber)
+  const rotation = createSnapshotRotationPlan({
+    tournamentId,
+    state,
+    standings,
+    previousCurrentSnapshot,
+    oldPreviousSnapshot,
+  })
+  let transaction = client.transaction()
 
-  await client.createOrReplace({
-    _id: snapshotId,
-    _type: 'standingsSnapshots',
-    tournament: {
-      _type: 'reference',
-      _ref: tournamentId,
-    },
-    matchdayNumber: state.matchdayNumber,
-    label: state.label || null,
-    snapshotDate: state.snapshotDate,
-    gamesThroughDate: state.gamesThroughDate,
-    rows: toSnapshotRows(standings),
-  }, {
+  if (rotation.previousSnapshot) {
+    transaction = transaction.createOrReplace(rotation.previousSnapshot)
+  } else if (rotation.deletePreviousSnapshotId) {
+    transaction = transaction.delete(rotation.deletePreviousSnapshotId)
+  }
+
+  await transaction.createOrReplace(rotation.currentSnapshot).commit({
     visibility: 'sync',
   })
 
-  const writtenSnapshot = await client.fetch('*[_id == $snapshotId][0]{_id}', {snapshotId})
+  const writtenSnapshot = await client.fetch('*[_id == $snapshotId][0]{_id}', {
+    snapshotId: currentSnapshotId,
+  })
 
   if (!writtenSnapshot?._id) {
     console.warn('sync-standings-snapshot could not verify written snapshot', {
       stateId,
-      snapshotId,
+      snapshotId: currentSnapshotId,
     })
   }
 
   console.log('sync-standings-snapshot wrote snapshot', {
     stateId,
-    snapshotId,
+    snapshotId: currentSnapshotId,
+    previousSnapshotId: rotation.previousSnapshot ? previousSnapshotId : null,
     rows: standings.length,
   })
 })
