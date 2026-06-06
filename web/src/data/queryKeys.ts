@@ -43,6 +43,15 @@ export const queryKeys = {
   footerSettings: ["footer-settings"] as const,
   admin: {
     users: ["admin", "users"] as const,
+    usersPage: (params: {
+      page?: number;
+      limit?: number;
+      sortBy?: string;
+      direction?: string;
+      search?: string | null;
+      role?: string | null;
+      status?: string | null;
+    }) => ["admin", "users", "page", params] as const,
     roles: ["admin", "roles"] as const,
     footerSettings: ["admin", "footer-settings"] as const,
     auditLog: ["admin", "audit-log"] as const,

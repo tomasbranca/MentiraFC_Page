@@ -1,12 +1,22 @@
-import { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { FiRotateCcw, FiSave } from "react-icons/fi";
+import { FiChevronLeft, FiChevronRight, FiRotateCcw, FiSave } from "react-icons/fi";
 
 import { APP_ROLES, type AppRole } from "../../../../shared/auth/permissions";
-import { fetchAdminUsers, updateAdminUser } from "../../../data/admin";
+import { fetchAdminUsersPage, updateAdminUser } from "../../../data/admin";
 import { queryKeys } from "../../../data/queryKeys";
-import type { AdminUser } from "../../../types/admin";
+import type {
+  AdminUser,
+  AdminUsersPageSortBy,
+  AdminUsersPageStatusFilter,
+} from "../../../types/admin";
+import type { SortDirection } from "../../../../shared/pagination";
 import Button from "../../components/Button/Button";
 import ErrorFallback from "../../components/errors/ErrorFallback";
 import DashboardContentLoader from "../../dashboard/DashboardContentLoader";
@@ -21,16 +31,58 @@ const ROLE_LABELS = {
   admin: "Admin",
 } as const satisfies Record<AppRole, string>;
 
+const ADMIN_USERS_PAGE_LIMIT = 20;
+const ADMIN_USERS_SEARCH_MAX_LENGTH = 80;
+
+const ADMIN_USERS_SORT_OPTIONS = [
+  { value: "createdAt", label: "Alta" },
+  { value: "email", label: "Email" },
+  { value: "lastSignInAt", label: "Ultimo acceso" },
+  { value: "role", label: "Rol" },
+] as const satisfies Array<{ value: AdminUsersPageSortBy; label: string }>;
+
+type AdminUsersFilters = {
+  search: string;
+  role: AppRole | "";
+  status: AdminUsersPageStatusFilter | "";
+  sortBy: AdminUsersPageSortBy;
+  direction: SortDirection;
+};
+
+const defaultAdminUsersFilters: AdminUsersFilters = {
+  search: "",
+  role: "",
+  status: "",
+  sortBy: "createdAt",
+  direction: "desc",
+};
+
 const getUserName = (user: Pick<AdminUser, "firstName" | "lastName" | "email">) =>
   `${user.firstName} ${user.lastName}`.replace(/\s+/g, " ").trim() ||
   user.email ||
   "Usuario";
 
+const adminUsersPaginationButtonClassName =
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-sm border border-[#ded7ef] bg-white px-3 py-2 text-sm font-bold text-[#17151d] transition hover:border-violet-300 hover:bg-violet-50 focus:outline-none focus:ring-2 focus:ring-violet-500/30 disabled:cursor-not-allowed disabled:opacity-45";
+
 const AdminUsers = () => {
   const queryClient = useQueryClient();
+  const [page, setPage] = useState(1);
+  const [filters, setFilters] = useState(defaultAdminUsersFilters);
+  const search = filters.search.trim();
+  const usersPageParams = {
+    page,
+    limit: ADMIN_USERS_PAGE_LIMIT,
+    sortBy: filters.sortBy,
+    direction: filters.direction,
+    search: search || null,
+    role: filters.role || null,
+    status: filters.status || null,
+  };
   const usersQuery = useQuery({
-    queryKey: queryKeys.admin.users,
-    queryFn: fetchAdminUsers,
+    queryKey: queryKeys.admin.usersPage(usersPageParams),
+    queryFn: () => fetchAdminUsersPage(usersPageParams),
+    placeholderData: keepPreviousData,
   });
   const [editing, setEditing] = useState<Record<string, AdminUser>>({});
   const mutation = useMutation({
@@ -51,6 +103,15 @@ const AdminUsers = () => {
     },
   });
 
+  const pageData = usersQuery.data;
+  const totalPages = pageData?.totalPages;
+
+  useEffect(() => {
+    if (totalPages != null && page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
+
   if (usersQuery.isLoading) return <DashboardContentLoader />;
 
   if (usersQuery.isError) {
@@ -65,9 +126,23 @@ const AdminUsers = () => {
     );
   }
 
-  const users = usersQuery.data ?? [];
+  const users = pageData?.items ?? [];
   const activeUsers = users.filter((user) => user.isActive).length;
   const inactiveUsers = users.length - activeUsers;
+  const hasPreviousPage = pageData?.hasPreviousPage ?? page > 1;
+  const hasNextPage = pageData?.hasNextPage ?? false;
+  const pageLabel =
+    pageData?.totalPages != null
+      ? `Pagina ${page} de ${pageData.totalPages}`
+      : `Pagina ${page}`;
+
+  const resetPageAndSetFilters = (nextFilters: Partial<AdminUsersFilters>) => {
+    setPage(1);
+    setFilters((current) => ({
+      ...current,
+      ...nextFilters,
+    }));
+  };
 
   const getDraft = (user: AdminUser) => editing[user.id] ?? user;
   const discardDraft = (userId: string) => {
@@ -100,7 +175,7 @@ const AdminUsers = () => {
             <div>
               <p className="text-3xl font-black leading-none">{users.length}</p>
               <p className="mt-2 text-[0.65rem] font-bold uppercase tracking-[0.14em] text-violet-100/70">
-                Total
+                En pagina
               </p>
             </div>
             <div>
@@ -111,11 +186,95 @@ const AdminUsers = () => {
             </div>
           </div>
           <p className="mt-4 rounded-sm border border-white/10 bg-white/10 px-3 py-2 text-xs font-semibold text-violet-50/80">
-            {inactiveUsers} cuentas suspendidas.
+            {inactiveUsers} cuentas suspendidas en esta pagina.
           </p>
         </div>
       }
     >
+      <div className="mb-4 grid gap-3 rounded-md border border-[#ded7ef] bg-white p-4 shadow-[0_10px_28px_rgba(23,21,29,0.05)] lg:grid-cols-[minmax(12rem,1.3fr)_repeat(4,minmax(9rem,0.7fr))]">
+        <label className="grid gap-1.5 text-xs font-bold uppercase tracking-[0.1em] text-neutral-500">
+          Buscar
+          <input
+            className="h-11 rounded-sm border border-neutral-200 px-3 text-sm font-semibold normal-case tracking-normal text-[#17151d]"
+            value={filters.search}
+            maxLength={ADMIN_USERS_SEARCH_MAX_LENGTH}
+            onChange={(event) =>
+              resetPageAndSetFilters({
+                search: event.target.value.slice(0, ADMIN_USERS_SEARCH_MAX_LENGTH),
+              })
+            }
+            placeholder="Email, nombre o rol"
+          />
+        </label>
+        <label className="grid gap-1.5 text-xs font-bold uppercase tracking-[0.1em] text-neutral-500">
+          Rol
+          <select
+            className="h-11 rounded-sm border border-neutral-200 bg-white px-3 text-sm font-semibold normal-case tracking-normal text-[#17151d]"
+            value={filters.role}
+            onChange={(event) =>
+              resetPageAndSetFilters({
+                role: event.target.value as AppRole | "",
+              })
+            }
+          >
+            <option value="">Todos</option>
+            {APP_ROLES.map((role) => (
+              <option key={role} value={role}>
+                {ROLE_LABELS[role]}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="grid gap-1.5 text-xs font-bold uppercase tracking-[0.1em] text-neutral-500">
+          Estado
+          <select
+            className="h-11 rounded-sm border border-neutral-200 bg-white px-3 text-sm font-semibold normal-case tracking-normal text-[#17151d]"
+            value={filters.status}
+            onChange={(event) =>
+              resetPageAndSetFilters({
+                status: event.target.value as AdminUsersPageStatusFilter | "",
+              })
+            }
+          >
+            <option value="">Todos</option>
+            <option value="active">Activos</option>
+            <option value="inactive">Suspendidos</option>
+          </select>
+        </label>
+        <label className="grid gap-1.5 text-xs font-bold uppercase tracking-[0.1em] text-neutral-500">
+          Orden
+          <select
+            className="h-11 rounded-sm border border-neutral-200 bg-white px-3 text-sm font-semibold normal-case tracking-normal text-[#17151d]"
+            value={filters.sortBy}
+            onChange={(event) =>
+              resetPageAndSetFilters({
+                sortBy: event.target.value as AdminUsersPageSortBy,
+              })
+            }
+          >
+            {ADMIN_USERS_SORT_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="grid gap-1.5 text-xs font-bold uppercase tracking-[0.1em] text-neutral-500">
+          Direccion
+          <select
+            className="h-11 rounded-sm border border-neutral-200 bg-white px-3 text-sm font-semibold normal-case tracking-normal text-[#17151d]"
+            value={filters.direction}
+            onChange={(event) =>
+              resetPageAndSetFilters({
+                direction: event.target.value as SortDirection,
+              })
+            }
+          >
+            <option value="desc">Desc</option>
+            <option value="asc">Asc</option>
+          </select>
+        </label>
+      </div>
       <div className="grid gap-3">
         {users.length === 0 ? (
           <div className="flex min-h-[22rem] flex-col items-center justify-center rounded-md border border-[#ded7ef] bg-white p-8 text-center shadow-[0_10px_28px_rgba(23,21,29,0.05)]">
@@ -268,6 +427,37 @@ const AdminUsers = () => {
           })
         )}
       </div>
+      {(hasPreviousPage || hasNextPage || usersQuery.isFetching) && (
+        <nav
+          className="mt-4 flex flex-col gap-3 rounded-md border border-[#ded7ef] bg-white p-4 text-sm text-neutral-600 shadow-[0_10px_28px_rgba(23,21,29,0.05)] sm:flex-row sm:items-center sm:justify-between"
+          aria-label="Paginacion de usuarios admin"
+        >
+          <p aria-live="polite">
+            {pageLabel}
+            {usersQuery.isFetching ? " - Actualizando..." : ""}
+          </p>
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-end">
+            <button
+              type="button"
+              className={adminUsersPaginationButtonClassName}
+              disabled={!hasPreviousPage || usersQuery.isFetching}
+              onClick={() => setPage((current) => Math.max(1, current - 1))}
+            >
+              <FiChevronLeft className="size-4" aria-hidden="true" />
+              Anterior
+            </button>
+            <button
+              type="button"
+              className={adminUsersPaginationButtonClassName}
+              disabled={!hasNextPage || usersQuery.isFetching}
+              onClick={() => setPage((current) => current + 1)}
+            >
+              Siguiente
+              <FiChevronRight className="size-4" aria-hidden="true" />
+            </button>
+          </div>
+        </nav>
+      )}
     </AdminPageShell>
   );
 };

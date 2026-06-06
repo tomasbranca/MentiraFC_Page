@@ -103,6 +103,26 @@ Las funciones legacy (`getNews`, `getAllGames`, `getGalleries`,
 `fetchDashboardNews`, `fetchDashboardMatches`, `fetchDashboardGalleries`,
 `fetchDashboardTeams`) siguen disponibles como compatibilidad temporal mientras
 se migran pantallas.
+En admin, `fetchAdminUsers` tambien sigue disponible para consumidores legacy
+que todavia esperan el array completo.
+
+Admin:
+
+- `getAdminUsersPage` en `web/api/_lib/admin.ts`.
+- `fetchAdminUsersPage` en el cliente.
+- `/admin/usuarios` ya usa la pagina remota de usuarios con `limit` 20 y
+  filtros `search`/`role`/`status` whitelisteados.
+- El listado de usuarios usa datos resumidos de Supabase Auth y del RPC
+  `admin_get_user_profiles_and_accounts`: id, email, nombre, rol, estado,
+  fecha de alta y ultimo acceso. No carga sesiones, identidades, metadata
+  pesada ni permisos completos por usuario.
+- Supabase Auth Admin soporta `page` y `perPage`, pero este contrato no devuelve
+  un `total` confiable ni ofrece filtros/sort server-side equivalentes a GROQ.
+  Por eso el modo default pide solo `limit + 1` usuarios para saber si hay
+  pagina siguiente. Cuando hay `search`, `role`, `status` o un sort distinto,
+  el servicio hace un escaneo acotado a 500 usuarios como maximo para evitar
+  requests enormes; si se necesita busqueda global exacta a futuro, conviene
+  crear una vista/RPC paginada especifica en Supabase.
 
 ## Como crear un listado paginado
 

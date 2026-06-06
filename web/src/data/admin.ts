@@ -11,8 +11,11 @@ import type {
   AdminMetricsPayload,
   AdminRolesPayload,
   AdminUser,
+  AdminUsersPage,
+  AdminUsersPageOptions,
 } from "../types/admin";
 import type { AppPermission, AppRole } from "../../shared/auth/permissions";
+import type { PaginatedResult } from "../../shared/pagination";
 
 const appRoleSchema = z.enum(APP_ROLES);
 const appPermissionSchema = z.enum(APP_PERMISSIONS);
@@ -26,6 +29,18 @@ const adminUserSchema = z.object({
   isActive: z.boolean(),
   createdAt: z.string().nullable(),
   lastSignInAt: z.string().nullable(),
+});
+
+const adminUsersPageSchema = z.object({
+  items: z.array(adminUserSchema),
+  total: z.number().optional(),
+  page: z.number().optional(),
+  limit: z.number(),
+  totalPages: z.number().optional(),
+  hasNextPage: z.boolean().optional(),
+  hasPreviousPage: z.boolean().optional(),
+  nextCursor: z.string().nullable().optional(),
+  previousCursor: z.string().nullable().optional(),
 });
 
 const footerSocialSchema = z.object({
@@ -159,6 +174,42 @@ const fetchAdminApi = async <T>(
 export const fetchAdminUsers = async (): Promise<AdminUser[]> => {
   const data = await fetchAdminApi<unknown[]>("users");
   return z.array(adminUserSchema).parse(data, zodParseOptions) as AdminUser[];
+};
+
+const buildAdminUsersPageParams = (
+  options: AdminUsersPageOptions
+): Record<string, string> => {
+  const params: Record<string, string> = {
+    page: String(options.page ?? 1),
+    limit: String(options.limit ?? 20),
+    sortBy: options.sortBy ?? "createdAt",
+    direction: options.direction ?? "desc",
+  };
+
+  if (options.search) params.search = options.search;
+  if (options.role) params.role = options.role;
+  if (options.status) params.status = options.status;
+
+  return params;
+};
+
+export const buildAdminUsersPageApiPath = (
+  options: AdminUsersPageOptions = {}
+): string => buildAdminApiPath("users", buildAdminUsersPageParams(options));
+
+export const fetchAdminUsersPage = async (
+  options: AdminUsersPageOptions = {}
+): Promise<AdminUsersPage> => {
+  const data = await fetchAdminApi<unknown>(
+    "users",
+    undefined,
+    buildAdminUsersPageParams(options)
+  );
+
+  return adminUsersPageSchema.parse(
+    data,
+    zodParseOptions
+  ) as PaginatedResult<AdminUser>;
 };
 
 export const updateAdminUser = async (
