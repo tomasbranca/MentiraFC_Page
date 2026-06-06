@@ -78,6 +78,25 @@ describe("dashboardMatches utils", () => {
     });
   });
 
+  it("no exige resultado para partidos por jugar", () => {
+    expect(
+      validateDashboardMatchInput({
+        rivalId: "team-1",
+        date: "2026-05-17T00:30:00.000Z",
+        location: "Cancha 1",
+        competition: "Amistoso",
+        tournamentId: "",
+        state: "por_jugar",
+        goalsFor: "",
+        goalsAgainst: "",
+        playedPlayerIds: [],
+        goalScorers: [],
+        guestGoalScorers: [],
+        opponentOwnGoals: "0",
+      })
+    ).toEqual({});
+  });
+
   it("normaliza goleadores aunque no coincidan con el resultado", () => {
     expect(
       buildDashboardMatchMutationInput({

@@ -254,6 +254,14 @@ export const sanityGoalEventSchema = z.object({
     .object({
       _id: z.string(),
       date: z.string(),
+      state: z.string().nullable().optional(),
+      result: z
+        .object({
+          goalsFor: z.number().nullable().optional(),
+          goalsAgainst: z.number().nullable().optional(),
+        })
+        .nullable()
+        .optional(),
     })
     .nullable()
     .optional(),

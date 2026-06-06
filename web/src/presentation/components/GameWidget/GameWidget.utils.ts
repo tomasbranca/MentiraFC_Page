@@ -1,4 +1,5 @@
 import type { Game } from "../../../types/models";
+import { isFinishedGameState } from "../../../domain/games";
 
 type GameWidgetVisualStateParams = {
   game: Game | null;
@@ -18,4 +19,16 @@ export const getGameWidgetVisualState = ({
   }
 
   return "ready" as const;
+};
+
+export const getGameWidgetResultLabel = (game: Game): string => {
+  if (!isFinishedGameState(game.state)) {
+    return "VS";
+  }
+
+  if (!game.result) {
+    return "Sin resultado";
+  }
+
+  return `${game.result.goalsFor} - ${game.result.goalsAgainst}`;
 };

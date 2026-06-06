@@ -14,6 +14,11 @@ export const RESULT_STYLES = {
     text: "text-red-500",
     label: "DERROTA",
   },
+  unknown: {
+    bar: "from-neutral-700/70 to-neutral-700/0",
+    text: "text-neutral-500",
+    label: "SIN RESULTADO",
+  },
 };
 
 export const PAGE_SIZE = 10;

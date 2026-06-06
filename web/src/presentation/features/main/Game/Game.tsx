@@ -32,6 +32,8 @@ const Game = ({ game, loading }: GameProps) => {
 
   const formatted = formatDateTime(game.date);
   const isInProgress = isGameInProgress(game);
+  const isFinished = isFinishedGameState(game.state);
+  const finalResult = isFinished ? game.result : null;
   const scorers = getScorers(game.events || []);
 
   const renderFootballs = (goals: number) =>
@@ -98,16 +100,16 @@ const Game = ({ game, loading }: GameProps) => {
               </>
             )}
 
-            {isFinishedGameState(game.state) && (
+            {finalResult && (
               <>
                 <p className="opacity-70 text-xs sm:text-sm uppercase tracking-wider">
                   Finalizado
                 </p>
 
                 <h1 className="tracking-tight text-4xl sm:text-4xl lg:text-5xl font-semibold">
-                  {game.result.goalsFor}
+                  {finalResult.goalsFor}
                   <span className="mx-3 opacity-40">–</span>
-                  {game.result.goalsAgainst}
+                  {finalResult.goalsAgainst}
                 </h1>
 
                 <div className="w-3/4 sm:max-w-xs h-px bg-violet-700/40" />
@@ -129,6 +131,16 @@ const Game = ({ game, loading }: GameProps) => {
                     ))}
                   </div>
                 </div>
+              </>
+            )}
+
+            {isFinished && !finalResult && (
+              <>
+                <p className="opacity-70 text-xs sm:text-sm uppercase tracking-wider">
+                  Finalizado
+                </p>
+
+                <div className="text-3xl font-semibold">Sin resultado</div>
               </>
             )}
           </div>
@@ -156,7 +168,7 @@ const Game = ({ game, loading }: GameProps) => {
         </div>
 
         {/* GOLEADORES MOBILE */}
-        {isFinishedGameState(game.state) && scorers.length > 0 && (
+        {finalResult && scorers.length > 0 && (
           <div className="sm:hidden mt-6 text-center">
             <button
               onClick={() => setShowScorers(!showScorers)}

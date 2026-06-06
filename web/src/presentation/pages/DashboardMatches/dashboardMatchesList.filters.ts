@@ -62,9 +62,13 @@ export const filterDashboardMatchesList = (
 
     const competitionLabel = getDashboardMatchCompetitionLabel(item.competition);
     const stateLabel = getDashboardMatchStateLabel(item.state);
+    const result = item.result;
     const scoreLabel =
-      item.state != null && isFinishedGameState(item.state)
-        ? `${item.result?.goalsFor ?? 0}-${item.result?.goalsAgainst ?? 0}`
+      item.state != null &&
+      isFinishedGameState(item.state) &&
+      result?.goalsFor != null &&
+      result.goalsAgainst != null
+        ? `${result.goalsFor}-${result.goalsAgainst}`
         : "";
 
     return matchesDashboardSearchQuery(filters.search, [

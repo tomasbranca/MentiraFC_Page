@@ -355,7 +355,7 @@ const buildResult = (
         goalsFor: input.goalsFor,
         goalsAgainst: input.goalsAgainst,
       }
-    : undefined;
+    : null;
 
 const buildMatchDocument = (
   id: string,

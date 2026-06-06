@@ -42,7 +42,12 @@ const createInitialData = (
     {
       id: "e-1",
       type: "goal",
-      game: { id: "g-1", date: "2025-02-15" },
+      game: {
+        id: "g-1",
+        date: "2025-02-15",
+        state: "finalizado",
+        result: { goalsFor: 1, goalsAgainst: 0 },
+      },
       player: { id: "p-1", name: "Ana", lastName: "Gomez" },
     },
   ],
@@ -164,7 +169,12 @@ describe("useHomeData.utils", () => {
         {
           id: "e-2",
           type: "goal",
-          game: { id: "g-2", date: "2025-03-20" },
+          game: {
+            id: "g-2",
+            date: "2025-03-20",
+            state: "finalizado",
+            result: { goalsFor: 2, goalsAgainst: 0 },
+          },
           player: { id: "p-2", name: "Belen", lastName: "Ruiz" },
         },
       ],

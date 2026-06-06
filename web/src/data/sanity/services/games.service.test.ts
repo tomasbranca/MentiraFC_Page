@@ -47,10 +47,7 @@ describe("games.service", () => {
       rival: {
         name: "Kickeros",
       },
-      result: {
-        goalsFor: 0,
-        goalsAgainst: 0,
-      },
+      result: null,
     });
   });
 

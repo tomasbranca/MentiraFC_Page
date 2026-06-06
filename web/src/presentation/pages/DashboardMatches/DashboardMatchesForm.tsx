@@ -60,8 +60,8 @@ const createInitialValues = (): DashboardMatchInput => ({
   competition: "Torneo",
   tournamentId: "",
   state: "por_jugar",
-  goalsFor: "0",
-  goalsAgainst: "0",
+  goalsFor: "",
+  goalsAgainst: "",
   playedPlayerIds: [],
   goalScorers: [],
   guestGoalScorers: [],
@@ -146,9 +146,13 @@ const getValuesFromMatch = (match: DashboardMatchItem): DashboardMatchInput => (
     : "Torneo",
   tournamentId: match.tournamentId ?? "",
   state: isDashboardMatchState(match.state) ? match.state : "por_jugar",
-  goalsFor: String(match.result?.goalsFor ?? 0),
-  goalsAgainst: String(match.result?.goalsAgainst ?? 0),
-  playedPlayerIds: match.playedPlayers.map((player) => player.id),
+  goalsFor: match.result?.goalsFor == null ? "" : String(match.result.goalsFor),
+  goalsAgainst:
+    match.result?.goalsAgainst == null ? "" : String(match.result.goalsAgainst),
+  playedPlayerIds:
+    match.state === "finalizado"
+      ? match.playedPlayers.map((player) => player.id)
+      : [],
   goalScorers: match.goalScorers.map((scorer) => ({
     playerId: scorer.id,
     goals: String(scorer.goals),
@@ -1203,7 +1207,7 @@ const DashboardMatchesForm = () => {
                 </span>
                 <span className="text-2xl font-black text-white">
                   {values.state === "finalizado"
-                    ? `${values.goalsFor || 0} - ${values.goalsAgainst || 0}`
+                    ? `${values.goalsFor || "-"} - ${values.goalsAgainst || "-"}`
                     : "VS"}
                 </span>
               </div>
@@ -1241,7 +1245,7 @@ const DashboardMatchesForm = () => {
                 <dt className="text-violet-100/45">Goles cargados</dt>
                 <dd className="mt-1 text-white">
                   {values.state === "finalizado"
-                    ? `${selectedGoalScorersCount} de ${values.goalsFor || 0} a favor`
+                    ? `${selectedGoalScorersCount} de ${values.goalsFor || "-"} a favor`
                     : "Se cargan al finalizar"}
                 </dd>
               </div>

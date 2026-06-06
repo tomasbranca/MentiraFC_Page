@@ -206,14 +206,14 @@ Riesgos:
 Modelo actual:
 
 - Sanity `games` tiene `rival`, `date`, `location`, `competition`, `tournament`, `state`, `result`, `playedPlayers`.
-- `result` esta oculto cuando `state !== "finalizado"` y sus campos son requeridos solo dentro del objeto.
-- El adapter web normaliza partidos por jugar a `result: { goalsFor: 0, goalsAgainst: 0 }` para mantener shape estable.
-- `playedPlayers` existe para contabilizar partidos jugados por jugador y se usa en estadisticas.
-- No existe implementacion real de `calledPlayers`/convocatoria. `DATA_MODEL.md` lo menciona como roadmap pendiente, pero no hay schema/codigo activo.
+- `result` esta oculto cuando `state !== "finalizado"` y en dominio web es `GameResult | null`.
+- El adapter web conserva `result: null` para partidos por jugar y descarta finalizados sin marcador valido.
+- `playedPlayers` se carga al finalizar para contabilizar partidos jugados por jugador y se usa en estadisticas.
+- No existe implementacion real de `calledPlayers`/convocatoria y ya no esta planteada como pendiente del modelo liviano.
 
 Riesgos:
 
-- Medio: normalizar partidos por jugar como 0-0 puede confundir si alguna UI no chequea `state` antes de mostrar resultado. Mantener chequeos de `state` como regla.
+- Medio: cualquier UI nueva debe tratar `result: null` como partido por jugar o dato incompleto, nunca como empate.
 - Medio: `competition === "Torneo"` aparece como string de negocio en schema, validacion, queries y funcion de snapshots. Antes de internacionalizar o cambiar copy, conviene separar enum estable de label visible.
 - Bajo: `playedPlayers` cubre "jugaron", no "convocados". No conviene mezclarlo con convocatoria en el roadmap sin nuevo campo claro.
 
@@ -329,7 +329,7 @@ Riesgos:
 
 - No agregar nuevas serverless functions: extender superficies existentes.
 - No migrar comentarios/reacciones directo a cliente + RLS hasta verificar RLS real y mantener validacion de target publicado.
-- No implementar convocatoria/calledPlayers todavia: hoy `playedPlayers` significa jugadores que jugaron.
+- No implementar convocatoria/calledPlayers: hoy `playedPlayers` significa jugadores que jugaron y se carga al finalizar.
 - No cambiar labels de competencia ni reemplazar `"Torneo"` sin introducir primero un enum estable.
 - No hacer paginacion global de todo el dashboard de una sola vez; definir patron y aplicar por recursos de mayor peso.
 - No ampliar la reescritura de helpers Supabase mas alla de la separacion ya aplicada hasta cerrar RLS/cursor.

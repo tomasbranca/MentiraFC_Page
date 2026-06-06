@@ -45,7 +45,7 @@ describe("getHybridTournamentTable", () => {
     const games = [
       { state: "finalizado" as const, result: { goalsFor: 2, goalsAgainst: 1 } },
       { state: "finalizado" as const, result: { goalsFor: 0, goalsAgainst: 0 } },
-      { state: "por_jugar" as const, result: { goalsFor: 9, goalsAgainst: 0 } },
+      { state: "por_jugar" as const, result: null },
     ];
 
     const table = getHybridTournamentTable({
@@ -191,6 +191,7 @@ describe("getHybridTournamentTable", () => {
       ],
       games: [
         { state: "finalizado", result: { goalsFor: "2", goalsAgainst: null } },
+        { state: "por_jugar", result: null },
       ],
       mainTeam,
     });
@@ -199,9 +200,9 @@ describe("getHybridTournamentTable", () => {
     const rivalRow = table.find((row) => row.team.id === "r");
 
     expect(mainRow).toMatchObject({
-      played: 1,
+      played: 0,
       wins: 0,
-      draws: 1,
+      draws: 0,
       losses: 0,
       goalsFor: 0,
       goalsAgainst: 0,
@@ -329,6 +330,8 @@ describe("getTopScorers", () => {
     const games = [
       {
         date: "2025-03-01",
+        state: "finalizado",
+        result: { goalsFor: 3, goalsAgainst: 1 },
         events: [
           { type: "goal", player: { id: "p1" } },
           { type: "goal", player: { id: "p1" } },
@@ -337,6 +340,8 @@ describe("getTopScorers", () => {
       },
       {
         date: "2024-10-10",
+        state: "finalizado",
+        result: { goalsFor: 1, goalsAgainst: 0 },
         events: [{ type: "goal", player: { id: "p3" } }],
       },
     ];
@@ -366,6 +371,8 @@ describe("getTopScorers", () => {
     const games = [
       {
         date: "2025-01-05",
+        state: "finalizado",
+        result: { goalsFor: 2, goalsAgainst: 0 },
         events: [
           { type: "goal", player: { id: "p1" } },
           { type: "goal", player: { id: "p2" } },
@@ -403,21 +410,30 @@ describe("getTopScorers", () => {
 
 describe("getPlayerStats", () => {
   const games = [
-    {
-      date: "2025-02-10",
-      events: [
+      {
+        date: "2025-02-10",
+        state: "finalizado",
+        result: { goalsFor: 3, goalsAgainst: 1 },
+        playedPlayers: [{ id: "p1" }, { id: "p2" }],
+        events: [
         { type: "goal", player: { id: "p1" } },
         { type: "goal", player: { id: "p1" } },
         { type: "goal", player: { id: "p2" } },
       ],
     },
-    {
-      date: "2025-03-15",
-      events: [{ type: "goal", player: { id: "p1" } }],
-    },
-    {
-      date: "2024-11-01",
-      events: [{ type: "goal", player: { id: "p1" } }],
+      {
+        date: "2025-03-15",
+        state: "finalizado",
+        result: { goalsFor: 1, goalsAgainst: 0 },
+        playedPlayers: [{ id: "p1" }],
+        events: [{ type: "goal", player: { id: "p1" } }],
+      },
+      {
+        date: "2024-11-01",
+        state: "finalizado",
+        result: { goalsFor: 1, goalsAgainst: 0 },
+        playedPlayers: [{ id: "p1" }],
+        events: [{ type: "goal", player: { id: "p1" } }],
     },
   ];
 
@@ -482,16 +498,22 @@ describe("getPlayerStats", () => {
       [
         {
           date: "2025-01-10",
+          state: "finalizado",
+          result: { goalsFor: 1, goalsAgainst: 0 },
           playedPlayers: [{ id: "p1" }, { id: "p2" }],
           events: [{ type: "goal", player: { id: "p2" } }],
         },
         {
           date: "2025-02-10",
+          state: "finalizado",
+          result: { goalsFor: 0, goalsAgainst: 0 },
           playedPlayers: [{ id: "p3" }],
           events: [],
         },
         {
           date: "2024-02-10",
+          state: "finalizado",
+          result: { goalsFor: 0, goalsAgainst: 0 },
           playedPlayers: [{ id: "p1" }],
           events: [],
         },
@@ -508,12 +530,47 @@ describe("getPlayerStats", () => {
     });
   });
 
+  it("ignora partidos por jugar o sin resultado para partidos jugados", () => {
+    const stats = getPlayerStats(
+      [
+        {
+          id: "scheduled",
+          date: "2025-01-10",
+          state: "por_jugar",
+          result: null,
+          playedPlayers: [{ id: "p1" }],
+          events: [{ type: "goal", player: { id: "p1" } }],
+        },
+        {
+          id: "finished-missing-result",
+          date: "2025-02-10",
+          state: "finalizado",
+          result: null,
+          playedPlayers: [{ id: "p1" }],
+          events: [{ type: "goal", player: { id: "p1" } }],
+        },
+      ],
+      "p1",
+      { year: 2025 }
+    );
+
+    expect(stats).toEqual({
+      playerId: "p1",
+      goals: 0,
+      matchesWithGoals: 0,
+      matchesPlayed: 0,
+    });
+  });
+
   it("ignora invitados y goles en propia para estadisticas del jugador", () => {
     const stats = getPlayerStats(
       [
         {
           id: "g1",
           date: "2025-01-10",
+          state: "finalizado",
+          result: { goalsFor: 1, goalsAgainst: 0 },
+          playedPlayers: [{ id: "p1" }],
           events: [
             { type: "goal", player: { id: "p1" }, scorerKind: "roster" },
             { type: "goal", player: { id: "p1" }, scorerKind: "guest" },
@@ -543,12 +600,16 @@ describe("getPlayerStats", () => {
         {
           id: "g1",
           date: "2025-01-10",
+          state: "finalizado",
+          result: { goalsFor: 1, goalsAgainst: 0 },
           playedPlayers: [{ id: "p1" }],
           events: [{ type: "goal", player: { id: "p2" } }],
         },
         {
           id: "g2",
           date: "2025-02-10",
+          state: "finalizado",
+          result: { goalsFor: 1, goalsAgainst: 0 },
           playedPlayers: [],
           events: [],
         },
@@ -560,7 +621,12 @@ describe("getPlayerStats", () => {
           {
             id: "e1",
             type: "goal",
-            game: { id: "g2", date: "2025-02-10" },
+            game: {
+              id: "g2",
+              date: "2025-02-10",
+              state: "finalizado",
+              result: { goalsFor: 1, goalsAgainst: 0 },
+            },
             player: { id: "p1" },
           },
         ],
@@ -571,7 +637,7 @@ describe("getPlayerStats", () => {
       playerId: "p1",
       goals: 1,
       matchesWithGoals: 1,
-      matchesPlayed: 2,
+      matchesPlayed: 1,
     });
   });
 
@@ -581,6 +647,8 @@ describe("getPlayerStats", () => {
         {
           id: "g1",
           date: "2025-01-10",
+          state: "finalizado",
+          result: { goalsFor: 1, goalsAgainst: 0 },
           playedPlayers: [{ id: "p1" }],
           events: [],
         },
@@ -592,21 +660,36 @@ describe("getPlayerStats", () => {
           {
             id: "e1",
             type: "goal",
-            game: { id: "g1", date: "2025-01-10" },
+            game: {
+              id: "g1",
+              date: "2025-01-10",
+              state: "finalizado",
+              result: { goalsFor: 1, goalsAgainst: 0 },
+            },
             player: { id: "p1" },
             scorerKind: "roster",
           },
           {
             id: "e2",
             type: "goal",
-            game: { id: "g1", date: "2025-01-10" },
+            game: {
+              id: "g1",
+              date: "2025-01-10",
+              state: "finalizado",
+              result: { goalsFor: 1, goalsAgainst: 0 },
+            },
             player: { id: "p1" },
             scorerKind: "guest",
           },
           {
             id: "e3",
             type: "goal",
-            game: { id: "g1", date: "2025-01-10" },
+            game: {
+              id: "g1",
+              date: "2025-01-10",
+              state: "finalizado",
+              result: { goalsFor: 1, goalsAgainst: 0 },
+            },
             player: { id: "p1" },
             scorerKind: "opponent_own_goal",
           },
@@ -629,25 +712,34 @@ describe("getTopScorersFromGoalEvents", () => {
     { id: "p2", fullName: "Bruno Perez" },
     { id: "p3", fullName: "Carlos Ruiz" },
   ];
+  const finishedEventGame = (id: string, date: string) => ({
+    id,
+    date,
+    state: "finalizado",
+    result: {
+      goalsFor: 1,
+      goalsAgainst: 0,
+    },
+  });
 
   it("calcula goleadores desde eventos planos filtrados por año", () => {
     const goalEvents = [
       {
         id: "e1",
         type: "goal",
-        game: { id: "g1", date: "2025-02-10" },
+        game: finishedEventGame("g1", "2025-02-10"),
         player: { id: "p2" },
       },
       {
         id: "e2",
         type: "goal",
-        game: { id: "g2", date: "2025-03-10" },
+        game: finishedEventGame("g2", "2025-03-10"),
         player: { id: "p1" },
       },
       {
         id: "e3",
         type: "goal",
-        game: { id: "g3", date: "2024-03-10" },
+        game: finishedEventGame("g3", "2024-03-10"),
         player: { id: "p1" },
       },
     ];
@@ -669,28 +761,28 @@ describe("getTopScorersFromGoalEvents", () => {
         {
           id: "e1",
           type: "goal",
-          game: { id: "g1", date: "2025-02-10" },
+          game: finishedEventGame("g1", "2025-02-10"),
           player: { id: "p1" },
           scorerKind: "roster",
         },
         {
           id: "e2",
           type: "goal",
-          game: { id: "g1", date: "2025-02-10" },
+          game: finishedEventGame("g1", "2025-02-10"),
           player: { id: "p1" },
           scorerKind: "guest",
         },
         {
           id: "e3",
           type: "goal",
-          game: { id: "g1", date: "2025-02-10" },
+          game: finishedEventGame("g1", "2025-02-10"),
           player: null,
           scorerKind: "opponent_own_goal",
         },
         {
           id: "e4",
           type: "goal",
-          game: { id: "g1", date: "2025-02-10" },
+          game: finishedEventGame("g1", "2025-02-10"),
           player: { id: "p2" },
           scorerKind: null,
         },

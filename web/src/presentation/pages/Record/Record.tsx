@@ -10,7 +10,12 @@ import ErrorFallback from "../../components/errors/ErrorFallback";
 import ProgressiveMedia from "../../components/ProgressiveMedia/ProgressiveMedia";
 
 import { useRecordData } from "./hooks/useRecordData";
-import { groupGamesByMonth, getMatchResult, getScorers } from "./record.utils";
+import {
+  getRecordScoreLabel,
+  groupGamesByMonth,
+  getMatchResult,
+  getScorers,
+} from "./record.utils";
 import { RESULT_STYLES } from "./record.constants";
 import { formatDate } from "../../utils/date.utils";
 import "./Record.css";
@@ -90,7 +95,7 @@ const Record = () => {
                 const isOpen = openGame === game.id;
                 const detailedGame = isOpen ? gameDetailQuery.data : null;
                 const scorers = getScorers(detailedGame?.events || []);
-                const hasExpandable = game.result.goalsFor > 0;
+                const hasExpandable = (game.result?.goalsFor ?? 0) > 0;
                 const isDetailLoading =
                   isOpen && gameDetailQuery.isFetching && !detailedGame;
                 const isDetailError = isOpen && gameDetailQuery.isError;
@@ -149,11 +154,7 @@ const Record = () => {
                         <div className="text-right flex items-center gap-2">
                           <div>
                             <p className="text-2xl sm:text-4xl font-extrabold text-neutral-100">
-                              {game.result.goalsFor}
-                              <span className="mx-1 text-neutral-500">
-                                &ndash;
-                              </span>
-                              {game.result.goalsAgainst}
+                              {getRecordScoreLabel(game)}
                             </p>
 
                             <p
