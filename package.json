@@ -3,7 +3,7 @@
   "private": true,
   "packageManager": "pnpm@10.34.1",
   "devDependencies": {
-    "concurrently": "^9.2.1"
+    "concurrently": "^10.0.3"
   },
   "scripts": {
     "dev:web": "pnpm --dir web dev",
@@ -22,8 +22,6 @@
     "check:studio": "pnpm --dir studio check",
     "check": "pnpm check:web && pnpm check:studio",
     "deploy": "pnpm --dir studio run deploy",
-    "push": "node scripts/push-and-deploy.mjs",
-    "install": "pnpm install --filter web --filter studio",
-    "postinstall": "pnpm install"
+    "push": "node scripts/push-and-deploy.mjs"
   }
 }
