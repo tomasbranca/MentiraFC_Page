@@ -15,7 +15,7 @@
 - Do not run destructive actions on Vercel, Sanity, Supabase, GitHub, or production systems.
 - Use `pnpm.cmd` in PowerShell for local commands.
 - Do not create commits unless explicitly asked.
-- When project files changed, include a suggested conventional commit message in the final answer, such as `feat: improve admin panel UX and responsive layout`, `fix: correct dashboard data fallback`, or `docs: update agent workflow guidance`.
+- Absolutely every time repository files are changed, including code, docs, config, tests, or skills, the final answer must include a suggested conventional commit message. Use clear scopes such as `feat: improve admin panel UX and responsive layout`, `fix: correct dashboard data fallback`, or `docs: update agent workflow guidance`.
 
 ## Skills
 

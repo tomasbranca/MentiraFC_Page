@@ -3,6 +3,8 @@ import { FOOTER_SOCIAL_PLATFORMS } from "../../shared/site/footerSettings";
 import { getCurrentAccessToken } from "./auth";
 import { z, zodParseOptions } from "./zodRuntime";
 import type {
+  AdminAuditLogPage,
+  AdminAuditLogPageOptions,
   AdminAuditLogItem,
   AdminAuthControlsPayload,
   AdminFeatureFlag,
@@ -96,6 +98,18 @@ const adminAuditLogSchema = z.object({
   changes: z.record(z.string(), z.unknown()).nullable(),
   result: z.string(),
   createdAt: z.string(),
+});
+
+const adminAuditLogPageSchema = z.object({
+  items: z.array(adminAuditLogSchema),
+  total: z.number().optional(),
+  page: z.number().optional(),
+  limit: z.number(),
+  totalPages: z.number().optional(),
+  hasNextPage: z.boolean().optional(),
+  hasPreviousPage: z.boolean().optional(),
+  nextCursor: z.string().nullable().optional(),
+  previousCursor: z.string().nullable().optional(),
 });
 
 const adminMetricsSchema = z.object({
@@ -259,6 +273,44 @@ export const saveAdminFooterSettings = async (
 export const fetchAdminAuditLog = async (): Promise<AdminAuditLogItem[]> => {
   const data = await fetchAdminApi<unknown[]>("audit-log");
   return z.array(adminAuditLogSchema).parse(data, zodParseOptions) as AdminAuditLogItem[];
+};
+
+const buildAdminAuditLogPageParams = (
+  options: AdminAuditLogPageOptions
+): Record<string, string> => {
+  const params: Record<string, string> = {
+    page: String(options.page ?? 1),
+    limit: String(options.limit ?? 20),
+    sortBy: options.sortBy ?? "createdAt",
+    direction: options.direction ?? "desc",
+  };
+
+  if (options.search) params.search = options.search;
+  if (options.role) params.role = options.role;
+  if (options.result) params.result = options.result;
+  if (options.resource) params.resource = options.resource;
+
+  return params;
+};
+
+export const buildAdminAuditLogPageApiPath = (
+  options: AdminAuditLogPageOptions = {}
+): string =>
+  buildAdminApiPath("audit-log", buildAdminAuditLogPageParams(options));
+
+export const fetchAdminAuditLogPage = async (
+  options: AdminAuditLogPageOptions = {}
+): Promise<AdminAuditLogPage> => {
+  const data = await fetchAdminApi<unknown>(
+    "audit-log",
+    undefined,
+    buildAdminAuditLogPageParams(options)
+  );
+
+  return adminAuditLogPageSchema.parse(
+    data,
+    zodParseOptions
+  ) as PaginatedResult<AdminAuditLogItem>;
 };
 
 export const fetchAdminMetrics = async (): Promise<AdminMetricsPayload> => {
