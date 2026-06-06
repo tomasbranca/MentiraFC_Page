@@ -1,11 +1,10 @@
 # SECURITY
 
-Fecha de revision: 2026-06-01
+Fecha de revision: 2026-06-06
 
 Este documento registra el estado actual de seguridad para Supabase, permisos de
-API y validaciones server-side. No reemplaza una migracion formal; documenta el
-estado auditado y el SQL de reconciliacion guardado en
-`docs/supabase-rls-hardening.sql`.
+API y validaciones server-side. El SQL de reconciliacion versionado para los
+cambios Supabase manuales vive en `docs/supabase-rls-hardening.sql`.
 
 ## Principios actuales
 
@@ -17,22 +16,26 @@ estado auditado y el SQL de reconciliacion guardado en
   revalidan en API y/o RLS.
 - No se agregan nuevas serverless functions para seguridad: se reutilizan
   `/api/admin/[resource]`, `/api/comments` y `/api/reactions`.
+- El rate limit distribuido es opt-in: memoria local por defecto, Supabase si
+  `SUPABASE_RATE_LIMIT_STORE=supabase` y el SQL de reconciliacion ya fue
+  aplicado.
 
 ## Estado por entidad
 
 | Entidad | RLS | Policies/grants | Backend | Constraints | Riesgo pendiente |
 |---|---:|---|---|---|---|
 | `public.profiles` | Si | Lectura autenticada; update propio por RLS; grant update solo sobre `first_name`, `last_name`. | Perfil propio desde cliente; admin via API/RPC. | PK, FK a `auth.users`, checks de nombres no vacios. | Lectura autenticada de todos los perfiles sigue siendo amplia pero esperada para autores. |
-| `private.user_accounts` | Si | Usuario autenticado lee solo cuenta propia; sin grants de escritura cliente. | Autoridad de rol/activo via `my_account` y admin API. | PK/FK a `auth.users`. | Hay dos policies equivalentes de lectura propia; se puede limpiar despues sin cambiar comportamiento. |
+| `private.user_accounts` | Si | Usuario autenticado lee solo cuenta propia; sin grants de escritura cliente. | Autoridad de rol/activo via `my_account` y admin API. | PK/FK a `auth.users`. | `docs/supabase-rls-hardening.sql` deja una policy canonica `user_accounts_select_own` y elimina duplicadas equivalentes. |
 | `public.my_account` | N/A view | `security_invoker=true`; `authenticated` tiene `SELECT`. | Usada por auth API/frontend para rol e `is_active`. | Depende de `profiles` + `private.user_accounts`. | Mantener como unica vista publica de datos privados de cuenta. |
-| `public.news_comments` | Si | Select publico solo no borrados; insert usuario activo con permiso; update/delete propio; update moderador. | `/api/comments` valida token, usuario activo, permiso, ownership, target publicado, rate limit y anti-spam basico. | PK/FK, body no vacio, max length, consistencia de soft delete. | Rate limit en memoria no es distribuido entre instancias/regiones. |
+| `public.news_comments` | Si | Select publico solo no borrados; insert usuario activo con permiso; update/delete propio; update moderador. | `/api/comments` valida token, usuario activo, permiso, ownership, target publicado, rate limit y anti-spam basico. | PK/FK, body no vacio, max length, consistencia de soft delete. | Rate limit distribuido disponible via `private.rate_limit_events`; memoria sigue por defecto. |
 | `public.comment_reports` | Si | Insert usuario activo, comentario visible, no propio; select propio o moderador; update moderador. | `/api/comments` valida reporte propio/ajeno, duplicado, reason, details, rate limit y moderacion. | Unique `(comment_id, reporter_user_id)`, FKs, checks de reason/status/details. | Cola de moderacion puede escalar mal si hay muchos reportes abiertos. |
-| `public.user_reactions` | Si | Read propia; insert/update/delete propia y usuario activo. | `/api/reactions` valida token, cuenta activa, target publicado, rate limit y fuerza `user_id` del token. | Unique `(user_id, target_type, target_id)`, FK, checks target/emoji. | Los helpers RLS siguen en `public`; mover a schema privado queda como hardening posterior. |
+| `public.user_reactions` | Si | Read propia; insert/update/delete propia y usuario activo. | `/api/reactions` valida token, cuenta activa, target publicado, rate limit y fuerza `user_id` del token. | Unique `(user_id, target_type, target_id)`, FK, checks target/emoji. | `docs/supabase-rls-hardening.sql` mueve el uso RLS a wrappers en `private` y revoca ejecucion directa de helpers publicos. |
 | `public.reaction_counts` | Si | Select anon/auth; sin escritura cliente. | `/api/reactions` lee conteos. | PK `(target_type, target_id, emoji)`, checks no negativos/target/emoji. | Aceptable como dato agregado publico. |
 | `private.role_permission_overrides` | Si | Sin policies publicas. | Admin API/RPC service-role-only. | Gestionado por RPC admin. | Linter marca RLS sin policies; aceptado por ser schema privado/service role. |
 | `private.feature_flags` | Si | Sin policies publicas. | Admin API/RPC service-role-only. | Gestionado por RPC admin. | Igual que otras tablas privadas. |
 | `private.app_runtime_settings` | Si | Sin policies publicas. | Admin API/RPC service-role-only; lectura publica reducida de mantenimiento via API. | Gestionado por RPC admin. | Igual que otras tablas privadas. |
 | `private.audit_log` | Si | Sin policies publicas. | Admin API/RPC service-role-only. | Gestionado por RPC admin. | Audit log de footer puede fallar despues de guardar Sanity; queda warning. |
+| `private.rate_limit_events` | Si | Sin policies publicas. | RPC `admin_consume_rate_limit` service-role-only. | Checks de action/hash, indice por action/hash/fecha. | Solo se usa si `SUPABASE_RATE_LIMIT_STORE=supabase`. |
 
 ## Validaciones por capa
 
@@ -58,7 +61,9 @@ Base de datos:
 - RLS esta activo en tablas sensibles publicas y privadas.
 - Constraints cubren reportes duplicados, una reaccion por usuario/entidad,
   FKs, campos no vacios, soft delete consistente y conteos no negativos.
-- Helpers `SECURITY DEFINER` usados por RLS ya no son ejecutables por `anon`.
+- Helpers `SECURITY DEFINER` usados por RLS quedan aislados por wrappers en
+  `private` en `docs/supabase-rls-hardening.sql`; los publicos quedan sin
+  ejecucion para `anon`/`authenticated` despues de aplicar el SQL.
 
 ## Reglas anti-injection
 
@@ -115,25 +120,28 @@ Logs server-side:
   identificadores usados para rate limit se loguean hasheados.
 - El audit log persistente admin sigue pasando por RPC `admin_*`/`audit_log`.
 
-Limitacion conocida: el rate limit actual es en memoria por instancia de
-serverless function. Es suficiente como primera barrera simple, pero no es un
-limite distribuido fuerte entre cold starts, regiones o instancias paralelas.
-Si el trafico crece, conviene mover los eventos de rate limit a una tabla
-privada de Supabase o a un store externo compartido como Redis/Upstash.
+Store:
+
+- Por defecto `assertServerRateLimit` usa memoria local por instancia, igual que
+  la primera barrera simple.
+- Si `SUPABASE_RATE_LIMIT_STORE=supabase`, usa el RPC service-role-only
+  `public.admin_consume_rate_limit` y la tabla `private.rate_limit_events`.
+- La tabla guarda solo `action`, `identifier_hash` y `created_at`; no guarda IP,
+  email, token ni payloads completos.
+- El SQL necesario esta en `docs/supabase-rls-hardening.sql` y debe aplicarse
+  manualmente antes de activar la variable.
+
+Limitacion conocida: el modo memoria sigue siendo por instancia de serverless
+function. El modo Supabase cubre cold starts, regiones e instancias paralelas,
+pero requiere `SUPABASE_SERVICE_ROLE_KEY`, la migracion aplicada y monitoreo de
+crecimiento de `private.rate_limit_events`.
 
 ## Acciones que requieren service role
 
 - Auth admin y listado/gestion de usuarios.
 - RPCs `admin_*`.
+- RPC `admin_consume_rate_limit` cuando `SUPABASE_RATE_LIMIT_STORE=supabase`.
 - Mutaciones de tablas `private.*`.
 - Soft delete moderador de comentarios cuando se necesita bypass controlado de
   RLS despues de validar permisos en API.
 
-## Pendientes
-
-- Evaluar rate limit distribuido persistente para reemplazar la memoria local
-  si hay abuso real o multiples regiones activas.
-- Mover helpers `SECURITY DEFINER` de RLS fuera del schema `public` o aislarlos
-  en una migracion dedicada.
-- Limpiar policy duplicada de `private.user_accounts` cuando haya ventana segura.
-- Mantener SQL versionado/reconciliado para cambios Supabase manuales.

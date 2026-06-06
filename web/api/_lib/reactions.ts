@@ -6,7 +6,7 @@ import {
   createUserSupabaseClient,
 } from "./supabase.js";
 import { normalizeSanityDocumentId } from "./requestValidation.js";
-import { assertRateLimit } from "./rateLimit.js";
+import { assertServerRateLimit } from "./rateLimit.js";
 import { REACTION_MUTATION_RATE_LIMIT_RULES } from "./securityLimits.js";
 import { logSecurityEvent } from "./securityLog.js";
 
@@ -238,7 +238,7 @@ export const setReaction = async (
   }
 
   const { userId, supabase } = viewer;
-  assertRateLimit({
+  await assertServerRateLimit({
     action: "reaction:mutation",
     identifier: userId,
     rules: REACTION_MUTATION_RATE_LIMIT_RULES,
@@ -295,7 +295,7 @@ export const removeReaction = async (
   }
 
   const { userId, supabase } = viewer;
-  assertRateLimit({
+  await assertServerRateLimit({
     action: "reaction:mutation",
     identifier: userId,
     rules: REACTION_MUTATION_RATE_LIMIT_RULES,

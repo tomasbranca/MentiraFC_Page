@@ -99,6 +99,75 @@ export const assertRateLimit = ({
   rateLimitBuckets.set(key, [...windowed, now]);
 };
 
+const isSupabaseRateLimitStoreEnabled = (): boolean =>
+  process.env.SUPABASE_RATE_LIMIT_STORE?.trim().toLowerCase() === "supabase";
+
+const normalizeRetryAfterSeconds = (value: unknown): number => {
+  const retryAfterSeconds =
+    typeof value === "number"
+      ? value
+      : typeof value === "string"
+        ? Number(value)
+        : 0;
+
+  return Number.isFinite(retryAfterSeconds)
+    ? Math.max(0, Math.ceil(retryAfterSeconds))
+    : 0;
+};
+
+const assertSupabaseRateLimit = async ({
+  action,
+  identifier,
+  rules,
+  meta = {},
+}: RateLimitInput): Promise<void> => {
+  if (!identifier || rules.length === 0) {
+    return;
+  }
+
+  const identifierHash = hashSecurityIdentifier(identifier);
+  const { createAdminSupabaseClient } = await import("./supabase.js");
+  const { data, error } = await createAdminSupabaseClient().rpc(
+    "admin_consume_rate_limit",
+    {
+      p_action: action,
+      p_identifier_hash: identifierHash,
+      p_rules: rules.map((rule) => ({
+        windowMs: rule.windowMs,
+        max: rule.max,
+      })),
+    }
+  );
+
+  if (error) {
+    throw error;
+  }
+
+  const retryAfterSeconds = normalizeRetryAfterSeconds(data);
+
+  if (retryAfterSeconds > 0) {
+    logSecurityEvent("rate_limit_triggered", {
+      action,
+      identifierHash,
+      retryAfterSeconds,
+      ...meta,
+    });
+
+    throw new RateLimitError(retryAfterSeconds);
+  }
+};
+
+export const assertServerRateLimit = async (
+  input: RateLimitInput
+): Promise<void> => {
+  if (isSupabaseRateLimitStoreEnabled()) {
+    await assertSupabaseRateLimit(input);
+    return;
+  }
+
+  assertRateLimit(input);
+};
+
 export const __resetRateLimitsForTests = (): void => {
   rateLimitBuckets.clear();
 };

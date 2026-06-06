@@ -540,11 +540,11 @@ Los comentarios **no** viven en Sanity. Se almacenan en Postgres (Supabase) y re
 | `public.news_comments` | Cuerpo del comentario, autor, soft-delete (`deletion_kind`: `self` \| `moderator`) | Lectura publica de filas no borradas; escritura `authenticated` activo |
 | `public.comment_reports` | Reportes por usuario (`reason`, `status`: `open` \| `dismissed` \| `actioned`) | Insert propio; lectura propia o moderador+ |
 
-Funciones helper SQL: `is_active_user()`, `user_has_permission(text)`, `is_moderator_or_above()`.
+Funciones helper SQL: `private.is_active_user()`, `private.user_has_permission(text)`, `private.is_moderator_or_above()`.
 
 API Vercel (`/api/comments`, `/api/comments/:id`, reportes y moderacion) valida noticia en Sanity y permisos app; RLS sigue siendo la barrera final.
 
-Migracion versionada: `supabase/migrations/20260525120000_news_comments.sql`.
+SQL de reconciliacion versionado en este checkout: `docs/supabase-rls-hardening.sql`.
 
 Modelos web: `web/src/types/comments.ts`, cliente `web/src/data/comments.ts`.
 
@@ -561,17 +561,20 @@ El panel `/admin` usa Supabase para operacion, seguridad y trazabilidad. Sanity 
 | `private.feature_flags` | Flags operativas del sitio. | Solo service role/API admin. |
 | `private.app_runtime_settings` | Singleton de modo mantenimiento. | Lectura publica reducida via `/api/admin/maintenance?public=1`; escritura admin. |
 | `private.audit_log` | Registro append-only de acciones sensibles. | Solo service role/API admin. |
+| `private.rate_limit_events` | Eventos de rate limit con identificadores hasheados. | Solo RPC service-role cuando `SUPABASE_RATE_LIMIT_STORE=supabase`. |
 
-Migraciones versionadas:
-
-- `supabase/migrations/202605310001_admin_operational_tables.sql`
-- `supabase/migrations/202606010001_admin_operational_rpc_access.sql`
+SQL versionado/reconciliado en este checkout:
 
 El schema `private` no se expone al Data API. Las APIs server-side del admin acceden a estas tablas mediante RPCs `public.admin_*` ejecutables solo por `service_role`.
 
 Las rutas `/api/admin/*` que leen o escriben tablas operativas requieren `SUPABASE_SERVICE_ROLE_KEY`
 en el entorno server-side local y de Vercel. Sin esa variable, el panel muestra el estado de error
 operativo aunque el login y las pantallas no-Supabase funcionen.
+
+Las rutas `/api/comments`, `/api/reactions` y `/api/admin/[resource]` usan rate limit en memoria por defecto.
+Si se aplica `docs/supabase-rls-hardening.sql` y se configura `SUPABASE_RATE_LIMIT_STORE=supabase`,
+esas APIs pasan a usar el RPC service-role-only `public.admin_consume_rate_limit` y la tabla
+`private.rate_limit_events` para compartir los contadores entre instancias.
 
 Regla de fuente de verdad: Sanity = contenido publico del footer; Supabase = operacion, seguridad, comunidad y trazabilidad; Vercel = analytics/performance.
 

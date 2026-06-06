@@ -12,7 +12,11 @@ import {
   normalizeSanityDocumentId,
   normalizeUuid,
 } from "./requestValidation.js";
-import { assertRateLimit, isRateLimitError, RATE_LIMIT_MESSAGE } from "./rateLimit.js";
+import {
+  assertServerRateLimit,
+  isRateLimitError,
+  RATE_LIMIT_MESSAGE,
+} from "./rateLimit.js";
 import {
   COMMENT_CREATE_RATE_LIMIT_RULES,
   COMMENT_DELETE_RATE_LIMIT_RULES,
@@ -571,7 +575,7 @@ export const createNewsComment = async ({
   token: string;
 }): Promise<NewsComment> => {
   const user = await authorizeActiveCommentUser(token);
-  assertRateLimit({
+  await assertServerRateLimit({
     action: "comment:create",
     identifier: user.userId,
     rules: COMMENT_CREATE_RATE_LIMIT_RULES,
@@ -583,7 +587,7 @@ export const createNewsComment = async ({
     throw new Error("News not found.");
   }
 
-  assertRateLimit({
+  await assertServerRateLimit({
     action: "comment:duplicate",
     identifier: `${user.userId}:${newsId}:${hashSecurityIdentifier(body)}`,
     rules: [{ windowMs: 60_000, max: 1 }],
@@ -627,7 +631,7 @@ export const updateOwnNewsComment = async ({
   token: string;
 }): Promise<NewsComment> => {
   const user = await authorizeActiveCommentUser(token);
-  assertRateLimit({
+  await assertServerRateLimit({
     action: "comment:edit",
     identifier: user.userId,
     rules: COMMENT_EDIT_RATE_LIMIT_RULES,
@@ -685,7 +689,7 @@ export const deleteOwnNewsComment = async ({
   token: string;
 }): Promise<void> => {
   const user = await authorizeActiveCommentUser(token);
-  assertRateLimit({
+  await assertServerRateLimit({
     action: "comment:delete",
     identifier: user.userId,
     rules: COMMENT_DELETE_RATE_LIMIT_RULES,
@@ -730,7 +734,7 @@ export const deleteNewsCommentAsModerator = async ({
   token: string;
 }): Promise<void> => {
   const moderator = await authorizeModerator(token);
-  assertRateLimit({
+  await assertServerRateLimit({
     action: "comment:moderator_delete",
     identifier: moderator.userId,
     rules: COMMENT_MODERATION_RATE_LIMIT_RULES,
@@ -788,7 +792,7 @@ export const createCommentReport = async ({
   token: string;
 }): Promise<{ id: string }> => {
   const user = await authorizeActiveCommentUser(token);
-  assertRateLimit({
+  await assertServerRateLimit({
     action: "comment:report",
     identifier: user.userId,
     rules: COMMENT_REPORT_RATE_LIMIT_RULES,
@@ -973,7 +977,7 @@ export const updateCommentReportStatus = async ({
   token: string;
 }): Promise<void> => {
   const moderator = await authorizeModerator(token);
-  assertRateLimit({
+  await assertServerRateLimit({
     action: "comment:moderation_status",
     identifier: moderator.userId,
     rules: COMMENT_MODERATION_RATE_LIMIT_RULES,

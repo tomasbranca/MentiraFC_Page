@@ -22,7 +22,7 @@ import {
   updateOwnNewsComment,
 } from "../_lib/comments.js";
 import {
-  assertRateLimit,
+  assertServerRateLimit,
   getClientIp,
   isRateLimitError,
   RATE_LIMIT_MESSAGE,
@@ -97,14 +97,14 @@ const isModerationRequest = (url: URL, pathname: string): boolean =>
 const isCommentReportRequest = (url: URL, pathname: string): boolean =>
   pathname.endsWith("/report") || url.searchParams.get("action") === "report";
 
-const assertCommentIpRateLimit = (request: Request): void => {
+const assertCommentIpRateLimit = async (request: Request): Promise<void> => {
   const clientIp = getClientIp(request);
 
   if (!clientIp) {
     return;
   }
 
-  assertRateLimit({
+  await assertServerRateLimit({
     action: "comments:write:ip",
     identifier: clientIp,
     rules: AUTHENTICATED_WRITE_IP_RATE_LIMIT_RULES,
@@ -158,7 +158,7 @@ const commentsHandler = async (request: Request): Promise<Response> => {
         return errorJson("No autorizado.", 401);
       }
 
-      assertCommentIpRateLimit(request);
+      await assertCommentIpRateLimit(request);
 
       if (hasExcessiveContentLength(request, MAX_COMMENT_MUTATION_PAYLOAD_BYTES)) {
         return errorJson("El payload es demasiado grande.", 413);
@@ -205,7 +205,7 @@ const commentsHandler = async (request: Request): Promise<Response> => {
         return errorJson("No autorizado.", 401);
       }
 
-      assertCommentIpRateLimit(request);
+      await assertCommentIpRateLimit(request);
 
       if (hasExcessiveContentLength(request, MAX_COMMENT_MUTATION_PAYLOAD_BYTES)) {
         return errorJson("El payload del reporte es demasiado grande.", 413);
@@ -257,7 +257,7 @@ const commentsHandler = async (request: Request): Promise<Response> => {
       }
 
       if (request.method === "PATCH") {
-        assertCommentIpRateLimit(request);
+        await assertCommentIpRateLimit(request);
         if (hasExcessiveContentLength(request, MAX_COMMENT_MUTATION_PAYLOAD_BYTES)) {
           return errorJson("El payload del comentario es demasiado grande.", 413);
         }
@@ -287,7 +287,7 @@ const commentsHandler = async (request: Request): Promise<Response> => {
       }
 
       if (request.method === "DELETE") {
-        assertCommentIpRateLimit(request);
+        await assertCommentIpRateLimit(request);
         const asModerator = url.searchParams.get("as") === "moderator";
 
         if (asModerator) {
@@ -343,7 +343,7 @@ const commentsHandler = async (request: Request): Promise<Response> => {
         return errorJson("No autorizado.", 401);
       }
 
-      assertCommentIpRateLimit(request);
+      await assertCommentIpRateLimit(request);
 
       if (hasExcessiveContentLength(request, MAX_COMMENT_MUTATION_PAYLOAD_BYTES)) {
         return errorJson("El payload del comentario es demasiado grande.", 413);
