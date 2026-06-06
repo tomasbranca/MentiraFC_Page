@@ -18,6 +18,8 @@ test('buildComputedStandings derives table positions and movement', () => {
     games: [
       {result: {goalsFor: 1, goalsAgainst: 1}},
       {result: {goalsFor: 2, goalsAgainst: 0}},
+      {result: null},
+      {result: {goalsFor: null, goalsAgainst: 0}},
     ],
     rows: [
       {

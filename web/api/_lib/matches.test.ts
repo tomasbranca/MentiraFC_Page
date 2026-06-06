@@ -70,6 +70,53 @@ describe("dashboard matches api input", () => {
     });
   });
 
+  it("acepta partidos por jugar sin resultado ni jugadores cargados", () => {
+    expect(
+      parseDashboardMatchInput({
+        rivalId: "team-1",
+        date: "2026-05-16T21:30:00.000Z",
+        location: "Cancha 1",
+        competition: "Amistoso",
+        state: "por_jugar",
+      })
+    ).toEqual({
+      rivalId: "team-1",
+      date: "2026-05-16T21:30:00.000Z",
+      location: "Cancha 1",
+      competition: "Amistoso",
+      tournamentId: undefined,
+      state: "por_jugar",
+      goalsFor: undefined,
+      goalsAgainst: undefined,
+      playedPlayerIds: [],
+      goalScorers: [],
+      guestGoalScorers: [],
+      opponentOwnGoals: 0,
+    });
+  });
+
+  it("ignora resultado y playedPlayers cuando el partido no esta finalizado", () => {
+    expect(
+      parseDashboardMatchInput({
+        rivalId: "team-1",
+        date: "2026-05-16T21:30:00.000Z",
+        location: "Cancha 1",
+        competition: "Amistoso",
+        state: "por_jugar",
+        goalsFor: 3,
+        goalsAgainst: 2,
+        playedPlayerIds: ["player-1"],
+        goalScorers: [{ playerId: "player-1", goals: 3 }],
+      })
+    ).toMatchObject({
+      state: "por_jugar",
+      goalsFor: undefined,
+      goalsAgainst: undefined,
+      playedPlayerIds: [],
+      goalScorers: [],
+    });
+  });
+
   it("rechaza partidos finalizados si los goleadores no coinciden con goalsFor", () => {
     expect(
       parseDashboardMatchInput({
@@ -130,8 +177,8 @@ describe("dashboard matches api input", () => {
       state: undefined,
       goalsFor: undefined,
       goalsAgainst: undefined,
-      playedPlayerIds: ["player-1"],
-      goalScorers: [{ playerId: "player-2", goals: 2 }],
+      playedPlayerIds: [],
+      goalScorers: [],
       guestGoalScorers: [],
       opponentOwnGoals: 0,
     });

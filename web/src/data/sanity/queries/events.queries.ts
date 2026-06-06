@@ -1,5 +1,12 @@
-export const GOAL_EVENTS_QUERY = `
-  *[_type == "events" && type == "goal"] {
+const FINISHED_GOAL_EVENT_FILTER = `
+    _type == "events" &&
+    type == "goal" &&
+    game->state == "finalizado" &&
+    defined(game->result.goalsFor) &&
+    defined(game->result.goalsAgainst)
+`;
+
+const GOAL_EVENT_PROJECTION = `{
     _id,
     type,
     order,
@@ -9,7 +16,12 @@ export const GOAL_EVENTS_QUERY = `
     guestName,
     game->{
       _id,
-      date
+      date,
+      state,
+      result{
+        goalsFor,
+        goalsAgainst
+      }
     },
     player->{
       _id,
@@ -17,33 +29,17 @@ export const GOAL_EVENTS_QUERY = `
       lastName,
       slug
     }
-  }
+  }`;
+
+export const GOAL_EVENTS_QUERY = `
+  *[${FINISHED_GOAL_EVENT_FILTER}] ${GOAL_EVENT_PROJECTION}
 `;
 
 export const GOAL_EVENTS_BY_YEAR_QUERY = `
   *[
-    _type == "events" &&
-    type == "goal" &&
+    ${FINISHED_GOAL_EVENT_FILTER} &&
     defined(game->date) &&
     game->date >= $from &&
     game->date < $to
-  ] {
-    _id,
-    type,
-    order,
-    scorerKind,
-    scorerSide,
-    scorerSource,
-    guestName,
-    game->{
-      _id,
-      date
-    },
-    player->{
-      _id,
-      name,
-      lastName,
-      slug
-    }
-  }
+  ] ${GOAL_EVENT_PROJECTION}
 `;

@@ -1,4 +1,7 @@
-import { normalizeGoalScorerKind } from "../../../domain/games";
+import {
+  normalizeGameState,
+  normalizeGoalScorerKind,
+} from "../../../domain/games";
 import type { GoalEvent } from "../../../types/models";
 import {
   getSanitySlugValue,
@@ -15,6 +18,16 @@ export const adaptGoalEvent = (event: unknown): GoalEvent | null => {
   );
   if (!validated) return null;
 
+  const gameResult = validated.game?.result;
+  const result =
+    typeof gameResult?.goalsFor === "number" &&
+    typeof gameResult.goalsAgainst === "number"
+      ? {
+          goalsFor: gameResult.goalsFor,
+          goalsAgainst: gameResult.goalsAgainst,
+        }
+      : null;
+
   return {
     id: validated._id,
     type: validated.type,
@@ -25,6 +38,10 @@ export const adaptGoalEvent = (event: unknown): GoalEvent | null => {
       ? {
           id: validated.game._id,
           date: validated.game.date,
+          state: validated.game.state
+            ? normalizeGameState(validated.game.state)
+            : null,
+          result,
         }
       : null,
     player: validated.player

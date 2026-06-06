@@ -79,7 +79,8 @@ const GAME_LIST_PROJECTION = `{
     }
   }`;
 
-const FINISHED_GAMES_PAGE_FILTER = `_type == "games" && !(_id in path("drafts.**")) && state == "finalizado" && (!$hasSearch || rival->name match $search || tournament->name match $search || location match $search || competition match $search)`;
+const VALID_FINISHED_GAME_FILTER = `state == "finalizado" && defined(result.goalsFor) && defined(result.goalsAgainst)`;
+const FINISHED_GAMES_PAGE_FILTER = `_type == "games" && !(_id in path("drafts.**")) && ${VALID_FINISHED_GAME_FILTER} && (!$hasSearch || rival->name match $search || tournament->name match $search || location match $search || competition match $search)`;
 
 const GAMES_PAGE_QUERIES = {
   "date:desc": `{
@@ -105,7 +106,7 @@ export const GAME_BY_ID_QUERY = `
   *[
     _type == "games" &&
     !(_id in path("drafts.**")) &&
-    state == "finalizado" &&
+    ${VALID_FINISHED_GAME_FILTER} &&
     _id == $id
   ][0] ${GAME_PROJECTION}
 `;
@@ -126,14 +127,14 @@ export const LATEST_GAME_QUERY = `
     ] | order(date asc)[0] ${GAME_PROJECTION},
     *[
       _type == "games" &&
-      state == "finalizado" &&
+      ${VALID_FINISHED_GAME_FILTER} &&
       defined(date)
     ] | order(date desc)[0] ${GAME_PROJECTION}
   )
 `;
 
 export const FINISHED_GAMES_QUERY = `
-  *[_type == "games" && state == "finalizado"] | order(date desc) {
+  *[_type == "games" && ${VALID_FINISHED_GAME_FILTER}] | order(date desc) {
     _id,
     date,
     state,
@@ -189,7 +190,7 @@ export const FINISHED_GAMES_QUERY = `
 `;
 
 export const FINISHED_TOURNAMENT_GAMES_QUERY = `
-  *[_type == "games" && state == "finalizado" && competition == "Torneo"] | order(date desc) {
+  *[_type == "games" && ${VALID_FINISHED_GAME_FILTER} && competition == "Torneo"] | order(date desc) {
     _id,
     date,
     state,

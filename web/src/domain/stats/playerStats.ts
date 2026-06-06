@@ -1,6 +1,7 @@
 import { countsForPlayerGoalStats } from "../games";
 import type {
   Game,
+  GameResult,
   GoalEvent,
   MatchEvent,
   Player,
@@ -28,7 +29,12 @@ type EventInput =
   | null;
 type GoalEventInput =
   | (Partial<GoalEvent> & {
-      game?: { id?: string | null; date?: string | null } | null;
+      game?: {
+        id?: string | null;
+        date?: string | null;
+        state?: string | null;
+        result?: Partial<Record<keyof GameResult, unknown>> | null;
+      } | null;
       player?: { id?: string | null } | null;
       scorerKind?: string | null;
       scorerSide?: string | null;
@@ -38,6 +44,7 @@ type GoalEventInput =
 type GameInput = Partial<Omit<Game, "events">> & {
   events?: EventInput[] | null;
   playedPlayers?: Array<{ id?: string | null } | null> | null;
+  result?: Partial<Record<keyof GameResult, unknown>> | null;
 };
 
 const normalizeGames = (games: GameInput[] | unknown = []): GameInput[] =>
@@ -68,6 +75,30 @@ const isInYear = (date: string | undefined, year?: number): boolean => {
   return new Date(date).getFullYear() === year;
 };
 
+const isValidResultNumber = (value: unknown): value is number =>
+  Number.isInteger(value) && Number(value) >= 0;
+
+const hasValidResult = (
+  result?: Partial<Record<keyof GameResult, unknown>> | null
+): result is GameResult =>
+  Boolean(
+    result &&
+      isValidResultNumber(result.goalsFor) &&
+      isValidResultNumber(result.goalsAgainst)
+  );
+
+const isFinishedGameWithResult = (
+  game?: {
+    state?: string | null;
+    result?: Partial<Record<keyof GameResult, unknown>> | null;
+  } | null
+): boolean =>
+  Boolean(
+    game?.state &&
+      game.state === "finalizado" &&
+      hasValidResult(game.result)
+  );
+
 const getGoalEventsFromGames = (
   games: GameInput[] | unknown = [],
   year?: number
@@ -75,7 +106,9 @@ const getGoalEventsFromGames = (
   // Goal stats are event-driven: players do not store counters, so historical
   // numbers can be recalculated when events or year filters change.
   return normalizeGames(games)
-    .filter((game) => isInYear(game.date, year))
+    .filter(
+      (game) => isFinishedGameWithResult(game) && isInYear(game.date, year)
+    )
     .flatMap((game) => game.events || [])
     .filter(
       (event): event is NonNullable<EventInput> =>
@@ -92,6 +125,7 @@ const getGoalEventsInYear = (
       event !== null &&
       event.type === "goal" &&
       countsForPlayerGoalStats(event) &&
+      isFinishedGameWithResult(event.game) &&
       isInYear(event.game?.date ?? undefined, year)
   );
 
@@ -164,7 +198,7 @@ export const getPlayerStats = (
   }
 
   const scopedGames = normalizeGames(games).filter((game) =>
-    isInYear(game.date, year)
+    isFinishedGameWithResult(game) && isInYear(game.date, year)
   );
   const playerGoalEvents = getGoalEventsInYear(goalEvents, year).filter(
     (event) => event.player?.id === playerId
@@ -178,7 +212,7 @@ export const getPlayerStats = (
 
   let goals = shouldUseGoalEvents ? playerGoalEvents.length : 0;
   let matchesWithGoals = shouldUseGoalEvents ? goalGameIds.size : 0;
-  const playedGameIds = new Set(shouldUseGoalEvents ? goalGameIds : []);
+  const playedGameIds = new Set<string>();
 
   scopedGames.forEach((game) => {
     const matchGoalEvents = shouldUseGoalEvents
@@ -195,20 +229,6 @@ export const getPlayerStats = (
         .map((player) => player?.id)
         .filter((id): id is string => Boolean(id))
     );
-
-    if (!shouldUseGoalEvents) {
-      // Scorers necessarily played; this keeps existing goal data coherent while
-      // older matches are backfilled with explicit appearance lists.
-      (game.events || []).forEach((event) => {
-        if (
-          event?.type === "goal" &&
-          event?.player?.id &&
-          countsForPlayerGoalStats(event)
-        ) {
-          playerIdsInGame.add(event.player.id);
-        }
-      });
-    }
 
     if (!shouldUseGoalEvents) {
       goals += matchGoals;

@@ -174,10 +174,44 @@ describe("games.adapter", () => {
       rival: {
         name: "Kickeros",
       },
-      result: {
-        goalsFor: 0,
-        goalsAgainst: 0,
-      },
+      result: null,
     });
+  });
+
+  it("ignora resultados cargados en partidos por jugar", () => {
+    const game = adaptGame(
+      createSanityGame({
+        state: "por_jugar",
+        result: {
+          goalsFor: 9,
+          goalsAgainst: 0,
+        },
+      })
+    );
+
+    expect(game?.result).toBeNull();
+  });
+
+  it("descarta partidos finalizados sin resultado valido", () => {
+    expect(
+      adaptGame(
+        createSanityGame({
+          state: "finalizado",
+          result: null,
+        })
+      )
+    ).toBeNull();
+
+    expect(
+      adaptGameListItem(
+        createSanityGame({
+          state: "finalizado",
+          result: {
+            goalsFor: null,
+            goalsAgainst: 0,
+          },
+        })
+      )
+    ).toBeNull();
   });
 });

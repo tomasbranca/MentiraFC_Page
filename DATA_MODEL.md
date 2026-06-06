@@ -72,7 +72,7 @@ Relaciones faltantes/proximas:
 - Agregar atributos editables del jugador.
 - Agregar mapa de posiciones para representar mejor posicion principal, posiciones secundarias o ubicacion en cancha.
 - Agregar redes sociales del jugador.
-- Contabilizar partidos jugados. La fuente deberia salir de la convocatoria de cada `game`, no cargarse manualmente en el jugador.
+- Contabilizar partidos jugados desde `games.playedPlayers` en partidos finalizados, no cargarlos manualmente en el jugador.
 - Agregar premios internos en cada jugador.
 
 ## `staff`
@@ -190,9 +190,10 @@ Campos:
 | `competition` | `string` | Si | Tipo de competencia. Valores: `Torneo`, `Copa`, `Amistoso`. |
 | `tournament` | `reference -> tournaments` | Si para `Torneo` | Torneo asociado. Se oculta si `competition !== "Torneo"`. |
 | `state` | `string` | Si | Estado del partido. Valores conocidos: `por_jugar`, `finalizado`. Valores desconocidos se normalizan a `desconocido` en la web. |
-| `result` | `object` | Si cuando esta finalizado | Resultado del partido. Se oculta si `state !== "finalizado"`. |
-| `result.goalsFor` | `number` | Si | Goles de Mentira FC. Minimo `0`. |
-| `result.goalsAgainst` | `number` | Si | Goles del rival. Minimo `0`. |
+| `result` | `object \| null` | Si cuando `state == "finalizado"` | Resultado real del partido. Debe ser `null` o ignorarse cuando `state !== "finalizado"`. |
+| `result.goalsFor` | `number` | Si cuando `state == "finalizado"` | Goles de Mentira FC. Minimo `0`. |
+| `result.goalsAgainst` | `number` | Si cuando `state == "finalizado"` | Goles del rival. Minimo `0`. |
+| `playedPlayers` | `array reference -> players` | Solo al finalizar | Jugadores que jugaron. Es la fuente para partidos jugados por jugador. |
 
 Uso en web:
 
@@ -201,6 +202,13 @@ Uso en web:
 - Partidos finalizados de torneo: `FINISHED_TOURNAMENT_GAMES_QUERY`
 - Home: `HOME_CRITICAL_QUERY`
 - Modelo de dominio: `Game`
+
+Reglas:
+
+- `Game.result` en la web es `GameResult | null`.
+- Los partidos `por_jugar` no tienen resultado y deben mostrarse como `VS` o equivalente, nunca como `0-0`.
+- Los calculos deportivos ignoran partidos sin `result` valido.
+- No existe convocatoria en el modelo. Solo se cargan `playedPlayers` al finalizar el partido.
 
 La web embebe los goles del partido con una subquery a `events`:
 
@@ -216,8 +224,7 @@ Relaciones actuales:
 
 Relaciones faltantes/proximas:
 
-- Agregar convocatoria al partido.
-- Usar la convocatoria como fuente para contabilizar partidos jugados por jugador en el año.
+- Agregar asistencia en eventos de gol si se decide calcular estadisticas de asistencias.
 
 ## `events`
 
@@ -495,11 +502,11 @@ Estas relaciones y modelos no existen hoy en Sanity. Quedan documentados como pe
 | Modelo o necesidad | Cambio propuesto | Motivo |
 |---|---|---|
 | `players` | Agregar atributos, mapa de posiciones, redes sociales y premios internos. | Enriquecer el perfil publico del jugador. |
-| `players` / `games` | Calcular partidos jugados desde la convocatoria del partido. | Evitar cargar partidos jugados manualmente y usar el partido como fuente real. |
+| `players` / `games` | Mantener partidos jugados derivados desde `games.playedPlayers`. | Evitar cargar partidos jugados manualmente y usar el partido finalizado como fuente real. |
 | `news` | Relacionar noticias con `players`, `staff`, `games`, `tournaments`, etc. | Permitir contenido relacionado y contexto deportivo dentro de cada noticia. |
 | `news` / `usuarios` | Votaciones publicas (reacciones ya en Supabase). Comentarios implementados en Supabase (ver abajo). | Habilitar participacion de usuarios en el sitio. |
 | `staff` | Agregar redes sociales. | Enriquecer el perfil publico del staff. |
-| `games` | Agregar convocatoria al partido. | Permite mostrar convocados y contabilizar partidos jugados por jugador en el año. |
+| `games` | Sin convocatoria. Mantener carga liviana con `playedPlayers` solo al finalizar. | Evita sobre-modelar el flujo de club de amigos y mantiene estadisticas desde partidos reales. |
 | `events` | Agregar asistencia en eventos de gol (`assist -> players`). | Permite registrar quien asistio y calcular estadisticas de asistencias. |
 | `teams` | Sin cambios previstos. | El modelo actual esta bien como esta. |
 | `tournaments` / `standingsState` / `standingsSnapshots` | Mantener `standingsState` como unica fuente editorial de tablas y `tournaments.participants` como lista oficial de equipos. | Dejar una sola carga manual para tablas con memoria automatica y evitar equipos incorrectos. |
@@ -581,7 +588,7 @@ Regla de fuente de verdad: Sanity = contenido publico del footer; Supabase = ope
 ## Observaciones tecnicas
 
 - Hay diferencias entre campos editoriales y campos de consumo web. Ejemplo: `photo` se proyecta como `imageUrl`; `rival.logo` se proyecta como `logoUrl`.
-- `games.result` solo se edita cuando el partido esta finalizado, pero el adaptador web normaliza goles faltantes a `0`.
+- `games.result` solo existe cuando el partido esta finalizado; la web conserva `null` para partidos por jugar y no normaliza marcadores faltantes a `0`.
 - `events.player` no es requerido en Sanity, por eso la web permite eventos sin jugador asociado.
 - `standingsState.rows` es manual para rivales/equipos del torneo, pero Mentira FC se inserta automaticamente con estadisticas calculadas desde partidos finalizados hasta `gamesThroughDate`.
 - `standingsState.rows` solo debe contener equipos activos de `tournaments.participants` para esa fecha.

@@ -288,6 +288,7 @@ export const parseDashboardMatchDraftInput = (
   }
 
   const data = parsed.data;
+  const isFinished = data.state === "finalizado";
 
   return {
     rivalId: data.rivalId ?? "",
@@ -298,12 +299,14 @@ export const parseDashboardMatchDraftInput = (
       : undefined,
     tournamentId: data.tournamentId ?? "",
     state: isMatchState(data.state) ? data.state : undefined,
-    goalsFor: data.goalsFor,
-    goalsAgainst: data.goalsAgainst,
-    playedPlayerIds: uniqueIds(data.playedPlayerIds),
-    goalScorers: normalizePlayerGoalScorers(data.goalScorers),
-    guestGoalScorers: normalizeGuestGoalScorers(data.guestGoalScorers),
-    opponentOwnGoals: data.opponentOwnGoals ?? 0,
+    goalsFor: isFinished ? data.goalsFor : undefined,
+    goalsAgainst: isFinished ? data.goalsAgainst : undefined,
+    playedPlayerIds: isFinished ? uniqueIds(data.playedPlayerIds) : [],
+    goalScorers: isFinished ? normalizePlayerGoalScorers(data.goalScorers) : [],
+    guestGoalScorers: isFinished
+      ? normalizeGuestGoalScorers(data.guestGoalScorers)
+      : [],
+    opponentOwnGoals: isFinished ? data.opponentOwnGoals ?? 0 : 0,
   };
 };
 

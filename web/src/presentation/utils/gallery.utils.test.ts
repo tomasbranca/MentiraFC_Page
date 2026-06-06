@@ -51,6 +51,12 @@ describe("gallery.utils", () => {
     );
   });
 
+  it("no inventa resultado si el partido no tiene marcador", () => {
+    expect(buildGalleryMatchTitle({ ...game, result: null })).toBe(
+      "Apertura 2026 - Mentira FC vs Rival FC"
+    );
+  });
+
   it("ordena galerias de mas reciente a mas vieja", () => {
     const older = {
       ...gallery,

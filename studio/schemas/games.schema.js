@@ -16,7 +16,10 @@ export default {
       let subtitle = 'Por jugar'
 
       if (state === 'finalizado') {
-        subtitle = `Finalizado: ${goalsFor} - ${goalsAgainst}`
+        subtitle =
+          Number.isInteger(goalsFor) && Number.isInteger(goalsAgainst)
+            ? `Finalizado: ${goalsFor} - ${goalsAgainst}`
+            : 'Finalizado: sin resultado'
       }
 
       return {
@@ -92,6 +95,28 @@ export default {
       title: 'Resultado',
       type: 'object',
       hidden: ({parent}) => parent?.state !== 'finalizado',
+      validation: (Rule) =>
+        Rule.custom((value, context) => {
+          const state = context.parent?.state
+
+          if (state === 'finalizado') {
+            if (
+              !value ||
+              !Number.isInteger(value.goalsFor) ||
+              value.goalsFor < 0 ||
+              !Number.isInteger(value.goalsAgainst) ||
+              value.goalsAgainst < 0
+            ) {
+              return 'Carga un resultado valido para finalizar el partido.'
+            }
+          }
+
+          if (state !== 'finalizado' && value != null) {
+            return 'El resultado se carga solo cuando el partido esta finalizado.'
+          }
+
+          return true
+        }),
       fields: [
         {
           name: 'goalsFor',

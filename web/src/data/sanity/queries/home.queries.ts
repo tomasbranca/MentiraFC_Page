@@ -25,7 +25,9 @@ const HOME_LATEST_GAME_PROJECTION = `{
     },
 
     "events": select(
-      state == "finalizado" => *[
+      state == "finalizado" &&
+      defined(result.goalsFor) &&
+      defined(result.goalsAgainst) => *[
         _type == "events" &&
         game._ref == ^._id &&
         type == "goal"
@@ -64,6 +66,8 @@ const HOME_LATEST_GAME_ID_QUERY = `coalesce(
   *[
     _type == "games" &&
     state == "finalizado" &&
+    defined(result.goalsFor) &&
+    defined(result.goalsAgainst) &&
     defined(date)
   ] | order(date desc)[0]._id
 )`;

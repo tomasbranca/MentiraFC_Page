@@ -103,7 +103,7 @@ export interface Game {
   tournamentId?: string | null;
   tournament?: string | null;
   rival: TeamRef;
-  result: GameResult;
+  result: GameResult | null;
   events: MatchEvent[];
   playedPlayers: Pick<Player, "id" | "name" | "lastName" | "slug">[];
 }
@@ -223,7 +223,12 @@ export interface GoalEvent {
   order?: number;
   scorerKind?: GoalScorerKind;
   guestName?: string | null;
-  game: { id: string; date: string } | null;
+  game: {
+    id: string;
+    date: string;
+    state?: GameState | null;
+    result?: GameResult | null;
+  } | null;
   player: Pick<Player, "id" | "name" | "lastName" | "slug"> | null;
 }
 

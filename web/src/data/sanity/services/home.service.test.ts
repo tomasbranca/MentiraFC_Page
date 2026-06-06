@@ -41,9 +41,6 @@ describe("home.service", () => {
       client: sanityFreshClient,
     });
     expect(data.latestGame?.state).toBe("por_jugar");
-    expect(data.latestGame?.result).toEqual({
-      goalsFor: 0,
-      goalsAgainst: 0,
-    });
+    expect(data.latestGame?.result).toBeNull();
   });
 });

@@ -13,7 +13,10 @@ import {
 } from "../../../domain/games";
 import { useGame } from "../../context/useGame";
 import { useCountdown } from "../../hooks/useCountDown";
-import { getGameWidgetVisualState } from "./GameWidget.utils";
+import {
+  getGameWidgetResultLabel,
+  getGameWidgetVisualState,
+} from "./GameWidget.utils";
 
 type GameWidgetProps = {
   compact?: boolean;
@@ -52,6 +55,8 @@ const GameWidget = ({ compact = false }: GameWidgetProps) => {
 
   if (visualState === "empty") return null;
   if (!game) return null;
+
+  const resultLabel = getGameWidgetResultLabel(game);
 
   return (
     <div
@@ -131,7 +136,7 @@ const GameWidget = ({ compact = false }: GameWidgetProps) => {
         {isFinishedGameState(game.state) && (
           <>
             <p className="text-lg">
-              {game.result.goalsFor} - {game.result.goalsAgainst}
+              {resultLabel}
             </p>
             <p className="text-xs mt-0.5">Finalizado</p>
           </>

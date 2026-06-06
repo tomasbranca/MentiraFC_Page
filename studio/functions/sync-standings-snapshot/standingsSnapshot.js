@@ -160,7 +160,16 @@ export const validateStandingRowsAgainstParticipants = ({
 }
 
 const calculateMainTeamStats = (games = []) => {
-  return games.reduce(
+  const finishedGamesWithResult = games.filter(
+    (game) =>
+      game?.result &&
+      Number.isInteger(game.result.goalsFor) &&
+      game.result.goalsFor >= 0 &&
+      Number.isInteger(game.result.goalsAgainst) &&
+      game.result.goalsAgainst >= 0,
+  )
+
+  return finishedGamesWithResult.reduce(
     (acc, game) => {
       const goalsFor = normalizeNumber(game?.result?.goalsFor)
       const goalsAgainst = normalizeNumber(game?.result?.goalsAgainst)

@@ -1,10 +1,10 @@
 import { isFinishedGameState } from "../games";
-import type { Game, StandingsRow, TeamRef } from "../../types/models";
+import type { Game, GameResult, StandingsRow, TeamRef } from "../../types/models";
 
 type StandingsRowType = NonNullable<StandingsRow["type"]>;
 
 type GameInput = Partial<Omit<Game, "result">> & {
-  result?: Partial<Record<keyof Game["result"], unknown>>;
+  result?: Partial<Record<keyof GameResult, unknown>> | null;
 };
 
 type StandingsRowInput = Omit<
@@ -71,6 +71,18 @@ const getRowType = (
 const normalizeNumber = (value: unknown): number =>
   Number.isFinite(value) ? Number(value) : 0;
 
+const isValidResultNumber = (value: unknown): value is number =>
+  Number.isInteger(value) && Number(value) >= 0;
+
+const hasValidResult = (
+  result?: Partial<Record<keyof GameResult, unknown>> | null
+): result is GameResult =>
+  Boolean(
+    result &&
+      isValidResultNumber(result.goalsFor) &&
+      isValidResultNumber(result.goalsAgainst)
+  );
+
 const isGameBeforeOrAt = (
   game: GameInput,
   cutoffDate?: string | null
@@ -94,6 +106,7 @@ const getFinishedGamesThroughDate = (
       game != null &&
       game.state != null &&
       isFinishedGameState(game.state) &&
+      hasValidResult(game.result) &&
       isGameBeforeOrAt(game, cutoffDate)
   );
 };

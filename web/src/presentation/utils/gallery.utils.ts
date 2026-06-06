@@ -28,7 +28,9 @@ export const getGalleryCompetitionName = (game: GameListItem): string => {
 export const buildGalleryMatchTitle = (game: GameListItem): string => {
   const competition = getGalleryCompetitionName(game);
   const rival = normalizeText(game.rival?.name) || "Rival";
-  const result = `${TEAM_NAME} ${game.result.goalsFor} - ${rival} ${game.result.goalsAgainst}`;
+  const result = game.result
+    ? `${TEAM_NAME} ${game.result.goalsFor} - ${rival} ${game.result.goalsAgainst}`
+    : `${TEAM_NAME} vs ${rival}`;
 
   return competition ? `${competition} - ${result}` : result;
 };

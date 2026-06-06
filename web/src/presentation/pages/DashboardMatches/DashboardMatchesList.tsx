@@ -117,7 +117,13 @@ const getMatchScoreLabel = (item: DashboardMatchItem): string => {
     return "VS";
   }
 
-  return `${item.result?.goalsFor ?? 0} - ${item.result?.goalsAgainst ?? 0}`;
+  const result = item.result;
+
+  if (result?.goalsFor == null || result.goalsAgainst == null) {
+    return "Sin resultado";
+  }
+
+  return `${result.goalsFor} - ${result.goalsAgainst}`;
 };
 
 const MatchStatusBadge = ({ item }: { item: DashboardMatchItem }) => {

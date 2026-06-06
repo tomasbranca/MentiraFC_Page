@@ -1,9 +1,11 @@
 import {
+  isFinishedGameState,
   normalizeGameState,
   normalizeGoalScorerKind,
 } from "../../../domain/games";
 import type {
   Game,
+  GameResult,
   GameListItem,
   MatchEvent,
   Player,
@@ -19,6 +21,24 @@ import {
 import { validateSanityArray, validateSanityItem } from "../validation";
 
 type GamePlayerRef = Pick<Player, "id" | "name" | "lastName" | "slug">;
+
+const isValidGoalValue = (value: unknown): value is number =>
+  typeof value === "number" && Number.isInteger(value) && value >= 0;
+
+const adaptGameResult = (result: SanityGame["result"]): GameResult | null => {
+  if (
+    !result ||
+    !isValidGoalValue(result.goalsFor) ||
+    !isValidGoalValue(result.goalsAgainst)
+  ) {
+    return null;
+  }
+
+  return {
+    goalsFor: result.goalsFor,
+    goalsAgainst: result.goalsAgainst,
+  };
+};
 
 const adaptPlayerRef = (player: unknown): GamePlayerRef | null => {
   const validated = validateSanityItem(
@@ -66,24 +86,32 @@ const getTournamentLabel = (game: SanityGame): string | null => {
     : game.tournament.name;
 };
 
-const adaptGameListFields = (validated: SanityGame): GameListItem => ({
-  id: validated._id,
-  date: validated.date,
-  state: normalizeGameState(validated.state),
-  location: validated.location,
-  competition: validated.competition,
-  tournamentId: validated.tournament?._id || null,
-  tournament: getTournamentLabel(validated),
-  rival: {
-    id: validated.rival?._id || "",
-    name: validated.rival?.name || "",
-    imageUrl: validated.rival?.logoUrl,
-  },
-  result: {
-    goalsFor: Number(validated.result?.goalsFor) || 0,
-    goalsAgainst: Number(validated.result?.goalsAgainst) || 0,
-  },
-});
+const adaptGameListFields = (validated: SanityGame): GameListItem | null => {
+  const state = normalizeGameState(validated.state);
+  const result = isFinishedGameState(state)
+    ? adaptGameResult(validated.result)
+    : null;
+
+  if (isFinishedGameState(state) && !result) {
+    return null;
+  }
+
+  return {
+    id: validated._id,
+    date: validated.date,
+    state,
+    location: validated.location,
+    competition: validated.competition,
+    tournamentId: validated.tournament?._id || null,
+    tournament: getTournamentLabel(validated),
+    rival: {
+      id: validated.rival?._id || "",
+      name: validated.rival?.name || "",
+      imageUrl: validated.rival?.logoUrl,
+    },
+    result,
+  };
+};
 
 export const adaptGameListItem = (game: unknown): GameListItem | null => {
   const validated = validateSanityItem(
@@ -104,12 +132,17 @@ export const adaptGame = (game: unknown): Game | null => {
   );
   if (!validated) return null;
 
-  // Upcoming matches do not have a result object yet; normalize to 0-0 so
-  // widgets can render one stable Game shape.
+  const listFields = adaptGameListFields(validated);
+
+  if (!listFields) {
+    return null;
+  }
+
+  // Upcoming matches intentionally keep a null result instead of a fake score.
   return {
     id: validated._id,
     date: validated.date,
-    state: normalizeGameState(validated.state),
+    state: listFields.state,
     location: validated.location,
     competition: validated.competition,
     tournamentId: validated.tournament?._id || null,
@@ -121,10 +154,7 @@ export const adaptGame = (game: unknown): Game | null => {
       name: validated.rival?.name || "",
       imageUrl: validated.rival?.logoUrl,
     },
-    result: {
-      goalsFor: Number(validated.result?.goalsFor) || 0,
-      goalsAgainst: Number(validated.result?.goalsAgainst) || 0,
-    },
+    result: listFields.result,
     events: (validated.events || [])
       .map(adaptEvent)
       .filter((event): event is MatchEvent => Boolean(event)),
@@ -153,5 +183,7 @@ export const adaptGameListItems = (games: unknown): GameListItem[] => {
     "games.adapter:adaptGameListItems"
   );
 
-  return validatedGames.map(adaptGameListFields);
+  return validatedGames
+    .map(adaptGameListFields)
+    .filter((game): game is GameListItem => Boolean(game));
 };
