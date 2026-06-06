@@ -1,17 +1,42 @@
 import {
+  DASHBOARD_TEAMS_PAGE_KIND_FILTERS,
+  DASHBOARD_TEAMS_PAGE_SORT_BY,
+  DASHBOARD_TEAMS_PAGE_STATUS_FILTERS,
+  DASHBOARD_TEAMS_PAGE_USAGE_FILTERS,
   DashboardTeamValidationError,
   deleteDashboardTeam,
   getDashboardTeamById,
+  getDashboardTeamsPage,
   listDashboardTeams,
   publishDashboardTeam,
   saveDashboardTeamDraft,
 } from "../../_lib/teams.js";
 import { authorizeDashboardRequest } from "../../_lib/auth.js";
 import { errorJson, json } from "../../_lib/responses.js";
+import { parseOffsetPaginationParams } from "../../../shared/pagination.js";
 import {
   validateDashboardTeamDraftMutation,
   validateDashboardTeamMutation,
 } from "./_shared.js";
+
+const PAGINATION_PARAM_NAMES = [
+  "page",
+  "limit",
+  "sortBy",
+  "direction",
+  "search",
+  "status",
+  "kind",
+  "usage",
+  "cursor",
+] as const;
+
+type DashboardTeamsStatusFilter =
+  (typeof DASHBOARD_TEAMS_PAGE_STATUS_FILTERS)[number];
+type DashboardTeamsKindFilter =
+  (typeof DASHBOARD_TEAMS_PAGE_KIND_FILTERS)[number];
+type DashboardTeamsUsageFilter =
+  (typeof DASHBOARD_TEAMS_PAGE_USAGE_FILTERS)[number];
 
 const getIdFromRequest = (request: Request): string | null => {
   const id = new URL(request.url).searchParams.get("id")?.trim();
@@ -23,6 +48,80 @@ const getIntentFromRequest = (request: Request): "draft" | "publish" => {
   return intent === "draft" ? "draft" : "publish";
 };
 
+const shouldUsePaginatedResponse = (searchParams: URLSearchParams): boolean =>
+  PAGINATION_PARAM_NAMES.some((paramName) => searchParams.has(paramName));
+
+const parseDashboardTeamsStatusFilter = (
+  searchParams: URLSearchParams
+):
+  | { ok: true; status: DashboardTeamsStatusFilter | null }
+  | { ok: false; message: string } => {
+  const status = searchParams.get("status")?.trim();
+
+  if (!status || status === "all") {
+    return { ok: true, status: null };
+  }
+
+  if (
+    DASHBOARD_TEAMS_PAGE_STATUS_FILTERS.includes(
+      status as DashboardTeamsStatusFilter
+    )
+  ) {
+    return { ok: true, status: status as DashboardTeamsStatusFilter };
+  }
+
+  return {
+    ok: false,
+    message: "El filtro de publicacion no esta permitido para este listado.",
+  };
+};
+
+const parseDashboardTeamsKindFilter = (
+  searchParams: URLSearchParams
+):
+  | { ok: true; kind: DashboardTeamsKindFilter | null }
+  | { ok: false; message: string } => {
+  const kind = searchParams.get("kind")?.trim();
+
+  if (!kind || kind === "all") {
+    return { ok: true, kind: null };
+  }
+
+  if (DASHBOARD_TEAMS_PAGE_KIND_FILTERS.includes(kind as DashboardTeamsKindFilter)) {
+    return { ok: true, kind: kind as DashboardTeamsKindFilter };
+  }
+
+  return {
+    ok: false,
+    message: "El filtro de tipo de club no esta permitido para este listado.",
+  };
+};
+
+const parseDashboardTeamsUsageFilter = (
+  searchParams: URLSearchParams
+):
+  | { ok: true; usage: DashboardTeamsUsageFilter | null }
+  | { ok: false; message: string } => {
+  const usage = searchParams.get("usage")?.trim();
+
+  if (!usage || usage === "all") {
+    return { ok: true, usage: null };
+  }
+
+  if (
+    DASHBOARD_TEAMS_PAGE_USAGE_FILTERS.includes(
+      usage as DashboardTeamsUsageFilter
+    )
+  ) {
+    return { ok: true, usage: usage as DashboardTeamsUsageFilter };
+  }
+
+  return {
+    ok: false,
+    message: "El filtro de uso no esta permitido para este listado.",
+  };
+};
+
 const dashboardTeamsHandler = async (request: Request): Promise<Response> => {
   try {
     const authorization = await authorizeDashboardRequest(request, "teams");
@@ -32,6 +131,7 @@ const dashboardTeamsHandler = async (request: Request): Promise<Response> => {
     }
 
     const id = getIdFromRequest(request);
+    const url = new URL(request.url);
 
     if (request.method === "GET" && id) {
       const team = await getDashboardTeamById(id);
@@ -39,6 +139,47 @@ const dashboardTeamsHandler = async (request: Request): Promise<Response> => {
     }
 
     if (request.method === "GET") {
+      if (shouldUsePaginatedResponse(url.searchParams)) {
+        const pagination = parseOffsetPaginationParams(url.searchParams, {
+          allowedSortBy: DASHBOARD_TEAMS_PAGE_SORT_BY,
+          defaultSortBy: "name",
+          defaultDirection: "asc",
+        });
+
+        if (!pagination.ok) {
+          return errorJson(
+            pagination.issues[0]?.message ?? "Paginacion invalida.",
+            400
+          );
+        }
+
+        const statusFilter = parseDashboardTeamsStatusFilter(url.searchParams);
+
+        if (!statusFilter.ok) {
+          return errorJson(statusFilter.message, 400);
+        }
+
+        const kindFilter = parseDashboardTeamsKindFilter(url.searchParams);
+
+        if (!kindFilter.ok) {
+          return errorJson(kindFilter.message, 400);
+        }
+
+        const usageFilter = parseDashboardTeamsUsageFilter(url.searchParams);
+
+        if (!usageFilter.ok) {
+          return errorJson(usageFilter.message, 400);
+        }
+
+        return json(
+          await getDashboardTeamsPage(pagination.params, {
+            status: statusFilter.status,
+            kind: kindFilter.kind,
+            usage: usageFilter.usage,
+          })
+        );
+      }
+
       return json(await listDashboardTeams());
     }
 

@@ -1,8 +1,14 @@
-import { type QueryClient, queryOptions } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  type QueryClient,
+  queryOptions,
+} from "@tanstack/react-query";
 
 import {
   fetchDashboardTeamById,
   fetchDashboardTeams,
+  fetchDashboardTeamsPage,
+  type DashboardTeamsPageOptions,
 } from "../../../data/dashboardTeams";
 import { queryKeys } from "../../../data/queryKeys";
 import { SANITY_FRESHNESS } from "../../../data/sanity/freshness";
@@ -23,6 +29,26 @@ export const dashboardTeamsListQueryOptions = () =>
         throw error;
       }
     },
+    ...SANITY_FRESHNESS.dashboard,
+  });
+
+export const dashboardTeamsPageQueryOptions = (
+  params: DashboardTeamsPageOptions = {}
+) =>
+  queryOptions({
+    queryKey: queryKeys.dashboard.teams.page(params),
+    queryFn: async () => {
+      try {
+        return await fetchDashboardTeamsPage(params);
+      } catch (error) {
+        reportError(error, {
+          page: "DashboardTeamsList",
+          action: "load_teams_page",
+        });
+        throw error;
+      }
+    },
+    placeholderData: keepPreviousData,
     ...SANITY_FRESHNESS.dashboard,
   });
 
@@ -47,9 +73,14 @@ export const dashboardTeamDetailQueryOptions = (id: string) =>
 export const invalidateDashboardTeamsList = async (
   queryClient: QueryClient
 ) => {
-  await queryClient.invalidateQueries({
-    queryKey: queryKeys.dashboard.teams.all,
-  });
+  await Promise.all([
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.dashboard.teams.all,
+    }),
+    queryClient.invalidateQueries({
+      queryKey: ["dashboard", "teams", "page"] as const,
+    }),
+  ]);
 };
 
 export const invalidateDashboardTeamPublishDependencies = async (
@@ -59,6 +90,9 @@ export const invalidateDashboardTeamPublishDependencies = async (
     invalidateDashboardTeamsList(queryClient),
     queryClient.invalidateQueries({
       queryKey: queryKeys.dashboard.matches.all,
+    }),
+    queryClient.invalidateQueries({
+      queryKey: ["dashboard", "matches", "page"] as const,
     }),
     queryClient.invalidateQueries({
       queryKey: queryKeys.dashboard.matches.options,
@@ -77,6 +111,9 @@ export const invalidateDashboardTeamPublishDependencies = async (
     }),
     queryClient.invalidateQueries({
       queryKey: queryKeys.dashboard.galleries.all,
+    }),
+    queryClient.invalidateQueries({
+      queryKey: ["dashboard", "galleries", "page"] as const,
     }),
     queryClient.invalidateQueries({
       queryKey: queryKeys.dashboard.galleries.options,

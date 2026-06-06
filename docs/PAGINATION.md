@@ -85,10 +85,24 @@ Dashboard:
   filtros `search`/`status`/`state`/`competition` whitelisteados. El listado no
   trae `playedPlayers` ni eventos de gol; el formulario/detalle usa
   `dashboardMatchByIdQuery` para cargar el documento completo.
+- `getDashboardGalleriesPage` en el repositorio de la API.
+- `fetchDashboardGalleriesPage` y `dashboardGalleriesPageQueryOptions` en el
+  cliente.
+- `DashboardGalleriesList` ya usa la pagina remota de galerias con `limit` 20 y
+  filtros `search`/`status`/`photos` whitelisteados. El listado trae una foto de
+  portada y `photoCount`; el formulario/detalle usa `dashboardGalleryByIdQuery`
+  para cargar todas las fotos.
+- `getDashboardTeamsPage` en el repositorio de la API.
+- `fetchDashboardTeamsPage` y `dashboardTeamsPageQueryOptions` en el cliente.
+- `DashboardTeamsList` ya usa la pagina remota de clubes con `limit` 20 y
+  filtros `search`/`status`/`kind`/`usage` whitelisteados. El listado trae
+  `logoUrl`, `logoAssetId` y conteos de referencias; el formulario/detalle usa
+  `dashboardTeamByIdQuery` para cargar el documento completo.
 
 Las funciones legacy (`getNews`, `getAllGames`, `getGalleries`,
-`fetchDashboardNews`, `fetchDashboardMatches`) siguen disponibles como
-compatibilidad temporal mientras se migran pantallas.
+`fetchDashboardNews`, `fetchDashboardMatches`, `fetchDashboardGalleries`,
+`fetchDashboardTeams`) siguen disponibles como compatibilidad temporal mientras
+se migran pantallas.
 
 ## Como crear un listado paginado
 

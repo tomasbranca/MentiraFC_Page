@@ -4,6 +4,7 @@ import {
   dashboardTeamByIdQuery,
   dashboardTeamListQuery,
   dashboardTeamReferenceUsageQuery,
+  getDashboardTeamsPageQuery,
   parseDashboardTeamDraftFormData,
   parseDashboardTeamDraftInput,
   parseDashboardTeamFormData,
@@ -89,5 +90,18 @@ describe("dashboard teams api input", () => {
       "participants[team._ref == $id"
     );
     expect(dashboardTeamReferenceUsageQuery).toContain("rows[team._ref == $id");
+  });
+
+  it("consulta paginas de clubes con filtros whitelisteados y resumen liviano", () => {
+    const pageQuery = getDashboardTeamsPageQuery("name", "asc");
+
+    expect(pageQuery).toContain("$offset...$end");
+    expect(pageQuery).toContain("$hasSearch");
+    expect(pageQuery).toContain("$hasStatus");
+    expect(pageQuery).toContain("$hasKind");
+    expect(pageQuery).toContain("$hasUsage");
+    expect(pageQuery).toContain('"logoUrl": logo.asset->url');
+    expect(pageQuery).toContain('"referenceCounts"');
+    expect(pageQuery).not.toContain("logo,");
   });
 });
