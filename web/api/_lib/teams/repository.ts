@@ -6,6 +6,12 @@ import type {
   DashboardTeamMutationInput,
   DashboardTeamReferenceCounts,
 } from "../../../src/types/dashboard";
+import {
+  buildOffsetPaginatedResult,
+  buildOffsetPaginationQueryParams,
+  type OffsetPaginationParams,
+  type PaginatedResult,
+} from "../../../shared/pagination.js";
 import { mutateSanity, querySanity } from "../sanity.js";
 import {
   resolveNextTeamLogo,
@@ -15,6 +21,11 @@ import {
   dashboardTeamByIdQuery,
   dashboardTeamListQuery,
   dashboardTeamReferenceUsageQuery,
+  getDashboardTeamsPageQuery,
+  type DashboardTeamsPageKindFilter,
+  type DashboardTeamsPageSortBy,
+  type DashboardTeamsPageStatusFilter,
+  type DashboardTeamsPageUsageFilter,
 } from "./queries.js";
 import { adaptDashboardTeamItem } from "./validation.js";
 
@@ -45,6 +56,17 @@ type DashboardTeamReferenceUsage = {
   tournaments?: Array<{ id: string }>;
   tables?: Array<{ id: string }>;
   snapshots?: Array<{ id: string }>;
+};
+
+type DashboardTeamsPageResult = {
+  items?: DashboardTeamDocument[];
+  total?: number;
+};
+
+type DashboardTeamsPageFilters = {
+  status?: DashboardTeamsPageStatusFilter | null;
+  kind?: DashboardTeamsPageKindFilter | null;
+  usage?: DashboardTeamsPageUsageFilter | null;
 };
 
 const emptyReferenceCounts = (): DashboardTeamReferenceCounts => ({
@@ -146,7 +168,7 @@ const sortDashboardTeamItems = (
 
 const queryDashboardTeamDocuments = async (
   query: string,
-  params?: Record<string, string>
+  params?: Record<string, string | number | boolean>
 ): Promise<DashboardTeamDocument[]> =>
   querySanity<DashboardTeamDocument[]>(query, {
     params,
@@ -227,6 +249,33 @@ export const listDashboardTeams = async (): Promise<DashboardTeamItem[]> => {
   return sortDashboardTeamItems(
     groupDashboardTeamDocuments(result).map(adaptDashboardTeamPair)
   );
+};
+
+export const getDashboardTeamsPage = async (
+  pagination: OffsetPaginationParams<DashboardTeamsPageSortBy>,
+  filters: DashboardTeamsPageFilters = {}
+): Promise<PaginatedResult<DashboardTeamItem>> => {
+  const result = await querySanity<DashboardTeamsPageResult>(
+    getDashboardTeamsPageQuery(pagination.sortBy, pagination.direction),
+    {
+      params: {
+        ...buildOffsetPaginationQueryParams(pagination),
+        hasStatus: Boolean(filters.status),
+        status: filters.status ?? "",
+        hasKind: Boolean(filters.kind),
+        kind: filters.kind ?? "",
+        hasUsage: Boolean(filters.usage),
+        usage: filters.usage ?? "",
+      },
+      perspective: "raw",
+      useToken: true,
+    }
+  );
+  const items = sortDashboardTeamItems(
+    groupDashboardTeamDocuments(result.items ?? []).map(adaptDashboardTeamPair)
+  );
+
+  return buildOffsetPaginatedResult(items, result.total, pagination);
 };
 
 export const getDashboardTeamById = async (

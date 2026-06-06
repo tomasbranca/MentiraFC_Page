@@ -1,8 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
-import { FiEdit2, FiFlag, FiPlus, FiShield, FiTrash2 } from "react-icons/fi";
+import {
+  FiChevronLeft,
+  FiChevronRight,
+  FiEdit2,
+  FiPlus,
+  FiShield,
+  FiTrash2,
+} from "react-icons/fi";
 
 import { deleteDashboardTeam } from "../../../data/dashboardTeams";
 import { getImageSrcSet, getImageUrl } from "../../../data/imageService";
@@ -19,14 +26,17 @@ import { DASHBOARD_STATUS_FILTER_OPTIONS } from "../../dashboard/dashboardListFi
 import { formatDateTime } from "../../utils/date.utils";
 import {
   defaultDashboardTeamsListFilters,
-  filterDashboardTeamsList,
   hasActiveDashboardTeamsListFilters,
 } from "./dashboardTeamsList.filters";
 import {
-  dashboardTeamsListQueryOptions,
+  dashboardTeamsPageQueryOptions,
   invalidateDashboardTeamPublishDependencies,
 } from "./dashboardTeams.queries";
 import { getTeamReferenceCount, getTeamUsageLabel } from "./dashboardTeams.utils";
+
+const DASHBOARD_TEAMS_PAGE_LIMIT = 20;
+const DASHBOARD_TEAMS_SEARCH_MAX_LENGTH = 80;
+const EMPTY_DASHBOARD_TEAMS: DashboardTeamItem[] = [];
 
 const TeamThumbnail = ({ item }: { item: DashboardTeamItem }) => {
   const imageUrl = getImageUrl(item.logoUrl, {
@@ -148,17 +158,130 @@ const DeleteTeamButton = ({
   );
 };
 
+const paginationButtonClassName =
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-[3px] border border-white/10 bg-white/[0.035] px-3 py-2.5 text-sm font-medium text-violet-100/80 transition hover:border-violet-200/35 hover:bg-white/8 hover:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/40 disabled:cursor-not-allowed disabled:opacity-45";
+
+const DashboardTeamsPagination = ({
+  page,
+  totalPages,
+  hasNextPage,
+  hasPreviousPage,
+  isFetching,
+  onPageChange,
+}: {
+  page: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+  isFetching: boolean;
+  onPageChange: (page: number) => void;
+}) => {
+  if (totalPages <= 1) {
+    return null;
+  }
+
+  return (
+    <nav
+      className="flex flex-col gap-3 border-t border-white/10 bg-[#151518] px-3 py-4 text-sm text-violet-100/70 sm:flex-row sm:items-center sm:justify-between sm:px-5"
+      aria-label="Paginacion de clubes"
+    >
+      <p aria-live="polite">
+        Pagina {page} de {totalPages}
+        {isFetching ? " - Actualizando..." : ""}
+      </p>
+      <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-end">
+        <button
+          type="button"
+          className={paginationButtonClassName}
+          disabled={!hasPreviousPage || isFetching}
+          onClick={() => onPageChange(page - 1)}
+        >
+          <FiChevronLeft className="size-4" aria-hidden="true" />
+          Anterior
+        </button>
+        <button
+          type="button"
+          className={paginationButtonClassName}
+          disabled={!hasNextPage || isFetching}
+          onClick={() => onPageChange(page + 1)}
+        >
+          Siguiente
+          <FiChevronRight className="size-4" aria-hidden="true" />
+        </button>
+      </div>
+    </nav>
+  );
+};
+
 const DashboardTeamsList = () => {
   const [filters, setFilters] = useState(defaultDashboardTeamsListFilters);
+  const [page, setPage] = useState(1);
   const queryClient = useQueryClient();
   const canCreateTeam = useDashboardPermission("teams", "create");
   const canEditTeam = useDashboardPermission("teams", "edit");
   const canDeleteTeam = useDashboardPermission("teams", "delete");
-  const teamsQuery = useQuery(dashboardTeamsListQueryOptions());
+  const search = filters.search.trim();
+  const teamsQuery = useQuery(
+    dashboardTeamsPageQueryOptions({
+      page,
+      limit: DASHBOARD_TEAMS_PAGE_LIMIT,
+      sortBy: "name",
+      direction: "asc",
+      search: search || null,
+      status: filters.status,
+      kind: filters.kind,
+      usage: filters.usage,
+    })
+  );
   const deleteMutation = useMutation({
     mutationFn: deleteDashboardTeam,
     onSuccess: () => invalidateDashboardTeamPublishDependencies(queryClient),
   });
+  const pageData = teamsQuery.data;
+  const totalPages = pageData?.totalPages ?? 1;
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
+
+  const handleSearchChange = (nextSearch: string) => {
+    setPage(1);
+    setFilters((current) => ({
+      ...current,
+      search: nextSearch.slice(0, DASHBOARD_TEAMS_SEARCH_MAX_LENGTH),
+    }));
+  };
+
+  const handleStatusChange = (status: typeof filters.status) => {
+    setPage(1);
+    setFilters((current) => ({
+      ...current,
+      status,
+    }));
+  };
+
+  const handleKindChange = (kind: typeof filters.kind) => {
+    setPage(1);
+    setFilters((current) => ({
+      ...current,
+      kind,
+    }));
+  };
+
+  const handleUsageChange = (usage: typeof filters.usage) => {
+    setPage(1);
+    setFilters((current) => ({
+      ...current,
+      usage,
+    }));
+  };
+
+  const clearFilters = () => {
+    setPage(1);
+    setFilters(defaultDashboardTeamsListFilters());
+  };
 
   const handleDeleteTeam = async (itemId: string) => {
     try {
@@ -181,24 +304,21 @@ const DashboardTeamsList = () => {
     }
   };
 
-  const allTeams = teamsQuery.data;
-  const teams = useMemo(
-    () => filterDashboardTeamsList(allTeams ?? [], filters),
-    [allTeams, filters]
-  );
-  const totalTeams = allTeams?.length ?? 0;
+  const pageTeams = pageData?.items ?? EMPTY_DASHBOARD_TEAMS;
+  const teams = pageTeams;
+  const totalTeams = pageData?.total ?? 0;
+  const totalPageTeams = pageTeams.length;
   const hasActiveFilters = hasActiveDashboardTeamsListFilters(filters);
-  const countLabel =
-    hasActiveFilters && teams.length !== totalTeams
-      ? `${teams.length} de ${totalTeams} cargados`
-      : `${totalTeams} cargados`;
+  const countLabel = `${totalTeams} cargados`;
   const hasRowActions = canEditTeam || canDeleteTeam;
+  const hasInitialData = Boolean(pageData);
+  const hasEmptyDataset = totalTeams === 0 && !hasActiveFilters;
 
-  if (teamsQuery.isLoading) {
+  if (teamsQuery.isLoading && !hasInitialData) {
     return <DashboardContentLoader />;
   }
 
-  if (teamsQuery.isError) {
+  if (teamsQuery.isError && !hasInitialData) {
     return (
       <ErrorFallback
         title="No pudimos cargar los clubes"
@@ -240,7 +360,7 @@ const DashboardTeamsList = () => {
         </div>
       </header>
 
-      {totalTeams === 0 ? (
+      {hasEmptyDataset ? (
         <div className="p-6 text-sm text-violet-100/75">
           Todavia no hay clubes ni borradores cargados.
         </div>
@@ -251,19 +371,14 @@ const DashboardTeamsList = () => {
             searchLabel="Buscar clubes"
             searchPlaceholder="Nombre, tipo o uso..."
             searchValue={filters.search}
-            onSearchChange={(search) =>
-              setFilters((current) => ({ ...current, search }))
-            }
+            onSearchChange={handleSearchChange}
             selects={[
               {
                 id: "dashboard-teams-status",
                 label: "Estado",
                 value: filters.status,
                 onChange: (status) =>
-                  setFilters((current) => ({
-                    ...current,
-                    status: status as typeof filters.status,
-                  })),
+                  handleStatusChange(status as typeof filters.status),
                 options: DASHBOARD_STATUS_FILTER_OPTIONS,
               },
               {
@@ -271,10 +386,7 @@ const DashboardTeamsList = () => {
                 label: "Tipo",
                 value: filters.kind,
                 onChange: (kind) =>
-                  setFilters((current) => ({
-                    ...current,
-                    kind: kind as typeof filters.kind,
-                  })),
+                  handleKindChange(kind as typeof filters.kind),
                 options: [
                   { value: "all", label: "Todos" },
                   { value: "main", label: "Principal" },
@@ -286,10 +398,7 @@ const DashboardTeamsList = () => {
                 label: "Uso",
                 value: filters.usage,
                 onChange: (usage) =>
-                  setFilters((current) => ({
-                    ...current,
-                    usage: usage as typeof filters.usage,
-                  })),
+                  handleUsageChange(usage as typeof filters.usage),
                 options: [
                   { value: "all", label: "Todos" },
                   { value: "with_references", label: "Con referencias" },
@@ -298,14 +407,14 @@ const DashboardTeamsList = () => {
               },
             ]}
             showClear={hasActiveFilters}
-            onClear={() => setFilters(defaultDashboardTeamsListFilters())}
+            onClear={clearFilters}
             filteredCount={teams.length}
-            totalCount={totalTeams}
+            totalCount={totalPageTeams}
           />
 
           {teams.length === 0 ? (
             <DashboardListFilteredEmpty
-              onClear={() => setFilters(defaultDashboardTeamsListFilters())}
+              onClear={clearFilters}
             />
           ) : (
             <div className="p-3 sm:p-5">
@@ -434,6 +543,14 @@ const DashboardTeamsList = () => {
               </div>
             </div>
           )}
+          <DashboardTeamsPagination
+            page={page}
+            totalPages={totalPages}
+            hasNextPage={Boolean(pageData?.hasNextPage)}
+            hasPreviousPage={Boolean(pageData?.hasPreviousPage)}
+            isFetching={teamsQuery.isFetching}
+            onPageChange={setPage}
+          />
         </>
       )}
     </div>

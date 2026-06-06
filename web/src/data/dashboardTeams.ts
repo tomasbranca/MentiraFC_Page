@@ -4,6 +4,7 @@ import type {
   DashboardTeamItem,
   DashboardTeamMutationInput,
 } from "../types/dashboard";
+import type { PaginatedResult, SortDirection } from "../../shared/pagination";
 import { z, zodParseOptions } from "./zodRuntime";
 
 const dashboardTeamReferenceCountsSchema = z.object({
@@ -29,14 +30,46 @@ const dashboardTeamSchema = z.object({
 });
 
 const dashboardTeamListSchema = z.array(dashboardTeamSchema);
+const dashboardTeamPageSchema = z.object({
+  items: z.array(dashboardTeamSchema),
+  total: z.number().optional(),
+  page: z.number().optional(),
+  limit: z.number(),
+  totalPages: z.number().optional(),
+  hasNextPage: z.boolean().optional(),
+  hasPreviousPage: z.boolean().optional(),
+  nextCursor: z.string().nullable().optional(),
+  previousCursor: z.string().nullable().optional(),
+});
 
 const DASHBOARD_TEAMS_API_PATH = "/api/dashboard/teams";
 
 type DashboardTeamMutationIntent = "draft" | "publish";
+export type DashboardTeamsPageSortBy = "name" | "updatedAt";
+export type DashboardTeamsPageStatusFilter = "all" | "published" | "draft";
+export type DashboardTeamsPageKindFilter = "all" | "main" | "rivals";
+export type DashboardTeamsPageUsageFilter =
+  | "all"
+  | "with_references"
+  | "without_references";
+
+export type DashboardTeamsPageOptions = {
+  page?: number;
+  limit?: number;
+  sortBy?: DashboardTeamsPageSortBy;
+  direction?: SortDirection;
+  search?: string | null;
+  status?: DashboardTeamsPageStatusFilter;
+  kind?: DashboardTeamsPageKindFilter;
+  usage?: DashboardTeamsPageUsageFilter;
+};
+
+type DashboardTeamsApiOptions = DashboardTeamsPageOptions;
 
 const buildDashboardTeamsApiPath = (
   id?: string | null,
-  intent?: DashboardTeamMutationIntent
+  intent?: DashboardTeamMutationIntent,
+  options?: DashboardTeamsApiOptions
 ): string => {
   const params = new URLSearchParams();
 
@@ -48,12 +81,22 @@ const buildDashboardTeamsApiPath = (
     params.set("intent", intent);
   }
 
+  Object.entries(options ?? {}).forEach(([key, value]) => {
+    if (value != null && value !== "") {
+      params.set(key, String(value));
+    }
+  });
+
   const query = params.toString();
   return query ? `${DASHBOARD_TEAMS_API_PATH}?${query}` : DASHBOARD_TEAMS_API_PATH;
 };
 
 export const buildDashboardTeamItemApiPath = (id: string): string =>
   buildDashboardTeamsApiPath(id);
+
+export const buildDashboardTeamsPageApiPath = (
+  options: DashboardTeamsPageOptions = {}
+): string => buildDashboardTeamsApiPath(null, undefined, options);
 
 const fetchDashboardApi = async <T>(
   path: string,
@@ -117,6 +160,19 @@ const buildDashboardTeamFormData = (
 export const fetchDashboardTeams = async (): Promise<DashboardTeamItem[]> => {
   const data = await fetchDashboardApi<unknown[]>(DASHBOARD_TEAMS_API_PATH);
   return dashboardTeamListSchema.parse(data, zodParseOptions) as DashboardTeamItem[];
+};
+
+export const fetchDashboardTeamsPage = async (
+  options: DashboardTeamsPageOptions = {}
+): Promise<PaginatedResult<DashboardTeamItem>> => {
+  const data = await fetchDashboardApi<unknown>(
+    buildDashboardTeamsPageApiPath(options)
+  );
+
+  return dashboardTeamPageSchema.parse(
+    data,
+    zodParseOptions
+  ) as PaginatedResult<DashboardTeamItem>;
 };
 
 export const fetchDashboardTeamById = async (

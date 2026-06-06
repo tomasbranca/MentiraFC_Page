@@ -108,6 +108,16 @@ export const queryKeys = {
     },
     teams: {
       all: ["dashboard", "teams"] as const,
+      page: (params: {
+        page?: number;
+        limit?: number;
+        sortBy?: string;
+        direction?: string;
+        search?: string | null;
+        status?: string;
+        kind?: string;
+        usage?: string;
+      }) => ["dashboard", "teams", "page", params] as const,
       byId: (id: string) => ["dashboard", "teams", id] as const,
     },
     table: {

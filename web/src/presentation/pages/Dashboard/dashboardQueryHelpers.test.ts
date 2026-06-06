@@ -64,6 +64,7 @@ import {
   cacheDashboardTeam,
   dashboardTeamDetailQueryOptions,
   dashboardTeamsListQueryOptions,
+  dashboardTeamsPageQueryOptions,
   invalidateDashboardTeamPublishDependencies,
   invalidateDashboardTeamsList,
 } from "../DashboardTeams/dashboardTeams.queries";
@@ -209,6 +210,29 @@ describe("dashboard query helpers", () => {
     expect(dashboardTeamsListQueryOptions().queryKey).toEqual(
       queryKeys.dashboard.teams.all
     );
+    expect(
+      dashboardTeamsPageQueryOptions({
+        page: 2,
+        limit: 20,
+        sortBy: "name",
+        direction: "asc",
+        search: "rival",
+        status: "draft",
+        kind: "rivals",
+        usage: "with_references",
+      }).queryKey
+    ).toEqual(
+      queryKeys.dashboard.teams.page({
+        page: 2,
+        limit: 20,
+        sortBy: "name",
+        direction: "asc",
+        search: "rival",
+        status: "draft",
+        kind: "rivals",
+        usage: "with_references",
+      })
+    );
     expect(dashboardTeamDetailQueryOptions("team-1").queryKey).toEqual(
       queryKeys.dashboard.teams.byId("team-1")
     );
@@ -245,6 +269,7 @@ describe("dashboard query helpers", () => {
     ).resolves.toEqual([{ queryKey: queryKeys.dashboard.organizations.all }]);
     await expect(getInvalidatedFilters(invalidateDashboardTeamsList)).resolves.toEqual([
       { queryKey: queryKeys.dashboard.teams.all },
+      { queryKey: ["dashboard", "teams", "page"] },
     ]);
     await expect(getInvalidatedFilters(invalidateDashboardStaffList)).resolves.toEqual([
       { queryKey: queryKeys.dashboard.staff.all },
@@ -323,13 +348,16 @@ describe("dashboard query helpers", () => {
       getInvalidatedFilters(invalidateDashboardTeamPublishDependencies)
     ).resolves.toEqual([
       { queryKey: queryKeys.dashboard.teams.all },
+      { queryKey: ["dashboard", "teams", "page"] },
       { queryKey: queryKeys.dashboard.matches.all },
+      { queryKey: ["dashboard", "matches", "page"] },
       { queryKey: queryKeys.dashboard.matches.options },
       { queryKey: queryKeys.dashboard.tournaments.all },
       { queryKey: queryKeys.dashboard.tournaments.options },
       { queryKey: queryKeys.dashboard.table.all },
       { queryKey: queryKeys.dashboard.table.options },
       { queryKey: queryKeys.dashboard.galleries.all },
+      { queryKey: ["dashboard", "galleries", "page"] },
       { queryKey: queryKeys.dashboard.galleries.options },
       { queryKey: queryKeys.teams.all },
       { queryKey: queryKeys.games.all },
