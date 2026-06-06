@@ -9,7 +9,7 @@ import {
   setReaction,
 } from "../_lib/reactions.js";
 import {
-  assertRateLimit,
+  assertServerRateLimit,
   getClientIp,
   isRateLimitError,
   RATE_LIMIT_MESSAGE,
@@ -49,14 +49,14 @@ const validateExistingTarget = async (
   return exists ? null : errorJson("La entidad no existe o no esta publicada.", 404);
 };
 
-const assertReactionIpRateLimit = (request: Request): void => {
+const assertReactionIpRateLimit = async (request: Request): Promise<void> => {
   const clientIp = getClientIp(request);
 
   if (!clientIp) {
     return;
   }
 
-  assertRateLimit({
+  await assertServerRateLimit({
     action: "reactions:write:ip",
     identifier: clientIp,
     rules: AUTHENTICATED_WRITE_IP_RATE_LIMIT_RULES,
@@ -86,7 +86,7 @@ const reactionsHandler = async (request: Request): Promise<Response> => {
         return errorJson("No autorizado.", 401);
       }
 
-      assertReactionIpRateLimit(request);
+      await assertReactionIpRateLimit(request);
 
       if (hasExcessiveContentLength(request, MAX_REACTION_MUTATION_PAYLOAD_BYTES)) {
         return errorJson("El payload de reaccion es demasiado grande.", 413);
@@ -129,7 +129,7 @@ const reactionsHandler = async (request: Request): Promise<Response> => {
         return errorJson("No autorizado.", 401);
       }
 
-      assertReactionIpRateLimit(request);
+      await assertReactionIpRateLimit(request);
 
       const target = getTargetFromRequest(request);
 

@@ -31,7 +31,7 @@ import {
   saveFooterSettingsForAdmin,
 } from "../_lib/footerSettings.js";
 import {
-  assertRateLimit,
+  assertServerRateLimit,
   isRateLimitError,
   RATE_LIMIT_MESSAGE,
 } from "../_lib/rateLimit.js";
@@ -294,7 +294,7 @@ const adminHandler = async (request: Request): Promise<Response> => {
     }
 
     if (request.method === "PUT" || request.method === "PATCH") {
-      assertRateLimit({
+      await assertServerRateLimit({
         action: "admin:mutation",
         identifier: authorization.userId,
         rules: ADMIN_MUTATION_RATE_LIMIT_RULES,

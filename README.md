@@ -120,6 +120,7 @@ For local validation, run the closest relevant equivalent instead of blindly run
 - Web Sanity queries, validation, adapters, and services live under `web/src/data/sanity`.
 - Domain models live in `web/src/types/models.ts`.
 - Supabase-backed operational/security notes live in `docs/SECURITY.md`.
+- Supabase reconciliation SQL lives in `docs/supabase-rls-hardening.sql`; run it manually before enabling `SUPABASE_RATE_LIMIT_STORE=supabase`.
 - Data model documentation lives in `DATA_MODEL.md`.
 
 Update `DATA_MODEL.md` when Sanity schemas, Supabase tables, relationships, data entities, or important data flows change.
