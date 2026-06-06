@@ -40,15 +40,22 @@ For GitHub, Sentry and browser automation, prefer the installed Codex plugins/co
 
 ## Repo-Local Skills
 
-The repo includes local skills under `.codex/skills/`:
+The repo includes local skills under `.agents/skills/`:
 
-- `sanity-model-rollout`: use for Sanity-backed fields, documents and detail routes.
-- `web-performance-lhci`: use for Lighthouse, bundle, image and first-paint work.
-- `public-copy-seo`: use for public copy, metadata and share previews.
-- `repo-audit-architecture`: use for architecture audits, dependency boundaries, duplicated logic, dead code and review-style risk analysis.
-- `design-system-guidance`: use for UI work that must preserve the Mentira FC sports identity.
+- `mentira-project-guardrails`: baseline safety, scope and repo boundaries for all Mentira FC work.
+- `mentira-frontend-react`: React/Vite UI, routing, state, copy, SEO metadata and responsive behavior in `web`.
+- `mentira-ux-product-review`: user flows, navigation, forms, CTAs, empty states and product friction.
+- `mentira-design-system-components`: shared components, cards, buttons, inputs, layouts, badges, loaders and variants.
+- `mentira-performance-web-vitals`: LCP, INP, CLS, images, bundle, rendering, fetch, lazy loading and cache.
+- `mentira-feature-architecture`: feature boundaries, data flow, module ownership and cross-system structure.
+- `mentira-sanity-cms`: Sanity schemas, GROQ, previews, slugs, references, images and schema-to-web contracts.
+- `mentira-vercel-deploy`: Vercel deploys, logs, root/build/output settings, runtime failures and production env boundaries.
+- `mentira-supabase-safe-db`: Supabase SQL, migrations, auth, RLS, policies, grants, private data and generated types.
+- `mentira-content-flow`: dynamic content freshness from CMS/database through queries, cache, components and production.
+- `mentira-ci-github-actions`: GitHub Actions workflows, checks, pnpm CI, triggers and automation safety.
+- `mentira-qa-before-finish`: final validation checklist before closing a task with repo changes.
 
-If your agent does not auto-discover repo-local skills, point it at `.codex/skills/<skill-name>/SKILL.md`.
+If your agent does not auto-discover repo-local skills, point it at `.agents/skills/<skill-name>/SKILL.md`.
 
 ## Agent Roles
 
@@ -88,21 +95,11 @@ For performance and Lighthouse work, do not change UI or functionality unless th
 
 ## Verification Baseline
 
-Use PowerShell-safe commands:
+Inspect `.github/workflows/` first when code, CI, deploy, or validation behavior changed. Run only checks relevant to the changed files, using PowerShell-safe commands.
 
-```powershell
-cd web
-pnpm.cmd build
-pnpm.cmd check
-```
+For web code, use targeted tests first and `pnpm.cmd --dir web check` when the blast radius warrants it. For Studio code, use targeted function tests or `pnpm.cmd --dir studio check` when relevant. Documentation-only changes usually need skill/docs validation and `git diff --check`, not full app builds.
 
-```powershell
-cd studio
-pnpm.cmd build
-pnpm.cmd check
-```
-
-For Lighthouse CI, run from the repo root:
+For Lighthouse CI, run from the repo root when performance work needs local evidence:
 
 ```powershell
 pnpm.cmd dlx @lhci/cli@0.15.1 autorun --config=./web/lighthouserc.json

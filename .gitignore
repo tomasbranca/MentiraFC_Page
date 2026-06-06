@@ -4,6 +4,8 @@ coverage
 .lighthouseci
 .sanity
 .vercel
+.vite
+.cache
 
 .env
 .env.*
@@ -11,6 +13,18 @@ coverage
 
 *.log
 *.bak
+*.tmp
+*.temp
+*.tsbuildinfo
+
+.DS_Store
+Thumbs.db
+
+tmp/
+temp/
+playwright-report/
+test-results/
+vitest-results/
 
 .mcp.json
 .mcp.local.json

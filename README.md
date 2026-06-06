@@ -1,226 +1,141 @@
-# Mentira FC — Plataforma Web + CMS Headless
+# Mentira FC
 
-<div align="center">
+Mentira FC is a monorepo for a football club web platform with a React/Vite public app and a Sanity-backed content studio.
 
-![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
-![Sanity](https://img.shields.io/badge/Sanity-F03E2F?style=for-the-badge&logo=sanity&logoColor=white)
-![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+## Apps
 
-**Sitio institucional ficticio de un club de fútbol, construido con arquitectura modular y CMS desacoplado.**
+- `web/`: React 19 + Vite + TypeScript SPA, dashboard/admin UI, serverless API routes, React Query, Tailwind CSS, Supabase client usage, Vercel Analytics, and Speed Insights.
+- `studio/`: Sanity Studio, content schemas, Sanity Functions, and editorial tooling.
 
-</div>
+Sanity is the current content backend and schema source. The product direction is to move toward an in-site CMS that writes to Sanity, so do not treat Sanity Studio as the permanent editorial interface.
 
----
+## Requirements
 
-## 1) Descripción general
+- Node.js 22 recommended, matching CI.
+- pnpm 10.34.x, managed by the root `packageManager`.
+- Sanity project/dataset access for real content.
+- Supabase credentials only where required by local API/backend flows.
 
-**Mentira FC** es un proyecto full front-end + CMS que simula la presencia digital de un club de fútbol. Está orientado a una implementación profesional: componentes reutilizables, separación por capas, tipado fuerte y estrategia de carga de datos para un primer render eficiente.
+On Windows PowerShell, prefer `pnpm.cmd` for local commands.
 
-El repositorio está organizado como un **monorepo simple con dos aplicaciones**:
+## Install
 
-- `web/`: SPA pública (React + Vite + TypeScript + Tailwind + React Query).
-- `studio/`: panel editorial (Sanity Studio) para administrar contenido estructurado.
+```powershell
+pnpm.cmd install
+```
 
----
+## Development
 
-## 2) Objetivos del proyecto
+Run both apps:
 
-- Diseñar una experiencia web con identidad institucional sólida.
-- Mantener una base de código escalable y mantenible.
-- Desacoplar completamente presentación y contenido mediante Headless CMS.
-- Facilitar evolución por módulos (noticias, plantel, tabla, historial, etc.).
-- Sostener calidad técnica con linting, type-checking, tests y build verificable.
+```powershell
+pnpm.cmd dev
+```
 
----
+Run one app:
 
-## 3) Arquitectura y organización
+```powershell
+pnpm.cmd dev:web
+pnpm.cmd dev:studio
+```
 
-### 3.1 Estructura del repositorio
+## Repository Structure
 
 ```text
 .
-├── README.md
-├── package.json           # scripts raíz para orquestar web + studio
-├── web/                   # aplicación pública
-└── studio/                # Sanity Studio
++-- web/       # Public app, dashboard/admin UI, API routes
++-- studio/    # Sanity Studio, schemas, functions
++-- docs/      # Project docs, security notes, model docs
++-- scripts/   # Local automation
+`-- .agents/   # Codex project skills
 ```
 
-### 3.2 Organización principal de `web/src`
+`web/src` follows layered ownership:
 
 ```text
 web/src/
-├── domain/                # lógica de negocio pura (sin UI)
-├── data/                  # acceso/transformación de datos (Sanity + mappers)
-├── presentation/          # páginas, features, componentes, layout, hooks, contexto
-├── lib/                   # utilidades transversales (query client, performance, errores)
-├── types/                 # modelos y tipados compartidos
-└── App.tsx / main.tsx
++-- domain/        # Pure business rules
++-- data/          # Sanity/Supabase access, adapters, services
++-- presentation/  # Pages, layouts, components, hooks, UI
++-- lib/           # Cross-cutting utilities
+`-- types/         # Shared TypeScript models
 ```
 
-### 3.3 Separación por capas
+Keep related files grouped by feature or domain when it improves discoverability. Avoid large flat folders, but do not add nesting without a clear reason.
 
-- **Domain**: reglas de negocio y cálculos (ej. estadísticas/tablas).
-- **Data**: servicios, queries y adapters para hablar con Sanity y normalizar respuesta.
-- **Presentation**: renderizado de UI, navegación, interacción y composición de features.
+## Scripts
 
-Esta división reduce acoplamiento, facilita pruebas unitarias y permite evolucionar UI y datos de forma independiente.
+Root scripts:
 
----
-
-## 4) Stack tecnológico
-
-| Capa | Tecnología | Rol |
-|---|---|---|
-| UI | React 19 | Renderizado declarativo basado en componentes |
-| Lenguaje | TypeScript | Tipado estático y mayor seguridad en refactors |
-| Build/Dev Server | Vite | DX rápida, build optimizado |
-| Estilos | Tailwind CSS 4 | Diseño utility-first consistente |
-| Datos cliente | TanStack React Query | Cache, sincronización y estado server-state |
-| CMS | Sanity Studio v5 + Sanity Client | Edición y consumo de contenido headless |
-| Routing | React Router 7 | Navegación SPA |
-| Testing | Vitest | pruebas unitarias |
-| Calidad | ESLint + `tsc --noEmit` | linting y validación de tipos |
-
----
-
-## 5) Módulos funcionales (web)
-
-La SPA pública contiene secciones orientadas a producto real:
-
-- **Home**: portada, widgets de juego, tabla y noticias destacadas.
-- **Noticias**: listado, grillas y detalle con renderizado de contenido rico.
-- **Plantel**: vista de jugadores y detalle individual.
-- **Tabla / Historial**: visualización de información deportiva estructurada.
-- **Admin (página técnica)**: utilidades internas para soporte de datos/flujos.
-
----
-
-## 6) Requisitos
-
-- **Node.js** 20+ recomendado.
-- **pnpm** 10.34.x recomendado, gestionado desde `packageManager`.
-- Acceso a proyecto/dataset de Sanity para contenido real.
-
----
-
-## 7) Instalación
-
-Desde la raíz del repositorio:
-
-```bash
-pnpm install
+```powershell
+pnpm.cmd dev
+pnpm.cmd dev:web
+pnpm.cmd dev:studio
+pnpm.cmd check:web
+pnpm.cmd check:studio
+pnpm.cmd check
 ```
 
-Este comando instala dependencias de ambas apps (`web` y `studio`) desde el workspace root.
+Web scripts:
 
----
-
-## 8) Ejecución en desarrollo
-
-### 8.1 Levantar todo el entorno (web + studio)
-
-```bash
-pnpm dev
+```powershell
+pnpm.cmd --dir web lint
+pnpm.cmd --dir web typecheck
+pnpm.cmd --dir web test
+pnpm.cmd --dir web build
+pnpm.cmd --dir web check
 ```
 
-### 8.2 Levantar servicios individualmente
+Studio scripts:
 
-```bash
-pnpm dev:web
-pnpm dev:studio
+```powershell
+pnpm.cmd --dir studio lint
+pnpm.cmd --dir studio functions:unit
+pnpm.cmd --dir studio build
+pnpm.cmd --dir studio check
 ```
 
----
+Studio deploy commands exist, but do not run deploys unless explicitly intended:
 
-## 9) Scripts disponibles
+```powershell
+pnpm.cmd --dir studio deploy
+pnpm.cmd --dir studio deploy-graphql
+```
 
-### 9.1 Scripts en raíz
+## CI
 
-- `pnpm dev` → ejecuta `web` y `studio` en paralelo.
-- `pnpm dev:web` → inicia sólo la app pública.
-- `pnpm dev:studio` → inicia sólo Sanity Studio.
-- `pnpm install` → instala dependencias de ambos proyectos.
+`.github/workflows/ci.yml` runs on every pull request and on pushes to `main`.
 
-### 9.2 Scripts de calidad desde la raíz
+Jobs:
 
-- `pnpm check:web` → pipeline completo de `web`.
-- `pnpm check:studio` → pipeline completo de `studio`.
-- `pnpm check` → ejecuta ambos checks en orden.
+- `web-quality`: lint, typecheck, tests, build for `web`.
+- `studio-quality`: lint and build for `studio`.
+- `web-performance`: web build plus Lighthouse CI after `web-quality`.
 
-### 9.3 Scripts en `web/`
+For local validation, run the closest relevant equivalent instead of blindly running every check. Documentation-only changes usually do not need web or studio builds.
 
-- `pnpm dev` → servidor local Vite.
-- `pnpm lint` → ESLint.
-- `pnpm typecheck` → validación de tipos (`tsc --noEmit`).
-- `pnpm test` → Vitest (`run`).
-- `pnpm build` → build de producción.
-- `pnpm check` → pipeline completo (`lint + typecheck + test + build`).
+## Content And Data
 
-### 9.4 Scripts en `studio/`
+- Sanity schemas live in `studio/schemas`.
+- Web Sanity queries, validation, adapters, and services live under `web/src/data/sanity`.
+- Domain models live in `web/src/types/models.ts`.
+- Supabase-backed operational/security notes live in `docs/SECURITY.md`.
+- Data model documentation lives in `DATA_MODEL.md`.
 
-- `pnpm dev` → Sanity Studio en desarrollo.
-- `pnpm lint` → ESLint.
-- `pnpm build` → build de Studio.
-- `pnpm run deploy` → despliegue de Studio.
-- `pnpm run deploy-graphql` → despliegue del esquema GraphQL.
-- `pnpm check` → lint + tests unitarios de Functions + build.
+Update `DATA_MODEL.md` when Sanity schemas, Supabase tables, relationships, data entities, or important data flows change.
 
----
+## Agent Instructions
 
-## 10) Modelo de contenido (Sanity)
+- Global agent rules live in `AGENTS.md`.
+- Codex project skills live in `.agents/skills/`.
+- MCP setup notes live in `docs/AI_AGENT_SETUP.md`.
 
-En `studio/schemas/` se definen tipos para soportar el producto:
+Agents should not modify `.codex/config.toml`, MCP config, real `.env` files, or external services unless explicitly requested.
 
-- Noticias
-- Jugadores
-- Equipos
-- Torneos
-- Partidos
-- Eventos
-- Organizaciones
+## Repository Hygiene
 
-Estos esquemas alimentan los servicios y adapters de `web/src/data/sanity`.
+Keep local-only artifacts out of Git: logs, caches, debug output, generated reports, local env files, editor/system junk, coverage, and build output. Add narrow `.gitignore` rules when new local artifacts appear.
 
----
+## License
 
-## 11) Calidad y flujo recomendado
-
-Antes de abrir PR:
-
-1. Ejecutar checks de `web`:
-   ```bash
-   pnpm check:web
-   ```
-2. Ejecutar checks de `studio`:
-   ```bash
-   pnpm check:studio
-   ```
-3. Verificar manualmente navegación principal y estados vacíos/error.
-
----
-
-## 12) Convenciones de desarrollo
-
-- Priorizar componentes y funciones pequeñas con responsabilidad única.
-- Evitar mezclar lógica de negocio con renderizado.
-- Centralizar acceso a datos en la capa `data`.
-- Mantener tipados explícitos en adaptadores y modelos compartidos.
-- Documentar decisiones técnicas relevantes en PRs.
-
----
-
-## 13) Roadmap sugerido
-
-- Tests de integración de features críticas (news, roster, home widgets).
-- Métricas de performance automatizadas en CI (Lighthouse/Bundle budgets).
-- Estrategia de revalidación/caché para contenido editorial frecuente.
-- Internacionalización (i18n) y mejoras de accesibilidad (a11y).
-- Hardenización SEO técnico (metadatos dinámicos, OG por noticia, sitemap).
-
----
-
-## 14) Licencia
-
-Proyecto interno/demostrativo de uso educativo y de portfolio.
+Internal/demo project for portfolio and educational use.
