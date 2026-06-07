@@ -46,7 +46,7 @@ describe("tournaments.adapter", () => {
     expect(tournament?.standings[0].points).toBe(25);
   });
 
-  it("respeta puntos, diferencia y posiciones guardadas por la tabla publicada", () => {
+  it("deriva valores visibles y calcula movimiento desde posiciones guardadas", () => {
     const tournament = adaptTournament(
       createTournament({
         standingsSnapshots: [
@@ -55,17 +55,13 @@ describe("tournaments.adapter", () => {
             matchdayNumber: 1,
             rows: [
               {
-                played: 3,
                 wins: 1,
                 draws: 0,
                 losses: 2,
                 goalsFor: 2,
                 goalsAgainst: 4,
-                points: 99,
-                goalDiff: 42,
                 position: 5,
                 previousPosition: 2,
-                positionChange: -3,
                 team: {
                   _id: "team-1",
                   name: "Guardado",
@@ -79,8 +75,8 @@ describe("tournaments.adapter", () => {
 
     expect(tournament?.currentSnapshot?.standings[0]).toMatchObject({
       played: 3,
-      points: 99,
-      goalDiff: 42,
+      points: 3,
+      goalDiff: -2,
       position: 5,
       previousPosition: 2,
       positionChange: -3,

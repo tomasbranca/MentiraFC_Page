@@ -222,11 +222,11 @@ Riesgos:
 Estado actual:
 
 - `standingsState` es documento editable actual por torneo.
-- `standingsSnapshots` conserva una sola tabla publicada read-only por torneo; la posicion anterior vive en cada fila.
+- `standingsSnapshots` conserva una sola tabla publicada read-only por torneo; copia las estadisticas del editable y guarda `position` y `previousPosition` por fila.
 - `studio/functions/sync-standings-snapshot` genera snapshots desde eventos de documento Sanity.
 - `createSnapshotId(tournamentId)` crea un ID estable por torneo y usa `createOrReplace`.
 - La web trae una sola tabla publicada del torneo activo en `TOURNAMENT_QUERY`.
-- `positionChange = previousPosition - currentPosition`; positivo significa subio posiciones.
+- La web calcula `positionChange = previousPosition - currentPosition`; positivo significa subio posiciones. Sanity no guarda ese campo.
 - La funcion filtra partidos por `state == "finalizado"`, `tournament._ref` y `date < snapshotDate`.
 
 Riesgos:

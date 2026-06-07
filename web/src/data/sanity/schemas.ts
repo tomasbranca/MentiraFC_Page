@@ -221,7 +221,6 @@ export const sanityStandingRowSchema = z.object({
   goalDiff: z.union([z.number(), z.string(), z.null()]).optional(),
   position: z.union([z.number(), z.string(), z.null()]).optional(),
   previousPosition: z.union([z.number(), z.string(), z.null()]).optional(),
-  positionChange: z.union([z.number(), z.string(), z.null()]).optional(),
   team: z.object({
     _id: z.string(),
     name: z.string(),

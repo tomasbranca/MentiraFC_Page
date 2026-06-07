@@ -8,12 +8,6 @@ const standingRowFields = [
     validation: (Rule) => Rule.required(),
   },
   {
-    name: 'played',
-    title: 'Partidos jugados',
-    type: 'number',
-    readOnly: true,
-  },
-  {
     name: 'wins',
     title: 'Ganados',
     type: 'number',
@@ -49,18 +43,6 @@ const standingRowFields = [
     validation: (Rule) => Rule.required().integer().min(0),
   },
   {
-    name: 'points',
-    title: 'Puntos',
-    type: 'number',
-    readOnly: true,
-  },
-  {
-    name: 'goalDiff',
-    title: 'Diferencia de gol',
-    type: 'number',
-    readOnly: true,
-  },
-  {
     name: 'position',
     title: 'Posicion',
     type: 'number',
@@ -69,12 +51,6 @@ const standingRowFields = [
   {
     name: 'previousPosition',
     title: 'Posicion anterior',
-    type: 'number',
-    readOnly: true,
-  },
-  {
-    name: 'positionChange',
-    title: 'Movimiento',
     type: 'number',
     readOnly: true,
   },
@@ -138,7 +114,7 @@ export default {
       type: 'array',
       readOnly: true,
       description:
-        'Tabla publicada generada automaticamente desde Tabla actual y partidos de Mentira FC.',
+        'Copia publicada de Tabla actual con posiciones calculadas. Mentira FC se agrega automaticamente.',
       of: [
         {
           type: 'object',
@@ -153,15 +129,12 @@ export default {
               draws: 'draws',
               losses: 'losses',
               position: 'position',
-              points: 'points',
             },
-            prepare({team, logo, wins, draws, losses, position, points}) {
+            prepare({team, logo, wins, draws, losses, position}) {
               const normalizedWins = Number.isFinite(Number(wins)) ? Number(wins) : 0
               const normalizedDraws = Number.isFinite(Number(draws)) ? Number(draws) : 0
               const normalizedLosses = Number.isFinite(Number(losses)) ? Number(losses) : 0
-              const displayedPoints = Number.isFinite(Number(points))
-                ? Number(points)
-                : normalizedWins * 3 + normalizedDraws
+              const displayedPoints = normalizedWins * 3 + normalizedDraws
 
               return {
                 title: `${position || '-'} - ${team || 'Equipo'}`,

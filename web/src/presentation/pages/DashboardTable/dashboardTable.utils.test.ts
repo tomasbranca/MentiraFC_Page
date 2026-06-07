@@ -80,6 +80,31 @@ describe("dashboard table utils", () => {
     });
   });
 
+  it("no permite publicar una fecha menor que la tabla actual", () => {
+    expect(
+      validateDashboardTableInput(
+        {
+          tournamentId: "tournament-1",
+          matchdayNumber: "12",
+          label: "Fecha 12",
+          snapshotDate: "2026-05-20T20:00:00.000Z",
+          rows: [
+            {
+              key: "row-1",
+              teamId: "team-1",
+              wins: "1",
+              draws: "0",
+              losses: "0",
+              goalsFor: "2",
+              goalsAgainst: "0",
+            },
+          ],
+        },
+        { minimumMatchdayNumber: 13 }
+      ).matchdayNumber
+    ).toBe("La fecha no puede ser menor que 13.");
+  });
+
   it("filtra participantes activos por fecha", () => {
     expect(
       getActiveTournamentParticipants(

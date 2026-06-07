@@ -224,7 +224,7 @@ export const sortAndDecorateRows = (rows = []) => {
     }))
 }
 
-export const addPositionMovement = (currentRows = [], previousRows = []) => {
+export const addPreviousPositions = (currentRows = [], previousRows = []) => {
   const previousPositions = previousRows.reduce((acc, row) => {
     const teamId = row?.team?.id || row?.team?._id || row?.team?._ref
     if (teamId && row?.position) acc[teamId] = row.position
@@ -237,7 +237,6 @@ export const addPositionMovement = (currentRows = [], previousRows = []) => {
     return {
       ...row,
       previousPosition,
-      positionChange: previousPosition ? previousPosition - row.position : null,
     }
   })
 }
@@ -256,7 +255,6 @@ const addInitialAlphabeticalMovement = (currentRows = []) =>
   currentRows.map((row) => ({
     ...row,
     previousPosition: row.position,
-    positionChange: 0,
   }))
 
 const getSnapshotRowTeamId = (row) => getPublishedId(row?.team?._ref || row?.team?._id || row?.team?.id)
@@ -311,7 +309,7 @@ export const buildComputedStandings = ({rows = [], games = [], mainTeam = null, 
     return addInitialAlphabeticalMovement(sortedRows)
   }
 
-  return addPositionMovement(sortedRows, previousRows)
+  return addPreviousPositions(sortedRows, previousRows)
 }
 
 export const createSnapshotId = (tournamentId) => {
@@ -330,17 +328,13 @@ export const toSnapshotRows = (rows = []) =>
       _type: 'reference',
       _ref: row.team.id,
     },
-    played: row.played,
     wins: row.wins,
     draws: row.draws,
     losses: row.losses,
     goalsFor: row.goalsFor,
     goalsAgainst: row.goalsAgainst,
-    points: row.points,
-    goalDiff: row.goalDiff,
     position: row.position,
     previousPosition: row.previousPosition ?? undefined,
-    positionChange: row.positionChange ?? undefined,
   }))
 
 const toSnapshotReference = (tournamentId) => ({
@@ -367,5 +361,22 @@ export const createPublishedTableUpdatePlan = ({
   return {
     publishedSnapshot: createCurrentSnapshotDocument({tournamentId, state, standings}),
     deleteSnapshotIds: obsoleteSnapshotIds.filter(isValidSanityDocumentId),
+  }
+}
+
+export const validateMatchdayTransition = ({state, currentSnapshot = null} = {}) => {
+  const currentMatchday = normalizeMatchdayBoundary(currentSnapshot?.matchdayNumber)
+  const nextMatchday = normalizeMatchdayBoundary(state?.matchdayNumber)
+
+  if (currentMatchday && nextMatchday && nextMatchday < currentMatchday) {
+    return {
+      valid: false,
+      error: `El numero de fecha (${nextMatchday}) no puede ser menor que la tabla publicada actual (${currentMatchday}).`,
+    }
+  }
+
+  return {
+    valid: true,
+    error: null,
   }
 }

@@ -108,9 +108,11 @@ export const getActiveTournamentParticipants = (
   );
 
 export const validateDashboardTableInput = (
-  values: DashboardTableInput
+  values: DashboardTableInput,
+  options: { minimumMatchdayNumber?: number | null } = {}
 ): DashboardTableErrors => {
   const errors: DashboardTableErrors = {};
+  const minimumMatchdayNumber = options.minimumMatchdayNumber ?? 1;
 
   if (!values.tournamentId.trim()) {
     errors.tournamentId = "Elegi el torneo.";
@@ -118,6 +120,8 @@ export const validateDashboardTableInput = (
 
   if (!isValidPositiveInteger(values.matchdayNumber)) {
     errors.matchdayNumber = "Carga un numero de fecha valido.";
+  } else if (Number(values.matchdayNumber) < minimumMatchdayNumber) {
+    errors.matchdayNumber = `La fecha no puede ser menor que ${minimumMatchdayNumber}.`;
   }
 
   if (!isValidDateTime(values.snapshotDate)) {

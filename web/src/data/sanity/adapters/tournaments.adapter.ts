@@ -89,6 +89,8 @@ const adaptStandingRows = (
       normalizeOptionalNumber(row.goalDiff) ?? goalsFor - goalsAgainst;
     const position = normalizePositiveInteger(row.position);
     const previousPosition = normalizePositiveInteger(row.previousPosition);
+    const positionChange =
+      position && previousPosition ? previousPosition - position : null;
 
     return {
       played,
@@ -101,7 +103,7 @@ const adaptStandingRows = (
       goalDiff,
       position: position || undefined,
       previousPosition: previousPosition || null,
-      positionChange: normalizeOptionalNumber(row.positionChange),
+      positionChange,
       team: {
         id: row.team._id,
         name: row.team.name,

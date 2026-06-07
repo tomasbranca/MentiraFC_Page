@@ -6,6 +6,7 @@ import {
   dashboardTableDuplicatesByTournamentQuery,
   dashboardTableListQuery,
   dashboardTableOptionsQuery,
+  dashboardTableTournamentValidationQuery,
   isParticipantActiveForMatchday,
   parseDashboardTableDraftInput,
   parseDashboardTableInput,
@@ -156,6 +157,12 @@ describe("dashboard table api input", () => {
     );
     expect(dashboardTableDuplicatesByTournamentQuery).toContain(
       '!(_id in [$id, $draftId])'
+    );
+    expect(dashboardTableTournamentValidationQuery).toContain(
+      '"publishedTable"'
+    );
+    expect(dashboardTableTournamentValidationQuery).toContain(
+      '_type == "standingsSnapshots"'
     );
     expect(dashboardTableListQuery).not.toContain("standingsSnapshots");
   });
