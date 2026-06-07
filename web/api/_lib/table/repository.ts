@@ -46,7 +46,6 @@ type DashboardTableDocument = {
   matchdayNumber?: number | null;
   label?: string | null;
   snapshotDate?: string | null;
-  gamesThroughDate?: string | null;
   rows?: DashboardTableDocumentRow[] | null;
 };
 
@@ -174,7 +173,6 @@ const adaptDashboardTablePair = (
     matchdayNumber: normalizePositiveInteger(selectedDocument?.matchdayNumber),
     label: selectedDocument?.label ?? null,
     snapshotDate: selectedDocument?.snapshotDate ?? null,
-    gamesThroughDate: selectedDocument?.gamesThroughDate ?? null,
     updatedAt: selectedDocument?.updatedAt ?? null,
     rows: (selectedDocument?.rows ?? []).map((row) => ({
       key: row.key ?? null,
@@ -269,7 +267,6 @@ const buildTableDocument = (
   matchdayNumber: input.matchdayNumber,
   label: input.label?.trim() || undefined,
   snapshotDate: input.snapshotDate,
-  gamesThroughDate: input.gamesThroughDate,
   rows: buildTableRows(input.rows),
 });
 

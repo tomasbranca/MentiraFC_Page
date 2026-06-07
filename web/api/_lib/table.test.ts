@@ -17,7 +17,6 @@ describe("dashboard table api input", () => {
         matchdayNumber: "4",
         label: "Fecha 4",
         snapshotDate: "2026-05-20T20:00:00.000Z",
-        gamesThroughDate: "2026-05-20T20:00:00.000Z",
         rows: [
           {
             key: "team-1",
@@ -35,7 +34,6 @@ describe("dashboard table api input", () => {
       matchdayNumber: 4,
       label: "Fecha 4",
       snapshotDate: "2026-05-20T20:00:00.000Z",
-      gamesThroughDate: "2026-05-20T20:00:00.000Z",
       rows: [
         {
           key: "team-1",
@@ -57,7 +55,6 @@ describe("dashboard table api input", () => {
         matchdayNumber: "",
         label: "Pendiente",
         snapshotDate: "",
-        gamesThroughDate: "",
         rows: [
           {
             key: "empty-row",
@@ -71,7 +68,6 @@ describe("dashboard table api input", () => {
       matchdayNumber: undefined,
       label: "Pendiente",
       snapshotDate: undefined,
-      gamesThroughDate: undefined,
       rows: [
         {
           key: "empty-row",
@@ -92,7 +88,6 @@ describe("dashboard table api input", () => {
         tournamentId: "tournament-1",
         matchdayNumber: 1,
         snapshotDate: "2026-05-20T20:00:00.000Z",
-        gamesThroughDate: "2026-05-20T20:00:00.000Z",
         rows: [
           {
             teamId: "team-1",

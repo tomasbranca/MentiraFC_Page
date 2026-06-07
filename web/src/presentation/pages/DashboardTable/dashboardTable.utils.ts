@@ -121,11 +121,7 @@ export const validateDashboardTableInput = (
   }
 
   if (!isValidDateTime(values.snapshotDate)) {
-    errors.snapshotDate = "Elegi una fecha visible valida.";
-  }
-
-  if (!isValidDateTime(values.gamesThroughDate)) {
-    errors.gamesThroughDate = "Elegi una fecha de corte valida.";
+    errors.snapshotDate = "Elegi una fecha de actualizacion valida.";
   }
 
   if (values.rows.length === 0) {
@@ -168,7 +164,6 @@ export const buildDashboardTableMutationInput = (
   matchdayNumber: Number(values.matchdayNumber),
   label: values.label.trim() || undefined,
   snapshotDate: values.snapshotDate.trim(),
-  gamesThroughDate: values.gamesThroughDate.trim(),
   rows: values.rows.map((row) => ({
     key: row.key,
     teamId: row.teamId.trim(),
@@ -190,9 +185,6 @@ export const buildDashboardTableDraftInput = (
   label: values.label.trim() || undefined,
   snapshotDate: isValidDateTime(values.snapshotDate)
     ? values.snapshotDate.trim()
-    : undefined,
-  gamesThroughDate: isValidDateTime(values.gamesThroughDate)
-    ? values.gamesThroughDate.trim()
     : undefined,
   rows: values.rows.map((row) => ({
     key: row.key,

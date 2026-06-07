@@ -600,7 +600,6 @@ export type DashboardTableItem = {
   matchdayNumber?: number | null;
   label?: string | null;
   snapshotDate?: string | null;
-  gamesThroughDate?: string | null;
   updatedAt?: string | null;
   rows: DashboardTableRowItem[];
 };
@@ -630,7 +629,6 @@ export type DashboardTableInput = {
   matchdayNumber: string;
   label: string;
   snapshotDate: string;
-  gamesThroughDate: string;
   rows: Array<{
     key: string;
     teamId: string;
@@ -647,7 +645,6 @@ export type DashboardTableMutationInput = {
   matchdayNumber: number;
   label?: string;
   snapshotDate: string;
-  gamesThroughDate: string;
   rows: DashboardTableRowMutationInput[];
 };
 

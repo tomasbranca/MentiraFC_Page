@@ -7,6 +7,10 @@ describe("standings Sanity queries", () => {
   it("lee solo snapshots current y previous para la tabla publica", () => {
     expect(TOURNAMENT_QUERY).toContain('snapshotRole in ["current", "previous"]');
     expect(TOURNAMENT_QUERY).toContain("order(snapshotRole asc)");
+    expect(TOURNAMENT_QUERY).toContain("points,");
+    expect(TOURNAMENT_QUERY).toContain("goalDiff,");
+    expect(TOURNAMENT_QUERY).not.toContain('"points": coalesce');
+    expect(TOURNAMENT_QUERY).not.toContain('"goalDiff": coalesce');
     expect(TOURNAMENT_QUERY).not.toContain(
       "order(matchdayNumber desc, snapshotDate desc, _updatedAt desc)[0...2]"
     );

@@ -33,7 +33,6 @@ const dashboardTableSchema = z.object({
   matchdayNumber: z.number().nullable().optional(),
   label: z.string().nullable().optional(),
   snapshotDate: z.string().nullable().optional(),
-  gamesThroughDate: z.string().nullable().optional(),
   updatedAt: z.string().nullable().optional(),
   rows: z.array(dashboardTableRowSchema),
 });

@@ -15,14 +15,12 @@ describe("dashboard table utils", () => {
         matchdayNumber: "0",
         label: "",
         snapshotDate: "",
-        gamesThroughDate: "",
         rows: [],
       })
     ).toMatchObject({
       tournamentId: "Elegi el torneo.",
       matchdayNumber: "Carga un numero de fecha valido.",
-      snapshotDate: "Elegi una fecha visible valida.",
-      gamesThroughDate: "Elegi una fecha de corte valida.",
+      snapshotDate: "Elegi una fecha de actualizacion valida.",
       rows: "Carga al menos un equipo.",
     });
   });
@@ -33,7 +31,6 @@ describe("dashboard table utils", () => {
       matchdayNumber: "3",
       label: " Fecha 3 ",
       snapshotDate: "2026-05-20T20:00:00.000Z",
-      gamesThroughDate: "2026-05-20T20:00:00.000Z",
       rows: [
         {
           key: "row-1",
@@ -52,7 +49,6 @@ describe("dashboard table utils", () => {
       matchdayNumber: 3,
       label: "Fecha 3",
       snapshotDate: "2026-05-20T20:00:00.000Z",
-      gamesThroughDate: "2026-05-20T20:00:00.000Z",
       rows: [
         {
           key: "row-1",

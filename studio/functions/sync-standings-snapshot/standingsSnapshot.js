@@ -247,6 +247,23 @@ export const addPositionMovement = (currentRows = [], previousRows = []) => {
   })
 }
 
+const isZeroStatsRow = (row) =>
+  row.played === 0 &&
+  row.wins === 0 &&
+  row.draws === 0 &&
+  row.losses === 0 &&
+  row.goalsFor === 0 &&
+  row.goalsAgainst === 0 &&
+  row.points === 0 &&
+  row.goalDiff === 0
+
+const addInitialAlphabeticalMovement = (currentRows = []) =>
+  currentRows.map((row) => ({
+    ...row,
+    previousPosition: row.position,
+    positionChange: 0,
+  }))
+
 export const buildComputedStandings = ({rows = [], games = [], mainTeam = null, previousRows = []}) => {
   const rowsByTeamId = rows.reduce((acc, row) => {
     const normalizedRow = normalizeManualRow(row)
@@ -263,7 +280,13 @@ export const buildComputedStandings = ({rows = [], games = [], mainTeam = null, 
     }
   }
 
-  return addPositionMovement(sortAndDecorateRows(Object.values(rowsByTeamId)), previousRows)
+  const sortedRows = sortAndDecorateRows(Object.values(rowsByTeamId))
+
+  if (!previousRows.length && sortedRows.length > 0 && sortedRows.every(isZeroStatsRow)) {
+    return addInitialAlphabeticalMovement(sortedRows)
+  }
+
+  return addPositionMovement(sortedRows, previousRows)
 }
 
 const normalizeSnapshotRole = (snapshotRole) =>
@@ -341,7 +364,7 @@ export const createCurrentSnapshotDocument = ({tournamentId, state, standings}) 
   matchdayNumber: state.matchdayNumber,
   label: state.label || null,
   snapshotDate: state.snapshotDate,
-  gamesThroughDate: state.gamesThroughDate,
+  gamesThroughDate: state.snapshotDate,
   rows: toSnapshotRows(standings),
 })
 

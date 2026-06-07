@@ -35,7 +35,6 @@ export const filterDashboardTableList = (
       item.matchdayNumber,
       item.rows.length,
       item.snapshotDate,
-      item.gamesThroughDate,
       item.updatedAt,
     ]);
   });

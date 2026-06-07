@@ -290,10 +290,7 @@ const DashboardTableList = () => {
                         {getTableTitle(item)}
                       </h3>
                       <p className="mt-1 text-xs text-violet-100/55">
-                        Corte:{" "}
-                        {item.gamesThroughDate
-                          ? formatDateTime(item.gamesThroughDate)
-                          : "sin definir"}
+                        Actualizacion: {getTableDateLabel(item)}
                       </p>
                     </div>
                   </div>
@@ -350,10 +347,7 @@ const DashboardTableList = () => {
                             {getTableTitle(item)}
                           </p>
                           <p className="truncate text-xs text-violet-100/55">
-                            Corte:{" "}
-                            {item.gamesThroughDate
-                              ? formatDateTime(item.gamesThroughDate)
-                              : "sin definir"}
+                            Actualizacion: {getTableDateLabel(item)}
                           </p>
                         </div>
                       </div>

@@ -46,6 +46,48 @@ describe("tournaments.adapter", () => {
     expect(tournament?.standings[0].points).toBe(25);
   });
 
+  it("respeta puntos, diferencia y posiciones guardadas por el snapshot actual", () => {
+    const tournament = adaptTournament(
+      createTournament({
+        standingsSnapshots: [
+          {
+            _id: "snapshot-current",
+            snapshotRole: "current",
+            matchdayNumber: 1,
+            rows: [
+              {
+                played: 3,
+                wins: 1,
+                draws: 0,
+                losses: 2,
+                goalsFor: 2,
+                goalsAgainst: 4,
+                points: 99,
+                goalDiff: 42,
+                position: 5,
+                previousPosition: 2,
+                positionChange: -3,
+                team: {
+                  _id: "team-1",
+                  name: "Guardado",
+                },
+              },
+            ],
+          },
+        ],
+      })
+    );
+
+    expect(tournament?.currentSnapshot?.standings[0]).toMatchObject({
+      played: 3,
+      points: 99,
+      goalDiff: 42,
+      position: 5,
+      previousPosition: 2,
+      positionChange: -3,
+    });
+  });
+
   it("elige snapshot actual y anterior por snapshotRole", () => {
     const tournament = adaptTournament(
       createTournament({

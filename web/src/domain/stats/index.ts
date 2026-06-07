@@ -5,7 +5,7 @@ export {
 } from "./playerStats";
 
 export {
-  getHybridTournamentTable,
+  decorateStoredTournamentTable,
   getMainTeamIndex,
   getSurroundingTeams,
 } from "./tournamentTable";

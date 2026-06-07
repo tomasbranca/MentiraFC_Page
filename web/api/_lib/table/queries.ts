@@ -20,7 +20,6 @@ const dashboardTableProjection = `{
   matchdayNumber,
   label,
   snapshotDate,
-  gamesThroughDate,
   "rows": rows[]${dashboardTableRowProjection}
 }`;
 

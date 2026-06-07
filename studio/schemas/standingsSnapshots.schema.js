@@ -144,18 +144,18 @@ export default {
     },
     {
       name: 'snapshotDate',
-      title: 'Fecha visible de la tabla',
+      title: 'Fecha de actualizacion',
       type: 'datetime',
       readOnly: true,
       validation: (Rule) => Rule.required(),
     },
     {
       name: 'gamesThroughDate',
-      title: 'Partidos de Mentira contabilizados hasta',
+      title: 'Corte usado para Mentira FC',
       type: 'datetime',
       readOnly: true,
       description:
-        'La web usa este corte para calcular automaticamente la fila de Mentira FC en esta tabla.',
+        'Se guarda igual a la fecha de actualizacion para dejar auditado el corte usado por la Function.',
       validation: (Rule) => Rule.required(),
     },
     {

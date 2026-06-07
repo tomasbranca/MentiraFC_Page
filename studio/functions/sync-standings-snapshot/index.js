@@ -20,7 +20,6 @@ const STANDINGS_STATE_QUERY = `
     matchdayNumber,
     label,
     snapshotDate,
-    gamesThroughDate,
     tournament->{
       _id,
       participants[]{
@@ -64,13 +63,22 @@ const FINISHED_MAIN_TEAM_GAMES_QUERY = `
     defined(result.goalsFor) &&
     defined(result.goalsAgainst) &&
     tournament._ref == $tournamentId &&
-    date <= $gamesThroughDate
+    date < $snapshotDate
   ]{
     result{
       goalsFor,
       goalsAgainst
     }
   }
+`
+
+const LEGACY_SNAPSHOTS_QUERY = `
+  *[
+    _type == "standingsSnapshots" &&
+    tournament._ref == $tournamentId &&
+    !(_id in $snapshotIds) &&
+    (!defined(snapshotRole) || !(snapshotRole in ["current", "previous"]))
+  ]._id
 `
 
 const MANAGED_SNAPSHOTS_QUERY = `
@@ -123,7 +131,7 @@ export const handler = documentEventHandler(async ({context, event}) => {
   const client = createFunctionClient(context)
   const state = await client.fetch(STANDINGS_STATE_QUERY, {stateId})
 
-  if (!state?.tournament?._id || !state.matchdayNumber || !state.gamesThroughDate) {
+  if (!state?.tournament?._id || !state.matchdayNumber || !state.snapshotDate) {
     console.warn('sync-standings-snapshot skipped: incomplete standingsState', {stateId})
     return
   }
@@ -136,10 +144,6 @@ export const handler = documentEventHandler(async ({context, event}) => {
 
   if (!isValidDateTimeValue(state.snapshotDate)) {
     throw new Error(`Invalid standingsState snapshotDate: ${state.snapshotDate || 'missing'}`)
-  }
-
-  if (!isValidDateTimeValue(state.gamesThroughDate)) {
-    throw new Error(`Invalid standingsState gamesThroughDate: ${state.gamesThroughDate || 'missing'}`)
   }
 
   const mainTeam = await client.fetch(MAIN_TEAM_QUERY)
@@ -162,12 +166,16 @@ export const handler = documentEventHandler(async ({context, event}) => {
 
   const currentSnapshotId = createSnapshotId(tournamentId, SNAPSHOT_ROLES.CURRENT)
   const previousSnapshotId = createSnapshotId(tournamentId, SNAPSHOT_ROLES.PREVIOUS)
-  const [games, managedSnapshots] = await Promise.all([
+  const [games, managedSnapshots, legacySnapshotIds] = await Promise.all([
     client.fetch(FINISHED_MAIN_TEAM_GAMES_QUERY, {
       tournamentId,
-      gamesThroughDate: state.gamesThroughDate,
+      snapshotDate: state.snapshotDate,
     }),
     client.fetch(MANAGED_SNAPSHOTS_QUERY, {
+      snapshotIds: [currentSnapshotId, previousSnapshotId],
+    }),
+    client.fetch(LEGACY_SNAPSHOTS_QUERY, {
+      tournamentId,
       snapshotIds: [currentSnapshotId, previousSnapshotId],
     }),
   ])
@@ -198,6 +206,12 @@ export const handler = documentEventHandler(async ({context, event}) => {
     transaction = transaction.delete(rotation.deletePreviousSnapshotId)
   }
 
+  for (const legacySnapshotId of legacySnapshotIds || []) {
+    if (isValidSanityDocumentId(legacySnapshotId)) {
+      transaction = transaction.delete(legacySnapshotId)
+    }
+  }
+
   await transaction.createOrReplace(rotation.currentSnapshot).commit({
     visibility: 'sync',
   })
@@ -217,6 +231,7 @@ export const handler = documentEventHandler(async ({context, event}) => {
     stateId,
     snapshotId: currentSnapshotId,
     previousSnapshotId: rotation.previousSnapshot ? previousSnapshotId : null,
+    deletedLegacySnapshots: (legacySnapshotIds || []).length,
     rows: standings.length,
   })
 })

@@ -99,16 +99,10 @@ export default {
     },
     {
       name: 'snapshotDate',
-      title: 'Fecha visible de la tabla',
-      type: 'datetime',
-      validation: (Rule) => Rule.required(),
-    },
-    {
-      name: 'gamesThroughDate',
-      title: 'Partidos de Mentira contabilizados hasta',
+      title: 'Fecha de actualizacion',
       type: 'datetime',
       description:
-        'La Function usa este corte para calcular automaticamente la fila de Mentira FC.',
+        'Tambien se usa como corte para calcular Mentira FC: solo cuentan partidos finalizados anteriores a esta fecha.',
       validation: (Rule) => Rule.required(),
     },
     {

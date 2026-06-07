@@ -1,332 +1,70 @@
-import { describe, expect, it } from "vitest";
+﻿import { describe, expect, it } from "vitest";
 
 import {
-  getHybridTournamentTable,
+  decorateStoredTournamentTable,
   getPlayerStats,
   getTopScorers,
   getTopScorersFromGoalEvents,
 } from "./index";
 
-describe("getHybridTournamentTable", () => {
-  it("calcula tabla híbrida con datos normales y actualiza al equipo principal con partidos finalizados", () => {
-    const mainTeam = { id: "main", name: "Mentira FC", isMain: true };
-    const rivals = [
-      { id: "a", name: "Alpha FC" },
-      { id: "b", name: "Beta FC" },
-    ];
-
-    const manualStandings = [
-      {
-        team: mainTeam,
-        wins: 99,
-        draws: 0,
-        losses: 0,
-        goalsFor: 200,
-        goalsAgainst: 1,
-      },
-      {
-        team: rivals[0],
-        wins: 2,
-        draws: 1,
-        losses: 0,
-        goalsFor: 6,
-        goalsAgainst: 3,
-      },
-      {
-        team: rivals[1],
-        wins: 1,
-        draws: 1,
-        losses: 1,
-        goalsFor: 4,
-        goalsAgainst: 4,
-      },
-    ];
-
-    const games = [
-      { state: "finalizado" as const, result: { goalsFor: 2, goalsAgainst: 1 } },
-      { state: "finalizado" as const, result: { goalsFor: 0, goalsAgainst: 0 } },
-      { state: "por_jugar" as const, result: null },
-    ];
-
-    const table = getHybridTournamentTable({
-      manualStandings,
-      games,
-      mainTeam,
-    });
-
-    expect(table).toHaveLength(3);
-
-    const mainRow = table.find((row) => row.team.id === "main");
-    const alphaRow = table.find((row) => row.team.id === "a");
-    expect(mainRow).toMatchObject({
-      played: 2,
-      wins: 1,
-      draws: 1,
-      losses: 0,
-      goalsFor: 2,
-      goalsAgainst: 1,
-      points: 4,
-      goalDiff: 1,
-    });
-    expect(alphaRow).toMatchObject({
-      played: 3,
-      wins: 2,
-      draws: 1,
-      losses: 0,
-    });
-
-    expect(table[0].team.id).toBe("a");
-    expect(table[0].position).toBe(1);
-    expect(table[0].type).toBe("primaryPrize");
-  });
-
-  it("clasifica filas con cupos configurables para primer y segundo premio", () => {
-    const table = getHybridTournamentTable({
-      primaryPrizeSlots: 2,
+describe("decorateStoredTournamentTable", () => {
+  it("renderiza el snapshot guardado sin recalcular estadisticas ni movimientos", () => {
+    const table = decorateStoredTournamentTable({
+      primaryPrizeSlots: 1,
       secondaryPrizeSlots: 1,
-      manualStandings: [
+      standings: [
         {
-          team: { id: "a", name: "Alpha FC" },
-          wins: 1,
-          draws: 0,
-          losses: 0,
-          goalsFor: 4,
-          goalsAgainst: 0,
+          team: { id: "main", name: "Mentira FC", isMain: true },
+          played: 13,
+          wins: 4,
+          draws: 6,
+          losses: 3,
+          goalsFor: 51,
+          goalsAgainst: 53,
+          points: 18,
+          goalDiff: -2,
+          position: 3,
+          previousPosition: 2,
+          positionChange: -1,
         },
         {
-          team: { id: "b", name: "Beta FC" },
-          wins: 1,
-          draws: 0,
-          losses: 0,
-          goalsFor: 3,
-          goalsAgainst: 0,
-        },
-        {
-          team: { id: "c", name: "Celta FC" },
-          wins: 1,
-          draws: 0,
-          losses: 0,
-          goalsFor: 2,
-          goalsAgainst: 0,
-        },
-        {
-          team: { id: "d", name: "Delta FC" },
-          wins: 0,
-          draws: 0,
-          losses: 1,
-          goalsFor: 0,
-          goalsAgainst: 2,
+          team: { id: "alpha", name: "Alpha FC" },
+          played: 13,
+          wins: 7,
+          draws: 2,
+          losses: 4,
+          goalsFor: 20,
+          goalsAgainst: 11,
+          points: 23,
+          goalDiff: 9,
+          position: 1,
+          previousPosition: 3,
+          positionChange: 2,
         },
       ],
     });
 
-    expect(table.map((row) => row.type)).toEqual([
-      "primaryPrize",
-      "primaryPrize",
-      "secondaryPrize",
-      "normal",
-    ]);
-  });
-
-  it("retorna arreglo vacío cuando no hay equipo principal ni tabla manual", () => {
-    expect(
-      getHybridTournamentTable({ manualStandings: [], games: [] })
-    ).toEqual([]);
-  });
-
-  it("resuelve empates por diferencia de gol, goles a favor y nombre", () => {
-    const table = getHybridTournamentTable({
-      manualStandings: [
-        {
-          team: { id: "z", name: "Zeta FC" },
-          wins: 1,
-          draws: 0,
-          losses: 1,
-          goalsFor: 3,
-          goalsAgainst: 3,
-        },
-        {
-          team: { id: "a", name: "Alfa FC" },
-          wins: 1,
-          draws: 0,
-          losses: 1,
-          goalsFor: 3,
-          goalsAgainst: 3,
-        },
-        {
-          team: { id: "b", name: "Beta FC" },
-          wins: 1,
-          draws: 0,
-          losses: 1,
-          goalsFor: 5,
-          goalsAgainst: 4,
-        },
-      ],
-    });
-
-    expect(table.map((row) => row.team.id)).toEqual(["b", "a", "z"]);
-  });
-
-  it("normaliza datos inválidos numéricos en tabla manual y en resultados de partidos", () => {
-    const mainTeam = { id: "m", name: "Mentira FC", isMain: true };
-
-    const table = getHybridTournamentTable({
-      manualStandings: [
-        {
-          team: mainTeam,
-          wins: undefined,
-          draws: null,
-          losses: NaN,
-          goalsFor: Infinity,
-          goalsAgainst: "-",
-        },
-        {
-          team: { id: "r", name: "Rival" },
-          wins: undefined,
-          draws: null,
-          losses: NaN,
-          goalsFor: Infinity,
-          goalsAgainst: "-",
-        },
-      ],
-      games: [
-        { state: "finalizado", result: { goalsFor: "2", goalsAgainst: null } },
-        { state: "por_jugar", result: null },
-      ],
-      mainTeam,
-    });
-
-    const mainRow = table.find((row) => row.team.id === "m");
-    const rivalRow = table.find((row) => row.team.id === "r");
-
-    expect(mainRow).toMatchObject({
-      played: 0,
-      wins: 0,
-      draws: 0,
-      losses: 0,
-      goalsFor: 0,
-      goalsAgainst: 0,
-    });
-
-    expect(rivalRow).toMatchObject({
-      played: 0,
-      wins: 0,
-      draws: 0,
-      losses: 0,
-      goalsFor: 0,
-      goalsAgainst: 0,
-    });
-  });
-  it("calcula posiciones y movimientos contra la tabla guardada de la fecha anterior", () => {
-    const table = getHybridTournamentTable({
-      manualStandings: [
-        {
-          team: { id: "a", name: "Alpha FC" },
-          wins: 2,
-          draws: 0,
-          losses: 0,
-          goalsFor: 5,
-          goalsAgainst: 1,
-        },
-        {
-          team: { id: "b", name: "Beta FC" },
-          wins: 1,
-          draws: 0,
-          losses: 1,
-          goalsFor: 4,
-          goalsAgainst: 2,
-        },
-      ],
-      previousManualStandings: [
-        {
-          team: { id: "b", name: "Beta FC" },
-          wins: 1,
-          draws: 0,
-          losses: 0,
-          goalsFor: 2,
-          goalsAgainst: 0,
-        },
-        {
-          team: { id: "a", name: "Alpha FC" },
-          wins: 0,
-          draws: 0,
-          losses: 1,
-          goalsFor: 0,
-          goalsAgainst: 1,
-        },
-      ],
-    });
-
-    expect(table.find((row) => row.team.id === "a")).toMatchObject({
-      position: 1,
-      previousPosition: 2,
-      positionChange: 1,
-    });
-    expect(table.find((row) => row.team.id === "b")).toMatchObject({
-      position: 2,
-      previousPosition: 1,
-      positionChange: -1,
-    });
-  });
-
-  it("agrega Mentira FC automaticamente y compara su posicion con el corte de cada snapshot", () => {
-    const mainTeam = { id: "main", name: "Mentira FC", isMain: true };
-    const table = getHybridTournamentTable({
-      mainTeam,
-      gamesThroughDate: "2025-03-20T23:59:59Z",
-      previousGamesThroughDate: "2025-03-10T23:59:59Z",
-      games: [
-        {
-          date: "2025-03-05T12:00:00Z",
-          state: "finalizado",
-          result: { goalsFor: 1, goalsAgainst: 1 },
-        },
-        {
-          date: "2025-03-18T12:00:00Z",
-          state: "finalizado",
-          result: { goalsFor: 2, goalsAgainst: 0 },
-        },
-      ],
-      manualStandings: [
-        {
-          team: { id: "a", name: "Alpha FC" },
-          wins: 1,
-          draws: 0,
-          losses: 1,
-          goalsFor: 2,
-          goalsAgainst: 2,
-        },
-      ],
-      previousManualStandings: [
-        {
-          team: { id: "a", name: "Alpha FC" },
-          wins: 1,
-          draws: 0,
-          losses: 0,
-          goalsFor: 2,
-          goalsAgainst: 0,
-        },
-      ],
-    });
-
+    expect(table.map((row) => row.team.id)).toEqual(["alpha", "main"]);
     expect(table.find((row) => row.team.id === "main")).toMatchObject({
-      played: 2,
-      points: 4,
-      position: 1,
+      played: 13,
+      points: 18,
+      position: 3,
       previousPosition: 2,
-      positionChange: 1,
+      positionChange: -1,
+      type: "normal",
     });
+    expect(table[0].type).toBe("primaryPrize");
   });
 });
 
 describe("getTopScorers", () => {
   const players = [
-    { id: "p1", fullName: "Ana Gómez" },
-    { id: "p2", fullName: "Bruno Pérez" },
+    { id: "p1", fullName: "Ana GÃ³mez" },
+    { id: "p2", fullName: "Bruno PÃ©rez" },
     { id: "p3", fullName: "Carlos Ruiz" },
   ];
 
-  it("calcula goleadores con datos normales y permite filtrar por año", () => {
+  it("calcula goleadores con datos normales y permite filtrar por aÃ±o", () => {
     const games = [
       {
         date: "2025-03-01",
@@ -355,7 +93,7 @@ describe("getTopScorers", () => {
     ]);
   });
 
-  it("devuelve valores en cero con datos vacíos", () => {
+  it("devuelve valores en cero con datos vacÃ­os", () => {
     const result = getTopScorers([], players);
 
     expect(result).toHaveLength(3);
@@ -365,7 +103,7 @@ describe("getTopScorers", () => {
   it("desempata por nombre cuando hay igualdad de goles", () => {
     const tiePlayers = [
       { id: "p1", fullName: "Zoe Alvarez" },
-      { id: "p2", fullName: "Ana Belén" },
+      { id: "p2", fullName: "Ana BelÃ©n" },
     ];
 
     const games = [
@@ -385,7 +123,7 @@ describe("getTopScorers", () => {
     expect(result.map((player) => player.id)).toEqual(["p2", "p1"]);
   });
 
-  it("ignora datos inválidos y no rompe cuando input no es arreglo", () => {
+  it("ignora datos invÃ¡lidos y no rompe cuando input no es arreglo", () => {
     expect(getTopScorers(null, players)).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ id: "p1", goals: 0 }),
@@ -457,7 +195,7 @@ describe("getPlayerStats", () => {
     });
   });
 
-  it("maneja playerId inválido devolviendo objeto neutral", () => {
+  it("maneja playerId invÃ¡lido devolviendo objeto neutral", () => {
     expect(getPlayerStats(games, null)).toEqual({
       playerId: null,
       goals: 0,
@@ -466,7 +204,7 @@ describe("getPlayerStats", () => {
     });
   });
 
-  it("ignora eventos inválidos y entradas no arreglos", () => {
+  it("ignora eventos invÃ¡lidos y entradas no arreglos", () => {
     expect(getPlayerStats(null, "p1")).toEqual({
       playerId: "p1",
       goals: 0,
@@ -722,7 +460,7 @@ describe("getTopScorersFromGoalEvents", () => {
     },
   });
 
-  it("calcula goleadores desde eventos planos filtrados por año", () => {
+  it("calcula goleadores desde eventos planos filtrados por aÃ±o", () => {
     const goalEvents = [
       {
         id: "e1",

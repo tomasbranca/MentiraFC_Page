@@ -70,6 +70,49 @@ test('buildComputedStandings derives table positions and movement', () => {
   assert.equal(standings[2].positionChange, null)
 })
 
+test('buildComputedStandings creates an alphabetical baseline for a new zero-point tournament', () => {
+  const standings = buildComputedStandings({
+    mainTeam: {
+      _id: 'main',
+      name: 'Mentira FC',
+      isMain: true,
+    },
+    games: [],
+    rows: [
+      {
+        team: {_id: 'zeta', name: 'Zeta FC'},
+        wins: 0,
+        draws: 0,
+        losses: 0,
+        goalsFor: 0,
+        goalsAgainst: 0,
+      },
+      {
+        team: {_id: 'alpha', name: 'Alpha FC'},
+        wins: 0,
+        draws: 0,
+        losses: 0,
+        goalsFor: 0,
+        goalsAgainst: 0,
+      },
+    ],
+  })
+
+  assert.deepEqual(
+    standings.map((row) => [
+      row.team.id,
+      row.position,
+      row.previousPosition,
+      row.positionChange,
+    ]),
+    [
+      ['alpha', 1, 1, 0],
+      ['main', 2, 2, 0],
+      ['zeta', 3, 3, 0],
+    ],
+  )
+})
+
 test('createSnapshotId and toSnapshotRows create deterministic Sanity payloads', () => {
   const snapshotId = createSnapshotId('tournament-1', SNAPSHOT_ROLES.CURRENT)
   const rows = toSnapshotRows([
@@ -126,7 +169,6 @@ test('createSnapshotRotationPlan creates a new current snapshot when there is no
     matchdayNumber: 4,
     label: 'Fecha 4',
     snapshotDate: '2026-05-10T23:59:59Z',
-    gamesThroughDate: '2026-05-10T23:59:59Z',
   }
   const standings = buildComputedStandings({
     mainTeam: {_id: 'main', name: 'Mentira FC', isMain: true},
@@ -150,6 +192,7 @@ test('createSnapshotRotationPlan creates a new current snapshot when there is no
 
   assert.equal(rotation.currentSnapshot._id, 'standings-snapshot-tournament-1-current')
   assert.equal(rotation.currentSnapshot.snapshotRole, 'current')
+  assert.equal(rotation.currentSnapshot.gamesThroughDate, state.snapshotDate)
   assert.equal(rotation.previousSnapshot, null)
   assert.equal(rotation.deletePreviousSnapshotId, null)
   assert.equal(rotation.currentSnapshot.rows[0].positionChange, undefined)
@@ -161,13 +204,11 @@ test('createSnapshotRotationPlan moves the old current snapshot to previous', ()
     matchdayNumber: 6,
     label: 'Fecha 6',
     snapshotDate: '2026-05-17T23:59:59Z',
-    gamesThroughDate: '2026-05-17T23:59:59Z',
   }
   const newState = {
     matchdayNumber: 7,
     label: 'Fecha 7',
     snapshotDate: '2026-05-24T23:59:59Z',
-    gamesThroughDate: '2026-05-24T23:59:59Z',
   }
   const oldCurrentStandings = buildComputedStandings({
     mainTeam: {_id: 'main', name: 'Mentira FC', isMain: true},
@@ -236,7 +277,6 @@ test('createSnapshotRotationPlan deletes old previous when there is no current t
       matchdayNumber: 1,
       label: 'Fecha 1',
       snapshotDate: '2026-05-03T23:59:59Z',
-      gamesThroughDate: '2026-05-03T23:59:59Z',
     },
     standings: [],
     oldPreviousSnapshot: {
@@ -358,6 +398,14 @@ test('sync query uses finalized games by tournament reference instead of competi
 
   assert.match(source, /state == "finalizado"/)
   assert.match(source, /tournament\._ref == \$tournamentId/)
-  assert.match(source, /date <= \$gamesThroughDate/)
+  assert.match(source, /date < \$snapshotDate/)
   assert.doesNotMatch(source, /competition == "Torneo"/)
+})
+
+test('sync query removes only legacy snapshots outside current and previous ids', () => {
+  const source = readFileSync(new URL('./index.js', import.meta.url), 'utf8')
+
+  assert.match(source, /LEGACY_SNAPSHOTS_QUERY/)
+  assert.match(source, /!\(_id in \$snapshotIds\)/)
+  assert.match(source, /!defined\(snapshotRole\) \|\| !\(snapshotRole in \["current", "previous"\]\)/)
 })

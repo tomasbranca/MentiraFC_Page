@@ -321,9 +321,9 @@ Uso en web:
 - La web busca el primer torneo con `active == true`.
 - La tabla sale del `standingsSnapshots` con `snapshotRole == "current"` del torneo activo.
 - Si no hay snapshots, la web no arma una tabla legacy desde `tournaments`: espera que exista `standingsState` y que la Function genere el snapshot.
-- La web calcula la fila de Mentira FC desde partidos finalizados y la inserta automaticamente.
-- La web calcula `points`, `goalDiff`, `position`, `type` (`primaryPrize`, `secondaryPrize`, `normal`) y `positionChange`.
-- `positionChange` compara la tabla `current` contra `previous`; si no existe `previous`, queda `null`.
+- La web no recalcula la fila de Mentira FC: consume las filas generadas del snapshot `current` y solo agrega `type` (`primaryPrize`, `secondaryPrize`, `normal`) segun la posicion guardada.
+- La Function calcula `played`, `points`, `goalDiff`, `position`, `previousPosition` y `positionChange`.
+- `positionChange` compara la tabla `current` contra `previous`; si no existe `previous`, queda `null`, salvo el inicio de torneo en cero, donde se guarda una base alfabetica con cambio `0`.
 - `participants` no se carga en la web publica: funciona como lista editorial oficial para validar la carga de `standingsState`.
 
 Relaciones actuales:
@@ -351,8 +351,7 @@ Campos:
 | `tournament` | `reference -> tournaments` | Si | Torneo al que pertenece la tabla actual. Debe existir un solo documento por torneo. |
 | `matchdayNumber` | `number` | Si | Numero explicito de fecha que se usara para generar el snapshot. |
 | `label` | `string` | No | Etiqueta visible, por ejemplo `Fecha 7`. |
-| `snapshotDate` | `datetime` | Si | Fecha visible de publicacion de la tabla. No depende de `_updatedAt`. |
-| `gamesThroughDate` | `datetime` | Si | Corte usado para calcular automaticamente los partidos de Mentira FC incluidos en esa tabla. |
+| `snapshotDate` | `datetime` | Si | Fecha de actualizacion de la tabla. Tambien es el corte usado para calcular Mentira FC. No depende de `_updatedAt`. |
 | `rows` | `array` | Si | Filas editables de rivales/equipos del torneo. No se carga Mentira FC. |
 | `rows[].team` | `reference -> teams` | Si | Equipo de la fila. |
 | `rows[].wins` | `number` | Si | Partidos ganados. |
@@ -366,8 +365,9 @@ Uso en backend:
 - `sync-standings-snapshot` escucha creaciones y actualizaciones publicadas de `standingsState`.
 - La Function valida que todas las filas pertenezcan a `tournaments.participants` activos para esa fecha.
 - La Function rechaza la generacion del snapshot si falta un participante activo, sobra un equipo, hay duplicados o se cargo Mentira FC manualmente.
-- La Function calcula Mentira FC desde `games` finalizados del torneo hasta `gamesThroughDate`, deriva `played`, `points`, `goalDiff`, `position` y movimiento.
+- La Function calcula Mentira FC desde `games` finalizados del torneo con `date < snapshotDate`, deriva `played`, `points`, `goalDiff`, `position`, `previousPosition` y `positionChange`.
 - La Function rota snapshots con IDs deterministicos por torneo y rol: el `current` viejo pasa a `previous`, el `previous` viejo se reemplaza, y el nuevo resultado queda como `current`.
+- Si no existe `previous` y todas las filas estan en cero, la Function ordena alfabeticamente y guarda esa posicion como base anterior (`previousPosition`) para que la primera fecha real pueda comparar contra una posicion previa.
 
 Relaciones actuales:
 
@@ -388,8 +388,8 @@ Campos:
 | `snapshotRole` | `string` | Si | Rol del snapshot. Valores: `current`, `previous`. |
 | `matchdayNumber` | `number` | Si | Numero explicito de fecha visible y editorial. No se usa para conservar historial largo. |
 | `label` | `string` | No | Etiqueta visible, por ejemplo `Fecha 7`. |
-| `snapshotDate` | `datetime` | Si | Fecha visible de publicacion de la tabla. No depende de `_updatedAt`. |
-| `gamesThroughDate` | `datetime` | Si | Corte usado para calcular automaticamente los partidos de Mentira FC incluidos en esa tabla. |
+| `snapshotDate` | `datetime` | Si | Fecha de actualizacion de la tabla. No depende de `_updatedAt`. |
+| `gamesThroughDate` | `datetime` | Si | Corte auditado usado para calcular Mentira FC. Se guarda igual a `snapshotDate` en el modelo actual. |
 | `rows` | `array` | Si | Filas generadas automaticamente. |
 | `rows[].team` | `reference -> teams` | Si | Equipo de la fila. |
 | `rows[].played` | `number` | Si | Partidos jugados calculados. |
@@ -407,10 +407,10 @@ Campos:
 Uso en web:
 
 - `TOURNAMENT_QUERY` trae solo los snapshots con `snapshotRole` `current` y `previous` del torneo activo.
-- El snapshot `current` arma la tabla actual.
-- El snapshot `previous` permite calcular cuantos puestos subio o bajo cada equipo.
+- El snapshot `current` arma la tabla actual; la web no recalcula estadisticas ni posiciones.
+- El snapshot `previous` queda guardado para auditar la comparacion usada por `positionChange`.
 - Si falta `previous`, `positionChange` puede ser `null`; si falta `current`, la web muestra el estado vacio/error existente en vez de reconstruir una tabla legacy.
-- Mentira FC no se carga manualmente en `standingsState.rows`: se calcula desde `games` usando `gamesThroughDate`.
+- Mentira FC no se carga manualmente en `standingsState.rows`: se calcula desde `games` finalizados del torneo con `date < snapshotDate`.
 
 Relaciones actuales:
 
@@ -593,8 +593,8 @@ Regla de fuente de verdad: Sanity = contenido publico del footer; Supabase = ope
 - Hay diferencias entre campos editoriales y campos de consumo web. Ejemplo: `photo` se proyecta como `imageUrl`; `rival.logo` se proyecta como `logoUrl`.
 - `games.result` solo existe cuando el partido esta finalizado; la web conserva `null` para partidos por jugar y no normaliza marcadores faltantes a `0`.
 - `events.player` no es requerido en Sanity, por eso la web permite eventos sin jugador asociado.
-- `standingsState.rows` es manual para rivales/equipos del torneo, pero Mentira FC se inserta automaticamente con estadisticas calculadas desde partidos finalizados hasta `gamesThroughDate`.
+- `standingsState.rows` es manual para rivales/equipos del torneo, pero Mentira FC se inserta automaticamente con estadisticas calculadas desde partidos finalizados con `date < snapshotDate`.
 - `standingsState.rows` solo debe contener equipos activos de `tournaments.participants` para esa fecha.
-- `standingsSnapshots.rows` es generado automaticamente por Sanity Functions y se conserva solo en snapshots `current` y `previous`.
+- `standingsSnapshots.rows` es generado automaticamente por Sanity Functions y se conserva solo en snapshots `current` y `previous`; no hay historial largo de snapshots.
 - Si el torneo cambia de participantes, se marca el equipo saliente como `replaced` o `withdrawn` con `activeUntilMatchday`, y se agrega el nuevo equipo con `activeFromMatchday`.
 - El texto de algunos titles del Studio aparece con problemas de encoding en los archivos actuales, pero eso no cambia la forma del modelo.
