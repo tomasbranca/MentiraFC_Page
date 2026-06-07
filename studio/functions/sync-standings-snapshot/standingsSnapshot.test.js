@@ -3,11 +3,11 @@ import {readFileSync} from 'node:fs'
 import test from 'node:test'
 
 import {
-  SNAPSHOT_ROLES,
   buildComputedStandings,
+  createComparisonRowsForUpdate,
   createCurrentSnapshotDocument,
+  createPublishedTableUpdatePlan,
   createSnapshotId,
-  createSnapshotRotationPlan,
   isValidDateTimeValue,
   isValidSanityDocumentId,
   toSnapshotRows,
@@ -70,8 +70,113 @@ test('buildComputedStandings derives table positions and movement', () => {
   assert.equal(standings[2].positionChange, null)
 })
 
+test('buildComputedStandings creates an alphabetical baseline for a new zero-point tournament', () => {
+  const standings = buildComputedStandings({
+    mainTeam: {
+      _id: 'main',
+      name: 'Mentira FC',
+      isMain: true,
+    },
+    games: [],
+    rows: [
+      {
+        team: {_id: 'zeta', name: 'Zeta FC'},
+        wins: 0,
+        draws: 0,
+        losses: 0,
+        goalsFor: 0,
+        goalsAgainst: 0,
+      },
+      {
+        team: {_id: 'alpha', name: 'Alpha FC'},
+        wins: 0,
+        draws: 0,
+        losses: 0,
+        goalsFor: 0,
+        goalsAgainst: 0,
+      },
+    ],
+  })
+
+  assert.deepEqual(
+    standings.map((row) => [
+      row.team.id,
+      row.position,
+      row.previousPosition,
+      row.positionChange,
+    ]),
+    [
+      ['alpha', 1, 1, 0],
+      ['main', 2, 2, 0],
+      ['zeta', 3, 3, 0],
+    ],
+  )
+})
+
+test('createComparisonRowsForUpdate preserves previous positions while editing the same matchday', () => {
+  const comparisonRows = createComparisonRowsForUpdate({
+    state: {
+      matchdayNumber: 13,
+    },
+    currentSnapshot: {
+      matchdayNumber: 13,
+      rows: [
+        {
+          team: {_ref: 'alpha'},
+          position: 1,
+          previousPosition: 3,
+        },
+        {
+          team: {_ref: 'beta'},
+          position: 2,
+          previousPosition: 1,
+        },
+      ],
+    },
+  })
+
+  assert.deepEqual(
+    comparisonRows.map((row) => [row.team._ref, row.position]),
+    [
+      ['alpha', 3],
+      ['beta', 1],
+    ],
+  )
+})
+
+test('createComparisonRowsForUpdate uses current positions when matchday advances', () => {
+  const comparisonRows = createComparisonRowsForUpdate({
+    state: {
+      matchdayNumber: 14,
+    },
+    currentSnapshot: {
+      matchdayNumber: 13,
+      rows: [
+        {
+          team: {_ref: 'alpha'},
+          position: 1,
+          previousPosition: 3,
+        },
+        {
+          team: {_ref: 'beta'},
+          position: 2,
+          previousPosition: 1,
+        },
+      ],
+    },
+  })
+
+  assert.deepEqual(
+    comparisonRows.map((row) => [row.team._ref, row.position]),
+    [
+      ['alpha', 1],
+      ['beta', 2],
+    ],
+  )
+})
+
 test('createSnapshotId and toSnapshotRows create deterministic Sanity payloads', () => {
-  const snapshotId = createSnapshotId('tournament-1', SNAPSHOT_ROLES.CURRENT)
+  const snapshotId = createSnapshotId('tournament-1')
   const rows = toSnapshotRows([
     {
       team: {id: 'main'},
@@ -121,12 +226,11 @@ test('validators accept safe ids and datetimes only', () => {
   assert.equal(isValidDateTimeValue(''), false)
 })
 
-test('createSnapshotRotationPlan creates a new current snapshot when there is no previous current', () => {
+test('createPublishedTableUpdatePlan creates only the public table document', () => {
   const state = {
     matchdayNumber: 4,
     label: 'Fecha 4',
     snapshotDate: '2026-05-10T23:59:59Z',
-    gamesThroughDate: '2026-05-10T23:59:59Z',
   }
   const standings = buildComputedStandings({
     mainTeam: {_id: 'main', name: 'Mentira FC', isMain: true},
@@ -142,34 +246,65 @@ test('createSnapshotRotationPlan creates a new current snapshot when there is no
       },
     ],
   })
-  const rotation = createSnapshotRotationPlan({
+  const updatePlan = createPublishedTableUpdatePlan({
     tournamentId: 'tournament-1',
     state,
     standings,
+    obsoleteSnapshotIds: ['standings-snapshot-tournament-1-previous', 'bad/id'],
   })
 
-  assert.equal(rotation.currentSnapshot._id, 'standings-snapshot-tournament-1-current')
-  assert.equal(rotation.currentSnapshot.snapshotRole, 'current')
-  assert.equal(rotation.previousSnapshot, null)
-  assert.equal(rotation.deletePreviousSnapshotId, null)
-  assert.equal(rotation.currentSnapshot.rows[0].positionChange, undefined)
+  assert.equal(updatePlan.publishedSnapshot._id, 'standings-snapshot-tournament-1-current')
+  assert.equal(updatePlan.publishedSnapshot.snapshotRole, undefined)
+  assert.equal(updatePlan.publishedSnapshot.gamesThroughDate, undefined)
+  assert.deepEqual(updatePlan.deleteSnapshotIds, ['standings-snapshot-tournament-1-previous'])
 })
 
-test('createSnapshotRotationPlan moves the old current snapshot to previous', () => {
+test('single public document keeps previous position stable while editing same matchday', () => {
   const tournamentId = 'tournament-1'
-  const oldState = {
-    matchdayNumber: 6,
-    label: 'Fecha 6',
-    snapshotDate: '2026-05-17T23:59:59Z',
-    gamesThroughDate: '2026-05-17T23:59:59Z',
+  const currentSnapshot = createCurrentSnapshotDocument({
+    tournamentId,
+    state: {
+      matchdayNumber: 13,
+      label: 'Fecha 13',
+      snapshotDate: '2026-05-17T23:59:59Z',
+    },
+    standings: [
+      {
+        team: {id: 'alpha'},
+        played: 13,
+        wins: 7,
+        draws: 2,
+        losses: 4,
+        goalsFor: 22,
+        goalsAgainst: 12,
+        points: 23,
+        goalDiff: 10,
+        position: 1,
+        previousPosition: 3,
+        positionChange: 2,
+      },
+      {
+        team: {id: 'main'},
+        played: 13,
+        wins: 4,
+        draws: 6,
+        losses: 3,
+        goalsFor: 51,
+        goalsAgainst: 53,
+        points: 18,
+        goalDiff: -2,
+        position: 2,
+        previousPosition: 1,
+        positionChange: -1,
+      },
+    ],
+  })
+  const state = {
+    matchdayNumber: 13,
+    label: 'Fecha 13',
+    snapshotDate: '2026-05-18T23:59:59Z',
   }
-  const newState = {
-    matchdayNumber: 7,
-    label: 'Fecha 7',
-    snapshotDate: '2026-05-24T23:59:59Z',
-    gamesThroughDate: '2026-05-24T23:59:59Z',
-  }
-  const oldCurrentStandings = buildComputedStandings({
+  const standings = buildComputedStandings({
     mainTeam: {_id: 'main', name: 'Mentira FC', isMain: true},
     games: [{result: {goalsFor: 1, goalsAgainst: 0}}],
     rows: [
@@ -182,17 +317,59 @@ test('createSnapshotRotationPlan moves the old current snapshot to previous', ()
         goalsAgainst: 1,
       },
     ],
+    previousRows: createComparisonRowsForUpdate({state, currentSnapshot}),
   })
-  const previousCurrentSnapshot = createCurrentSnapshotDocument({
+
+  assert.equal(standings.find((row) => row.team.id === 'main')?.previousPosition, 1)
+  assert.equal(standings.find((row) => row.team.id === 'alpha')?.previousPosition, 3)
+})
+
+test('single public document stores current positions as previous when matchday advances', () => {
+  const tournamentId = 'tournament-1'
+  const currentSnapshot = createCurrentSnapshotDocument({
     tournamentId,
-    state: oldState,
-    standings: oldCurrentStandings,
+    state: {
+      matchdayNumber: 13,
+      label: 'Fecha 13',
+      snapshotDate: '2026-05-17T23:59:59Z',
+    },
+    standings: [
+      {
+        team: {id: 'alpha'},
+        played: 13,
+        wins: 7,
+        draws: 2,
+        losses: 4,
+        goalsFor: 22,
+        goalsAgainst: 12,
+        points: 23,
+        goalDiff: 10,
+        position: 1,
+        previousPosition: 3,
+        positionChange: 2,
+      },
+      {
+        team: {id: 'main'},
+        played: 13,
+        wins: 4,
+        draws: 6,
+        losses: 3,
+        goalsFor: 51,
+        goalsAgainst: 53,
+        points: 18,
+        goalDiff: -2,
+        position: 2,
+        previousPosition: 1,
+        positionChange: -1,
+      },
+    ],
   })
-  const oldPreviousSnapshot = {
-    _id: createSnapshotId(tournamentId, SNAPSHOT_ROLES.PREVIOUS),
-    label: 'Fecha 5',
+  const state = {
+    matchdayNumber: 14,
+    label: 'Fecha 14',
+    snapshotDate: '2026-05-24T23:59:59Z',
   }
-  const newStandings = buildComputedStandings({
+  const standings = buildComputedStandings({
     mainTeam: {_id: 'main', name: 'Mentira FC', isMain: true},
     games: [
       {result: {goalsFor: 1, goalsAgainst: 0}},
@@ -208,44 +385,11 @@ test('createSnapshotRotationPlan moves the old current snapshot to previous', ()
         goalsAgainst: 0,
       },
     ],
-    previousRows: previousCurrentSnapshot.rows,
-  })
-  const rotation = createSnapshotRotationPlan({
-    tournamentId,
-    state: newState,
-    standings: newStandings,
-    previousCurrentSnapshot,
-    oldPreviousSnapshot,
+    previousRows: createComparisonRowsForUpdate({state, currentSnapshot}),
   })
 
-  assert.equal(rotation.previousSnapshot?._id, 'standings-snapshot-tournament-1-previous')
-  assert.equal(rotation.previousSnapshot?.snapshotRole, 'previous')
-  assert.equal(rotation.previousSnapshot?.label, 'Fecha 6')
-  assert.notEqual(rotation.previousSnapshot?.label, oldPreviousSnapshot.label)
-  assert.equal(rotation.deletePreviousSnapshotId, null)
-  assert.equal(rotation.currentSnapshot.snapshotRole, 'current')
-  assert.equal(rotation.currentSnapshot.label, 'Fecha 7')
-  assert.equal(rotation.currentSnapshot.rows[0].positionChange, 1)
-})
-
-test('createSnapshotRotationPlan deletes old previous when there is no current to compare', () => {
-  const tournamentId = 'tournament-1'
-  const rotation = createSnapshotRotationPlan({
-    tournamentId,
-    state: {
-      matchdayNumber: 1,
-      label: 'Fecha 1',
-      snapshotDate: '2026-05-03T23:59:59Z',
-      gamesThroughDate: '2026-05-03T23:59:59Z',
-    },
-    standings: [],
-    oldPreviousSnapshot: {
-      _id: createSnapshotId(tournamentId, SNAPSHOT_ROLES.PREVIOUS),
-    },
-  })
-
-  assert.equal(rotation.previousSnapshot, null)
-  assert.equal(rotation.deletePreviousSnapshotId, 'standings-snapshot-tournament-1-previous')
+  assert.equal(standings.find((row) => row.team.id === 'alpha')?.previousPosition, 1)
+  assert.equal(standings.find((row) => row.team.id === 'main')?.previousPosition, 2)
 })
 
 test('validateStandingRowsAgainstParticipants accepts active tournament teams only', () => {
@@ -358,6 +502,15 @@ test('sync query uses finalized games by tournament reference instead of competi
 
   assert.match(source, /state == "finalizado"/)
   assert.match(source, /tournament\._ref == \$tournamentId/)
-  assert.match(source, /date <= \$gamesThroughDate/)
+  assert.match(source, /date < \$snapshotDate/)
   assert.doesNotMatch(source, /competition == "Torneo"/)
+})
+
+test('sync query deletes only other standingsSnapshots from the same tournament', () => {
+  const source = readFileSync(new URL('./index.js', import.meta.url), 'utf8')
+
+  assert.match(source, /OBSOLETE_SNAPSHOTS_QUERY/)
+  assert.match(source, /tournament\._ref == \$tournamentId/)
+  assert.match(source, /_id != \$snapshotId/)
+  assert.doesNotMatch(source, /snapshotRole in \["current", "previous"\]/)
 })

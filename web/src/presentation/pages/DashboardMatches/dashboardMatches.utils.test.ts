@@ -78,6 +78,25 @@ describe("dashboardMatches utils", () => {
     });
   });
 
+  it("conserva el torneo para partidos finalizados de torneo", () => {
+    expect(
+      buildDashboardMatchMutationInput({
+        rivalId: "team-1",
+        date: "2026-05-17T00:30:00.000Z",
+        location: "Cancha 1",
+        competition: "Torneo",
+        tournamentId: "tournament-1",
+        state: "finalizado",
+        goalsFor: "2",
+        goalsAgainst: "1",
+        playedPlayerIds: ["player-1"],
+        goalScorers: [{ playerId: "player-1", goals: "2" }],
+        guestGoalScorers: [],
+        opponentOwnGoals: "0",
+      }).tournamentId
+    ).toBe("tournament-1");
+  });
+
   it("no exige resultado para partidos por jugar", () => {
     expect(
       validateDashboardMatchInput({

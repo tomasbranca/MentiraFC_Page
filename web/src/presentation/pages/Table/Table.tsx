@@ -108,7 +108,7 @@ const Table = () => {
           </div>
           <h2 className="text-xl font-bold mb-2">Sin tabla publicada</h2>
           <p className="text-neutral-400">
-            Todavia no hay un snapshot current disponible para este torneo.
+            Todavia no hay una tabla publicada disponible para este torneo.
           </p>
         </div>
       </div>

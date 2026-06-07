@@ -62,8 +62,7 @@ const dirtyFieldLabels = {
   tournamentId: "Torneo",
   matchdayNumber: "Fecha",
   label: "Etiqueta",
-  snapshotDate: "Fecha visible",
-  gamesThroughDate: "Corte de partidos",
+  snapshotDate: "Fecha de actualizacion",
   rows: "Filas",
 } as const;
 
@@ -140,7 +139,6 @@ const createInitialValues = (): DashboardTableInput => {
     matchdayNumber: "1",
     label: "Fecha 1",
     snapshotDate: now,
-    gamesThroughDate: now,
     rows: [],
   };
 };
@@ -159,7 +157,6 @@ const getValuesFromTable = (table: DashboardTableItem): DashboardTableInput => (
   matchdayNumber: table.matchdayNumber ? String(table.matchdayNumber) : "",
   label: table.label ?? "",
   snapshotDate: table.snapshotDate ?? "",
-  gamesThroughDate: table.gamesThroughDate ?? "",
   rows: table.rows.map((row) => ({
     key: row.key ?? createRowKey(),
     teamId: row.teamId ?? "",
@@ -349,7 +346,7 @@ const DashboardTableForm = () => {
     const { name, value } = event.target;
 
     setValues((currentValues) => {
-      if (name === "snapshotDate" || name === "gamesThroughDate") {
+      if (name === "snapshotDate") {
         return {
           ...currentValues,
           [name]: fromDatetimeLocalValue(value),
@@ -484,7 +481,6 @@ const DashboardTableForm = () => {
       matchdayNumber: values.matchdayNumber.trim(),
       label: values.label.trim(),
       snapshotDate: values.snapshotDate.trim(),
-      gamesThroughDate: values.gamesThroughDate.trim(),
       rows: values.rows.map((row) => ({
         ...row,
         teamId: row.teamId.trim(),
@@ -511,7 +507,7 @@ const DashboardTableForm = () => {
 
     const confirmed = await confirmDashboardAction({
       title: isEditing ? "Publicar cambios" : "Publicar tabla",
-      text: "La tabla publicada pasara a current y la current anterior quedara como previous para comparar movimientos.",
+      text: "La tabla publicada se actualizara. Si cambiaste el numero de jornada, la posicion actual anterior quedara guardada como posicion anterior.",
       confirmText: isEditing ? "Publicar cambios" : "Publicar",
       icon: isEditing ? "question" : "info",
     });
@@ -561,8 +557,8 @@ const DashboardTableForm = () => {
               {isEditing ? "Editar tabla" : "Nueva tabla"}
             </h2>
             <p className="mt-2 text-sm text-violet-100/65">
-              Modifica la tabla editable; al publicar se conserva solo current
-              y previous por torneo.
+              Modifica la tabla editable; al publicar se conserva una sola
+              tabla publicada por torneo con posicion anterior por equipo.
             </p>
           </div>
 
@@ -632,28 +628,16 @@ const DashboardTableForm = () => {
             onChange={handleChange}
           />
 
-          <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 *:min-w-0">
-            <Field
-              id="dashboard-table-snapshot-date"
-              name="snapshotDate"
-              type="datetime-local"
-              label="Fecha visible"
-              value={toDatetimeLocalValue(values.snapshotDate)}
-              error={errors.snapshotDate}
-              dirty={isDirty("snapshotDate")}
-              onChange={handleChange}
-            />
-            <Field
-              id="dashboard-table-games-through-date"
-              name="gamesThroughDate"
-              type="datetime-local"
-              label="Partidos de Mentira hasta"
-              value={toDatetimeLocalValue(values.gamesThroughDate)}
-              error={errors.gamesThroughDate}
-              dirty={isDirty("gamesThroughDate")}
-              onChange={handleChange}
-            />
-          </div>
+          <Field
+            id="dashboard-table-snapshot-date"
+            name="snapshotDate"
+            type="datetime-local"
+            label="Fecha de actualizacion"
+            value={toDatetimeLocalValue(values.snapshotDate)}
+            error={errors.snapshotDate}
+            dirty={isDirty("snapshotDate")}
+            onChange={handleChange}
+          />
 
           <section className="space-y-3 rounded-sm border border-white/10 bg-[#0f0f13] p-3 sm:p-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -668,7 +652,7 @@ const DashboardTableForm = () => {
                 </div>
                 <p className="mt-1 text-xs leading-relaxed text-violet-100/55">
                   Carga solo rivales participantes; Mentira FC se calcula desde
-                  partidos finalizados hasta el corte elegido.
+                  partidos finalizados anteriores a la fecha de actualizacion.
                 </p>
               </div>
 
@@ -889,7 +873,7 @@ const DashboardTableForm = () => {
               <p className="mt-2 text-sm text-violet-100/65">
                 {values.snapshotDate
                   ? formatDateTime(values.snapshotDate)
-                  : "Sin fecha visible"}
+                  : "Sin fecha de actualizacion"}
               </p>
             </div>
 
@@ -901,14 +885,6 @@ const DashboardTableForm = () => {
               <div>
                 <dt className="text-violet-100/45">Filas cargadas</dt>
                 <dd className="mt-1 text-white">{values.rows.length}</dd>
-              </div>
-              <div>
-                <dt className="text-violet-100/45">Corte de partidos</dt>
-                <dd className="mt-1 text-white">
-                  {values.gamesThroughDate
-                    ? formatDateTime(values.gamesThroughDate)
-                    : "Sin corte"}
-                </dd>
               </div>
             </dl>
           </section>

@@ -128,11 +128,9 @@ export interface StandingsRow {
 
 export interface StandingsSnapshot {
   id: string;
-  snapshotRole?: "current" | "previous" | null;
   matchdayNumber: number;
   label?: string | null;
   snapshotDate?: string | null;
-  gamesThroughDate?: string | null;
   standings: StandingsRow[];
 }
 
@@ -146,7 +144,6 @@ export interface Tournament {
   secondaryPrizeSlots?: number;
   updatedAt?: string;
   currentSnapshot?: StandingsSnapshot | null;
-  previousSnapshot?: StandingsSnapshot | null;
   standingsSnapshots?: StandingsSnapshot[];
   standings: StandingsRow[];
 }

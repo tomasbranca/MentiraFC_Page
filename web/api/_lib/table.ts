@@ -11,6 +11,7 @@ export {
 } from "./table/repository.js";
 export {
   dashboardTableByIdQuery,
+  dashboardTableDuplicatesByTournamentQuery,
   dashboardTableListQuery,
   dashboardTableOptionsQuery,
   dashboardTableTournamentValidationQuery,

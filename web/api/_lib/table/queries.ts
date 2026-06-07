@@ -20,7 +20,6 @@ const dashboardTableProjection = `{
   matchdayNumber,
   label,
   snapshotDate,
-  gamesThroughDate,
   "rows": rows[]${dashboardTableRowProjection}
 }`;
 
@@ -30,6 +29,12 @@ export const dashboardTableByIdQuery = `*[
   _type == "standingsState" &&
   (_id == $id || _id == $draftId)
 ] ${dashboardTableProjection}`;
+
+export const dashboardTableDuplicatesByTournamentQuery = `*[
+  _type == "standingsState" &&
+  tournament._ref == $tournamentId &&
+  !(_id in [$id, $draftId])
+]._id`;
 
 export const dashboardTableOptionsQuery = `{
   "tournaments": *[_type == "tournaments" && !(_id in path("drafts.**"))] | order(active desc, name asc) {

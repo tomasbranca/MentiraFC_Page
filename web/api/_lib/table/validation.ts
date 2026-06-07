@@ -52,7 +52,6 @@ const dashboardTableInputSchema = z.object({
   matchdayNumber: z.coerce.number().int().min(1),
   label: z.string().trim().optional(),
   snapshotDate: dateTimeSchema,
-  gamesThroughDate: dateTimeSchema,
   rows: z.array(dashboardTableRowInputSchema).min(1),
 });
 
@@ -61,7 +60,6 @@ const dashboardTableDraftInputSchema = z.object({
   matchdayNumber: optionalPositiveIntegerSchema,
   label: z.string().trim().optional(),
   snapshotDate: optionalDateTimeSchema,
-  gamesThroughDate: optionalDateTimeSchema,
   rows: z.array(dashboardTableDraftRowInputSchema).optional(),
 });
 
@@ -91,7 +89,6 @@ const dashboardTableItemSchema = z.object({
   matchdayNumber: z.number().nullable().optional(),
   label: z.string().nullable().optional(),
   snapshotDate: z.string().nullable().optional(),
-  gamesThroughDate: z.string().nullable().optional(),
   updatedAt: z.string().nullable().optional(),
   rows: z.array(dashboardTableRowItemSchema),
 });

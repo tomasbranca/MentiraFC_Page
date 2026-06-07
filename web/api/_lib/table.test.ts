@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  createCanonicalTableId,
   dashboardTableByIdQuery,
+  dashboardTableDuplicatesByTournamentQuery,
   dashboardTableListQuery,
   dashboardTableOptionsQuery,
   isParticipantActiveForMatchday,
@@ -17,7 +19,6 @@ describe("dashboard table api input", () => {
         matchdayNumber: "4",
         label: "Fecha 4",
         snapshotDate: "2026-05-20T20:00:00.000Z",
-        gamesThroughDate: "2026-05-20T20:00:00.000Z",
         rows: [
           {
             key: "team-1",
@@ -35,7 +36,6 @@ describe("dashboard table api input", () => {
       matchdayNumber: 4,
       label: "Fecha 4",
       snapshotDate: "2026-05-20T20:00:00.000Z",
-      gamesThroughDate: "2026-05-20T20:00:00.000Z",
       rows: [
         {
           key: "team-1",
@@ -57,7 +57,6 @@ describe("dashboard table api input", () => {
         matchdayNumber: "",
         label: "Pendiente",
         snapshotDate: "",
-        gamesThroughDate: "",
         rows: [
           {
             key: "empty-row",
@@ -71,7 +70,6 @@ describe("dashboard table api input", () => {
       matchdayNumber: undefined,
       label: "Pendiente",
       snapshotDate: undefined,
-      gamesThroughDate: undefined,
       rows: [
         {
           key: "empty-row",
@@ -92,7 +90,6 @@ describe("dashboard table api input", () => {
         tournamentId: "tournament-1",
         matchdayNumber: 1,
         snapshotDate: "2026-05-20T20:00:00.000Z",
-        gamesThroughDate: "2026-05-20T20:00:00.000Z",
         rows: [
           {
             teamId: "team-1",
@@ -138,12 +135,27 @@ describe("dashboard table api input", () => {
     ).toBe(true);
   });
 
+  it("usa un id deterministico para la tabla editable por torneo", () => {
+    expect(createCanonicalTableId("tournament-1")).toBe(
+      "standings-state-tournament-1"
+    );
+    expect(createCanonicalTableId(" torneo con espacios ")).toBe(
+      "standings-state-torneo-con-espacios"
+    );
+  });
+
   it("consulta standingsState y deja snapshots fuera del CRUD", () => {
     expect(dashboardTableListQuery).toContain('*[_type == "standingsState"]');
     expect(dashboardTableByIdQuery).toContain("_id == $draftId");
     expect(dashboardTableOptionsQuery).toContain('"participants"');
     expect(dashboardTableOptionsQuery).toContain(
       '!(_id in path("drafts.**"))'
+    );
+    expect(dashboardTableDuplicatesByTournamentQuery).toContain(
+      'tournament._ref == $tournamentId'
+    );
+    expect(dashboardTableDuplicatesByTournamentQuery).toContain(
+      '!(_id in [$id, $draftId])'
     );
     expect(dashboardTableListQuery).not.toContain("standingsSnapshots");
   });

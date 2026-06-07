@@ -1,7 +1,7 @@
 import type { InitialDataPayload } from "../../../../data/getInitialData";
 import type { BootstrapScope } from "../../../../types/models";
 import {
-  getHybridTournamentTable,
+  decorateStoredTournamentTable,
   getTopScorersFromGoalEvents,
 } from "../../../../domain/stats";
 import { sortNews } from "../../../utils/news.utils";
@@ -64,33 +64,17 @@ export const resolveHomeData = (
   const players = deferredData?.players ?? initialData.players;
   const goalEvents = deferredData?.goalEvents ?? initialData.goalEvents;
   const tournamentSource = deferredData?.tournament ?? initialData.tournament;
-  const tournamentGames =
-    deferredData?.tournamentGames ?? initialData.tournamentGames;
-
   const topScorers = getTopScorersFromGoalEvents(goalEvents, players, {
     year,
   });
 
-  const mainTeam = tournamentSource?.mainTeam ?? null;
-
-  const gamesFromActiveTournament = tournamentGames.filter(
-    (nextGame) => nextGame.tournamentId === tournamentSource?.id
-  );
-
   const tournament = tournamentSource
     ? {
         ...tournamentSource,
-        standings: getHybridTournamentTable({
-          manualStandings: tournamentSource.currentSnapshot?.standings ?? [],
-          previousManualStandings:
-            tournamentSource.previousSnapshot?.standings,
-          games: gamesFromActiveTournament,
-          mainTeam,
+        standings: decorateStoredTournamentTable({
+          standings: tournamentSource.currentSnapshot?.standings ?? [],
           primaryPrizeSlots: tournamentSource.primaryPrizeSlots,
           secondaryPrizeSlots: tournamentSource.secondaryPrizeSlots,
-          gamesThroughDate: tournamentSource.currentSnapshot?.gamesThroughDate,
-          previousGamesThroughDate:
-            tournamentSource.previousSnapshot?.gamesThroughDate,
         }),
       }
     : null;

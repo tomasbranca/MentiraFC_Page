@@ -13,7 +13,7 @@ const createTournament = (overrides: Record<string, unknown> = {}) => ({
 });
 
 describe("tournaments.adapter", () => {
-  it("deriva puntos, partidos jugados y diferencia para snapshots legacy", () => {
+  it("deriva puntos, partidos jugados y diferencia si faltan valores publicados", () => {
     const tournament = adaptTournament(
       createTournament({
         standingsSnapshots: [
@@ -46,31 +46,53 @@ describe("tournaments.adapter", () => {
     expect(tournament?.standings[0].points).toBe(25);
   });
 
-  it("elige snapshot actual y anterior por snapshotRole", () => {
+  it("respeta puntos, diferencia y posiciones guardadas por la tabla publicada", () => {
     const tournament = adaptTournament(
       createTournament({
         standingsSnapshots: [
           {
-            _id: "snapshot-previous",
-            snapshotRole: "previous",
-            matchdayNumber: 7,
+            _id: "snapshot-current",
+            matchdayNumber: 1,
             rows: [
               {
+                played: 3,
                 wins: 1,
                 draws: 0,
-                losses: 1,
+                losses: 2,
                 goalsFor: 2,
-                goalsAgainst: 2,
+                goalsAgainst: 4,
+                points: 99,
+                goalDiff: 42,
+                position: 5,
+                previousPosition: 2,
+                positionChange: -3,
                 team: {
-                  _id: "team-previous",
-                  name: "Anterior",
+                  _id: "team-1",
+                  name: "Guardado",
                 },
               },
             ],
           },
+        ],
+      })
+    );
+
+    expect(tournament?.currentSnapshot?.standings[0]).toMatchObject({
+      played: 3,
+      points: 99,
+      goalDiff: 42,
+      position: 5,
+      previousPosition: 2,
+      positionChange: -3,
+    });
+  });
+
+  it("usa la primera tabla publicada recibida para alimentar la pagina", () => {
+    const tournament = adaptTournament(
+      createTournament({
+        standingsSnapshots: [
           {
             _id: "snapshot-current",
-            snapshotRole: "current",
             matchdayNumber: 8,
             rows: [
               {
@@ -91,17 +113,15 @@ describe("tournaments.adapter", () => {
     );
 
     expect(tournament?.currentSnapshot?.id).toBe("snapshot-current");
-    expect(tournament?.previousSnapshot?.id).toBe("snapshot-previous");
     expect(tournament?.standings[0].team.id).toBe("team-current");
   });
 
-  it("no trata un snapshot previous como tabla actual", () => {
+  it("usa la tabla publicada aunque no tenga filas calculadas completas", () => {
     const tournament = adaptTournament(
       createTournament({
         standingsSnapshots: [
           {
-            _id: "snapshot-previous",
-            snapshotRole: "previous",
+            _id: "snapshot-legacy",
             matchdayNumber: 7,
             rows: [
               {
@@ -121,8 +141,7 @@ describe("tournaments.adapter", () => {
       })
     );
 
-    expect(tournament?.currentSnapshot).toBeNull();
-    expect(tournament?.previousSnapshot?.id).toBe("snapshot-previous");
-    expect(tournament?.standings).toEqual([]);
+    expect(tournament?.currentSnapshot?.id).toBe("snapshot-legacy");
+    expect(tournament?.standings[0].team.id).toBe("team-previous");
   });
 });
