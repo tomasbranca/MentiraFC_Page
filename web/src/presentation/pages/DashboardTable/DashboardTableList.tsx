@@ -123,7 +123,7 @@ const DeleteTableButton = ({
       void (async () => {
         const confirmed = await confirmDashboardAction({
           title: "Borrar tabla actual",
-          text: `Vas a eliminar "${getTableTitle(item)}" del documento editable. Los snapshots current/previous los administra la Function al publicar.`,
+          text: `Vas a eliminar "${getTableTitle(item)}" del documento editable. La tabla publicada la administra la Function al publicar.`,
           confirmText: "Borrar",
           icon: "warning",
           variant: "danger",
@@ -214,7 +214,7 @@ const DashboardTableList = () => {
             </div>
             <p className="mt-2 text-sm text-violet-100/65">
               Administra la tabla actual editable. La publicacion conserva solo
-              current y previous para calcular movimientos.
+              una tabla publicada con posicion anterior por equipo.
             </p>
           </div>
 

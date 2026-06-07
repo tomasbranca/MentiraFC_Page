@@ -2,10 +2,10 @@ import {createClient} from '@sanity/client'
 import {documentEventHandler} from '@sanity/functions'
 
 import {
-  SNAPSHOT_ROLES,
+  createComparisonRowsForUpdate,
   buildComputedStandings,
+  createPublishedTableUpdatePlan,
   createSnapshotId,
-  createSnapshotRotationPlan,
   getPublishedId,
   isValidDateTimeValue,
   isValidSanityDocumentId,
@@ -72,28 +72,25 @@ const FINISHED_MAIN_TEAM_GAMES_QUERY = `
   }
 `
 
-const LEGACY_SNAPSHOTS_QUERY = `
+const OBSOLETE_SNAPSHOTS_QUERY = `
   *[
     _type == "standingsSnapshots" &&
     tournament._ref == $tournamentId &&
-    !(_id in $snapshotIds) &&
-    (!defined(snapshotRole) || !(snapshotRole in ["current", "previous"]))
+    _id != $snapshotId
   ]._id
 `
 
-const MANAGED_SNAPSHOTS_QUERY = `
+const PUBLISHED_TABLE_QUERY = `
   *[
     _type == "standingsSnapshots" &&
-    _id in $snapshotIds
-  ]{
+    _id == $snapshotId
+  ][0]{
     _id,
     _type,
-    snapshotRole,
     tournament,
     matchdayNumber,
     label,
     snapshotDate,
-    gamesThroughDate,
     rows[]{
       _key,
       _type,
@@ -164,74 +161,63 @@ export const handler = documentEventHandler(async ({context, event}) => {
     throw new Error(`Invalid standingsState rows: ${rowValidation.errors.join(' ')}`)
   }
 
-  const currentSnapshotId = createSnapshotId(tournamentId, SNAPSHOT_ROLES.CURRENT)
-  const previousSnapshotId = createSnapshotId(tournamentId, SNAPSHOT_ROLES.PREVIOUS)
-  const [games, managedSnapshots, legacySnapshotIds] = await Promise.all([
+  const publishedSnapshotId = createSnapshotId(tournamentId)
+  const [games, publishedSnapshot, obsoleteSnapshotIds] = await Promise.all([
     client.fetch(FINISHED_MAIN_TEAM_GAMES_QUERY, {
       tournamentId,
       snapshotDate: state.snapshotDate,
     }),
-    client.fetch(MANAGED_SNAPSHOTS_QUERY, {
-      snapshotIds: [currentSnapshotId, previousSnapshotId],
+    client.fetch(PUBLISHED_TABLE_QUERY, {
+      snapshotId: publishedSnapshotId,
     }),
-    client.fetch(LEGACY_SNAPSHOTS_QUERY, {
+    client.fetch(OBSOLETE_SNAPSHOTS_QUERY, {
       tournamentId,
-      snapshotIds: [currentSnapshotId, previousSnapshotId],
+      snapshotId: publishedSnapshotId,
     }),
   ])
-  const snapshotsById = (managedSnapshots || []).reduce((acc, snapshot) => {
-    if (snapshot?._id) acc[snapshot._id] = snapshot
-    return acc
-  }, {})
-  const previousCurrentSnapshot = snapshotsById[currentSnapshotId] || null
-  const oldPreviousSnapshot = snapshotsById[previousSnapshotId] || null
+  const comparisonRows = createComparisonRowsForUpdate({
+    state,
+    currentSnapshot: publishedSnapshot,
+  })
   const standings = buildComputedStandings({
     rows: state.rows || [],
     games: games || [],
     mainTeam,
-    previousRows: previousCurrentSnapshot?.rows || [],
+    previousRows: comparisonRows,
   })
-  const rotation = createSnapshotRotationPlan({
+  const updatePlan = createPublishedTableUpdatePlan({
     tournamentId,
     state,
     standings,
-    previousCurrentSnapshot,
-    oldPreviousSnapshot,
+    obsoleteSnapshotIds: obsoleteSnapshotIds || [],
   })
   let transaction = client.transaction()
 
-  if (rotation.previousSnapshot) {
-    transaction = transaction.createOrReplace(rotation.previousSnapshot)
-  } else if (rotation.deletePreviousSnapshotId) {
-    transaction = transaction.delete(rotation.deletePreviousSnapshotId)
-  }
-
-  for (const legacySnapshotId of legacySnapshotIds || []) {
-    if (isValidSanityDocumentId(legacySnapshotId)) {
-      transaction = transaction.delete(legacySnapshotId)
+  for (const obsoleteSnapshotId of updatePlan.deleteSnapshotIds) {
+    if (isValidSanityDocumentId(obsoleteSnapshotId)) {
+      transaction = transaction.delete(obsoleteSnapshotId)
     }
   }
 
-  await transaction.createOrReplace(rotation.currentSnapshot).commit({
+  await transaction.createOrReplace(updatePlan.publishedSnapshot).commit({
     visibility: 'sync',
   })
 
   const writtenSnapshot = await client.fetch('*[_id == $snapshotId][0]{_id}', {
-    snapshotId: currentSnapshotId,
+    snapshotId: publishedSnapshotId,
   })
 
   if (!writtenSnapshot?._id) {
     console.warn('sync-standings-snapshot could not verify written snapshot', {
       stateId,
-      snapshotId: currentSnapshotId,
+      snapshotId: publishedSnapshotId,
     })
   }
 
-  console.log('sync-standings-snapshot wrote snapshot', {
+  console.log('sync-standings-snapshot wrote published table', {
     stateId,
-    snapshotId: currentSnapshotId,
-    previousSnapshotId: rotation.previousSnapshot ? previousSnapshotId : null,
-    deletedLegacySnapshots: (legacySnapshotIds || []).length,
+    snapshotId: publishedSnapshotId,
+    deletedSnapshots: updatePlan.deleteSnapshotIds.length,
     rows: standings.length,
   })
 })

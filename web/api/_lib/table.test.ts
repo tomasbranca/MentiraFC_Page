@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  createCanonicalTableId,
   dashboardTableByIdQuery,
+  dashboardTableDuplicatesByTournamentQuery,
   dashboardTableListQuery,
   dashboardTableOptionsQuery,
   isParticipantActiveForMatchday,
@@ -133,12 +135,27 @@ describe("dashboard table api input", () => {
     ).toBe(true);
   });
 
+  it("usa un id deterministico para la tabla editable por torneo", () => {
+    expect(createCanonicalTableId("tournament-1")).toBe(
+      "standings-state-tournament-1"
+    );
+    expect(createCanonicalTableId(" torneo con espacios ")).toBe(
+      "standings-state-torneo-con-espacios"
+    );
+  });
+
   it("consulta standingsState y deja snapshots fuera del CRUD", () => {
     expect(dashboardTableListQuery).toContain('*[_type == "standingsState"]');
     expect(dashboardTableByIdQuery).toContain("_id == $draftId");
     expect(dashboardTableOptionsQuery).toContain('"participants"');
     expect(dashboardTableOptionsQuery).toContain(
       '!(_id in path("drafts.**"))'
+    );
+    expect(dashboardTableDuplicatesByTournamentQuery).toContain(
+      'tournament._ref == $tournamentId'
+    );
+    expect(dashboardTableDuplicatesByTournamentQuery).toContain(
+      '!(_id in [$id, $draftId])'
     );
     expect(dashboardTableListQuery).not.toContain("standingsSnapshots");
   });

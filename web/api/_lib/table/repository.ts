@@ -10,6 +10,7 @@ import type {
 import { mutateSanity, querySanity } from "../sanity.js";
 import {
   dashboardTableByIdQuery,
+  dashboardTableDuplicatesByTournamentQuery,
   dashboardTableListQuery,
   dashboardTableOptionsQuery,
   dashboardTableTournamentValidationQuery,
@@ -104,8 +105,13 @@ const getCanonicalTableId = (id: string): string =>
 const getDraftTableId = (id: string): string =>
   `${DRAFT_PREFIX}${getCanonicalTableId(id)}`;
 
-export const createCanonicalTableId = (): string =>
-  `${PUBLIC_TABLE_PREFIX}${randomUUID()}`;
+const sanitizeDocumentIdPart = (value: string): string =>
+  value.replace(/[^a-zA-Z0-9_.-]/g, "-").replace(/^-+|-+$/g, "") || "table";
+
+export const createCanonicalTableId = (tournamentId?: string | null): string =>
+  `${PUBLIC_TABLE_PREFIX}${sanitizeDocumentIdPart(
+    tournamentId?.trim() || randomUUID()
+  )}`;
 
 const normalizeString = (value?: string | null): string =>
   value?.trim() ?? "";
@@ -210,6 +216,20 @@ const queryDashboardTableDocuments = async (
     useToken: true,
   });
 
+const queryDuplicateDashboardTableIds = async (
+  tournamentId: string,
+  canonicalId: string
+): Promise<string[]> =>
+  querySanity<string[]>(dashboardTableDuplicatesByTournamentQuery, {
+    params: {
+      tournamentId,
+      id: canonicalId,
+      draftId: getDraftTableId(canonicalId),
+    },
+    perspective: "raw",
+    useToken: true,
+  });
+
 const getDashboardTablePairById = async (
   id: string
 ): Promise<DashboardTableDocumentPair | null> => {
@@ -270,6 +290,17 @@ const buildTableDocument = (
   rows: buildTableRows(input.rows),
 });
 
+const getTargetCanonicalTableId = (
+  id: string | null,
+  input: DashboardTableMutationInput | DashboardTableDraftMutationInput
+): string => {
+  if (input.tournamentId) {
+    return createCanonicalTableId(input.tournamentId);
+  }
+
+  return id ? getCanonicalTableId(id) : createCanonicalTableId();
+};
+
 const getDocumentIdsToDelete = (
   pair: DashboardTableDocumentPair | null,
   canonicalId: string
@@ -277,6 +308,15 @@ const getDocumentIdsToDelete = (
   pair?.published?.id ?? canonicalId,
   pair?.draft?.id ?? getDraftTableId(canonicalId),
 ];
+
+const buildDeleteMutations = (documentIds: string[]) =>
+  [...new Set(documentIds)]
+    .filter(Boolean)
+    .map((documentId) => ({
+      delete: {
+        id: documentId,
+      },
+    }));
 
 const normalizeParticipant = (
   participant: NonNullable<
@@ -471,12 +511,25 @@ export const saveDashboardTableDraft = async (
   id: string | null,
   input: DashboardTableDraftMutationInput
 ): Promise<DashboardTableItem> => {
-  const canonicalId = id ? getCanonicalTableId(id) : createCanonicalTableId();
+  const previousCanonicalId = id ? getCanonicalTableId(id) : null;
+  const canonicalId = getTargetCanonicalTableId(id, input);
+  const duplicateIds = input.tournamentId
+    ? await queryDuplicateDashboardTableIds(input.tournamentId, canonicalId)
+    : [];
+  const obsoleteIds =
+    previousCanonicalId && previousCanonicalId !== canonicalId
+      ? [
+          previousCanonicalId,
+          getDraftTableId(previousCanonicalId),
+          ...duplicateIds,
+        ]
+      : duplicateIds;
 
   await mutateSanity<unknown>([
     {
       createOrReplace: buildTableDocument(getDraftTableId(canonicalId), input),
     },
+    ...buildDeleteMutations(obsoleteIds),
   ]);
 
   const table = await getDashboardTableById(canonicalId);
@@ -498,7 +551,20 @@ export const publishDashboardTable = async (
     throw new DashboardTableValidationError(participantError);
   }
 
-  const canonicalId = id ? getCanonicalTableId(id) : createCanonicalTableId();
+  const previousCanonicalId = id ? getCanonicalTableId(id) : null;
+  const canonicalId = getTargetCanonicalTableId(id, input);
+  const duplicateIds = await queryDuplicateDashboardTableIds(
+    input.tournamentId,
+    canonicalId
+  );
+  const obsoleteIds =
+    previousCanonicalId && previousCanonicalId !== canonicalId
+      ? [
+          previousCanonicalId,
+          getDraftTableId(previousCanonicalId),
+          ...duplicateIds,
+        ]
+      : duplicateIds;
 
   await mutateSanity<unknown>([
     {
@@ -509,6 +575,7 @@ export const publishDashboardTable = async (
         id: getDraftTableId(canonicalId),
       },
     },
+    ...buildDeleteMutations(obsoleteIds),
   ]);
 
   const table = await getDashboardTableById(canonicalId);
@@ -525,10 +592,6 @@ export const deleteDashboardTable = async (id: string): Promise<void> => {
   const pair = await getDashboardTablePairById(canonicalId);
 
   await mutateSanity<unknown>(
-    getDocumentIdsToDelete(pair, canonicalId).map((documentId) => ({
-      delete: {
-        id: documentId,
-      },
-    }))
+    buildDeleteMutations(getDocumentIdsToDelete(pair, canonicalId))
   );
 };

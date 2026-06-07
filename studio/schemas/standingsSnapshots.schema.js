@@ -82,24 +82,22 @@ const standingRowFields = [
 
 export default {
   name: 'standingsSnapshots',
-  title: 'Snapshots de tabla',
+  title: 'Tabla publicada',
   type: 'document',
   preview: {
     select: {
       tournament: 'tournament.name',
       matchdayNumber: 'matchdayNumber',
       label: 'label',
-      snapshotRole: 'snapshotRole',
       snapshotDate: 'snapshotDate',
       logo: 'tournament.organization.logo',
     },
-    prepare({tournament, matchdayNumber, label, snapshotRole, snapshotDate, logo}) {
+    prepare({tournament, matchdayNumber, label, snapshotDate, logo}) {
       const title = label || `Fecha ${matchdayNumber || '?'}`
-      const roleLabel = snapshotRole === 'previous' ? 'Anterior' : 'Actual'
 
       return {
         title: `${tournament || 'Torneo'} - ${title}`,
-        subtitle: `${roleLabel} | ${snapshotDate || 'Sin fecha'}`,
+        subtitle: `Publicada | ${snapshotDate || 'Sin fecha'}`,
         media: logo,
       }
     },
@@ -112,21 +110,6 @@ export default {
       to: [{type: 'tournaments'}],
       readOnly: true,
       validation: (Rule) => Rule.required(),
-    },
-    {
-      name: 'snapshotRole',
-      title: 'Rol del snapshot',
-      type: 'string',
-      readOnly: true,
-      options: {
-        list: [
-          {title: 'Actual', value: 'current'},
-          {title: 'Anterior', value: 'previous'},
-        ],
-      },
-      description:
-        'La Function conserva solo el snapshot actual y el anterior por torneo.',
-      validation: (Rule) => Rule.required().valid('current', 'previous'),
     },
     {
       name: 'matchdayNumber',
@@ -150,21 +133,12 @@ export default {
       validation: (Rule) => Rule.required(),
     },
     {
-      name: 'gamesThroughDate',
-      title: 'Corte usado para Mentira FC',
-      type: 'datetime',
-      readOnly: true,
-      description:
-        'Se guarda igual a la fecha de actualizacion para dejar auditado el corte usado por la Function.',
-      validation: (Rule) => Rule.required(),
-    },
-    {
       name: 'rows',
       title: 'Filas de tabla',
       type: 'array',
       readOnly: true,
       description:
-        'Snapshot generado automaticamente desde Tabla actual y partidos de Mentira FC.',
+        'Tabla publicada generada automaticamente desde Tabla actual y partidos de Mentira FC.',
       of: [
         {
           type: 'object',

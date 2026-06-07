@@ -337,6 +337,8 @@ const DashboardMatchesForm = () => {
   const selectedTournament = tournaments.find(
     (tournament) => tournament.id === values.tournamentId
   );
+  const isFinishedTournamentMatch =
+    values.competition === "Torneo" && values.state === "finalizado";
   const selectedPlayersCount = values.playedPlayerIds.length;
   const selectedGoalScorersCount = countMentiraGoalsRecorded(
     values.goalScorers,
@@ -643,9 +645,11 @@ const DashboardMatchesForm = () => {
 
     const confirmed = await confirmDashboardAction({
       title: isEditing ? "Publicar cambios" : "Publicar partido",
-      text: isEditing
-        ? "El borrador se va a publicar en Sanity y actualizara el partido visible en el sitio."
-        : "El partido se va a publicar en Sanity y quedara visible en el sitio.",
+      text: isFinishedTournamentMatch
+        ? "El partido se va a publicar en Sanity. La tabla no cambia hasta publicar Tabla actual con una fecha de actualizacion posterior al partido."
+        : isEditing
+          ? "El borrador se va a publicar en Sanity y actualizara el partido visible en el sitio."
+          : "El partido se va a publicar en Sanity y quedara visible en el sitio.",
       confirmText: isEditing ? "Publicar cambios" : "Publicar",
       icon: isEditing ? "question" : "info",
     });
@@ -795,28 +799,36 @@ const DashboardMatchesForm = () => {
           </div>
 
           {values.competition === "Torneo" && (
-            <SelectField
-              id="dashboard-match-tournament"
-              name="tournamentId"
-              label="Torneo"
-              value={values.tournamentId}
-              error={errors.tournamentId}
-              dirty={isDirty("tournamentId")}
-              onChange={handleChange}
-            >
-              <option value="">Elegir torneo</option>
-              {tournaments.map((tournament) => (
-                <option key={tournament.id} value={tournament.id}>
-                  {[
-                    tournament.organizationName,
-                    tournament.name,
-                    tournament.active ? "Activo" : null,
-                  ]
-                    .filter(Boolean)
-                    .join(" - ")}
-                </option>
-              ))}
-            </SelectField>
+            <div className="space-y-2">
+              <SelectField
+                id="dashboard-match-tournament"
+                name="tournamentId"
+                label="Torneo"
+                value={values.tournamentId}
+                error={errors.tournamentId}
+                dirty={isDirty("tournamentId")}
+                onChange={handleChange}
+              >
+                <option value="">Elegir torneo</option>
+                {tournaments.map((tournament) => (
+                  <option key={tournament.id} value={tournament.id}>
+                    {[
+                      tournament.organizationName,
+                      tournament.name,
+                      tournament.active ? "Activo" : null,
+                    ]
+                      .filter(Boolean)
+                      .join(" - ")}
+                  </option>
+                ))}
+              </SelectField>
+              {isFinishedTournamentMatch && (
+                <p className="text-xs leading-relaxed text-violet-100/55">
+                  Cuenta para Mentira FC cuando publiques la tabla con fecha de
+                  actualizacion posterior al partido.
+                </p>
+              )}
+            </div>
           )}
 
           {values.state === "finalizado" && (

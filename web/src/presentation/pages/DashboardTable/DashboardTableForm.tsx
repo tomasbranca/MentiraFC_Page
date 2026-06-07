@@ -507,7 +507,7 @@ const DashboardTableForm = () => {
 
     const confirmed = await confirmDashboardAction({
       title: isEditing ? "Publicar cambios" : "Publicar tabla",
-      text: "La tabla publicada pasara a current y la current anterior quedara como previous para comparar movimientos.",
+      text: "La tabla publicada se actualizara. Si cambiaste el numero de jornada, la posicion actual anterior quedara guardada como posicion anterior.",
       confirmText: isEditing ? "Publicar cambios" : "Publicar",
       icon: isEditing ? "question" : "info",
     });
@@ -557,8 +557,8 @@ const DashboardTableForm = () => {
               {isEditing ? "Editar tabla" : "Nueva tabla"}
             </h2>
             <p className="mt-2 text-sm text-violet-100/65">
-              Modifica la tabla editable; al publicar se conserva solo current
-              y previous por torneo.
+              Modifica la tabla editable; al publicar se conserva una sola
+              tabla publicada por torneo con posicion anterior por equipo.
             </p>
           </div>
 

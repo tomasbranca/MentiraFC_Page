@@ -1,11 +1,6 @@
 const DEFAULT_LOCALE = 'es'
 const SANITY_DOCUMENT_ID_PATTERN = /^[A-Za-z0-9_.-]{1,200}$/
 
-export const SNAPSHOT_ROLES = {
-  CURRENT: 'current',
-  PREVIOUS: 'previous',
-}
-
 export const getPublishedId = (id) =>
   typeof id === 'string' ? id.replace(/^drafts\./, '') : null
 
@@ -264,6 +259,36 @@ const addInitialAlphabeticalMovement = (currentRows = []) =>
     positionChange: 0,
   }))
 
+const getSnapshotRowTeamId = (row) => getPublishedId(row?.team?._ref || row?.team?._id || row?.team?.id)
+
+export const createComparisonRowsForUpdate = ({state, currentSnapshot = null} = {}) => {
+  if (!currentSnapshot?.rows?.length) return []
+
+  const currentMatchday = normalizeMatchdayBoundary(currentSnapshot.matchdayNumber)
+  const nextMatchday = normalizeMatchdayBoundary(state?.matchdayNumber)
+  const matchdayChanged = Boolean(currentMatchday && nextMatchday && currentMatchday !== nextMatchday)
+
+  if (matchdayChanged) {
+    return currentSnapshot.rows
+  }
+
+  return currentSnapshot.rows
+    .map((row) => {
+      const teamId = getSnapshotRowTeamId(row)
+      const previousPosition = normalizeMatchdayBoundary(row.previousPosition) || normalizeMatchdayBoundary(row.position)
+
+      if (!teamId || !previousPosition) return null
+
+      return {
+        team: {
+          _ref: teamId,
+        },
+        position: previousPosition,
+      }
+    })
+    .filter(Boolean)
+}
+
 export const buildComputedStandings = ({rows = [], games = [], mainTeam = null, previousRows = []}) => {
   const rowsByTeamId = rows.reduce((acc, row) => {
     const normalizedRow = normalizeManualRow(row)
@@ -289,14 +314,10 @@ export const buildComputedStandings = ({rows = [], games = [], mainTeam = null, 
   return addPositionMovement(sortedRows, previousRows)
 }
 
-const normalizeSnapshotRole = (snapshotRole) =>
-  snapshotRole === SNAPSHOT_ROLES.PREVIOUS ? SNAPSHOT_ROLES.PREVIOUS : SNAPSHOT_ROLES.CURRENT
-
-export const createSnapshotId = (tournamentId, snapshotRole = SNAPSHOT_ROLES.CURRENT) => {
+export const createSnapshotId = (tournamentId) => {
   const safeTournamentId = String(tournamentId || 'unknown').replace(/[^a-zA-Z0-9_.-]/g, '-')
-  const safeRole = normalizeSnapshotRole(snapshotRole)
 
-  return `standings-snapshot-${safeTournamentId}-${safeRole}`
+  return `standings-snapshot-${safeTournamentId}-current`
 }
 
 const createRowKey = (teamId) => String(teamId || 'unknown').replace(/[^a-zA-Z0-9_-]/g, '-')
@@ -327,80 +348,24 @@ const toSnapshotReference = (tournamentId) => ({
   _ref: tournamentId,
 })
 
-const toWritableSnapshotRows = (rows = []) =>
-  rows
-    .map((row) => {
-      const teamId = getPublishedId(row?.team?._ref || row?.team?._id || row?.team?.id)
-
-      if (!teamId) return null
-
-      return {
-        _key: row._key || createRowKey(teamId),
-        _type: 'standingSnapshotRow',
-        team: {
-          _type: 'reference',
-          _ref: teamId,
-        },
-        played: normalizeNumber(row.played),
-        wins: normalizeNumber(row.wins),
-        draws: normalizeNumber(row.draws),
-        losses: normalizeNumber(row.losses),
-        goalsFor: normalizeNumber(row.goalsFor),
-        goalsAgainst: normalizeNumber(row.goalsAgainst),
-        points: normalizeNumber(row.points),
-        goalDiff: Number.isFinite(Number(row.goalDiff)) ? Number(row.goalDiff) : 0,
-        position: normalizeNumber(row.position),
-        previousPosition: row.previousPosition ?? undefined,
-        positionChange: row.positionChange ?? undefined,
-      }
-    })
-    .filter(Boolean)
-
 export const createCurrentSnapshotDocument = ({tournamentId, state, standings}) => ({
-  _id: createSnapshotId(tournamentId, SNAPSHOT_ROLES.CURRENT),
+  _id: createSnapshotId(tournamentId),
   _type: 'standingsSnapshots',
-  snapshotRole: SNAPSHOT_ROLES.CURRENT,
   tournament: toSnapshotReference(tournamentId),
   matchdayNumber: state.matchdayNumber,
   label: state.label || null,
   snapshotDate: state.snapshotDate,
-  gamesThroughDate: state.snapshotDate,
   rows: toSnapshotRows(standings),
 })
 
-export const createPreviousSnapshotDocument = ({tournamentId, currentSnapshot}) => {
-  if (!currentSnapshot) return null
-
-  return {
-    _id: createSnapshotId(tournamentId, SNAPSHOT_ROLES.PREVIOUS),
-    _type: 'standingsSnapshots',
-    snapshotRole: SNAPSHOT_ROLES.PREVIOUS,
-    tournament: toSnapshotReference(tournamentId),
-    matchdayNumber: currentSnapshot.matchdayNumber,
-    label: currentSnapshot.label || null,
-    snapshotDate: currentSnapshot.snapshotDate,
-    gamesThroughDate: currentSnapshot.gamesThroughDate,
-    rows: toWritableSnapshotRows(currentSnapshot.rows),
-  }
-}
-
-export const createSnapshotRotationPlan = ({
+export const createPublishedTableUpdatePlan = ({
   tournamentId,
   state,
   standings,
-  previousCurrentSnapshot = null,
-  oldPreviousSnapshot = null,
+  obsoleteSnapshotIds = [],
 }) => {
-  const previousSnapshotId = createSnapshotId(tournamentId, SNAPSHOT_ROLES.PREVIOUS)
-  const previousSnapshot = createPreviousSnapshotDocument({
-    tournamentId,
-    currentSnapshot: previousCurrentSnapshot,
-  })
-
   return {
-    currentSnapshot: createCurrentSnapshotDocument({tournamentId, state, standings}),
-    previousSnapshot,
-    deletePreviousSnapshotId:
-      previousSnapshot || !oldPreviousSnapshot?._id ? null : previousSnapshotId,
+    publishedSnapshot: createCurrentSnapshotDocument({tournamentId, state, standings}),
+    deleteSnapshotIds: obsoleteSnapshotIds.filter(isValidSanityDocumentId),
   }
 }

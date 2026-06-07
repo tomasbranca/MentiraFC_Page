@@ -71,7 +71,7 @@ export default {
 
       return {
         title: `${tournament || 'Torneo'} - ${title}`,
-        subtitle: 'Documento editable que actualiza current y previous',
+        subtitle: 'Documento editable que actualiza la tabla publicada',
         media: logo,
       }
     },

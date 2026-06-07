@@ -214,7 +214,7 @@ Modelo actual:
 Riesgos:
 
 - Medio: cualquier UI nueva debe tratar `result: null` como partido por jugar o dato incompleto, nunca como empate.
-- Medio: `competition === "Torneo"` aparece como string de negocio en schema, validacion, queries y funcion de snapshots. Antes de internacionalizar o cambiar copy, conviene separar enum estable de label visible.
+- Medio: `competition === "Torneo"` aparece como string de negocio en schema, validacion y UI. La funcion de tabla ya usa `tournament._ref` para partidos finalizados, pero antes de internacionalizar o cambiar copy conviene separar enum estable de label visible.
 - Bajo: `playedPlayers` cubre "jugaron", no "convocados". No conviene mezclarlo con convocatoria en el roadmap sin nuevo campo claro.
 
 ## 9. Snapshots de tabla
@@ -222,16 +222,16 @@ Riesgos:
 Estado actual:
 
 - `standingsState` es documento editable actual por torneo.
-- `standingsSnapshots` conserva solo `current` y `previous`, read-only en Studio.
+- `standingsSnapshots` conserva una sola tabla publicada read-only por torneo; la posicion anterior vive en cada fila.
 - `studio/functions/sync-standings-snapshot` genera snapshots desde eventos de documento Sanity.
-- `createSnapshotId(tournamentId, snapshotRole)` crea ids estables por torneo+rol y usa `createOrReplace`.
-- La web trae los snapshots `current` y `previous` del torneo activo en `TOURNAMENT_QUERY`.
+- `createSnapshotId(tournamentId)` crea un ID estable por torneo y usa `createOrReplace`.
+- La web trae una sola tabla publicada del torneo activo en `TOURNAMENT_QUERY`.
 - `positionChange = previousPosition - currentPosition`; positivo significa subio posiciones.
 - La funcion filtra partidos por `state == "finalizado"`, `tournament._ref` y `date < snapshotDate`.
 
 Riesgos:
 
-- Bajo: snapshots legacy sin `snapshotRole` pueden existir hasta la proxima publicacion de tabla del torneo, cuando la Function los elimina de forma controlada.
+- Bajo: snapshots legacy pueden existir hasta la proxima publicacion de tabla del torneo, cuando la Function los elimina de forma controlada.
 - Medio: sin migraciones versionadas actuales, los cambios de snapshots/RPC/RLS quedan mas dificiles de reproducir.
 
 ## 10. Reacciones
