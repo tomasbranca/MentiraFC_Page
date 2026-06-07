@@ -20,11 +20,15 @@ import type {
   DashboardPlayerItem,
   DashboardStaffItem,
 } from "../../../types/dashboard";
-import { confirmDashboardAction } from "../../app/confirmDialog";
-import ErrorFallback from "../../components/errors/ErrorFallback";
-import DashboardContentLoader from "../../dashboard/DashboardContentLoader";
+import { confirmDashboardAction } from "../../dashboard/DashboardConfirmDialog";
+import DashboardEmptyState from "../../dashboard/DashboardEmptyState";
+import DashboardErrorState from "../../dashboard/DashboardErrorState";
+import DashboardLoadingState from "../../dashboard/DashboardLoadingState";
 import DashboardListFilteredEmpty from "../../dashboard/DashboardListFilteredEmpty";
 import DashboardListFilters from "../../dashboard/DashboardListFilters";
+import DashboardPageHeader from "../../dashboard/DashboardPageHeader";
+import DashboardSection from "../../dashboard/DashboardSection";
+import PermissionActionButton from "../../dashboard/PermissionActionButton";
 import { DASHBOARD_STATUS_FILTER_OPTIONS } from "../../dashboard/dashboardListFilters.utils";
 import { useDashboardPermission } from "../../hooks/usePermission";
 import { formatDate } from "../../utils/date.utils";
@@ -274,17 +278,6 @@ const DeleteStaffButton = ({
   </button>
 );
 
-const SectionTitle = ({ title, count }: { title: string; count: number }) => (
-  <div className="flex flex-wrap items-center gap-2.5 border-b border-white/10 bg-white/2.5 px-4 py-3">
-    <h3 className="text-base font-black uppercase tracking-wide text-white">
-      {title}
-    </h3>
-    <span className="rounded-[3px] border border-white/10 bg-black/15 px-2.5 py-1 text-xs font-medium text-violet-100/70">
-      {count}
-    </span>
-  </div>
-);
-
 const DashboardPlantelMobileCard = ({
   metaLeft,
   metaRight,
@@ -486,14 +479,14 @@ const DashboardPlayersList = () => {
   const hasStaffRowActions = canEditStaff || canDeleteStaff;
 
   if (playersQuery.isLoading || staffQuery.isLoading) {
-    return <DashboardContentLoader />;
+    return <DashboardLoadingState />;
   }
 
   if (playersQuery.isError || staffQuery.isError) {
     return (
-      <ErrorFallback
+      <DashboardErrorState
         title="No pudimos cargar el plantel"
-        message="Intenta nuevamente en unos minutos."
+        message="No se pudo cargar la pagina. Reintenta en unos segundos."
         onRetry={() => {
           void playersQuery.refetch();
           void staffQuery.refetch();
@@ -504,54 +497,45 @@ const DashboardPlayersList = () => {
 
   return (
     <div>
-      <header className="border-b border-white/10 bg-[#151518] p-4 sm:p-6">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-violet-200/80">
-              Gestion deportiva
-            </p>
-            <div className="mt-3 flex flex-wrap items-end gap-2.5">
-              <h2 className="text-3xl font-black text-white">Plantel</h2>
-              <span className="rounded-[3px] border border-white/10 bg-white/[0.035] px-2.5 py-1.5 text-xs font-medium text-violet-100/70">
-                {countLabel}
-              </span>
-            </div>
-            <p className="mt-2 text-sm text-violet-100/65">
-              Administra fichas, fotos, cuerpo tecnico y borradores.
-            </p>
-          </div>
-
-          {canCreatePlayer || canCreateStaff ? (
+      <DashboardPageHeader
+        eyebrow="Gestion deportiva"
+        title="Plantel"
+        countLabel={countLabel}
+        description="Administra fichas, fotos, cuerpo tecnico y borradores."
+        actions={
+          canCreatePlayer || canCreateStaff ? (
             <div className="flex shrink-0 gap-2">
               {canCreatePlayer ? (
-                <Link
+                <PermissionActionButton
+                  resource="players"
+                  action="create"
                   to={ROUTES.DASHBOARD_PLAYERS_NEW}
                   className="inline-flex h-11 w-11 items-center justify-center rounded-[3px] border border-violet-200/30 bg-violet-100 text-violet-950 transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/40"
-                  aria-label="Crear jugador"
+                  ariaLabel="Crear jugador"
                   title="Crear jugador"
                 >
                   <GiSoccerBall className="size-5" aria-hidden="true" />
-                </Link>
+                </PermissionActionButton>
               ) : null}
               {canCreateStaff ? (
-                <Link
+                <PermissionActionButton
+                  resource="staff"
+                  action="create"
                   to={ROUTES.DASHBOARD_STAFF_NEW}
                   className="inline-flex h-11 w-11 items-center justify-center rounded-[3px] border border-white/10 bg-white/[0.035] text-white transition hover:border-violet-200/35 hover:bg-white/8 focus:outline-none focus:ring-2 focus:ring-violet-500/40"
-                  aria-label="Crear integrante del cuerpo tecnico"
+                  ariaLabel="Crear integrante del cuerpo tecnico"
                   title="Crear integrante del cuerpo tecnico"
                 >
                   <FaUserTie className="size-5" aria-hidden="true" />
-                </Link>
+                </PermissionActionButton>
               ) : null}
             </div>
-          ) : null}
-        </div>
-      </header>
+          ) : null
+        }
+      />
 
       {totalMembers === 0 ? (
-        <div className="p-6 text-sm text-violet-100/75">
-          Todavia no hay integrantes del plantel ni borradores cargados.
-        </div>
+        <DashboardEmptyState message="Todavia no hay integrantes del plantel ni borradores cargados." />
       ) : (
         <>
           <DashboardListFilters
@@ -616,17 +600,18 @@ const DashboardPlayersList = () => {
             />
           ) : (
         <div className="space-y-5 p-3 sm:p-5">
-          <section className="overflow-hidden rounded-sm border border-white/10 bg-[#16161a]">
-            <SectionTitle title="Jugadores" count={players.length} />
+          <DashboardSection title="Jugadores" countLabel={players.length}>
 
             {totalPlayers === 0 ? (
-              <div className="p-5 text-sm text-violet-100/75">
-                Todavia no hay jugadores ni borradores cargados.
-              </div>
+              <DashboardEmptyState
+                message="Todavia no hay jugadores ni borradores cargados."
+                className="p-5"
+              />
             ) : players.length === 0 ? (
-              <div className="p-5 text-sm text-violet-100/75">
-                Ningun jugador coincide con los filtros aplicados.
-              </div>
+              <DashboardEmptyState
+                message="Ningun jugador coincide con los filtros aplicados."
+                className="p-5"
+              />
             ) : (
               <>
                 <div className="divide-y divide-white/8 lg:hidden">
@@ -778,21 +763,20 @@ const DashboardPlayersList = () => {
                 </table>
               </>
             )}
-          </section>
+          </DashboardSection>
 
-          <section className="overflow-hidden rounded-sm border border-white/10 bg-[#16161a]">
-            <SectionTitle title="Cuerpo tecnico" count={staff.length} />
+          <DashboardSection title="Cuerpo tecnico" countLabel={staff.length}>
 
             {totalStaff === 0 ? (
-              <div className="p-5 text-sm text-violet-100/75">
-                Todavia no hay integrantes del cuerpo tecnico ni borradores
-                cargados.
-              </div>
+              <DashboardEmptyState
+                message="Todavia no hay integrantes del cuerpo tecnico ni borradores cargados."
+                className="p-5"
+              />
             ) : staff.length === 0 ? (
-              <div className="p-5 text-sm text-violet-100/75">
-                Ningun integrante del cuerpo tecnico coincide con los filtros
-                aplicados.
-              </div>
+              <DashboardEmptyState
+                message="Ningun integrante del cuerpo tecnico coincide con los filtros aplicados."
+                className="p-5"
+              />
             ) : (
               <>
                 <div className="divide-y divide-white/8 lg:hidden">
@@ -913,7 +897,7 @@ const DashboardPlayersList = () => {
                 </table>
               </>
             )}
-          </section>
+          </DashboardSection>
         </div>
           )}
         </>

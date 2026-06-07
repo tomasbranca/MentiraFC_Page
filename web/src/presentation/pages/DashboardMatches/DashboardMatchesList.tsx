@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
   FiChevronLeft,
@@ -16,9 +15,13 @@ import { isFinishedGameState } from "../../../domain/games";
 import { reportError } from "../../../lib/errors/errorLogger";
 import type { DashboardMatchItem } from "../../../types/dashboard";
 import { ROUTES } from "../../../shared/routing";
-import { confirmDashboardAction } from "../../app/confirmDialog";
-import ErrorFallback from "../../components/errors/ErrorFallback";
-import DashboardContentLoader from "../../dashboard/DashboardContentLoader";
+import { confirmDashboardAction } from "../../dashboard/DashboardConfirmDialog";
+import DashboardEmptyState from "../../dashboard/DashboardEmptyState";
+import DashboardErrorState from "../../dashboard/DashboardErrorState";
+import DashboardLoadingState from "../../dashboard/DashboardLoadingState";
+import DashboardPageHeader from "../../dashboard/DashboardPageHeader";
+import DashboardTable from "../../dashboard/DashboardTable";
+import PermissionActionButton from "../../dashboard/PermissionActionButton";
 import DashboardListFilteredEmpty from "../../dashboard/DashboardListFilteredEmpty";
 import DashboardListFilters from "../../dashboard/DashboardListFilters";
 import { useDashboardPermission } from "../../hooks/usePermission";
@@ -344,14 +347,14 @@ const DashboardMatchesList = () => {
   const hasEmptyDataset = totalMatches === 0 && !hasActiveFilters;
 
   if (matchesQuery.isLoading && !hasInitialData) {
-    return <DashboardContentLoader />;
+    return <DashboardLoadingState />;
   }
 
   if (matchesQuery.isError && !hasInitialData) {
     return (
-      <ErrorFallback
+      <DashboardErrorState
         title="No pudimos cargar los partidos"
-        message="Intenta nuevamente en unos minutos."
+        message="No se pudo cargar la pagina. Reintenta en unos segundos."
         onRetry={() => void matchesQuery.refetch()}
       />
     );
@@ -359,40 +362,29 @@ const DashboardMatchesList = () => {
 
   return (
     <div>
-      <header className="border-b border-white/10 bg-[#151518] p-4 sm:p-6">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-violet-200/80">
-              Competencia
-            </p>
-            <div className="mt-3 flex flex-wrap items-end gap-2.5">
-              <h2 className="text-3xl font-black text-white">Partidos</h2>
-              <span className="rounded-[3px] border border-white/10 bg-white/[0.035] px-2.5 py-1.5 text-xs font-medium text-violet-100/70">
-                {countLabel}
-              </span>
-            </div>
-            <p className="mt-2 text-sm text-violet-100/65">
-              Administra fixtures, resultados y jugadores que participaron.
-            </p>
-          </div>
-
-          {canCreateMatch ? (
-            <Link
+      <DashboardPageHeader
+        eyebrow="Competencia"
+        title="Partidos"
+        countLabel={countLabel}
+        description="Administra fixtures, resultados y jugadores que participaron."
+        actions={
+          canCreateMatch ? (
+            <PermissionActionButton
+              resource="matches"
+              action="create"
               to={ROUTES.DASHBOARD_MATCHES_NEW}
               className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[3px] border border-violet-200/30 bg-violet-100 text-violet-950 transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/40"
-              aria-label="Crear partido"
+              ariaLabel="Crear partido"
               title="Crear partido"
             >
               <FiPlus className="size-5" aria-hidden="true" />
-            </Link>
-          ) : null}
-        </div>
-      </header>
+            </PermissionActionButton>
+          ) : null
+        }
+      />
 
       {hasEmptyDataset ? (
-        <div className="p-6 text-sm text-violet-100/75">
-          Todavia no hay partidos ni borradores cargados.
-        </div>
+        <DashboardEmptyState message="Todavia no hay partidos ni borradores cargados." />
       ) : (
         <>
           <DashboardListFilters
@@ -447,8 +439,9 @@ const DashboardMatchesList = () => {
             />
           ) : (
         <div className="p-3 sm:p-5">
-          <div className="overflow-hidden rounded-sm border border-white/10 bg-[#16161a]">
-            <div className="divide-y divide-white/8 lg:hidden">
+          <DashboardTable
+            mobile={
+              <>
               {matches.map((item) => (
                 <article key={item.id} className="p-3 text-sm text-violet-50 sm:p-4">
                   <div className="mb-3 flex min-w-0 items-center justify-between gap-3">
@@ -483,14 +476,16 @@ const DashboardMatchesList = () => {
                     {hasRowActions ? (
                       <div className="flex gap-2">
                         {canEditMatch ? (
-                          <Link
+                          <PermissionActionButton
+                            resource="matches"
+                            action="edit"
                             to={ROUTES.DASHBOARD_MATCHES_EDIT(item.id)}
                             className={`${actionButtonClassName} border-violet-200/20 bg-violet-300/10 hover:border-violet-200/45 hover:bg-violet-300/16`}
-                            aria-label="Editar partido"
+                            ariaLabel="Editar partido"
                             title="Editar partido"
                           >
                             <FiEdit2 className="size-4" aria-hidden="true" />
-                          </Link>
+                          </PermissionActionButton>
                         ) : null}
                         {canDeleteMatch ? (
                           <DeleteMatchButton
@@ -505,9 +500,10 @@ const DashboardMatchesList = () => {
                   </div>
                 </article>
               ))}
-            </div>
+              </>
+            }
+          >
 
-            <table className="hidden w-full border-collapse text-left lg:table">
               <thead className="bg-white/2.5 text-xs uppercase tracking-[0.16em] text-violet-100/60">
                 <tr>
                   <th className="px-5 py-4">Partido</th>
@@ -555,14 +551,16 @@ const DashboardMatchesList = () => {
                     <td className="px-5 py-4">
                       <div className="flex justify-end gap-2">
                         {canEditMatch ? (
-                          <Link
+                          <PermissionActionButton
+                            resource="matches"
+                            action="edit"
                             to={ROUTES.DASHBOARD_MATCHES_EDIT(item.id)}
                             className={`${actionButtonClassName} border-violet-200/20 bg-violet-300/10 hover:border-violet-200/45 hover:bg-violet-300/16`}
-                            aria-label="Editar partido"
+                            ariaLabel="Editar partido"
                             title="Editar partido"
                           >
                             <FiEdit2 className="size-4" aria-hidden="true" />
-                          </Link>
+                          </PermissionActionButton>
                         ) : null}
                         {canDeleteMatch ? (
                           <DeleteMatchButton
@@ -577,8 +575,7 @@ const DashboardMatchesList = () => {
                   </tr>
                 ))}
               </tbody>
-            </table>
-          </div>
+          </DashboardTable>
         </div>
           )}
           <DashboardMatchesPagination

@@ -23,8 +23,8 @@ const RequirePermission = ({
         children
       ) : (
         <ErrorFallback
-          title="No tenés permisos para acceder a esta sección"
-          message={`Tu cuenta no tiene el permiso requerido: ${permission}.`}
+          title="No tenes permisos para acceder a esta seccion"
+          message="No tenes permisos para realizar esta accion."
         />
       )}
     </RequireAuth>

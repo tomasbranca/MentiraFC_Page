@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
   FiChevronLeft,
@@ -16,9 +15,13 @@ import { getImageSrcSet, getImageUrl } from "../../../data/imageService";
 import { reportError } from "../../../lib/errors/errorLogger";
 import { ROUTES } from "../../../shared/routing";
 import type { DashboardTeamItem } from "../../../types/dashboard";
-import { confirmDashboardAction } from "../../app/confirmDialog";
-import ErrorFallback from "../../components/errors/ErrorFallback";
-import DashboardContentLoader from "../../dashboard/DashboardContentLoader";
+import { confirmDashboardAction } from "../../dashboard/DashboardConfirmDialog";
+import DashboardEmptyState from "../../dashboard/DashboardEmptyState";
+import DashboardErrorState from "../../dashboard/DashboardErrorState";
+import DashboardLoadingState from "../../dashboard/DashboardLoadingState";
+import DashboardPageHeader from "../../dashboard/DashboardPageHeader";
+import DashboardTable from "../../dashboard/DashboardTable";
+import PermissionActionButton from "../../dashboard/PermissionActionButton";
 import DashboardListFilteredEmpty from "../../dashboard/DashboardListFilteredEmpty";
 import DashboardListFilters from "../../dashboard/DashboardListFilters";
 import { useDashboardPermission } from "../../hooks/usePermission";
@@ -315,14 +318,14 @@ const DashboardTeamsList = () => {
   const hasEmptyDataset = totalTeams === 0 && !hasActiveFilters;
 
   if (teamsQuery.isLoading && !hasInitialData) {
-    return <DashboardContentLoader />;
+    return <DashboardLoadingState />;
   }
 
   if (teamsQuery.isError && !hasInitialData) {
     return (
-      <ErrorFallback
+      <DashboardErrorState
         title="No pudimos cargar los clubes"
-        message="Intenta nuevamente en unos minutos."
+        message="No se pudo cargar la pagina. Reintenta en unos segundos."
         onRetry={() => void teamsQuery.refetch()}
       />
     );
@@ -330,40 +333,29 @@ const DashboardTeamsList = () => {
 
   return (
     <div>
-      <header className="border-b border-white/10 bg-[#151518] p-4 sm:p-6">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-violet-200/80">
-              Competencia
-            </p>
-            <div className="mt-3 flex flex-wrap items-end gap-2.5">
-              <h2 className="text-3xl font-black text-white">Clubes</h2>
-              <span className="rounded-[3px] border border-white/10 bg-white/[0.035] px-2.5 py-1.5 text-xs font-medium text-violet-100/70">
-                {countLabel}
-              </span>
-            </div>
-            <p className="mt-2 text-sm text-violet-100/65">
-              Administra clubes, rivales, escudos y el equipo principal.
-            </p>
-          </div>
-
-          {canCreateTeam ? (
-            <Link
+      <DashboardPageHeader
+        eyebrow="Competencia"
+        title="Clubes"
+        countLabel={countLabel}
+        description="Administra clubes, rivales, escudos y el equipo principal."
+        actions={
+          canCreateTeam ? (
+            <PermissionActionButton
+              resource="teams"
+              action="create"
               to={ROUTES.DASHBOARD_TEAMS_NEW}
               className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[3px] border border-violet-200/30 bg-violet-100 text-violet-950 transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/40"
-              aria-label="Crear club"
+              ariaLabel="Crear club"
               title="Crear club"
             >
               <FiPlus className="size-5" aria-hidden="true" />
-            </Link>
-          ) : null}
-        </div>
-      </header>
+            </PermissionActionButton>
+          ) : null
+        }
+      />
 
       {hasEmptyDataset ? (
-        <div className="p-6 text-sm text-violet-100/75">
-          Todavia no hay clubes ni borradores cargados.
-        </div>
+        <DashboardEmptyState message="Todavia no hay clubes ni borradores cargados." />
       ) : (
         <>
           <DashboardListFilters
@@ -418,8 +410,9 @@ const DashboardTeamsList = () => {
             />
           ) : (
             <div className="p-3 sm:p-5">
-              <div className="overflow-hidden rounded-sm border border-white/10 bg-[#16161a]">
-                <div className="divide-y divide-white/8 lg:hidden">
+              <DashboardTable
+                mobile={
+                  <>
                   {teams.map((item) => (
                     <article
                       key={item.id}
@@ -454,14 +447,16 @@ const DashboardTeamsList = () => {
                         {hasRowActions ? (
                           <div className="flex gap-2">
                             {canEditTeam ? (
-                              <Link
+                              <PermissionActionButton
+                                resource="teams"
+                                action="edit"
                                 to={ROUTES.DASHBOARD_TEAMS_EDIT(item.id)}
                                 className={`${actionButtonClassName} border-violet-200/20 bg-violet-300/10 hover:border-violet-200/45 hover:bg-violet-300/16`}
-                                aria-label="Editar club"
+                                ariaLabel="Editar club"
                                 title="Editar club"
                               >
                                 <FiEdit2 className="size-4" aria-hidden="true" />
-                              </Link>
+                              </PermissionActionButton>
                             ) : null}
                             {canDeleteTeam ? (
                               <DeleteTeamButton
@@ -475,9 +470,10 @@ const DashboardTeamsList = () => {
                       </div>
                     </article>
                   ))}
-                </div>
+                  </>
+                }
+              >
 
-                <table className="hidden w-full border-collapse text-left lg:table">
                   <thead className="bg-white/2.5 text-xs uppercase tracking-[0.16em] text-violet-100/60">
                     <tr>
                       <th className="px-5 py-4">Club</th>
@@ -518,14 +514,16 @@ const DashboardTeamsList = () => {
                         <td className="px-5 py-4">
                           <div className="flex justify-end gap-2">
                             {canEditTeam ? (
-                              <Link
+                              <PermissionActionButton
+                                resource="teams"
+                                action="edit"
                                 to={ROUTES.DASHBOARD_TEAMS_EDIT(item.id)}
                                 className={`${actionButtonClassName} border-violet-200/20 bg-violet-300/10 hover:border-violet-200/45 hover:bg-violet-300/16`}
-                                aria-label="Editar club"
+                                ariaLabel="Editar club"
                                 title="Editar club"
                               >
                                 <FiEdit2 className="size-4" aria-hidden="true" />
-                              </Link>
+                              </PermissionActionButton>
                             ) : null}
                             {canDeleteTeam ? (
                               <DeleteTeamButton
@@ -539,8 +537,7 @@ const DashboardTeamsList = () => {
                       </tr>
                     ))}
                   </tbody>
-                </table>
-              </div>
+              </DashboardTable>
             </div>
           )}
           <DashboardTeamsPagination
