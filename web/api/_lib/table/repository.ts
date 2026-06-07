@@ -97,6 +97,9 @@ type DashboardTableValidationSource = {
       } | null;
     }> | null;
   } | null;
+  publishedTable?: {
+    matchdayNumber?: number | null;
+  } | null;
 };
 
 const getCanonicalTableId = (id: string): string =>
@@ -386,6 +389,14 @@ const validateRowsAgainstTournament = async (
 
   if (!tournament?.id) {
     return "El torneo seleccionado no existe.";
+  }
+
+  const publishedMatchday = normalizePositiveInteger(
+    result.publishedTable?.matchdayNumber
+  );
+
+  if (publishedMatchday && input.matchdayNumber < publishedMatchday) {
+    return `El numero de fecha no puede ser menor que la tabla publicada actual (${publishedMatchday}).`;
   }
 
   const mainTeamId = result.mainTeam?.id ?? null;

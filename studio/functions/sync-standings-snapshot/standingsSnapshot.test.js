@@ -11,10 +11,11 @@ import {
   isValidDateTimeValue,
   isValidSanityDocumentId,
   toSnapshotRows,
+  validateMatchdayTransition,
   validateStandingRowsAgainstParticipants,
 } from './standingsSnapshot.js'
 
-test('buildComputedStandings derives table positions and movement', () => {
+test('buildComputedStandings derives table positions and previous positions', () => {
   const standings = buildComputedStandings({
     mainTeam: {
       _id: 'main',
@@ -65,9 +66,10 @@ test('buildComputedStandings derives table positions and movement', () => {
       ['beta', 2, 1, -2, 3],
     ],
   )
-  assert.equal(standings[0].positionChange, 1)
-  assert.equal(standings[1].positionChange, -1)
-  assert.equal(standings[2].positionChange, null)
+  assert.equal(standings[0].previousPosition, 2)
+  assert.equal(standings[1].previousPosition, 1)
+  assert.equal(standings[2].previousPosition, null)
+  assert.equal(standings[0].positionChange, undefined)
 })
 
 test('buildComputedStandings creates an alphabetical baseline for a new zero-point tournament', () => {
@@ -103,14 +105,14 @@ test('buildComputedStandings creates an alphabetical baseline for a new zero-poi
       row.team.id,
       row.position,
       row.previousPosition,
-      row.positionChange,
     ]),
     [
-      ['alpha', 1, 1, 0],
-      ['main', 2, 2, 0],
-      ['zeta', 3, 3, 0],
+      ['alpha', 1, 1],
+      ['main', 2, 2],
+      ['zeta', 3, 3],
     ],
   )
+  assert.equal(standings[0].positionChange, undefined)
 })
 
 test('createComparisonRowsForUpdate preserves previous positions while editing the same matchday', () => {
@@ -190,7 +192,6 @@ test('createSnapshotId and toSnapshotRows create deterministic Sanity payloads',
       goalDiff: 2,
       position: 1,
       previousPosition: 2,
-      positionChange: 1,
     },
   ])
 
@@ -202,18 +203,18 @@ test('createSnapshotId and toSnapshotRows create deterministic Sanity payloads',
       _type: 'reference',
       _ref: 'main',
     },
-    played: 2,
     wins: 1,
     draws: 1,
     losses: 0,
     goalsFor: 3,
     goalsAgainst: 1,
-    points: 4,
-    goalDiff: 2,
     position: 1,
     previousPosition: 2,
-    positionChange: 1,
   })
+  assert.equal(rows[0].positionChange, undefined)
+  assert.equal(rows[0].played, undefined)
+  assert.equal(rows[0].points, undefined)
+  assert.equal(rows[0].goalDiff, undefined)
 })
 
 test('validators accept safe ids and datetimes only', () => {
@@ -256,7 +257,32 @@ test('createPublishedTableUpdatePlan creates only the public table document', ()
   assert.equal(updatePlan.publishedSnapshot._id, 'standings-snapshot-tournament-1-current')
   assert.equal(updatePlan.publishedSnapshot.snapshotRole, undefined)
   assert.equal(updatePlan.publishedSnapshot.gamesThroughDate, undefined)
+  assert.equal(updatePlan.publishedSnapshot.rows[0].positionChange, undefined)
   assert.deepEqual(updatePlan.deleteSnapshotIds, ['standings-snapshot-tournament-1-previous'])
+})
+
+test('validateMatchdayTransition blocks publishing an older matchday', () => {
+  assert.deepEqual(
+    validateMatchdayTransition({
+      state: {matchdayNumber: 12},
+      currentSnapshot: {matchdayNumber: 13},
+    }),
+    {
+      valid: false,
+      error: 'El numero de fecha (12) no puede ser menor que la tabla publicada actual (13).',
+    },
+  )
+
+  assert.deepEqual(
+    validateMatchdayTransition({
+      state: {matchdayNumber: 14},
+      currentSnapshot: {matchdayNumber: 13},
+    }),
+    {
+      valid: true,
+      error: null,
+    },
+  )
 })
 
 test('single public document keeps previous position stable while editing same matchday', () => {
@@ -512,5 +538,8 @@ test('sync query deletes only other standingsSnapshots from the same tournament'
   assert.match(source, /OBSOLETE_SNAPSHOTS_QUERY/)
   assert.match(source, /tournament\._ref == \$tournamentId/)
   assert.match(source, /_id != \$snapshotId/)
+  assert.match(source, /PUBLISHED_TABLE_QUERY/)
+  assert.match(source, /order\(snapshotDate desc, _updatedAt desc\)\[0\]/)
+  assert.doesNotMatch(source, /positionChange/)
   assert.doesNotMatch(source, /snapshotRole in \["current", "previous"\]/)
 })

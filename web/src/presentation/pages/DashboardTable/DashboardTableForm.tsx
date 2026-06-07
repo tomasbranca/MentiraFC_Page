@@ -233,6 +233,7 @@ const DashboardTableForm = () => {
     selectedTournament,
     values.matchdayNumber
   );
+  const minimumMatchdayNumber = tableQuery.data?.matchdayNumber ?? 1;
 
   useEffect(() => {
     if (!tableQuery.data) {
@@ -491,7 +492,9 @@ const DashboardTableForm = () => {
         goalsAgainst: row.goalsAgainst.trim(),
       })),
     };
-    const nextErrors = validateDashboardTableInput(normalizedValues);
+    const nextErrors = validateDashboardTableInput(normalizedValues, {
+      minimumMatchdayNumber,
+    });
     const missingParticipants = getMissingActiveParticipantNames(normalizedValues);
 
     if (missingParticipants.length > 0) {
@@ -609,7 +612,7 @@ const DashboardTableForm = () => {
               id="dashboard-table-matchday"
               name="matchdayNumber"
               type="number"
-              min={1}
+              min={minimumMatchdayNumber}
               label="Numero de fecha"
               value={values.matchdayNumber}
               error={errors.matchdayNumber}

@@ -28,17 +28,13 @@ export const TOURNAMENT_QUERY = `
       label,
       snapshotDate,
       rows[]{
-        played,
         wins,
         draws,
         losses,
         goalsFor,
         goalsAgainst,
-        points,
-        goalDiff,
         position,
         previousPosition,
-        positionChange,
         team->{
           _id,
           name,

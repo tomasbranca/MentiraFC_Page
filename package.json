@@ -21,7 +21,7 @@
     "check:web": "pnpm --dir web check",
     "check:studio": "pnpm --dir studio check",
     "check": "pnpm check:web && pnpm check:studio",
-    "deploy": "pnpm --dir studio run deploy",
+    "deploy": "pnpm --dir studio run deploy && pnpm --dir studio run blueprints:deploy",
     "push": "node scripts/push-and-deploy.mjs"
   }
 }

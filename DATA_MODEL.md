@@ -321,9 +321,8 @@ Uso en web:
 - La web busca el primer torneo con `active == true`.
 - La tabla sale del unico documento `standingsSnapshots` publicado para el torneo activo, preferentemente con ID deterministico `standings-snapshot-{tournamentId}-current`.
 - Si no hay tabla publicada, la web no arma una tabla desde `tournaments`: espera que exista `standingsState` y que la Function genere el documento publicado.
-- La web no recalcula la fila de Mentira FC: consume las filas generadas de la tabla publicada y solo agrega `type` (`primaryPrize`, `secondaryPrize`, `normal`) segun la posicion guardada.
-- La Function calcula `played`, `points`, `goalDiff`, `position`, `previousPosition` y `positionChange`.
-- `positionChange` compara `position` contra `previousPosition` guardado en la misma fila publicada.
+- La tabla publicada conserva las mismas estadisticas editables (`wins`, `draws`, `losses`, `goalsFor`, `goalsAgainst`) y suma solo `position` y `previousPosition` por fila. Mentira FC se agrega automaticamente con esa misma forma de estadisticas.
+- La web deriva `played`, `points`, `goalDiff`, el movimiento visible y `type` (`primaryPrize`, `secondaryPrize`, `normal`) desde la tabla publicada; esos valores derivados no se guardan en Sanity.
 - `participants` no se carga en la web publica: funciona como lista editorial oficial para validar la carga de `standingsState`.
 
 Relaciones actuales:
@@ -365,7 +364,7 @@ Uso en backend:
 - `sync-standings-snapshot` escucha creaciones y actualizaciones publicadas de `standingsState`.
 - La Function valida que todas las filas pertenezcan a `tournaments.participants` activos para esa fecha.
 - La Function rechaza la generacion del snapshot si falta un participante activo, sobra un equipo, hay duplicados o se cargo Mentira FC manualmente.
-- La Function calcula Mentira FC desde `games` finalizados del torneo con `date < snapshotDate`, deriva `played`, `points`, `goalDiff`, `position`, `previousPosition` y `positionChange`.
+- La Function calcula Mentira FC desde `games` finalizados del torneo con `date < snapshotDate`, ordena la tabla y guarda `position` y `previousPosition`.
 - La Function escribe un unico documento publicado con ID deterministico por torneo: `standings-snapshot-{tournamentId}-current`.
 - Si se publica sin cambiar `matchdayNumber`, la Function recalcula estadisticas y posiciones pero conserva la `previousPosition` ya guardada en cada fila.
 - Si se publica cambiando `matchdayNumber`, la Function toma la `position` publicada de la jornada anterior y la guarda como nueva `previousPosition` antes de escribir la posicion actual.
@@ -390,29 +389,25 @@ Campos:
 | `matchdayNumber` | `number` | Si | Numero explicito de fecha visible y editorial. No se usa para conservar historial largo. |
 | `label` | `string` | No | Etiqueta visible, por ejemplo `Fecha 7`. |
 | `snapshotDate` | `datetime` | Si | Fecha de actualizacion de la tabla y corte unico usado para calcular Mentira FC. No depende de `_updatedAt`. |
-| `rows` | `array` | Si | Filas generadas automaticamente. |
+| `rows` | `array` | Si | Filas generadas automaticamente con las mismas estadisticas del editable, mas posiciones. |
 | `rows[].team` | `reference -> teams` | Si | Equipo de la fila. |
-| `rows[].played` | `number` | Si | Partidos jugados calculados. |
 | `rows[].wins` | `number` | Si | Partidos ganados. |
 | `rows[].draws` | `number` | Si | Partidos empatados. |
 | `rows[].losses` | `number` | Si | Partidos perdidos. |
 | `rows[].goalsFor` | `number` | Si | Goles a favor. |
 | `rows[].goalsAgainst` | `number` | Si | Goles en contra. |
-| `rows[].points` | `number` | Si | Puntos calculados. |
-| `rows[].goalDiff` | `number` | Si | Diferencia de gol calculada. |
 | `rows[].position` | `number` | Si | Posicion calculada. |
 | `rows[].previousPosition` | `number` | No | Posicion anterior guardada para esa fila. Se actualiza solo al avanzar de jornada. |
-| `rows[].positionChange` | `number` | No | Puestos subidos o bajados contra `previousPosition`. Positivo significa que subio posiciones; negativo significa que bajo. |
 
 Uso en web:
 
 - `TOURNAMENT_QUERY` trae una sola tabla publicada del torneo activo; no usa `snapshotRole`.
-- La tabla publicada arma la tabla actual; la web no recalcula estadisticas ni posiciones.
+- La tabla publicada arma la tabla actual; la web no recalcula las posiciones, pero deriva `played`, `points`, `goalDiff` y movimiento para mostrar.
 - Si falta tabla publicada, la web muestra el estado vacio/error existente en vez de reconstruir una tabla desde `tournaments`.
 - Mentira FC no se carga manualmente en `standingsState.rows`: se calcula desde `games` finalizados del torneo con `date < snapshotDate`.
 - No hay historial largo: por torneo deben quedar un `standingsState` editable y un `standingsSnapshots` read-only/publicado. Al publicar, la Function elimina otros `standingsSnapshots` del mismo torneo de forma controlada.
 - Si la publicacion mantiene el mismo `matchdayNumber`, se actualizan estadisticas y posicion actual sin cambiar `rows[].previousPosition`.
-- Si la publicacion avanza de jornada, la Function toma la ultima `rows[].position` publicada y la guarda como nueva `rows[].previousPosition` antes de calcular `positionChange`.
+- Si la publicacion avanza de jornada, la Function toma la ultima `rows[].position` publicada y la guarda como nueva `rows[].previousPosition`. La web calcula despues el movimiento visible.
 
 Relaciones actuales:
 

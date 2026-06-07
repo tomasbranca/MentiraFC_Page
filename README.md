@@ -98,9 +98,13 @@ pnpm.cmd --dir studio check
 Studio deploy commands exist, but do not run deploys unless explicitly intended:
 
 ```powershell
+pnpm.cmd deploy
 pnpm.cmd --dir studio deploy
+pnpm.cmd --dir studio blueprints:deploy
 pnpm.cmd --dir studio deploy-graphql
 ```
+
+The root `pnpm.cmd deploy` command deploys the Studio and Sanity Blueprints, including document Functions.
 
 ## CI
 

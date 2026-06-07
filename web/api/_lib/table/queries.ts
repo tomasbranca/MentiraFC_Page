@@ -80,5 +80,11 @@ export const dashboardTableTournamentValidationQuery = `{
         isMain
       }
     }
+  },
+  "publishedTable": *[
+    _type == "standingsSnapshots" &&
+    tournament._ref == $tournamentId
+  ] | order(snapshotDate desc, _updatedAt desc)[0]{
+    matchdayNumber
   }
 }`;

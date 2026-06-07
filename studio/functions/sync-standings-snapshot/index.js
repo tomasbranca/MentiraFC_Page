@@ -9,6 +9,7 @@ import {
   getPublishedId,
   isValidDateTimeValue,
   isValidSanityDocumentId,
+  validateMatchdayTransition,
   validateStandingRowsAgainstParticipants,
 } from './standingsSnapshot.js'
 
@@ -83,8 +84,8 @@ const OBSOLETE_SNAPSHOTS_QUERY = `
 const PUBLISHED_TABLE_QUERY = `
   *[
     _type == "standingsSnapshots" &&
-    _id == $snapshotId
-  ][0]{
+    tournament._ref == $tournamentId
+  ] | order(snapshotDate desc, _updatedAt desc)[0]{
     _id,
     _type,
     tournament,
@@ -95,17 +96,13 @@ const PUBLISHED_TABLE_QUERY = `
       _key,
       _type,
       team,
-      played,
       wins,
       draws,
       losses,
       goalsFor,
       goalsAgainst,
-      points,
-      goalDiff,
       position,
-      previousPosition,
-      positionChange
+      previousPosition
     }
   }
 `
@@ -168,7 +165,7 @@ export const handler = documentEventHandler(async ({context, event}) => {
       snapshotDate: state.snapshotDate,
     }),
     client.fetch(PUBLISHED_TABLE_QUERY, {
-      snapshotId: publishedSnapshotId,
+      tournamentId,
     }),
     client.fetch(OBSOLETE_SNAPSHOTS_QUERY, {
       tournamentId,
@@ -179,6 +176,15 @@ export const handler = documentEventHandler(async ({context, event}) => {
     state,
     currentSnapshot: publishedSnapshot,
   })
+  const matchdayValidation = validateMatchdayTransition({
+    state,
+    currentSnapshot: publishedSnapshot,
+  })
+
+  if (!matchdayValidation.valid) {
+    throw new Error(matchdayValidation.error)
+  }
+
   const standings = buildComputedStandings({
     rows: state.rows || [],
     games: games || [],
