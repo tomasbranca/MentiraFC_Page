@@ -12,7 +12,6 @@ import {
   FiArrowLeft,
   FiPlus,
   FiRefreshCw,
-  FiSave,
   FiTrash2,
 } from "react-icons/fi";
 
@@ -30,9 +29,12 @@ import type {
   DashboardTableMutationInput,
   DashboardTableTeamOption,
 } from "../../../types/dashboard";
-import { confirmDashboardAction } from "../../app/confirmDialog";
-import ErrorFallback from "../../components/errors/ErrorFallback";
-import DashboardContentLoader from "../../dashboard/DashboardContentLoader";
+import { confirmDashboardAction } from "../../dashboard/DashboardConfirmDialog";
+import DashboardErrorState from "../../dashboard/DashboardErrorState";
+import DashboardFormActions from "../../dashboard/DashboardFormActions";
+import DashboardLoadingState from "../../dashboard/DashboardLoadingState";
+import DashboardUnsavedChangesNotice from "../../dashboard/DashboardUnsavedChangesNotice";
+import { useUnsavedChangesGuard } from "../../dashboard/useUnsavedChangesGuard";
 import { formatDateTime } from "../../utils/date.utils";
 import { Field, SelectField } from "./DashboardTableFields";
 import type { DashboardTableErrors } from "./dashboardTable.utils";
@@ -323,16 +325,19 @@ const DashboardTableForm = () => {
   const isDirty = (field: DirtyFieldKey): boolean =>
     dirtyFields.includes(field);
   const isSaving = saveDraftMutation.isPending || publishMutation.isPending;
+  const hasUnsavedChanges = dirtyLabels.length > 0 && !isSaving;
+
+  useUnsavedChangesGuard({ when: hasUnsavedChanges });
 
   if (optionsQuery.isLoading || tableQuery.isLoading) {
-    return <DashboardContentLoader />;
+    return <DashboardLoadingState />;
   }
 
   if (optionsQuery.isError || tableQuery.isError) {
     return (
-      <ErrorFallback
+      <DashboardErrorState
         title="No pudimos cargar la tabla"
-        message="Intenta nuevamente en unos minutos."
+        message="No se pudo cargar la pagina. Reintenta en unos segundos."
         onRetry={() => {
           void optionsQuery.refetch();
           void tableQuery.refetch();
@@ -505,6 +510,7 @@ const DashboardTableForm = () => {
     setStatus(null);
 
     if (Object.keys(nextErrors).length > 0) {
+      setStatus("No se pudo guardar la tabla porque faltan datos obligatorios.");
       return;
     }
 
@@ -581,14 +587,7 @@ const DashboardTableForm = () => {
           onSubmit={handleSubmit}
           noValidate
         >
-          {dirtyLabels.length > 0 && (
-            <div className="rounded-sm border border-amber-200/20 bg-amber-200/6 p-3 text-sm text-amber-50">
-              <p className="font-semibold">Cambios sin guardar</p>
-              <p className="mt-1 text-xs leading-relaxed text-amber-50/75">
-                Campos editados: {dirtyLabels.join(", ")}.
-              </p>
-            </div>
-          )}
+          <DashboardUnsavedChangesNotice labels={dirtyLabels} />
 
           <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 *:min-w-0">
             <SelectField
@@ -828,37 +827,15 @@ const DashboardTableForm = () => {
             )}
           </section>
 
-          <div className="flex flex-col gap-3 pt-2 sm:flex-row">
-            <button
-              type="button"
-              disabled={isSaving}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[3px] border border-white/10 px-5 py-3 text-sm font-semibold text-white transition hover:border-violet-200/35 hover:bg-white/4.5 focus:outline-none focus:ring-2 focus:ring-violet-500/40 disabled:cursor-not-allowed disabled:opacity-55"
-              onClick={() => void handleSaveDraft()}
-            >
-              <FiSave className="size-4" aria-hidden="true" />
-              {saveDraftMutation.isPending ? "Guardando..." : "Guardar borrador"}
-            </button>
-            <button
-              type="submit"
-              disabled={isSaving}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[3px] border border-violet-200/25 bg-violet-100 px-5 py-3 text-sm font-semibold text-violet-950 transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/40 disabled:cursor-not-allowed disabled:opacity-55"
-            >
-              <FiSave className="size-4" aria-hidden="true" />
-              {publishMutation.isPending
-                ? "Publicando..."
-                : isEditing
-                  ? "Publicar cambios"
-                  : "Publicar"}
-            </button>
-          </div>
-
-          <div
-            className="min-h-6 text-sm text-red-300"
-            aria-live="polite"
-            role={status ? "alert" : undefined}
-          >
-            {status}
-          </div>
+          <DashboardFormActions
+            isSaving={isSaving}
+            isDraftSaving={saveDraftMutation.isPending}
+            isPublishing={publishMutation.isPending}
+            onSaveDraft={handleSaveDraft}
+            submitLabel={isEditing ? "Publicar cambios" : "Publicar"}
+            cancelTo={ROUTES.DASHBOARD_TABLE}
+            error={status}
+          />
         </form>
 
         <aside className="space-y-4">
