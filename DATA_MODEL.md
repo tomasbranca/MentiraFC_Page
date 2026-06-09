@@ -208,6 +208,7 @@ Reglas:
 - `Game.result` en la web es `GameResult | null`.
 - Los partidos `por_jugar` no tienen resultado y deben mostrarse como `VS` o equivalente, nunca como `0-0`.
 - Los calculos deportivos ignoran partidos sin `result` valido.
+- La tabla publica conserva el snapshot de rivales, pero recalcula la fila de Mentira FC desde partidos finalizados con `competition == "Torneo"` para no mostrar snapshots viejos contaminados por amistosos.
 - No existe convocatoria en el modelo. Solo se cargan `playedPlayers` al finalizar el partido.
 
 La web embebe los goles del partido con una subquery a `events`:
