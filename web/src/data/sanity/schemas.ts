@@ -206,7 +206,20 @@ export const sanityTournamentSchema = z
           .optional(),
       })
       .optional(),
-      standingsSnapshots: z.array(z.unknown()).nullish(),
+    standingsSnapshots: z.array(z.unknown()).nullish(),
+    mainTeamGames: z
+      .array(
+        z.object({
+          result: z
+            .object({
+              goalsFor: z.number().nullable().optional(),
+              goalsAgainst: z.number().nullable().optional(),
+            })
+            .nullable()
+            .optional(),
+        })
+      )
+      .optional(),
     })
     .passthrough();
 

@@ -10,6 +10,7 @@ import {
   sanityTournamentSchema,
   type SanityStandingRow,
   type SanityStandingsSnapshot,
+  type SanityTournament,
 } from "../schemas";
 import { validateSanityArray, validateSanityItem } from "../validation";
 
@@ -65,6 +66,89 @@ const normalizePositiveInteger = (value: unknown): number => {
   return Number.isFinite(numberValue) && numberValue > 0
     ? Math.floor(numberValue)
     : 0;
+};
+
+const isValidGoalValue = (value: unknown): value is number =>
+  typeof value === "number" && Number.isInteger(value) && value >= 0;
+
+type MainTeamGame = NonNullable<SanityTournament["mainTeamGames"]>[number];
+
+const calculateMainTeamStats = (
+  games: MainTeamGame[] = []
+): Pick<
+  StandingsRow,
+  "played" | "wins" | "draws" | "losses" | "goalsFor" | "goalsAgainst"
+> => {
+  return games.reduce(
+    (stats, game) => {
+      const goalsFor = game.result?.goalsFor;
+      const goalsAgainst = game.result?.goalsAgainst;
+
+      if (!isValidGoalValue(goalsFor) || !isValidGoalValue(goalsAgainst)) {
+        return stats;
+      }
+
+      stats.played += 1;
+      stats.goalsFor += goalsFor;
+      stats.goalsAgainst += goalsAgainst;
+
+      if (goalsFor > goalsAgainst) stats.wins += 1;
+      else if (goalsFor < goalsAgainst) stats.losses += 1;
+      else stats.draws += 1;
+
+      return stats;
+    },
+    {
+      played: 0,
+      wins: 0,
+      draws: 0,
+      losses: 0,
+      goalsFor: 0,
+      goalsAgainst: 0,
+    }
+  );
+};
+
+const replaceMainTeamStats = (
+  rows: StandingsRow[],
+  mainTeam: TeamRef | null,
+  games?: MainTeamGame[]
+): StandingsRow[] => {
+  if (!mainTeam || !Array.isArray(games)) {
+    return rows;
+  }
+
+  const stats = calculateMainTeamStats(games);
+  const buildMainTeamRow = (row?: StandingsRow): StandingsRow => {
+    const points = stats.wins * 3 + stats.draws;
+    const goalDiff = stats.goalsFor - stats.goalsAgainst;
+
+    return {
+      ...row,
+      ...stats,
+      points,
+      goalDiff,
+      team: {
+        ...(row?.team ?? mainTeam),
+        id: row?.team.id ?? mainTeam.id,
+        name: row?.team.name ?? mainTeam.name,
+        imageUrl: row?.team.imageUrl ?? mainTeam.imageUrl,
+        isMain: true,
+      },
+    };
+  };
+
+  const mainTeamIndex = rows.findIndex(
+    (row) => row.team.isMain || row.team.id === mainTeam.id
+  );
+
+  if (mainTeamIndex === -1) {
+    return [...rows, buildMainTeamRow()];
+  }
+
+  return rows.map((row, index) =>
+    index === mainTeamIndex ? buildMainTeamRow(row) : row
+  );
 };
 
 const adaptStandingRows = (
@@ -136,15 +220,23 @@ const adaptTeamRef = (
 };
 
 const adaptStandingsSnapshot = (
-  snapshot: SanityStandingsSnapshot
+  snapshot: SanityStandingsSnapshot,
+  options: {
+    mainTeam: TeamRef | null;
+    mainTeamGames?: MainTeamGame[];
+  }
 ): StandingsSnapshot => ({
   id: snapshot._id || "unknown-standings-snapshot",
   matchdayNumber: normalizePositiveInteger(snapshot.matchdayNumber),
   label: snapshot.label || null,
   snapshotDate: snapshot.snapshotDate || null,
-  standings: adaptStandingRows(
-    snapshot.rows,
-    "tournaments.adapter:standingsSnapshots.rows"
+  standings: replaceMainTeamStats(
+    adaptStandingRows(
+      snapshot.rows,
+      "tournaments.adapter:standingsSnapshots.rows"
+    ),
+    options.mainTeam,
+    options.mainTeamGames
   ),
 });
 
@@ -162,12 +254,18 @@ export const adaptTournament = (data: unknown): Tournament | null => {
   );
   if (!validated) return null;
 
+  const mainTeam = adaptTeamRef(validated.mainTeam);
   const validatedSnapshots: SanityStandingsSnapshot[] = validateSanityArray(
     sanityStandingsSnapshotSchema,
     validated.standingsSnapshots || [],
     "tournaments.adapter:standingsSnapshots"
   );
-  const standingsSnapshots = validatedSnapshots.map(adaptStandingsSnapshot);
+  const standingsSnapshots = validatedSnapshots.map((snapshot) =>
+    adaptStandingsSnapshot(snapshot, {
+      mainTeam,
+      mainTeamGames: validated.mainTeamGames,
+    })
+  );
   const currentSnapshot = standingsSnapshots[0] || null;
   const standings = currentSnapshot?.standings ?? [];
 
@@ -181,7 +279,7 @@ export const adaptTournament = (data: unknown): Tournament | null => {
       typeof validated.organization?.primaryColor === "string"
         ? validated.organization.primaryColor
         : validated.organization?.primaryColor?.hex || null,
-    mainTeam: adaptTeamRef(validated.mainTeam),
+    mainTeam,
     primaryPrizeSlots: normalizeSlotCount(validated.primaryPrizeSlots, 1),
     secondaryPrizeSlots: normalizeSlotCount(validated.secondaryPrizeSlots, 4),
     updatedAt:

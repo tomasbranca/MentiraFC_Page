@@ -61,6 +61,7 @@ const FINISHED_MAIN_TEAM_GAMES_QUERY = `
   *[
     _type == "games" &&
     state == "finalizado" &&
+    competition == "Torneo" &&
     defined(result.goalsFor) &&
     defined(result.goalsAgainst) &&
     tournament._ref == $tournamentId &&

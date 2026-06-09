@@ -43,6 +43,20 @@ export const TOURNAMENT_QUERY = `
         }
       }
     },
+    "mainTeamGames": *[
+      _type == "games" &&
+      !(_id in path("drafts.**")) &&
+      state == "finalizado" &&
+      competition == "Torneo" &&
+      defined(result.goalsFor) &&
+      defined(result.goalsAgainst) &&
+      tournament._ref == ^._id
+    ]{
+      result{
+        goalsFor,
+        goalsAgainst
+      }
+    },
     _updatedAt
   }
 `;

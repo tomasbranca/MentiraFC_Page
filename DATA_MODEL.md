@@ -188,7 +188,7 @@ Campos:
 | `date` | `datetime` | Si | Fecha y hora del partido. |
 | `location` | `string` | Si | Ubicacion del partido. |
 | `competition` | `string` | Si | Tipo de competencia. Valores: `Torneo`, `Copa`, `Amistoso`. |
-| `tournament` | `reference -> tournaments` | Si para `Torneo` | Torneo asociado. Se oculta si `competition !== "Torneo"`. |
+| `tournament` | `reference -> tournaments` | Si para `Torneo`; invalido para otros tipos | Torneo asociado. Se oculta si `competition !== "Torneo"`, salvo que exista una referencia vieja para poder limpiarla. |
 | `state` | `string` | Si | Estado del partido. Valores conocidos: `por_jugar`, `finalizado`. Valores desconocidos se normalizan a `desconocido` en la web. |
 | `result` | `object \| null` | Si cuando `state == "finalizado"` | Resultado real del partido. Debe ser `null` o ignorarse cuando `state !== "finalizado"`. |
 | `result.goalsFor` | `number` | Si cuando `state == "finalizado"` | Goles de Mentira FC. Minimo `0`. |
@@ -199,7 +199,7 @@ Uso en web:
 
 - Ultimos partidos: `LATEST_GAMES_QUERY`
 - Partidos finalizados: `FINISHED_GAMES_QUERY`
-- Partidos finalizados de torneo: `FINISHED_TOURNAMENT_GAMES_QUERY`
+- Partidos finalizados de torneo: `FINISHED_TOURNAMENT_GAMES_QUERY`, solo con `competition == "Torneo"` y `tournament` definido.
 - Home: `HOME_CRITICAL_QUERY`
 - Modelo de dominio: `Game`
 
@@ -208,6 +208,7 @@ Reglas:
 - `Game.result` en la web es `GameResult | null`.
 - Los partidos `por_jugar` no tienen resultado y deben mostrarse como `VS` o equivalente, nunca como `0-0`.
 - Los calculos deportivos ignoran partidos sin `result` valido.
+- La tabla publica conserva el snapshot de rivales, pero recalcula la fila de Mentira FC desde partidos finalizados con `competition == "Torneo"` para no mostrar snapshots viejos contaminados por amistosos.
 - No existe convocatoria en el modelo. Solo se cargan `playedPlayers` al finalizar el partido.
 
 La web embebe los goles del partido con una subquery a `events`:

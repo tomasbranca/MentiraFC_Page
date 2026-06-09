@@ -523,13 +523,13 @@ test('validateStandingRowsAgainstParticipants rejects random, duplicate, missing
   assert.match(errors, /Falta cargar/)
 })
 
-test('sync query uses finalized games by tournament reference instead of competition label', () => {
+test('sync query uses finalized tournament games by competition and tournament reference', () => {
   const source = readFileSync(new URL('./index.js', import.meta.url), 'utf8')
 
   assert.match(source, /state == "finalizado"/)
+  assert.match(source, /competition == "Torneo"/)
   assert.match(source, /tournament\._ref == \$tournamentId/)
   assert.match(source, /date < \$snapshotDate/)
-  assert.doesNotMatch(source, /competition == "Torneo"/)
 })
 
 test('sync query deletes only other standingsSnapshots from the same tournament', () => {

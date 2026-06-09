@@ -72,9 +72,21 @@ export default {
       title: 'Torneo',
       type: 'reference',
       to: [{type: 'tournaments'}],
-      hidden: ({parent}) => parent?.competition !== 'Torneo',
+      hidden: ({parent}) => parent?.competition !== 'Torneo' && !parent?.tournament,
       validation: (Rule) =>
-        Rule.required().error('El torneo es obligatorio para partidos de tipo "Torneo"'),
+        Rule.custom((value, context) => {
+          const competition = context.parent?.competition
+
+          if (competition === 'Torneo' && !value?._ref) {
+            return 'El torneo es obligatorio para partidos de tipo "Torneo".'
+          }
+
+          if (competition !== 'Torneo' && value?._ref) {
+            return 'El torneo se carga solo para partidos de tipo "Torneo".'
+          }
+
+          return true
+        }),
     },
 
     {
