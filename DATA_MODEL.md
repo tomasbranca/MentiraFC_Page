@@ -188,7 +188,7 @@ Campos:
 | `date` | `datetime` | Si | Fecha y hora del partido. |
 | `location` | `string` | Si | Ubicacion del partido. |
 | `competition` | `string` | Si | Tipo de competencia. Valores: `Torneo`, `Copa`, `Amistoso`. |
-| `tournament` | `reference -> tournaments` | Si para `Torneo` | Torneo asociado. Se oculta si `competition !== "Torneo"`. |
+| `tournament` | `reference -> tournaments` | Si para `Torneo`; invalido para otros tipos | Torneo asociado. Se oculta si `competition !== "Torneo"`, salvo que exista una referencia vieja para poder limpiarla. |
 | `state` | `string` | Si | Estado del partido. Valores conocidos: `por_jugar`, `finalizado`. Valores desconocidos se normalizan a `desconocido` en la web. |
 | `result` | `object \| null` | Si cuando `state == "finalizado"` | Resultado real del partido. Debe ser `null` o ignorarse cuando `state !== "finalizado"`. |
 | `result.goalsFor` | `number` | Si cuando `state == "finalizado"` | Goles de Mentira FC. Minimo `0`. |
@@ -199,7 +199,7 @@ Uso en web:
 
 - Ultimos partidos: `LATEST_GAMES_QUERY`
 - Partidos finalizados: `FINISHED_GAMES_QUERY`
-- Partidos finalizados de torneo: `FINISHED_TOURNAMENT_GAMES_QUERY`
+- Partidos finalizados de torneo: `FINISHED_TOURNAMENT_GAMES_QUERY`, solo con `competition == "Torneo"` y `tournament` definido.
 - Home: `HOME_CRITICAL_QUERY`
 - Modelo de dominio: `Game`
 

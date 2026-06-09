@@ -21,11 +21,11 @@ describe("standings Sanity queries", () => {
     );
   });
 
-  it("consulta partidos de torneo por referencia y no por label de competencia", () => {
+  it("consulta partidos de torneo por competencia y referencia", () => {
     expect(FINISHED_TOURNAMENT_GAMES_QUERY).toContain(
       "defined(tournament._ref)"
     );
-    expect(FINISHED_TOURNAMENT_GAMES_QUERY).not.toContain(
+    expect(FINISHED_TOURNAMENT_GAMES_QUERY).toContain(
       'competition == "Torneo"'
     );
   });
