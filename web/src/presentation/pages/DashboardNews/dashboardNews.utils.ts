@@ -8,7 +8,7 @@ import {
 export type DashboardNewsErrors = Partial<Record<keyof DashboardNewsInput, string>>;
 
 const ARGENTINA_UTC_OFFSET = "-03:00";
-const ARGENTINA_TIME_ZONE = "America/Argentina/Buenos_Aires";
+const ARGENTINA_UTC_OFFSET_MINUTES = -3 * 60;
 
 export const buildNewsSlug = (value: string): string =>
   value
@@ -26,21 +26,16 @@ export const toDatetimeLocalValue = (value: string): string => {
     return "";
   }
 
-  const dateParts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: ARGENTINA_TIME_ZONE,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-    hourCycle: "h23",
-  }).formatToParts(date);
-  const parts = Object.fromEntries(
-    dateParts.map(({ type, value: partValue }) => [type, partValue])
+  const argentinaDate = new Date(
+    date.getTime() + ARGENTINA_UTC_OFFSET_MINUTES * 60 * 1000
   );
+  const year = argentinaDate.getUTCFullYear();
+  const month = String(argentinaDate.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(argentinaDate.getUTCDate()).padStart(2, "0");
+  const hour = String(argentinaDate.getUTCHours()).padStart(2, "0");
+  const minute = String(argentinaDate.getUTCMinutes()).padStart(2, "0");
 
-  return `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}`;
+  return `${year}-${month}-${day}T${hour}:${minute}`;
 };
 
 export const fromDatetimeLocalValue = (value: string): string => {

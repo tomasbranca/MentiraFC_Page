@@ -8,3 +8,7 @@ overrides:
 allowBuilds:
   "@sentry/cli": true
   esbuild: true
+
+peerDependencyRules:
+  allowedVersions:
+    "@sanity/migrate>@sanity/cli-core": "1 || 2"
