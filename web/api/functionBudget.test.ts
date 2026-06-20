@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 
 const apiDir = dirname(fileURLToPath(import.meta.url));
 
-const getRouteFiles = (directory: string): string[] =>
+const getFunctionSourceFiles = (directory: string): string[] =>
   readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const fullPath = join(directory, entry.name);
 
@@ -14,35 +14,32 @@ const getRouteFiles = (directory: string): string[] =>
     }
 
     if (entry.isDirectory()) {
-      return getRouteFiles(fullPath);
+      return getFunctionSourceFiles(fullPath);
     }
 
-    const isRouteFile =
-      entry.isFile() &&
-      entry.name.endsWith(".ts") &&
-      !entry.name.endsWith(".test.ts") &&
-      !entry.name.startsWith("_");
+    const isFunctionSource =
+      entry.isFile() && entry.name.endsWith(".ts") && !entry.name.endsWith(".test.ts");
 
-    return isRouteFile ? [relative(apiDir, fullPath)] : [];
+    return isFunctionSource ? [relative(apiDir, fullPath)] : [];
   });
 
 describe("api function budget", () => {
   it("mantiene el proyecto bajo el limite Hobby de Vercel", () => {
-    const routeFiles = getRouteFiles(apiDir);
+    const functionSourceFiles = getFunctionSourceFiles(apiDir);
 
     expect(
-      routeFiles.every(
+      functionSourceFiles.every(
         (filePath) =>
           filePath.endsWith(`${sep}index.ts`) ||
           filePath.endsWith(`${sep}[resource].ts`) ||
           filePath.endsWith(`${sep}[...path].ts`)
       )
     ).toBe(true);
-    expect(routeFiles).toContain(`dashboard${sep}[resource].ts`);
-    expect(routeFiles).toContain(`admin${sep}[resource].ts`);
-    expect(routeFiles).toContain(`reactions${sep}index.ts`);
-    expect(routeFiles).toContain(`comments${sep}index.ts`);
-    expect(routeFiles).toHaveLength(5);
+    expect(functionSourceFiles).toContain(`dashboard${sep}[resource].ts`);
+    expect(functionSourceFiles).toContain(`admin${sep}[resource].ts`);
+    expect(functionSourceFiles).toContain(`reactions${sep}index.ts`);
+    expect(functionSourceFiles).toContain(`comments${sep}index.ts`);
+    expect(functionSourceFiles).toHaveLength(5);
   });
 
   it("redirige recursos dinamicos antes del fallback SPA", () => {

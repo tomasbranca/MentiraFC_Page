@@ -7,9 +7,9 @@ import {
   listDashboardNews,
   publishDashboardNews,
   saveDashboardNewsDraft,
-} from "../../_lib/news.js";
-import { authorizeDashboardRequest } from "../../_lib/auth.js";
-import { errorJson, json } from "../../_lib/responses.js";
+} from "../news.js";
+import { authorizeDashboardRequest } from "../auth.js";
+import { errorJson, json } from "../responses.js";
 import { parseOffsetPaginationParams } from "../../../shared/pagination.js";
 import {
   validateDashboardNewsDraftMutation,

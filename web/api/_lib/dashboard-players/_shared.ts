@@ -2,8 +2,8 @@ import {
   parseDashboardPlayerDraftRequestInput,
   parseDashboardPlayerRequestInput,
   validateDashboardPlayerImageFile,
-} from "../../_lib/players.js";
-import { errorJson } from "../../_lib/responses.js";
+} from "../players.js";
+import { errorJson } from "../responses.js";
 
 export const validateDashboardPlayerMutation = async (
   request: Request

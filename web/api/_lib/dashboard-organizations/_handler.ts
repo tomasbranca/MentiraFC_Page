@@ -5,9 +5,9 @@ import {
   listDashboardOrganizations,
   publishDashboardOrganization,
   saveDashboardOrganizationDraft,
-} from "../../_lib/organizations.js";
-import { authorizeDashboardRequest } from "../../_lib/auth.js";
-import { errorJson, json } from "../../_lib/responses.js";
+} from "../organizations.js";
+import { authorizeDashboardRequest } from "../auth.js";
+import { errorJson, json } from "../responses.js";
 import {
   validateDashboardOrganizationDraftMutation,
   validateDashboardOrganizationMutation,

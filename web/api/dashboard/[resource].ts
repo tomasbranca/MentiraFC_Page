@@ -1,12 +1,12 @@
-import dashboardMatchesRoute from "./matches/_handler.js";
-import dashboardGalleriesRoute from "./galleries/_handler.js";
-import dashboardNewsRoute from "./news/_handler.js";
-import dashboardOrganizationsRoute from "./organizations/_handler.js";
-import dashboardPlayersRoute from "./players/_handler.js";
-import dashboardStaffRoute from "./staff/_handler.js";
-import dashboardTableRoute from "./table/_handler.js";
-import dashboardTeamsRoute from "./teams/_handler.js";
-import dashboardTournamentsRoute from "./tournaments/_handler.js";
+import dashboardMatchesRoute from "../_lib/dashboard-matches/_handler.js";
+import dashboardGalleriesRoute from "../_lib/dashboard-galleries/_handler.js";
+import dashboardNewsRoute from "../_lib/dashboard-news/_handler.js";
+import dashboardOrganizationsRoute from "../_lib/dashboard-organizations/_handler.js";
+import dashboardPlayersRoute from "../_lib/dashboard-players/_handler.js";
+import dashboardStaffRoute from "../_lib/dashboard-staff/_handler.js";
+import dashboardTableRoute from "../_lib/dashboard-table/_handler.js";
+import dashboardTeamsRoute from "../_lib/dashboard-teams/_handler.js";
+import dashboardTournamentsRoute from "../_lib/dashboard-tournaments/_handler.js";
 import { errorJson } from "../_lib/responses.js";
 import { normalizeOptionalSanityDocumentId } from "../_lib/requestValidation.js";
 

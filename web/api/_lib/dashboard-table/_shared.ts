@@ -1,8 +1,8 @@
 import {
   parseDashboardTableDraftRequestInput,
   parseDashboardTableRequestInput,
-} from "../../_lib/table.js";
-import { errorJson } from "../../_lib/responses.js";
+} from "../table.js";
+import { errorJson } from "../responses.js";
 
 export const validateDashboardTableMutation = async (
   request: Request

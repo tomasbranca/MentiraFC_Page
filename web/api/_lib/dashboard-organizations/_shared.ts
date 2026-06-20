@@ -2,8 +2,8 @@ import {
   parseDashboardOrganizationDraftRequestInput,
   parseDashboardOrganizationRequestInput,
   validateDashboardOrganizationImageFile,
-} from "../../_lib/organizations.js";
-import { errorJson } from "../../_lib/responses.js";
+} from "../organizations.js";
+import { errorJson } from "../responses.js";
 
 export const validateDashboardOrganizationMutation = async (
   request: Request
