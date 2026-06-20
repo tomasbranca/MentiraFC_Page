@@ -1,8 +1,8 @@
 import {
   parseDashboardTournamentDraftRequestInput,
   parseDashboardTournamentRequestInput,
-} from "../../_lib/tournaments.js";
-import { errorJson } from "../../_lib/responses.js";
+} from "../tournaments.js";
+import { errorJson } from "../responses.js";
 
 export const validateDashboardTournamentMutation = async (
   request: Request

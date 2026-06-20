@@ -2,8 +2,8 @@ import {
   parseDashboardGalleryDraftRequestInput,
   parseDashboardGalleryRequestInput,
   validateDashboardGalleryImageFile,
-} from "../../_lib/galleries.js";
-import { errorJson } from "../../_lib/responses.js";
+} from "../galleries.js";
+import { errorJson } from "../responses.js";
 
 const validateGalleryPhotoFiles = (
   input:

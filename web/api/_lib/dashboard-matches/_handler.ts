@@ -10,9 +10,9 @@ import {
   listDashboardMatches,
   publishDashboardMatch,
   saveDashboardMatchDraft,
-} from "../../_lib/matches.js";
-import { authorizeDashboardRequest } from "../../_lib/auth.js";
-import { errorJson, json } from "../../_lib/responses.js";
+} from "../matches.js";
+import { authorizeDashboardRequest } from "../auth.js";
+import { errorJson, json } from "../responses.js";
 import { parseOffsetPaginationParams } from "../../../shared/pagination.js";
 import {
   validateDashboardMatchDraftMutation,

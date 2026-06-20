@@ -4,9 +4,9 @@ import {
   listDashboardStaff,
   publishDashboardStaff,
   saveDashboardStaffDraft,
-} from "../../_lib/staff.js";
-import { authorizeDashboardRequest } from "../../_lib/auth.js";
-import { errorJson, json } from "../../_lib/responses.js";
+} from "../staff.js";
+import { authorizeDashboardRequest } from "../auth.js";
+import { errorJson, json } from "../responses.js";
 import {
   validateDashboardStaffDraftMutation,
   validateDashboardStaffMutation,

@@ -3,8 +3,8 @@ import {
   parseDashboardNewsRequestInput,
   validateDashboardNewsContent,
   validateDashboardNewsImageFile,
-} from "../../_lib/news.js";
-import { errorJson } from "../../_lib/responses.js";
+} from "../news.js";
+import { errorJson } from "../responses.js";
 
 export const validateDashboardNewsMutation = async (
   request: Request

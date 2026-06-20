@@ -1,8 +1,8 @@
 import {
   parseDashboardMatchDraftRequestInput,
   parseDashboardMatchRequestInput,
-} from "../../_lib/matches.js";
-import { errorJson } from "../../_lib/responses.js";
+} from "../matches.js";
+import { errorJson } from "../responses.js";
 
 export const validateDashboardMatchMutation = async (
   request: Request

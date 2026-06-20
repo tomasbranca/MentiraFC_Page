@@ -10,9 +10,9 @@ import {
   listDashboardGalleries,
   publishDashboardGallery,
   saveDashboardGalleryDraft,
-} from "../../_lib/galleries.js";
-import { authorizeDashboardRequest } from "../../_lib/auth.js";
-import { errorJson, json } from "../../_lib/responses.js";
+} from "../galleries.js";
+import { authorizeDashboardRequest } from "../auth.js";
+import { errorJson, json } from "../responses.js";
 import { parseOffsetPaginationParams } from "../../../shared/pagination.js";
 import {
   validateDashboardGalleryDraftMutation,

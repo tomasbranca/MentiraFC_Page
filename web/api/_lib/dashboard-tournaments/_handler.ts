@@ -6,9 +6,9 @@ import {
   listDashboardTournaments,
   publishDashboardTournament,
   saveDashboardTournamentDraft,
-} from "../../_lib/tournaments.js";
-import { authorizeDashboardRequest } from "../../_lib/auth.js";
-import { errorJson, json } from "../../_lib/responses.js";
+} from "../tournaments.js";
+import { authorizeDashboardRequest } from "../auth.js";
+import { errorJson, json } from "../responses.js";
 import {
   validateDashboardTournamentDraftMutation,
   validateDashboardTournamentMutation,

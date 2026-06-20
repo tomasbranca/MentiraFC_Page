@@ -2,8 +2,8 @@ import {
   parseDashboardStaffDraftRequestInput,
   parseDashboardStaffRequestInput,
   validateDashboardStaffImageFile,
-} from "../../_lib/staff.js";
-import { errorJson } from "../../_lib/responses.js";
+} from "../staff.js";
+import { errorJson } from "../responses.js";
 
 export const validateDashboardStaffMutation = async (
   request: Request

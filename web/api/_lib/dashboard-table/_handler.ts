@@ -6,9 +6,9 @@ import {
   listDashboardTables,
   publishDashboardTable,
   saveDashboardTableDraft,
-} from "../../_lib/table.js";
-import { authorizeDashboardRequest } from "../../_lib/auth.js";
-import { errorJson, json } from "../../_lib/responses.js";
+} from "../table.js";
+import { authorizeDashboardRequest } from "../auth.js";
+import { errorJson, json } from "../responses.js";
 import {
   validateDashboardTableDraftMutation,
   validateDashboardTableMutation,

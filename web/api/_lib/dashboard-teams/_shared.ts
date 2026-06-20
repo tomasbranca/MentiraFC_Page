@@ -2,8 +2,8 @@ import {
   parseDashboardTeamDraftRequestInput,
   parseDashboardTeamRequestInput,
   validateDashboardTeamImageFile,
-} from "../../_lib/teams.js";
-import { errorJson } from "../../_lib/responses.js";
+} from "../teams.js";
+import { errorJson } from "../responses.js";
 
 export const validateDashboardTeamMutation = async (
   request: Request
